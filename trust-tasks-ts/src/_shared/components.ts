@@ -435,7 +435,8 @@ export type BoardEntry =
   | ElectionKeyEntry
   | PartialDecryptionsEntry
   | UnsealedEntry
-  | SpoiledEntry;
+  | SpoiledEntry
+  | TrusteeStepEntry;
 /**
  * `public`: anyone reads the board. `private`: the community, the auditors the manifest names and, for one cast's inclusion, the holder of its receipt (VTI-VOT-052).
  */
@@ -4900,14 +4901,23 @@ export interface EncryptedCastEntry {
   kind: "encryptedCast";
   cast: EncryptedCast;
 }
+/**
+ * Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind.
+ */
 export interface TransportKeyEntry {
   kind: "transportKey";
   transportKey: TransportKey;
 }
+/**
+ * Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind.
+ */
 export interface DealingEntry {
   kind: "dealing";
   dealing: Dealing;
 }
+/**
+ * Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind.
+ */
 export interface ConfirmationEntry {
   kind: "confirmation";
   trustee: TrusteeIndex;
@@ -4916,6 +4926,9 @@ export interface ConfirmationEntry {
    */
   complaints: TrusteeIndex[];
 }
+/**
+ * Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind.
+ */
 export interface JustificationEntry {
   kind: "justification";
   dealer: TrusteeIndex;
@@ -4946,6 +4959,13 @@ export interface UnsealedEntry {
 export interface SpoiledEntry {
   kind: "spoiled";
   leafIndex: number;
+}
+/**
+ * One step of the trustees' ceremony — an enrolment, a dealing, a confirmation or a justification — as the trustee's own signed request, so that anyone reading the board can tell who took it (CONVENTIONS §9.6).
+ */
+export interface TrusteeStepEntry {
+  kind: "trusteeStep";
+  request: SignedRequest;
 }
 /**
  * A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.
@@ -10401,6 +10421,10 @@ export interface SigmaProof {
   c: GroupScalar;
   z: GroupScalar;
 }
+/**
+ * A whole Trust Task request document — `id`, `type`, `issuer`, `payload` and every other member, `proof` included — exactly as the ballot box received it, never re-serialised: its proof is taken over its members, and a re-serialised copy does not reliably reproduce them. Typed as an open object so every member survives; CONVENTIONS §9.6 gives the checks that make it a trustee's step.
+ */
+export interface SignedRequest {}
 /**
  * One signing-key delegation, as its holder sees it. A delegation confers nothing of its own: it names an identity that already holds whatever standing it holds, and a document signed by the key is authorized by that identity's standing read at execution time.
  */

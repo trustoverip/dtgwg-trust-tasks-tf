@@ -680,7 +680,8 @@
             "transportKey": {
               "$ref": "#/$defs/TransportKey"
             }
-          }
+          },
+          "description": "Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind."
         },
         {
           "title": "DealingEntry",
@@ -697,7 +698,8 @@
             "dealing": {
               "$ref": "#/$defs/Dealing"
             }
-          }
+          },
+          "description": "Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind."
         },
         {
           "title": "ConfirmationEntry",
@@ -722,7 +724,8 @@
                 "$ref": "#/$defs/TrusteeIndex"
               }
             }
-          }
+          },
+          "description": "Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind."
         },
         {
           "title": "JustificationEntry",
@@ -747,7 +750,8 @@
             "share": {
               "$ref": "#/$defs/GroupScalar"
             }
-          }
+          },
+          "description": "Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind."
         },
         {
           "title": "ElectionKeyEntry",
@@ -830,6 +834,24 @@
             "leafIndex": {
               "type": "integer",
               "minimum": 0
+            }
+          }
+        },
+        {
+          "title": "TrusteeStepEntry",
+          "description": "One step of the trustees' ceremony — an enrolment, a dealing, a confirmation or a justification — as the trustee's own signed request, so that anyone reading the board can tell who took it (CONVENTIONS §9.6).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "request"
+          ],
+          "properties": {
+            "kind": {
+              "const": "trusteeStep"
+            },
+            "request": {
+              "$ref": "#/$defs/SignedRequest"
             }
           }
         }
@@ -1441,6 +1463,12 @@
         "done",
         "failed"
       ]
+    },
+    "SignedRequest": {
+      "title": "SignedRequest",
+      "description": "A whole Trust Task request document — `id`, `type`, `issuer`, `payload` and every other member, `proof` included — exactly as the ballot box received it, never re-serialised: its proof is taken over its members, and a re-serialised copy does not reliably reproduce them. Typed as an open object so every member survives; CONVENTIONS §9.6 gives the checks that make it a trustee's step.",
+      "type": "object",
+      "minProperties": 1
     }
   }
 }

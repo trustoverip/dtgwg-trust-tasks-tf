@@ -416,6 +416,13 @@ const (
 	TrusteePhaseFailed     TrusteePhase = "failed"
 )
 
+// SignedRequest A whole Trust Task request document — `id`, `type`, `issuer`, `payload`
+// and every other member, `proof` included — exactly as the ballot box received it, never
+// re-serialised: its proof is taken over its members, and a re-serialised copy does not
+// reliably reproduce them. Typed as an open object so every member survives; CONVENTIONS
+// §9.6 gives the checks that make it a trustee's step.
+type SignedRequest = map[string]json.RawMessage
+
 // DigestMultibase A cryptographic digest as a multibase-encoded multihash — the encoding
 // the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the
 // one `did:webvh` uses for its SCID and entry hashes. Multihash carries the hash

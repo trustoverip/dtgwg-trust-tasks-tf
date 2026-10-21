@@ -3,7 +3,7 @@
  * Source: specs/voting/board/read/0.1/payload.schema.json
  */
 
-import type { Answer, Ballot, BoardEntry, BoardHead, Cast, CastEntry, ConfirmationEntry, Dealing, DealingEntry, DecryptionTarget, DigestMultibase, ElectionId, ElectionKey, ElectionKeyEntry, ElectionResult, ElGamalCiphertext, EncryptedCast, EncryptedCastEntry, Ext, GroupElement, GroupScalar, JustificationEntry, Key_VotingV0_1 as Key, LifecycleEntry, Multibase_VotingV0_1 as Multibase, PartialDecryption, PartialDecryptionsEntry, QuestionResult, ReplacementEntry, ResultEntry, SealedPayload, SealedShare, SigmaProof, SpoiledEntry, TransportKey, TransportKeyEntry, TrusteeIndex, UnsealedEntry } from "../../../../_shared/components.js";
+import type { Answer, Ballot, BoardEntry, BoardHead, Cast, CastEntry, ConfirmationEntry, Dealing, DealingEntry, DecryptionTarget, DigestMultibase, ElectionId, ElectionKey, ElectionKeyEntry, ElectionResult, ElGamalCiphertext, EncryptedCast, EncryptedCastEntry, Ext, GroupElement, GroupScalar, JustificationEntry, Key_VotingV0_1 as Key, LifecycleEntry, Multibase_VotingV0_1 as Multibase, PartialDecryption, PartialDecryptionsEntry, QuestionResult, ReplacementEntry, ResultEntry, SealedPayload, SealedShare, SigmaProof, SignedRequest, SpoiledEntry, TransportKey, TransportKeyEntry, TrusteeIndex, TrusteeStepEntry, UnsealedEntry } from "../../../../_shared/components.js";
 
 
 /**
@@ -51,7 +51,7 @@ export interface VotingBoardReadResponsePayload {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { Answer, Ballot, BoardEntry, BoardHead, Cast, CastEntry, ConfirmationEntry, Dealing, DealingEntry, DecryptionTarget, DigestMultibase, ElectionId, ElectionKey, ElectionKeyEntry, ElectionResult, ElGamalCiphertext, EncryptedCast, EncryptedCastEntry, Ext, GroupElement, GroupScalar, JustificationEntry, Key, LifecycleEntry, Multibase, PartialDecryption, PartialDecryptionsEntry, QuestionResult, ReplacementEntry, ResultEntry, SealedPayload, SealedShare, SigmaProof, SpoiledEntry, TransportKey, TransportKeyEntry, TrusteeIndex, UnsealedEntry };
+export type { Answer, Ballot, BoardEntry, BoardHead, Cast, CastEntry, ConfirmationEntry, Dealing, DealingEntry, DecryptionTarget, DigestMultibase, ElectionId, ElectionKey, ElectionKeyEntry, ElectionResult, ElGamalCiphertext, EncryptedCast, EncryptedCastEntry, Ext, GroupElement, GroupScalar, JustificationEntry, Key, LifecycleEntry, Multibase, PartialDecryption, PartialDecryptionsEntry, QuestionResult, ReplacementEntry, ResultEntry, SealedPayload, SealedShare, SigmaProof, SignedRequest, SpoiledEntry, TransportKey, TransportKeyEntry, TrusteeIndex, TrusteeStepEntry, UnsealedEntry };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/voting/board/read/0.1" as const;
@@ -296,7 +296,8 @@ export const PAYLOAD_SCHEMA = {
             "transportKey": {
               "$ref": "#/$defs/TransportKey"
             }
-          }
+          },
+          "description": "Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind."
         },
         {
           "title": "DealingEntry",
@@ -313,7 +314,8 @@ export const PAYLOAD_SCHEMA = {
             "dealing": {
               "$ref": "#/$defs/Dealing"
             }
-          }
+          },
+          "description": "Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind."
         },
         {
           "title": "ConfirmationEntry",
@@ -338,7 +340,8 @@ export const PAYLOAD_SCHEMA = {
                 "$ref": "#/$defs/TrusteeIndex"
               }
             }
-          }
+          },
+          "description": "Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind."
         },
         {
           "title": "JustificationEntry",
@@ -363,7 +366,8 @@ export const PAYLOAD_SCHEMA = {
             "share": {
               "$ref": "#/$defs/GroupScalar"
             }
-          }
+          },
+          "description": "Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind."
         },
         {
           "title": "ElectionKeyEntry",
@@ -448,8 +452,32 @@ export const PAYLOAD_SCHEMA = {
               "minimum": 0
             }
           }
+        },
+        {
+          "title": "TrusteeStepEntry",
+          "description": "One step of the trustees' ceremony — an enrolment, a dealing, a confirmation or a justification — as the trustee's own signed request, so that anyone reading the board can tell who took it (CONVENTIONS §9.6).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "request"
+          ],
+          "properties": {
+            "kind": {
+              "const": "trusteeStep"
+            },
+            "request": {
+              "$ref": "#/$defs/SignedRequest"
+            }
+          }
         }
       ]
+    },
+    "SignedRequest": {
+      "title": "SignedRequest",
+      "description": "A whole Trust Task request document — `id`, `type`, `issuer`, `payload` and every other member, `proof` included — exactly as the ballot box received it, never re-serialised: its proof is taken over its members, and a re-serialised copy does not reliably reproduce them. Typed as an open object so every member survives; CONVENTIONS §9.6 gives the checks that make it a trustee's step.",
+      "type": "object",
+      "minProperties": 1
     },
     "Ballot": {
       "title": "Ballot",
@@ -1278,7 +1306,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "transportKey": {
               "$ref": "#/$defs/TransportKey"
             }
-          }
+          },
+          "description": "Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind."
         },
         {
           "title": "DealingEntry",
@@ -1295,7 +1324,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "dealing": {
               "$ref": "#/$defs/Dealing"
             }
-          }
+          },
+          "description": "Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind."
         },
         {
           "title": "ConfirmationEntry",
@@ -1320,7 +1350,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
                 "$ref": "#/$defs/TrusteeIndex"
               }
             }
-          }
+          },
+          "description": "Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind."
         },
         {
           "title": "JustificationEntry",
@@ -1345,7 +1376,8 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
             "share": {
               "$ref": "#/$defs/GroupScalar"
             }
-          }
+          },
+          "description": "Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind."
         },
         {
           "title": "ElectionKeyEntry",
@@ -1430,8 +1462,32 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
               "minimum": 0
             }
           }
+        },
+        {
+          "title": "TrusteeStepEntry",
+          "description": "One step of the trustees' ceremony — an enrolment, a dealing, a confirmation or a justification — as the trustee's own signed request, so that anyone reading the board can tell who took it (CONVENTIONS §9.6).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "request"
+          ],
+          "properties": {
+            "kind": {
+              "const": "trusteeStep"
+            },
+            "request": {
+              "$ref": "#/$defs/SignedRequest"
+            }
+          }
         }
       ]
+    },
+    "SignedRequest": {
+      "title": "SignedRequest",
+      "description": "A whole Trust Task request document — `id`, `type`, `issuer`, `payload` and every other member, `proof` included — exactly as the ballot box received it, never re-serialised: its proof is taken over its members, and a re-serialised copy does not reliably reproduce them. Typed as an open object so every member survives; CONVENTIONS §9.6 gives the checks that make it a trustee's step.",
+      "type": "object",
+      "minProperties": 1
     },
     "Ballot": {
       "title": "Ballot",

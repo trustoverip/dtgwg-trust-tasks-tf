@@ -268,14 +268,40 @@ place of the ballot); a sealed cast's binds the `SealedPayload`'s.
 Trustee `j`'s key share is `x_j = Σ_{i∈Q} s_ij`; a trustee whose share from a qualified dealer was
 revealed by a justification uses the revealed value.
 
+**Every step is the trustee's own.** The ballot box appends each enrolment, dealing, confirmation
+and justification as a `trusteeStep` entry whose `request` is the trustee's signed request
+exactly as the ballot box received it, proof included, never re-serialised. Whoever replays the
+ceremony from the board — the community, an auditor, anyone the board admits — **MUST** take a
+`trusteeStep` as a step only when:
+
+1. its `type` is `voting/trustees/enrol`, `deal`, `confirm` or `justify`, at `0.1`;
+2. its payload's `community` and `electionId` are the election's;
+3. its `issuer` is the trustee the manifest names at the payload's trustee index — `transportKey.trustee`,
+   `dealing.dealer`, `trustee` or `dealer` respectively; and
+4. its proof verifies as the issuer's (framework SPEC §4.7),
+
+and then applies its payload as that step. A board holding a step that fails any of these is not
+the election's ceremony, and nothing formed from it is the election key. A `transportKey`,
+`dealing`, `confirmation` or `justification` entry is never appended; a consumer **MUST** refuse a
+board holding one.
+
+The proofs are what stop the ballot box taking the trustees' place. Without them it could enrol
+or deal in a trustee's name — a polynomial of its own choosing, with matching shares sealed to
+that trustee's transport key — and every check above would pass while it held the election key,
+able to open sealed ballots before close. A `partials` entry needs no signature: each partial
+carries a Chaum–Pedersen proof under the trustee's verification key, which only the trustee's
+share satisfies (§9.7). `voting/trustees/status` reports what the board holds without the
+trustees' proofs: it tells a trustee its next step, and is never evidence of who took one.
+
 **Who reads the ceremony.** Nothing the ceremony publishes is secret — transport keys,
 commitments, shares sealed to their recipients, complaints, the election key, decryption targets
 — and its participants need it whatever the board's visibility: a ballot box **MUST** answer
 `voting/trustees/status` to every trustee the manifest names, on a private board as on a public
 one (§4). Voters need only the election key, and a voter on a private board cannot read the
 board: the community **MUST** carry the formed key in
-[`vtc/elections/show`](../../../vtc/elections/show/0.1/spec.md), read from the ballot box, so
-every voter its roll admits obtains it from the community it already asks for its ticket.
+[`vtc/elections/show`](../../../vtc/elections/show/0.1/spec.md), formed itself by replaying the
+ceremony from the board (which it may read whatever its visibility), so every voter its roll
+admits obtains it from the community it already asks for its ticket.
 
 ### 9.7 Decrypting
 

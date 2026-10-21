@@ -32,7 +32,7 @@ issuedAtRequirement:
 sideEffects:
   level: mutating
   rationale: >-
-    Appends a `confirmation` entry; the election key forms once every trustee has confirmed and every complaint is answered.
+    Appends a `trusteeStep` entry carrying the request as received; the election key forms once every trustee has confirmed and every complaint is answered.
 subjectPath: /community
 exposure:
   discloses: metadata
@@ -86,7 +86,7 @@ A conforming **consumer** (the ballot box) **MUST**, in this order:
 4. Refuse with `voting/trustees/confirm:notConfirming` unless the ceremony is confirming.
 5. Answer a repeat of the same confirmation as the first; refuse another with `voting/trustees/confirm:alreadyConfirmed`.
 6. Refuse with `malformedRequest` a complaint naming a trustee index the manifest does not have, or the trustee itself.
-7. Append a `confirmation` entry. When every trustee has confirmed and every complaint has a justification that verifies, form the election key (CONVENTIONS §9.6 item 5).
+7. Append a `trusteeStep` entry whose `request` is this request exactly as received, proof included (CONVENTIONS §9.6). When every trustee has confirmed and every complaint has a justification that verifies, form the election key (CONVENTIONS §9.6 item 5).
 
 ## Authorization
 

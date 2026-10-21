@@ -32,7 +32,7 @@ issuedAtRequirement:
 sideEffects:
   level: mutating
   rationale: >-
-    Appends a `transportKey` entry to the board; dealing opens when every trustee has one.
+    Appends a `trusteeStep` entry carrying the request as received; dealing opens when every trustee has one.
 subjectPath: /community
 exposure:
   discloses: metadata
@@ -89,7 +89,7 @@ A conforming **consumer** (the ballot box) **MUST**, in this order:
 4. Refuse with `voting/trustees/enrol:notEnrolling` unless the election is sealed or tallied-encrypted and its ceremony is enrolling.
 5. Refuse with `voting/trustees/enrol:transportKeyInvalid` unless the proof verifies (CONVENTIONS §9.3, domain `vti/vote/trustee/transport/v1`).
 6. Answer a repeat of the same transport key as the first; refuse another with `voting/trustees/enrol:alreadyEnrolled`.
-7. Append a `transportKey` entry; when every trustee has enrolled, the ceremony is dealing.
+7. Append a `trusteeStep` entry whose `request` is this request exactly as received, proof included (CONVENTIONS §9.6); when every trustee has enrolled, the ceremony is dealing.
 
 ## Authorization
 

@@ -1050,6 +1050,13 @@ class PartialDecryption {
       };
 }
 
+/// A whole Trust Task request document — `id`, `type`, `issuer`, `payload` and every
+/// other member, `proof` included — exactly as the ballot box received it, never
+/// re-serialised: its proof is taken over its members, and a re-serialised copy does
+/// not reliably reproduce them. Typed as an open object so every member survives;
+/// CONVENTIONS §9.6 gives the checks that make it a trustee's step.
+typedef SignedRequest = Map<String, dynamic>;
+
 /// One leaf of a board. A leaf's hash is the RFC 9162 leaf hash of the JCS
 /// canonicalization of this object. Entries carry no time of arrival: the order is the
 /// board's, and a timestamp would hand anyone who reads the board the timing the

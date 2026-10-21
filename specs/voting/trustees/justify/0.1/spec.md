@@ -32,7 +32,7 @@ issuedAtRequirement:
 sideEffects:
   level: mutating
   rationale: >-
-    Appends a `justification` entry; a share that checks voids the complaint.
+    Appends a `trusteeStep` entry carrying the request as received; a share that checks voids the complaint.
 subjectPath: /community
 exposure:
   discloses: metadata
@@ -88,7 +88,7 @@ A conforming **consumer** (the ballot box) **MUST**, in this order:
 4. Refuse with `voting/trustees/justify:notConfirming` unless the ceremony is confirming.
 5. Refuse with `voting/trustees/justify:noComplaint` unless `recipient` complained of `dealer`.
 6. Refuse with `voting/trustees/justify:shareInvalid` unless `share·G = Σ_k recipient^k·C_dealer,k`.
-7. Append a `justification` entry and void the complaint; form the election key if the ceremony is now complete.
+7. Append a `trusteeStep` entry whose `request` is this request exactly as received, proof included (CONVENTIONS §9.6) and void the complaint; form the election key if the ceremony is now complete.
 
 ## Authorization
 

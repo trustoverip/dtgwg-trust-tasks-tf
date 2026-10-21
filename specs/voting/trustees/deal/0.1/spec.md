@@ -32,7 +32,7 @@ issuedAtRequirement:
 sideEffects:
   level: mutating
   rationale: >-
-    Appends a `dealing` entry to the board; confirming opens when every trustee has dealt.
+    Appends a `trusteeStep` entry carrying the request as received; confirming opens when every trustee has dealt.
 subjectPath: /community
 exposure:
   discloses: metadata
@@ -89,7 +89,7 @@ A conforming **consumer** (the ballot box) **MUST**, in this order:
 4. Refuse with `voting/trustees/deal:notDealing` unless the ceremony is dealing.
 5. Refuse with `voting/trustees/deal:dealingInvalid` unless the dealing has exactly `t` commitments, none the identity, a proof of knowledge of the first that verifies (CONVENTIONS §9.3, domain `vti/vote/trustee/pok/v1`), and exactly one sealed share per trustee index.
 6. Answer a repeat of the same dealing as the first; refuse another with `voting/trustees/deal:alreadyDealt`.
-7. Append a `dealing` entry; when every trustee has dealt, the ceremony is confirming.
+7. Append a `trusteeStep` entry whose `request` is this request exactly as received, proof included (CONVENTIONS §9.6); when every trustee has dealt, the ceremony is confirming.
 
 ## Authorization
 
