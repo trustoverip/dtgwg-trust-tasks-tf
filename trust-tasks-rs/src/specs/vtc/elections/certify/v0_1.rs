@@ -1472,7 +1472,7 @@ pub mod error_codes {
     };
     /// `vtc/elections/certify:boardInconsistent`
     ///
-    /// The board does not hold together: its entries do not hash to the signed head, a checkpoint the community kept is not consistent with the final head, a tag is counted more than once, or a replacement does not follow the manifest's revote rule. `details` names the first fault.
+    /// The board does not hold together: its entries do not hash to the signed head, a checkpoint the community kept is not consistent with the final head, a tag is counted more than once, a replacement does not follow the manifest's revote rule, the board is not in the election's order (`orderInvalid`, CONVENTIONS §3.9), or a step of the trustees' ceremony or the community's decryption authorization does not hold (`ceremonyInvalid`, §9.6 – 9.7). `details` names the first fault.
     ///
     /// Declared `retryable: false`.
     /// Declares a `detailsSchema` for the error's `details` member.
@@ -1480,7 +1480,7 @@ pub mod error_codes {
         code: "vtc/elections/certify:boardInconsistent",
         retryable: false,
         details_schema: ::core::option::Option::Some(
-            "{\"additionalProperties\":false,\"properties\":{\"checkpointTreeSize\":{\"minimum\":0,\"type\":\"integer\"},\"fault\":{\"enum\":[\"rootMismatch\",\"checkpointInconsistent\",\"tagRepeated\",\"replacementInvalid\"],\"type\":\"string\"},\"index\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"fault\"],\"type\":\"object\"}",
+            "{\"additionalProperties\":false,\"properties\":{\"checkpointTreeSize\":{\"minimum\":0,\"type\":\"integer\"},\"fault\":{\"enum\":[\"rootMismatch\",\"checkpointInconsistent\",\"tagRepeated\",\"replacementInvalid\",\"orderInvalid\",\"ceremonyInvalid\"],\"type\":\"string\"},\"index\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"fault\"],\"type\":\"object\"}",
         ),
     };
     /// `vtc/elections/certify:resultMismatch`

@@ -117,6 +117,14 @@
         },
         "ext": {
           "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        },
+        "steps": {
+          "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/TrusteeCeremony",
+          "description": "Every trusteeStep request on the board, in board order, as received. What a trustee's VTA acts on: the other members of this answer carry no trustee's proof."
+        },
+        "authorization": {
+          "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/SignedRequest",
+          "description": "Once the community has authorized decryption: its voting/trustees/authorize request, as received. A trustee's VTA decrypts only the targets it pins."
         }
       }
     }

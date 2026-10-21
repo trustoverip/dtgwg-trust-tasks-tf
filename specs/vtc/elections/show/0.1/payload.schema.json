@@ -136,6 +136,10 @@
         },
         "ext": {
           "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        },
+        "ceremony": {
+          "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/TrusteeCeremony",
+          "description": "With electionKey: the trustees' signed steps it forms from, through the board's electionKey entry, each exactly as received. A voter's VTA forms the key itself from these (vta/pcs/vote-encrypted/0.2)."
         }
       }
     }

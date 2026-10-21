@@ -436,7 +436,8 @@ export type BoardEntry =
   | PartialDecryptionsEntry
   | UnsealedEntry
   | SpoiledEntry
-  | TrusteeStepEntry;
+  | TrusteeStepEntry
+  | DecryptionAuthorizedEntry;
 /**
  * `public`: anyone reads the board. `private`: the community, the auditors the manifest names and, for one cast's inclusion, the holder of its receipt (VTI-VOT-052).
  */
@@ -1813,6 +1814,13 @@ export type TransferId = string;
  * How a blob's bytes move. `proxied`: through the host, as chunk documents (rooms/blobs/upload/chunk, rooms/blobs/chunk). `direct`: straight between the member and the storage the room is assigned to, over time-limited URLs the host issues for one object and one method each; the host authorizes every object and verifies every upload, and never carries a byte. Which mode applies is the host's answer, from what the producer accepts, what the room's storage can do, and the room's tier.
  */
 export type TransferMode = "direct" | "proxied";
+/**
+ * The trustees' ceremony as the board holds it: the `request` of every `trusteeStep` entry, in board order, each exactly as the ballot box received it (CONVENTIONS §9.6). Whoever acts on it verifies each step as its trustee's before taking it; nothing in it is believed for having been passed along.
+ *
+ * @minItems 1
+ * @maxItems 4224
+ */
+export type TrusteeCeremony = [SignedRequest, ...SignedRequest[]];
 /**
  * A trustee's index: its position in the manifest's `trustees.dids`, counting from 1.
  */
@@ -4965,6 +4973,13 @@ export interface SpoiledEntry {
  */
 export interface TrusteeStepEntry {
   kind: "trusteeStep";
+  request: SignedRequest;
+}
+/**
+ * The community's voting/trustees/authorize request, exactly as the ballot box received it: the decryption targets of a closed election, pinned by digest to a head of the board (CONVENTIONS §9.7).
+ */
+export interface DecryptionAuthorizedEntry {
+  kind: "decryptionAuthorized";
   request: SignedRequest;
 }
 /**

@@ -597,6 +597,7 @@ export * as VotingElectionClose_v0_1 from "./voting/election/close/0.1/payload.j
 export * as VotingElectionRegister_v0_1 from "./voting/election/register/0.1/payload.js";
 export * as VotingElectionShow_v0_1 from "./voting/election/show/0.1/payload.js";
 export * as VotingResultShow_v0_1 from "./voting/result/show/0.1/payload.js";
+export * as VotingTrusteesAuthorize_v0_1 from "./voting/trustees/authorize/0.1/payload.js";
 export * as VotingTrusteesConfirm_v0_1 from "./voting/trustees/confirm/0.1/payload.js";
 export * as VotingTrusteesDeal_v0_1 from "./voting/trustees/deal/0.1/payload.js";
 export * as VotingTrusteesDecrypt_v0_1 from "./voting/trustees/decrypt/0.1/payload.js";
@@ -694,14 +695,19 @@ export * as VtaPcsTokensAbandon_v0_1 from "./vta/pcs/tokens/abandon/0.1/payload.
 export * as VtaPcsTokensAccept_v0_1 from "./vta/pcs/tokens/accept/0.1/payload.js";
 export * as VtaPcsTokensRequest_v0_1 from "./vta/pcs/tokens/request/0.1/payload.js";
 export * as VtaPcsTrusteeDeal_v0_1 from "./vta/pcs/trustee/deal/0.1/payload.js";
+export * as VtaPcsTrusteeDeal_v0_2 from "./vta/pcs/trustee/deal/0.2/payload.js";
 export * as VtaPcsTrusteeDecrypt_v0_1 from "./vta/pcs/trustee/decrypt/0.1/payload.js";
+export * as VtaPcsTrusteeDecrypt_v0_2 from "./vta/pcs/trustee/decrypt/0.2/payload.js";
 export * as VtaPcsTrusteeEnrol_v0_1 from "./vta/pcs/trustee/enrol/0.1/payload.js";
 export * as VtaPcsTrusteeJustify_v0_1 from "./vta/pcs/trustee/justify/0.1/payload.js";
+export * as VtaPcsTrusteeJustify_v0_2 from "./vta/pcs/trustee/justify/0.2/payload.js";
 export * as VtaPcsTrusteeKeys_v0_1 from "./vta/pcs/trustee/keys/0.1/payload.js";
+export * as VtaPcsTrusteeKeys_v0_2 from "./vta/pcs/trustee/keys/0.2/payload.js";
 export * as VtaPcsTrusteeRead_v0_1 from "./vta/pcs/trustee/read/0.1/payload.js";
 export * as VtaPcsVerifyAttestation_v0_1 from "./vta/pcs/verify-attestation/0.1/payload.js";
 export * as VtaPcsVetterShow_v0_1 from "./vta/pcs/vetter/show/0.1/payload.js";
 export * as VtaPcsVoteEncrypted_v0_1 from "./vta/pcs/vote-encrypted/0.1/payload.js";
+export * as VtaPcsVoteEncrypted_v0_2 from "./vta/pcs/vote-encrypted/0.2/payload.js";
 export * as VtaPcsVote_v0_1 from "./vta/pcs/vote/0.1/payload.js";
 export * as VtaPcsVoterAccept_v0_1 from "./vta/pcs/voter/accept/0.1/payload.js";
 export * as VtaPcsVoterRead_v0_1 from "./vta/pcs/voter/read/0.1/payload.js";

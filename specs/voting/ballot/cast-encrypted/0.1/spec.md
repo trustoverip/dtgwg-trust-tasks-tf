@@ -85,7 +85,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 A conforming **producer** (the voter's client) **MUST**:
 
-1. Send the cast document its VTA built ([`vta/pcs/vote-encrypted`](../../../../vta/pcs/vote-encrypted/0.1/spec.md)) unchanged, signed by the key made for it, over HTTPS (CONVENTIONS §2.4), and resend it unchanged if the answer is lost.
+1. Send the cast document its VTA built ([`vta/pcs/vote-encrypted`](../../../../vta/pcs/vote-encrypted/0.2/spec.md)) unchanged, signed by the key made for it, over HTTPS (CONVENTIONS §2.4), and resend it unchanged if the answer is lost.
 
 A conforming **consumer** (the ballot box) **MUST**, in this order:
 
@@ -93,7 +93,7 @@ A conforming **consumer** (the ballot box) **MUST**, in this order:
 2. Refuse with `voting/ballot/cast-encrypted:electionUnknown` for an election not registered for `community`.
 3. Refuse with `voting/ballot/cast-encrypted:wrongLevel` unless the election is sealed and the cast carries `sealed`, or tallied-encrypted and it carries `encrypted`.
 4. Refuse with `voting/ballot/cast-encrypted:notOpen` unless voting is open and the election key is formed.
-5. Refuse with `voting/ballot/cast-encrypted:ballotInvalid` a tallied-encrypted ballot whose election and manifest digest are not the election's, whose questions are not the manifest's in order with one ciphertext per option, or whose proofs do not verify (CONVENTIONS §9.5).
+5. Refuse with `voting/ballot/cast-encrypted:ballotInvalid` a tallied-encrypted ballot whose election and manifest digest are not the election's, whose questions are not the manifest's in order with one ciphertext per option, or whose proofs do not verify under the cast's `tag` (CONVENTIONS §9.3, §9.5); and either form whose ciphertexts — a sealed `kem`, or any option's — already appear in another cast on the board, under another tag. A copied ballot is not a vote.
 6. Admit the cast as `voting/ballot/cast` items 4 – 8 do, with the ballot context over the JCS bytes of `sealed` or `encrypted` (CONVENTIONS §9.5), answering `castInvalid` and `alreadyVoted` under this task's codes, and append an `encryptedCast` entry.
 
 ## Authorization

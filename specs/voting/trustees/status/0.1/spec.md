@@ -82,6 +82,9 @@ Whoever may read the election's board, and — on any board — every trustee th
 
 ## Definitions
 
+- **`steps`** (response) — every `trusteeStep` request on the board, in board order, exactly as received. A ballot box **MUST** carry it once there is a step. It is what a trustee's VTA acts on (`vta/pcs/trustee/*/0.2`): the transport keys, dealings and complaints this answer also lists carry no trustee's proof, and a trustee **MUST NOT** act on them alone (CONVENTIONS §9.6).
+- **`authorization`** (response) — the community's [`voting/trustees/authorize`](../../authorize/0.1/spec.md) request once accepted, as received. A ballot box **MUST** carry it from then on.
+
 - **`phase`** — the ceremony's phase.
 - **`targets`** — what remains to decrypt.
 

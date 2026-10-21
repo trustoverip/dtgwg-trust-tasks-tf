@@ -423,6 +423,12 @@ const (
 // §9.6 gives the checks that make it a trustee's step.
 type SignedRequest = map[string]json.RawMessage
 
+// TrusteeCeremony The trustees' ceremony as the board holds it: the `request` of every
+// `trusteeStep` entry, in board order, each exactly as the ballot box received it
+// (CONVENTIONS §9.6). Whoever acts on it verifies each step as its trustee's before
+// taking it; nothing in it is believed for having been passed along.
+type TrusteeCeremony = []SignedRequest
+
 // DigestMultibase A cryptographic digest as a multibase-encoded multihash — the encoding
 // the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the
 // one `did:webvh` uses for its SCID and entry hashes. Multihash carries the hash

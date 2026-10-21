@@ -1378,6 +1378,9 @@ mod voting {
         }
     }
     mod trustees {
+        mod authorize {
+            mod v0_1;
+        }
         mod confirm {
             mod v0_1;
         }
@@ -1636,18 +1639,22 @@ mod vta {
         mod trustee {
             mod deal {
                 mod v0_1;
+                mod v0_2;
             }
             mod decrypt {
                 mod v0_1;
+                mod v0_2;
             }
             mod enrol {
                 mod v0_1;
             }
             mod justify {
                 mod v0_1;
+                mod v0_2;
             }
             mod keys {
                 mod v0_1;
+                mod v0_2;
             }
             mod read {
                 mod v0_1;
@@ -1666,6 +1673,7 @@ mod vta {
         }
         mod vote_encrypted {
             mod v0_1;
+            mod v0_2;
         }
         mod voter {
             mod accept {

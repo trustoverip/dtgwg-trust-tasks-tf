@@ -3,7 +3,7 @@
  * Source: specs/voting/trustees/status/0.1/payload.schema.json
  */
 
-import type { Dealing, DecryptionTarget, ElectionId, ElectionKey, ElGamalCiphertext, Ext, GroupElement, GroupScalar, SealedPayload, SealedShare, SigmaProof, TransportKey, TrusteeIndex, TrusteePhase } from "../../../../_shared/components.js";
+import type { Dealing, DecryptionTarget, ElectionId, ElectionKey, ElGamalCiphertext, Ext, GroupElement, GroupScalar, SealedPayload, SealedShare, SigmaProof, SignedRequest, TransportKey, TrusteeCeremony, TrusteeIndex, TrusteePhase } from "../../../../_shared/components.js";
 
 
 /**
@@ -55,10 +55,18 @@ export interface VotingTrusteesStatusResponsePayload {
    */
   decrypted: TrusteeIndex[];
   ext?: Ext;
+  /**
+   * Every trusteeStep request on the board, in board order, as received. What a trustee's VTA acts on: the other members of this answer carry no trustee's proof.
+   */
+  steps?: TrusteeCeremony;
+  /**
+   * Once the community has authorized decryption: its voting/trustees/authorize request, as received. A trustee's VTA decrypts only the targets it pins.
+   */
+  authorization?: SignedRequest;
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { Dealing, DecryptionTarget, ElectionId, ElectionKey, ElGamalCiphertext, Ext, GroupElement, GroupScalar, SealedPayload, SealedShare, SigmaProof, TransportKey, TrusteeIndex, TrusteePhase };
+export type { Dealing, DecryptionTarget, ElectionId, ElectionKey, ElGamalCiphertext, Ext, GroupElement, GroupScalar, SealedPayload, SealedShare, SigmaProof, SignedRequest, TransportKey, TrusteeCeremony, TrusteeIndex, TrusteePhase };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/voting/trustees/status/0.1" as const;
@@ -200,7 +208,31 @@ export const PAYLOAD_SCHEMA = {
         },
         "ext": {
           "$ref": "#/$defs/Ext"
+        },
+        "steps": {
+          "$ref": "#/$defs/TrusteeCeremony",
+          "description": "Every trusteeStep request on the board, in board order, as received. What a trustee's VTA acts on: the other members of this answer carry no trustee's proof."
+        },
+        "authorization": {
+          "$ref": "#/$defs/SignedRequest",
+          "description": "Once the community has authorized decryption: its voting/trustees/authorize request, as received. A trustee's VTA decrypts only the targets it pins."
         }
+      }
+    },
+    "SignedRequest": {
+      "title": "SignedRequest",
+      "description": "A whole Trust Task request document — `id`, `type`, `issuer`, `payload` and every other member, `proof` included — exactly as the ballot box received it, never re-serialised: its proof is taken over its members, and a re-serialised copy does not reliably reproduce them. Typed as an open object so every member survives; CONVENTIONS §9.6 gives the checks that make it a trustee's step.",
+      "type": "object",
+      "minProperties": 1
+    },
+    "TrusteeCeremony": {
+      "title": "TrusteeCeremony",
+      "description": "The trustees' ceremony as the board holds it: the `request` of every `trusteeStep` entry, in board order, each exactly as the ballot box received it (CONVENTIONS §9.6). Whoever acts on it verifies each step as its trustee's before taking it; nothing in it is believed for having been passed along.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 4224,
+      "items": {
+        "$ref": "#/$defs/SignedRequest"
       }
     },
     "Ext": {
@@ -579,7 +611,31 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "ext": {
           "$ref": "#/$defs/Ext"
+        },
+        "steps": {
+          "$ref": "#/$defs/TrusteeCeremony",
+          "description": "Every trusteeStep request on the board, in board order, as received. What a trustee's VTA acts on: the other members of this answer carry no trustee's proof."
+        },
+        "authorization": {
+          "$ref": "#/$defs/SignedRequest",
+          "description": "Once the community has authorized decryption: its voting/trustees/authorize request, as received. A trustee's VTA decrypts only the targets it pins."
         }
+      }
+    },
+    "SignedRequest": {
+      "title": "SignedRequest",
+      "description": "A whole Trust Task request document — `id`, `type`, `issuer`, `payload` and every other member, `proof` included — exactly as the ballot box received it, never re-serialised: its proof is taken over its members, and a re-serialised copy does not reliably reproduce them. Typed as an open object so every member survives; CONVENTIONS §9.6 gives the checks that make it a trustee's step.",
+      "type": "object",
+      "minProperties": 1
+    },
+    "TrusteeCeremony": {
+      "title": "TrusteeCeremony",
+      "description": "The trustees' ceremony as the board holds it: the `request` of every `trusteeStep` entry, in board order, each exactly as the ballot box received it (CONVENTIONS §9.6). Whoever acts on it verifies each step as its trustee's before taking it; nothing in it is believed for having been passed along.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 4224,
+      "items": {
+        "$ref": "#/$defs/SignedRequest"
       }
     },
     "Ext": {

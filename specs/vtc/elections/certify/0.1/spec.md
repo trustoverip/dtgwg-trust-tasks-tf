@@ -63,7 +63,7 @@ errorCodes:
     meaning: "The ballot box has not published a result for the election: voting is open, the election is closed but not yet tallied, or it was cancelled."
     retryable: false
   - code: vtc/elections/certify:boardInconsistent
-    meaning: "The board does not hold together: its entries do not hash to the signed head, a checkpoint the community kept is not consistent with the final head, a tag is counted more than once, or a replacement does not follow the manifest's revote rule. `details` names the first fault."
+    meaning: "The board does not hold together: its entries do not hash to the signed head, a checkpoint the community kept is not consistent with the final head, a tag is counted more than once, a replacement does not follow the manifest's revote rule, the board is not in the election's order (`orderInvalid`, CONVENTIONS §3.9), or a step of the trustees' ceremony or the community's decryption authorization does not hold (`ceremonyInvalid`, §9.6 – 9.7). `details` names the first fault."
     retryable: false
     detailsSchema:
       type: object
@@ -72,7 +72,7 @@ errorCodes:
       properties:
         fault:
           type: string
-          enum: [rootMismatch, checkpointInconsistent, tagRepeated, replacementInvalid]
+          enum: [rootMismatch, checkpointInconsistent, tagRepeated, replacementInvalid, orderInvalid, ceremonyInvalid]
         index:
           type: integer
           minimum: 0
@@ -160,7 +160,7 @@ It **MUST** then verify, and refuse on the first failure (VTI-VOT-071):
 5. **The board is the one the community watched.** For every checkpoint the community kept ([`vtc/elections/show`](../../show/0.1/spec.md) Conformance item 5), the final head is consistent with it, by a [`voting/board/consistency`](../../../../voting/board/consistency/0.1/spec.md) proof the community checks itself. Else `boardInconsistent` (`checkpointInconsistent`, with the checkpoint's tree size). A ballot box that removed or rewrote an entry after a checkpoint is caught here.
 6. **Every cast would have been admitted.** For every cast entry, the admission check of CONVENTIONS §3.7 holds under the community's voting key — class, tag and attestation, with the ballot context rebuilt from the ballot as recorded — and the ballot names this election and manifest digest and answers the manifest's questions as the manifest admits. Else `castInvalid`, with the entry's index.
 7. **Every tag counts once, and replacements follow the manifest.** Under `revote: refuse`, no two cast entries carry the same tag. Under `revote: replace`, a later cast under a tag already on the board is followed by a replacement entry naming the earlier cast and the later, and every replacement names a cast under its own `tag`. Only the last cast under each tag is counted. Else `boardInconsistent` (`tagRepeated` or `replacementInvalid`, with the index).
-8. **The result is the board's.** For a sealed or tallied-encrypted election the counted ballots or totals are recomputed from the board alone: the ceremony replayed from its `trusteeStep` entries, each verified as CONVENTIONS §9.6 requires, every encrypted cast re-admitted under the key it forms, and every partial decryption re-verified (§9.7). The result recomputed from the counted ballots, the manifest and its `textReleaseThreshold` (VTI-VOT-070) is equal to the published result, and the published result's `head` is the verified head. Else `resultMismatch`.
+8. **The result is the board's.** For a sealed or tallied-encrypted election the counted ballots or totals are recomputed from the board alone: the ceremony replayed from its `trusteeStep` entries, each verified as CONVENTIONS §9.6 requires, every encrypted cast re-admitted under the key it forms, the `decryptionAuthorized` entry the community's own and pinning exactly the targets the board gives, and every partial decryption re-verified (§9.7). On every level the board is in the election's order (CONVENTIONS §3.9) — else `boardInconsistent`. The result recomputed from the counted ballots, the manifest and its `textReleaseThreshold` (VTI-VOT-070) is equal to the published result, and the published result's `head` is the verified head. Else `resultMismatch`.
 9. **No more ballots than tickets.** The result's `ballotsCounted` does not exceed the number of tickets the community issued for the election (VTI-VOT-072). Else `countExceedsTickets`.
 10. **The auditors' attestations hold** (VTI-VOT-073). Each entry of `auditAttestations` verifies as a credential, is issued by a DID in the manifest's `board.auditors`, and attests this election, its manifest digest and the verified head. Else `auditAttestationInvalid`, with its position. An auditor's attestation is evidence beside the community's own verification, never instead of it.
 

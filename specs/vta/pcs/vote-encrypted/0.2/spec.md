@@ -1,0 +1,265 @@
+---
+slug: vta/pcs/vote-encrypted
+version: "0.2"
+title: "VTA PCS — Vote Encrypted"
+summary: "The voter's VTA checks a ballot against the manifest, encrypts it to the election key as the election's level requires, and returns the cast signed by a key made for it alone."
+status: draft
+targetFrameworkVersion: "0.6.0"
+category: identity
+keywords:
+  - pcs
+  - voting
+  - ballot
+  - encrypted
+  - vta
+parties:
+  - role: Client driving the PCS engine
+    requirement: REQUIRED
+    member: issuer
+    identifierScope: pairwise
+  - role: PCS engine (the VTA)
+    requirement: REQUIRED
+    member: recipient
+proofRequirement:
+  request: REQUIRED
+  response: RECOMMENDED
+  rationale: >-
+    As `vta/pcs/vote`: the request makes the VTA exercise the election's voter key and the ticket.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: >-
+    Consequential under SPEC §3, so SPEC §7.3 item 17 sets REQUIRED as the floor.
+sideEffects:
+  level: mutating
+  rationale: >-
+    As `vta/pcs/vote`: records the cast it built, so a receipt can be checked against it.
+subjectPath: /contextId
+exposure:
+  discloses: metadata
+  ingests: metadata
+  actsAsSubject: true
+  rationale: >-
+    In: the plaintext ballot, which stays in the VTA. Out: the encrypted cast, signed by a one-time key.
+retention:
+  class: durable
+  rationale: >-
+    The cast's board leaf is kept until the election is tallied.
+errorCodes:
+  - code: vta/pcs/vote-encrypted:notFound
+    meaning: "The engine holds no ticket for this election."
+    retryable: false
+  - code: vta/pcs/vote-encrypted:wrongLevel
+    meaning: "The manifest's level is open: use vta/pcs/vote."
+    retryable: false
+  - code: vta/pcs/vote-encrypted:electionKeyInvalid
+    meaning: "A step of `ceremony` is not its trustee's (CONVENTIONS §9.6), or the ceremony does not form an election key."
+    retryable: false
+  - code: vta/pcs/vote-encrypted:ballotInvalid
+    meaning: "The ballot does not answer the manifest, or a tallied-encrypted ballot asks a question that is not a choice."
+    retryable: false
+  - code: vta/pcs/vote-encrypted:notOpen
+    meaning: "Voting is not open."
+    retryable: false
+related:
+  - vta/pcs/vote
+  - voting/ballot/cast-encrypted
+---
+
+## Abstract
+
+The **VTA PCS — Vote Encrypted** Trust Task is [`vta/pcs/vote`](../../vote/0.1/spec.md) for the encrypted levels (CONVENTIONS §9.5): the ballot is sealed to the election key, or encrypted option by option with proofs, and the attestation binds the encrypted form. The family's shared rules are in [`CONVENTIONS.md`](../../../../voting/_shared/0.1/CONVENTIONS.md).
+
+## Status of this Document
+
+This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). It targets framework version 0.6.0 and may change without a version bump while it remains a draft ([SPEC §5.2](/SPEC.md#52-compatibility-rules)).
+
+## Conformance
+
+The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
+
+A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements), and the rules of the family's [conventions](../../../../voting/_shared/0.1/CONVENTIONS.md), in addition to the requirements stated here.
+
+A conforming **producer** (the client) **MUST**:
+
+1. Pass the ceremony vtc/elections/show carries (or, on a board the voter may read, voting/trustees/status's `steps`), the manifest and parameters exactly as published, and send the returned document to the ballot box itself, unchanged.
+
+A conforming **consumer** (the VTA) **MUST**, in this order:
+
+1. Validate the document per [SPEC §7.2](/SPEC.md#72-consumer-requirements).
+2. Refuse with `vta/pcs/vote-encrypted:notFound` unless it holds the ticket.
+3. Refuse with `vta/pcs/vote-encrypted:wrongLevel` for an open manifest.
+4. Refuse with `vta/pcs/vote-encrypted:ballotInvalid` a ballot that does not answer the manifest (as `vta/pcs/vote`), or, tallied-encrypted, one with a question other than a choice.
+5. Refuse with `vta/pcs/vote-encrypted:notOpen` outside the manifest's voting window.
+6. Refuse with `vta/pcs/vote-encrypted:electionKeyInvalid` unless every step of `ceremony` is its trustee's (CONVENTIONS §9.6, the proof verified by the VTA itself) and the steps, replayed to `votingOpens`, form the election key. It encrypts under that key and no other: a key handed to it is one a community or a client could hold.
+7. Build the encrypted form (CONVENTIONS §9.4 or §9.5) bound to this cast's tag, the attestation over its JCS bytes, and the cast document signed by a key made for it alone, as `vta/pcs/vote` does.
+
+## Authorization
+
+As `vta/pcs/vote`: standing over the context, as `pcsVoter`.
+
+## Definitions
+
+- **`ceremony`** — the trustees' signed steps the election key forms from (CONVENTIONS §9.6).
+- **`castDocument`** — the signed cast.
+
+## Request
+
+The payload is the top-level schema in [`payload.schema.json`](payload.schema.json).
+
+### Example
+
+```json
+{
+  "id": "urn:uuid:5a0e2c11-0000-4000-8000-0000000c1001",
+  "type": "https://trusttasks.org/spec/vta/pcs/vote-encrypted/0.2#request",
+  "issuer": "did:key:z6MkfClientWalletExampleKey1111111111111111111",
+  "recipient": "did:webvh:QmVta:vta.example.com",
+  "issuedAt": "2026-11-02T09:00:00Z",
+  "payload": {
+    "contextId": "personal",
+    "community": "did:webvh:QmCommunity:vtc.example.org",
+    "parameters": {
+      "suite": "ps-ddh-bls12381",
+      "votingKey": "z6MkvVotingKey1abcXYZ"
+    },
+    "manifest": {
+      "electionId": "board-2026",
+      "community": "did:webvh:QmCommunity:vtc.example.org",
+      "title": "Board election 2026",
+      "questions": [
+        {
+          "key": "chair",
+          "type": "choice",
+          "text": "Who should chair the board?",
+          "options": [
+            {
+              "key": "ana",
+              "label": "Ana"
+            },
+            {
+              "key": "ben",
+              "label": "Ben"
+            }
+          ],
+          "minSelections": 1,
+          "maxSelections": 1,
+          "optional": false
+        }
+      ],
+      "secrecy": "talliedEncrypted",
+      "roll": {
+        "rule": "members"
+      },
+      "registrationOpens": "2026-11-01T00:00:00Z",
+      "votingOpens": "2026-11-08T00:00:00Z",
+      "votingCloses": "2026-11-15T00:00:00Z",
+      "revote": "replace",
+      "board": {
+        "visibility": "public",
+        "auditors": []
+      },
+      "ballotBox": "did:webvh:QmBallotBox:vote.example.net",
+      "allowEarlyClose": false,
+      "resultsBeforeClose": false,
+      "textReleaseThreshold": 10,
+      "trustees": {
+        "dids": [
+          "did:webvh:QmTrustee:alice.example",
+          "did:webvh:QmTrustee2:bob.example",
+          "did:webvh:QmTrustee3:carol.example"
+        ],
+        "threshold": 2
+      },
+      "binding": true
+    },
+    "ballot": {
+      "electionId": "board-2026",
+      "manifestDigest": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+      "answers": [
+        {
+          "question": "chair",
+          "choice": [
+            "ana"
+          ]
+        }
+      ]
+    },
+    "ceremony": [
+      {
+        "id": "urn:uuid:0e2f9b1c-5d4a-4e3b-9a8c-7d6e5f4a3b2c",
+        "type": "https://trusttasks.org/spec/voting/trustees/enrol/0.1",
+        "issuer": "did:webvh:QmTrustee2:bob.example",
+        "recipient": "did:webvh:QmBallotBox:vote.example.net",
+        "issuedAt": "2026-11-02T09:00:01Z",
+        "payload": {
+          "community": "did:webvh:QmCommunity:vtc.example.org",
+          "electionId": "board-2026",
+          "transportKey": {
+            "trustee": 2,
+            "key": "z4Lp9VmXkCq2Jt7HbR1NfWd8YsGa3Ue6ZoQi5MxKcTvPy",
+            "pok": {
+              "c": "z3Hs8WkqL2mNvB7cR9xTyE4uJpQ1aZf6gDoK5iMt8n",
+              "z": "z3Hs8WkqL2mNvB7cR9xTyE4uJpQ1aZf6gDoK5iMt8n"
+            }
+          }
+        },
+        "proof": {
+          "type": "DataIntegrityProof",
+          "cryptosuite": "eddsa-jcs-2022",
+          "verificationMethod": "did:webvh:QmTrustee2:bob.example#key-0",
+          "proofPurpose": "authentication",
+          "created": "2026-11-02T09:00:01Z",
+          "proofValue": "z4ExampleTrusteeProofValue"
+        }
+      }
+    ]
+  }
+}
+```
+
+## Response
+
+The answer is the payload under `$anchor: "response"` in [`payload.schema.json`](payload.schema.json). Failures use `trust-task-error`, not a `#response` document.
+
+### Example
+
+```json
+{
+  "id": "urn:uuid:5a0e2c11-0000-4000-8000-0000000c1002",
+  "type": "https://trusttasks.org/spec/vta/pcs/vote-encrypted/0.2#response",
+  "issuer": "did:webvh:QmVta:vta.example.com",
+  "recipient": "did:key:z6MkfClientWalletExampleKey1111111111111111111",
+  "issuedAt": "2026-11-02T09:00:01Z",
+  "threadId": "urn:uuid:5a0e2c11-0000-4000-8000-0000000c1001",
+  "payload": {
+    "castDocument": {
+      "id": "urn:uuid:0e2f9b1c-5d4a-4e3b-9a8c-7d6e5f4a3b2c",
+      "type": "https://trusttasks.org/spec/voting/ballot/cast-encrypted/0.1",
+      "issuer": "did:key:z6MkpVoteCastKey2222222222222222222222222222222",
+      "recipient": "did:webvh:QmBallotBox:vote.example.net",
+      "issuedAt": "2026-11-08T09:00:01Z",
+      "payload": {},
+      "proof": {}
+    },
+    "tag": "z3Hs8WkqL2mNvB7cR9xTyE4uJpQ1aZf6gDoK5iMt8n"
+  }
+}
+```
+
+## Security & Privacy
+
+### Data carried
+
+The plaintext ballot stays in the VTA; only its encryption leaves.
+
+### Correlation
+
+As `vta/pcs/vote`.
+
+### Retention
+
+As `vta/pcs/vote`.
+
+### Consent/purpose
+
+To cast the voter's ballot.

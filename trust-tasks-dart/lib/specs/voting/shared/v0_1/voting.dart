@@ -1220,3 +1220,9 @@ extension type const TrusteePhase(String value) {
     failed
   ];
 }
+
+/// The trustees' ceremony as the board holds it: the `request` of every `trusteeStep`
+/// entry, in board order, each exactly as the ballot box received it (CONVENTIONS
+/// §9.6). Whoever acts on it verifies each step as its trustee's before taking it;
+/// nothing in it is believed for having been passed along.
+typedef TrusteeCeremony = List<SignedRequest>;

@@ -1,0 +1,205 @@
+---
+slug: vta/pcs/trustee/decrypt
+version: "0.2"
+title: "VTA PCS — Trustee Decrypt"
+summary: "The trustee's VTA makes its partial decryption of each target, with proofs, and returns the voting/trustees/decrypt request signed as the trustee."
+status: draft
+targetFrameworkVersion: "0.6.0"
+category: identity
+keywords:
+  - pcs
+  - voting
+  - trustee
+  - vta
+parties:
+  - role: Client driving the trustee's VTA
+    requirement: REQUIRED
+    member: issuer
+    identifierScope: pairwise
+  - role: The trustee's VTA
+    requirement: REQUIRED
+    member: recipient
+proofRequirement:
+  request: REQUIRED
+  response: RECOMMENDED
+  rationale: >-
+    The request makes the VTA act as the trustee with keys that decide the election's secrecy. Where the transport does not already authenticate the caller, the proof is the only thing between those keys and anyone who can reach the VTA.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: >-
+    Consequential under SPEC §3, so SPEC §7.3 item 17 sets REQUIRED as the floor.
+sideEffects:
+  level: none
+  rationale: >-
+    Uses the key share; keeps nothing new.
+subjectPath: /contextId
+exposure:
+  discloses: metadata
+  ingests: metadata
+  actsAsSubject: true
+  rationale: >-
+    Out: partial decryptions with proofs.
+retention:
+  class: transient
+  rationale: >-
+    Nothing new is kept.
+errorCodes:
+  - code: vta/pcs/trustee/decrypt:trusteeNotHeld
+    meaning: "The VTA holds no `authentication` key of `trustee` that the caller may act as, or the manifest does not name `trustee` as a trustee."
+    retryable: false
+  - code: vta/pcs/trustee/decrypt:keyNotHeld
+    meaning: "This VTA holds no key share of the trustee for this election."
+    retryable: false
+  - code: vta/pcs/trustee/decrypt:authorizationInvalid
+    meaning: "`authorization` is not a voting/trustees/authorize request signed by the election's community for this election, or `targets` are not the ones it pins, or its `closedAt` is in the future or before the manifest's `votingOpens`."
+    retryable: false
+  - code: vta/pcs/trustee/decrypt:alreadyDecrypted
+    meaning: "This trustee has already decrypted another set of targets for this election."
+    retryable: false
+related:
+  - voting/trustees/decrypt
+  - voting/trustees/status
+---
+
+## Abstract
+
+The **VTA PCS — Trustee Decrypt** Trust Task makes the trustee's share of every decryption the result needs (CONVENTIONS §9.7), never before voting closes (VTI-VOT-063). The family's shared rules are in [`CONVENTIONS.md`](../../../../../voting/_shared/0.1/CONVENTIONS.md).
+
+## Status of this Document
+
+This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). It targets framework version 0.6.0 and may change without a version bump while it remains a draft ([SPEC §5.2](/SPEC.md#52-compatibility-rules)).
+
+## Conformance
+
+The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD NOT**, **RECOMMENDED**, **MAY** and **OPTIONAL** in this document are to be interpreted as described in [BCP 14](https://www.rfc-editor.org/info/bcp14) when, and only when, they appear in all capitals.
+
+A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-minimum-requirements), and the rules of the family's [conventions](../../../../../voting/_shared/0.1/CONVENTIONS.md), in addition to the requirements stated here.
+
+A conforming **producer** (the client) **MUST**:
+
+1. Pass the targets and the `authorization` voting/trustees/status reports, and send the returned document unchanged.
+
+A conforming **consumer** (the VTA) **MUST**, in this order:
+
+1. Validate the document per [SPEC §7.2](/SPEC.md#72-consumer-requirements).
+2. Refuse with `vta/pcs/trustee/decrypt:trusteeNotHeld` unless it holds an `authentication` key of `trustee` the caller may act as.
+3. Refuse with `vta/pcs/trustee/decrypt:keyNotHeld` unless it holds the trustee's key share for the election.
+4. Refuse with `vta/pcs/trustee/decrypt:authorizationInvalid` unless `authorization` is a [`voting/trustees/authorize`](../../../../../voting/trustees/authorize/0.1/spec.md) request whose proof the VTA itself verifies as the community's — the `community` this election was enrolled for — naming this election and its manifest digest, with a `closedAt` not in the future and not before the manifest's `votingOpens`, and `targets` number its `targetCount` and have the digest `targetsDigest` (CONVENTIONS §9.7). The ballot box alone cannot authorize a decryption.
+5. Decrypt one set of targets per election: keep the `targetsDigest` of the first decryption, and refuse with `vta/pcs/trustee/decrypt:alreadyDecrypted` any other.
+6. Return the voting/trustees/decrypt request with one partial decryption per target, each with its Chaum–Pedersen proof, signed as `trustee`.
+
+## Authorization
+
+The authority is **standing over the context** the trustee persona lives in, expressed as the capability **`pcsTrustee`**, and standing to act as `trustee`. It is not `sign`: the VTA signs only this task's document as the trustee.
+
+## Definitions
+
+- **`targets`** — what to decrypt, exactly as the authorization pins.
+- **`authorization`** — the community's authorization (CONVENTIONS §9.7).
+
+## Request
+
+The payload is the top-level schema in [`payload.schema.json`](payload.schema.json).
+
+### Example
+
+```json
+{
+  "id": "urn:uuid:5a0e2c11-0000-4000-8000-0000000c1001",
+  "type": "https://trusttasks.org/spec/vta/pcs/trustee/decrypt/0.2#request",
+  "issuer": "did:key:z6MkfClientWalletExampleKey1111111111111111111",
+  "recipient": "did:webvh:QmVta:vta.example.com",
+  "issuedAt": "2026-11-02T09:00:00Z",
+  "payload": {
+    "contextId": "trustees",
+    "community": "did:webvh:QmCommunity:vtc.example.org",
+    "electionId": "board-2026",
+    "trustee": "did:webvh:QmTrustee:alice.example",
+    "targets": [
+      {
+        "question": "chair",
+        "option": "ana",
+        "ciphertext": {
+          "a": "z4Lp9VmXkCq2Jt7HbR1NfWd8YsGa3Ue6ZoQi5MxKcTvPy",
+          "b": "z4Lp9VmXkCq2Jt7HbR1NfWd8YsGa3Ue6ZoQi5MxKcTvPy"
+        }
+      }
+    ],
+    "authorization": {
+      "id": "urn:uuid:5a0e2c11-0000-4000-8000-0000000c3001",
+      "type": "https://trusttasks.org/spec/voting/trustees/authorize/0.1",
+      "issuer": "did:webvh:QmCommunity:vtc.example.org",
+      "recipient": "did:webvh:QmBallotBox:vote.example.net",
+      "issuedAt": "2026-11-15T00:05:00Z",
+      "payload": {
+        "community": "did:webvh:QmCommunity:vtc.example.org",
+        "electionId": "board-2026",
+        "manifestDigest": "zQmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG",
+        "head": {
+          "electionId": "board-2026",
+          "treeSize": 412,
+          "rootHash": "zQmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG",
+          "issuedAt": "2026-11-15T00:04:58Z"
+        },
+        "closedAt": "2026-11-15T00:00:00Z",
+        "targetCount": 1,
+        "targetsDigest": "zQmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG"
+      },
+      "proof": {
+        "type": "DataIntegrityProof",
+        "cryptosuite": "eddsa-jcs-2022",
+        "verificationMethod": "did:webvh:QmCommunity:vtc.example.org#key-0",
+        "proofPurpose": "authentication",
+        "created": "2026-11-15T00:05:00Z",
+        "proofValue": "z4ExampleCommunityProofValue"
+      }
+    }
+  }
+}
+```
+
+## Response
+
+The answer is the payload under `$anchor: "response"` in [`payload.schema.json`](payload.schema.json). Failures use `trust-task-error`, not a `#response` document.
+
+### Example
+
+```json
+{
+  "id": "urn:uuid:5a0e2c11-0000-4000-8000-0000000c1002",
+  "type": "https://trusttasks.org/spec/vta/pcs/trustee/decrypt/0.2#response",
+  "issuer": "did:webvh:QmVta:vta.example.com",
+  "recipient": "did:key:z6MkfClientWalletExampleKey1111111111111111111",
+  "issuedAt": "2026-11-02T09:00:01Z",
+  "threadId": "urn:uuid:5a0e2c11-0000-4000-8000-0000000c1001",
+  "payload": {
+    "document": {
+      "id": "urn:uuid:0e2f9b1c-5d4a-4e3b-9a8c-7d6e5f4a3b2c",
+      "type": "https://trusttasks.org/spec/voting/trustees/decrypt/0.1",
+      "issuer": "did:webvh:QmTrustee:alice.example",
+      "recipient": "did:webvh:QmBallotBox:vote.example.net",
+      "issuedAt": "2026-11-15T09:00:01Z",
+      "payload": {},
+      "proof": {}
+    }
+  }
+}
+```
+
+## Security & Privacy
+
+### Data carried
+
+Partial decryptions out; the key share stays.
+
+### Correlation
+
+Trustees are public by design (VTI-VOT-090); nothing here concerns a voter.
+
+### Retention
+
+Nothing new is kept.
+
+### Consent/purpose
+
+The VTA acts as the trustee only for this election's ceremony and decryption.

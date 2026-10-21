@@ -3,7 +3,7 @@
  * Source: specs/vtc/elections/show/0.1/payload.schema.json
  */
 
-import type { BoardHead, BoardVisibility, ChoiceQuestion, DigestMultibase, Disclosure, ElectionId, ElectionKey, ElectionResult, Ext, GroupElement, Key_VotingV0_1 as Key, Manifest, Multibase_VotingV0_1 as Multibase, Question, QuestionOption, QuestionResult, RankingQuestion, Revote, RollRule, ScoreQuestion, SecrecyLevel, TextQuestion, TrusteeIndex, Trustees, VotingParameters } from "../../../../_shared/components.js";
+import type { BoardHead, BoardVisibility, ChoiceQuestion, DigestMultibase, Disclosure, ElectionId, ElectionKey, ElectionResult, Ext, GroupElement, Key_VotingV0_1 as Key, Manifest, Multibase_VotingV0_1 as Multibase, Question, QuestionOption, QuestionResult, RankingQuestion, Revote, RollRule, ScoreQuestion, SecrecyLevel, SignedRequest, TextQuestion, TrusteeCeremony, TrusteeIndex, Trustees, VotingParameters } from "../../../../_shared/components.js";
 
 
 /**
@@ -60,6 +60,10 @@ export interface VTCElectionsShowResponsePayload {
   electionKey?: ElectionKey;
   certified?: Certification;
   ext?: Ext;
+  /**
+   * With electionKey: the trustees' signed steps it forms from, through the board's electionKey entry, each exactly as received. A voter's VTA forms the key itself from these (vta/pcs/vote-encrypted/0.2).
+   */
+  ceremony?: TrusteeCeremony;
 }
 /**
  * A board head the community read from the ballot box and kept, with the ballot box's signed document that carried it. Certification proves the board's final head consistent with every checkpoint, so a ballot box that rewrote its board after a checkpoint is caught.
@@ -84,7 +88,7 @@ export interface Certification {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { BoardHead, BoardVisibility, ChoiceQuestion, DigestMultibase, Disclosure, ElectionId, ElectionKey, ElectionResult, Ext, GroupElement, Key, Manifest, Multibase, Question, QuestionOption, QuestionResult, RankingQuestion, Revote, RollRule, ScoreQuestion, SecrecyLevel, TextQuestion, TrusteeIndex, Trustees, VotingParameters };
+export type { BoardHead, BoardVisibility, ChoiceQuestion, DigestMultibase, Disclosure, ElectionId, ElectionKey, ElectionResult, Ext, GroupElement, Key, Manifest, Multibase, Question, QuestionOption, QuestionResult, RankingQuestion, Revote, RollRule, ScoreQuestion, SecrecyLevel, SignedRequest, TextQuestion, TrusteeCeremony, TrusteeIndex, Trustees, VotingParameters };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/elections/show/0.1" as const;
@@ -245,8 +249,28 @@ export const PAYLOAD_SCHEMA = {
         },
         "ext": {
           "$ref": "#/$defs/Ext"
+        },
+        "ceremony": {
+          "$ref": "#/$defs/TrusteeCeremony",
+          "description": "With electionKey: the trustees' signed steps it forms from, through the board's electionKey entry, each exactly as received. A voter's VTA forms the key itself from these (vta/pcs/vote-encrypted/0.2)."
         }
       }
+    },
+    "TrusteeCeremony": {
+      "title": "TrusteeCeremony",
+      "description": "The trustees' ceremony as the board holds it: the `request` of every `trusteeStep` entry, in board order, each exactly as the ballot box received it (CONVENTIONS §9.6). Whoever acts on it verifies each step as its trustee's before taking it; nothing in it is believed for having been passed along.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 4224,
+      "items": {
+        "$ref": "#/$defs/SignedRequest"
+      }
+    },
+    "SignedRequest": {
+      "title": "SignedRequest",
+      "description": "A whole Trust Task request document — `id`, `type`, `issuer`, `payload` and every other member, `proof` included — exactly as the ballot box received it, never re-serialised: its proof is taken over its members, and a re-serialised copy does not reliably reproduce them. Typed as an open object so every member survives; CONVENTIONS §9.6 gives the checks that make it a trustee's step.",
+      "type": "object",
+      "minProperties": 1
     },
     "Ext": {
       "title": "Ext",
@@ -1072,8 +1096,28 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         },
         "ext": {
           "$ref": "#/$defs/Ext"
+        },
+        "ceremony": {
+          "$ref": "#/$defs/TrusteeCeremony",
+          "description": "With electionKey: the trustees' signed steps it forms from, through the board's electionKey entry, each exactly as received. A voter's VTA forms the key itself from these (vta/pcs/vote-encrypted/0.2)."
         }
       }
+    },
+    "TrusteeCeremony": {
+      "title": "TrusteeCeremony",
+      "description": "The trustees' ceremony as the board holds it: the `request` of every `trusteeStep` entry, in board order, each exactly as the ballot box received it (CONVENTIONS §9.6). Whoever acts on it verifies each step as its trustee's before taking it; nothing in it is believed for having been passed along.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 4224,
+      "items": {
+        "$ref": "#/$defs/SignedRequest"
+      }
+    },
+    "SignedRequest": {
+      "title": "SignedRequest",
+      "description": "A whole Trust Task request document — `id`, `type`, `issuer`, `payload` and every other member, `proof` included — exactly as the ballot box received it, never re-serialised: its proof is taken over its members, and a re-serialised copy does not reliably reproduce them. Typed as an open object so every member survives; CONVENTIONS §9.6 gives the checks that make it a trustee's step.",
+      "type": "object",
+      "minProperties": 1
     },
     "Ext": {
       "title": "Ext",
