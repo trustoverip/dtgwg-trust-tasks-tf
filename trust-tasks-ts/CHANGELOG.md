@@ -11,6 +11,34 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.26.28 — 2026-10-21
+
+
+### Fixed
+
+- **voting**: Each trustee step on the board is the trustee's signed request (#853)
+
+The board recorded each step of the trustees' ceremony as its payload alone, so nothing on it
+  showed who took a step. A ballot box could enrol or deal in a trustee's name — a polynomial of its
+  own choosing, with matching shares sealed to that trustee's transport key — and every check the
+  community, the trustees and certification run would pass while the ballot box held the election
+  key, able to open sealed ballots before close. The defence was only that the ballot box runs
+  honestly, which VTI-VOT-062 does not let a deployment assume.
+
+  - A new board entry, `trusteeStep` (appended), carries the trustee's `voting/trustees/enrol`,
+    `deal`, `confirm` or `justify` request exactly as the ballot box received it, proof included.
+    The `transportKey`, `dealing`, `confirmation` and `justification` kinds are no longer appended,
+    and a consumer refuses a board holding one.
+  - CONVENTIONS §9.6: whoever replays the ceremony takes a step only when its type, community and
+    election are right, its issuer is the trustee the manifest names at the payload's index, and
+    its proof is the issuer's. A `partials` entry needs no signature: its Chaum–Pedersen proofs
+    already tie it to the trustee's share. `voting/trustees/status` is never evidence of who took a
+    step.
+  - `vtc/elections/show` item 6: the community forms the key itself by replaying the ceremony from
+    the board (open to it on any board), never from `voting/trustees/status`.
+  - `vtc/elections/certify` item 8 states the encrypted levels' recount: ceremony, casts and
+    partials, from the board alone.
+
 ## 0.26.27 — 2026-10-21
 
 

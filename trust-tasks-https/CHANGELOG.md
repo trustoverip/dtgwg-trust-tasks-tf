@@ -6,6 +6,9 @@ this crate versions independently of `trust-tasks-rs` — it takes its own
 leading bump when a `trust-tasks-rs` break reaches it, rather than aligning
 to that crate's number (see the `0.6.5` → `0.7.0` release for the shape).
 
+## [0.32.9](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.32.8...trust-tasks-https-v0.32.9) — 2026-10-21
+
+
 ## [0.32.8](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-https-v0.32.7...trust-tasks-https-v0.32.8) — 2026-10-21
 
 
