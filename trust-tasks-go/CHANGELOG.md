@@ -11,6 +11,19 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.9.0 — 2026-10-21
+
+
+### Added
+
+- **persona**: Star a directory member whose DID you have not been shown — persona/contact/put/1.1 linking form (#858)
+
+A community directory shows members' DIDs to other members only where each member chooses to, so most entries a holder reads carry no DID to file a contact under, and persona/contact/put/1.1 required one (subjectDid) to keep a star, a petname or a list on anyone.
+
+  put/1.1 gains a third form, LINKING: directoryRef + knownByPersona, without contactId, subjectDid, document or credentialRefs. The agent finds the contact it keeps for that directory entry and persona, or makes one (rev 1, an empty document, no subjectDid), and appends no revision. A later filing naming the member's DID is a contact of its own and is not merged with the linked one (item 4, extended). Two invalid examples pin the form's edges.
+
+  get/1.1 and list/1.1 responses: subjectDid is no longer required — absent for a linked contact.
+
 ## 0.8.29 — 2026-10-21
 
 

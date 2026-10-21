@@ -31,6 +31,21 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.33.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.32.10...trust-tasks-rs-v0.33.0) — 2026-10-21
+
+
+### Added
+
+- **persona**: Star a directory member whose DID you have not been shown — persona/contact/put/1.1 linking form ([#858](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/858))
+
+A community directory shows members' DIDs to other members only where each member chooses to, so most entries a holder reads carry no DID to file a contact under, and persona/contact/put/1.1 required one (subjectDid) to keep a star, a petname or a list on anyone.
+
+  put/1.1 gains a third form, LINKING: directoryRef + knownByPersona, without contactId, subjectDid, document or credentialRefs. The agent finds the contact it keeps for that directory entry and persona, or makes one (rev 1, an empty document, no subjectDid), and appends no revision. A later filing naming the member's DID is a contact of its own and is not merged with the linked one (item 4, extended). Two invalid examples pin the form's edges.
+
+  get/1.1 and list/1.1 responses: subjectDid is no longer required — absent for a linked contact.
+
+
+
 ## [0.32.10](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.32.9...trust-tasks-rs-v0.32.10) — 2026-10-21
 
 
