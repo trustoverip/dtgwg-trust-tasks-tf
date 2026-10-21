@@ -31,6 +31,29 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.32.10](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.32.9...trust-tasks-rs-v0.32.10) — 2026-10-21
+
+
+### Added
+
+- **voting**: Vta/pcs/trustee/read, and trustees read voting/election/show on any board ([#855](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/855))
+
+A trustee could not run its part of a sealed or tallied-encrypted election on a private board
+  from a client: the trustee tasks take the manifest, which voting/election/show answers only to
+  the community and the auditors there; and a trustee's client, which holds no trustee key, had no
+  way to sign the reads a private board answers only to a trustee.
+
+  - vta/pcs/trustee/read/0.1 (new): the VTA signs voting/trustees/status or voting/election/show
+    as the trustee, addressed to the ballot box — the trustee's counterpart of vta/pcs/voter/read.
+    Its payload is fixed to { community, electionId }; `read` is closed. Gated on pcsTrustee.
+  - voting/election/show answers every trustee the manifest names on any board (CONVENTIONS §4
+    gains its own row; §9.6's "Who reads the ceremony" names both reads).
+  - vta/pcs/trustee/decrypt: `closedAt` is the board's close entry, or for a client that cannot
+    read the board any time at or after the close and not in the future — the election's summary,
+    which the field used to point at, carries no close time.
+
+
+
 ## [0.32.9](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.32.8...trust-tasks-rs-v0.32.9) — 2026-10-21
 
 
