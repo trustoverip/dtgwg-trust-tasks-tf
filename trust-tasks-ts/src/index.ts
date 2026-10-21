@@ -698,6 +698,7 @@ export * as VtaPcsTrusteeDecrypt_v0_1 from "./vta/pcs/trustee/decrypt/0.1/payloa
 export * as VtaPcsTrusteeEnrol_v0_1 from "./vta/pcs/trustee/enrol/0.1/payload.js";
 export * as VtaPcsTrusteeJustify_v0_1 from "./vta/pcs/trustee/justify/0.1/payload.js";
 export * as VtaPcsTrusteeKeys_v0_1 from "./vta/pcs/trustee/keys/0.1/payload.js";
+export * as VtaPcsTrusteeRead_v0_1 from "./vta/pcs/trustee/read/0.1/payload.js";
 export * as VtaPcsVerifyAttestation_v0_1 from "./vta/pcs/verify-attestation/0.1/payload.js";
 export * as VtaPcsVetterShow_v0_1 from "./vta/pcs/vetter/show/0.1/payload.js";
 export * as VtaPcsVoteEncrypted_v0_1 from "./vta/pcs/vote-encrypted/0.1/payload.js";

@@ -1649,6 +1649,9 @@ mod vta {
             mod keys {
                 mod v0_1;
             }
+            mod read {
+                mod v0_1;
+            }
         }
         mod verify_attestation {
             mod v0_1;

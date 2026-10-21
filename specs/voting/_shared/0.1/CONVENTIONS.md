@@ -52,6 +52,7 @@ The tasks are:
 | VTA | [`vta/pcs/trustee/keys`](../../../vta/pcs/trustee/keys/0.1/spec.md) | Opens and checks the trustee's shares and keeps its key share |
 | VTA | [`vta/pcs/trustee/justify`](../../../vta/pcs/trustee/justify/0.1/spec.md) | Answers a complaint against this trustee |
 | VTA | [`vta/pcs/trustee/decrypt`](../../../vta/pcs/trustee/decrypt/0.1/spec.md) | The trustee's partial decryptions, signed as the trustee |
+| VTA | [`vta/pcs/trustee/read`](../../../vta/pcs/trustee/read/0.1/spec.md) | Signs `voting/trustees/status` or `voting/election/show` as the trustee |
 
 Each of those specifications references this file rather than restating it, and conformance is
 anchored here. The wire shapes are in [`voting.schema.json`](voting.schema.json).
@@ -121,7 +122,8 @@ The reference implementation is the `vti-voting` crate of verifiable-trust-infra
 | Task | Authority |
 |---|---|
 | `voting/election/register`, `close`, `cancel` | The proven signer is the manifest's `community` |
-| `voting/election/show`, `voting/result/show`, `voting/board/*` | Public board: anyone. Private board: the community, a DID in the manifest's `board.auditors` and, for `voting/board/inclusion` of one entry, the holder of that entry's `receiptToken` |
+| `voting/election/show` | As `voting/board/*`, and — whatever the board's visibility — every trustee the manifest names: the trustee tasks take the manifest, and decryption the time voting closed (§9.6) |
+| `voting/result/show`, `voting/board/*` | Public board: anyone. Private board: the community, a DID in the manifest's `board.auditors` and, for `voting/board/inclusion` of one entry, the holder of that entry's `receiptToken` |
 | `voting/ballot/cast`, `voting/ballot/cast-encrypted` | Nobody's identity: the cast's attestation is the authority (§3.7) |
 | `voting/trustees/enrol`, `deal`, `confirm`, `justify`, `decrypt` | The proven signer is the manifest's trustee at the payload's trustee index (VTI-VOT-062) |
 | `voting/trustees/status` | As the board reads, and — whatever the board's visibility — every trustee the manifest names: a trustee cannot take its next step without it (§9.6) |
@@ -296,8 +298,9 @@ trustees' proofs: it tells a trustee its next step, and is never evidence of who
 **Who reads the ceremony.** Nothing the ceremony publishes is secret — transport keys,
 commitments, shares sealed to their recipients, complaints, the election key, decryption targets
 — and its participants need it whatever the board's visibility: a ballot box **MUST** answer
-`voting/trustees/status` to every trustee the manifest names, on a private board as on a public
-one (§4). Voters need only the election key, and a voter on a private board cannot read the
+`voting/trustees/status` and `voting/election/show` to every trustee the manifest names, on a
+private board as on a public one (§4). A trustee's client signs those reads as the trustee
+through [`vta/pcs/trustee/read`](../../../vta/pcs/trustee/read/0.1/spec.md). Voters need only the election key, and a voter on a private board cannot read the
 board: the community **MUST** carry the formed key in
 [`vtc/elections/show`](../../../vtc/elections/show/0.1/spec.md), formed itself by replaying the
 ceremony from the board (which it may read whatever its visibility), so every voter its roll

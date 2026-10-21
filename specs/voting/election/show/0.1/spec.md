@@ -12,7 +12,7 @@ keywords:
   - ballot-box
   - poll
 parties:
-  - role: Reader (anyone on a public board; the community or an auditor on a private one)
+  - role: Reader (anyone on a public board; the community, an auditor or a trustee on a private one)
     requirement: OPTIONAL
     member: issuer
     identifierScope: any
@@ -24,7 +24,7 @@ proofRequirement:
   request: RECOMMENDED
   response: REQUIRED
   rationale: >-
-    On a private board the ballot box answers only the community and the manifest's auditors, so
+    On a private board the ballot box answers only the community, the manifest's auditors and its trustees, so
     it needs to know who asked; a proof gives it that where the transport does not. The response
     carries the board's current head, and a head is signed by being carried in a document the
     ballot box signs: a holder who keeps it as evidence of what the board held needs the proof.
@@ -72,7 +72,7 @@ A conforming **consumer** (the ballot box) **MUST**:
 
 1. Validate the document per [SPEC §7.2](/SPEC.md#72-consumer-requirements).
 2. Refuse with `voting/election/show:electionUnknown` when no election `electionId` is registered for `community`.
-3. On a private board, refuse with `voting/election/show:electionUnknown` — the same code, in the same form — unless the proven caller is the community or a DID in the manifest's `board.auditors` (VTI-VOT-052). A caller who may not read the board learns nothing, not even that the election exists.
+3. On a private board, refuse with `voting/election/show:electionUnknown` — the same code, in the same form — unless the proven caller is the community, a DID in the manifest's `board.auditors` or a DID in its `trustees.dids` (VTI-VOT-052; CONVENTIONS §9.6). A trustee reads the election it takes part in: its tasks take the manifest, and its decryption the time voting closed. A caller who may not read the board learns nothing, not even that the election exists.
 4. Answer with the election's summary, its `head` the board's current head, and with the manifest exactly as registered. `manifest` is optional in the schema so that a later version can answer a summary alone; under this version a ballot box that answers includes it.
 5. Sign the response (VTI-VOT-050).
 
@@ -80,7 +80,7 @@ A conforming **producer** that relies on the answer — a voter's client about t
 
 ## Authorization
 
-**Public board: none.** Anyone may read an election whose board is public; the manifest and board are published by design (VTI-VOT-052). **Private board:** the community and the auditors the manifest names ([conventions §4](../../../_shared/0.1/CONVENTIONS.md#4-authorization)). A voter holding a receipt reads only the inclusion of its own cast ([`voting/board/inclusion`](../../../board/inclusion/0.1/spec.md)), and learns the election from its community. Verifying the caller's `issuer`, transport identity or `proof` establishes who asked, never that they may ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)); the authority is membership of that set, which consumer item 3 enforces.
+**Public board: none.** Anyone may read an election whose board is public; the manifest and board are published by design (VTI-VOT-052). **Private board:** the community, the auditors the manifest names, and its trustees ([conventions §4](../../../_shared/0.1/CONVENTIONS.md#4-authorization), §9.6). A voter holding a receipt reads only the inclusion of its own cast ([`voting/board/inclusion`](../../../board/inclusion/0.1/spec.md)), and learns the election from its community. Verifying the caller's `issuer`, transport identity or `proof` establishes who asked, never that they may ([SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements)); the authority is membership of that set, which consumer item 3 enforces.
 
 ## Definitions
 

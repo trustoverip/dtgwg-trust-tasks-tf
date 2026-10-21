@@ -47,7 +47,7 @@
     "closedAt": {
       "type": "string",
       "format": "date-time",
-      "description": "When voting closed, from the election's summary. The VTA refuses before then."
+      "description": "When voting closed: the board's closed or closedEarly entry, or any time at or after the close and not in the future. The VTA refuses a time in the future."
     },
     "ext": {
       "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"

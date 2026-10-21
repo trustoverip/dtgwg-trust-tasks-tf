@@ -31,7 +31,7 @@ export interface VTAPCSTrusteeDecryptPayload {
    */
   targets: [DecryptionTarget, ...DecryptionTarget[]];
   /**
-   * When voting closed, from the election's summary. The VTA refuses before then.
+   * When voting closed: the board's closed or closedEarly entry, or any time at or after the close and not in the future. The VTA refuses a time in the future.
    */
   closedAt: string;
   ext?: Ext;
@@ -139,7 +139,7 @@ export const PAYLOAD_SCHEMA = {
     "closedAt": {
       "type": "string",
       "format": "date-time",
-      "description": "When voting closed, from the election's summary. The VTA refuses before then."
+      "description": "When voting closed: the board's closed or closedEarly entry, or any time at or after the close and not in the future. The VTA refuses a time in the future."
     },
     "ext": {
       "$ref": "#/$defs/Ext"

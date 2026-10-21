@@ -91,7 +91,7 @@ The authority is **standing over the context** the trustee persona lives in, exp
 ## Definitions
 
 - **`targets`** — what to decrypt.
-- **`closedAt`** — when voting closed.
+- **`closedAt`** — when voting closed: the time of the board's `closed` or `closedEarly` entry, or — for a client that cannot read the board — any time at or after the close and not in the future, such as the earlier of now and the manifest's `votingCloses` once [`voting/trustees/status`](../../../../../voting/trustees/status/0.1/spec.md) reports `decrypting`. It only holds the VTA back before the close; the ballot box refuses partials until voting has closed whatever it says.
 
 ## Request
 
