@@ -31,6 +31,59 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.33.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.33.0...trust-tasks-rs-v0.33.1) — 2026-10-21
+
+
+### Fixed
+
+- **voting**: Trustees and voters act only on signed evidence; the community authorizes decryption; the key needs t dealers; ballots bind their tag ([#860](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/860))
+
+* fix(voting): trustees and voters act only on signed evidence; the community authorizes what is decrypted; the key needs t dealers; ballots bind their tag; the board is in order
+
+  An adversarial review of community voting found that a dishonest ballot box could take the
+  trustees' place, and a single corrupt trustee could hold the election key.
+
+  - **The box could feed the trustees' VTAs.** They acted on values voting/trustees/status reported,
+    which carry no trustee's proof. The box could:
+    - substitute transport keys, and open the shares sealed to them;
+    - invent complaints, and collect the shares revealed in answer;
+    - replace dealings, and overwrite a key share;
+    - list one voter's ciphertexts as a "total", or a cast before the close, and collect honest
+      trustees' partials of it.
+  - **One trustee could hold the key.** The key formed from a single qualified dealer, so a corrupt
+    trustee complaining of every other dealer at the last moment was left holding it alone.
+  - **The voter's VTA took any key.** It encrypted under whatever key it was handed, so a community
+    could give one member a key it held.
+  - **Ballots could be copied.** Nothing bound a ballot to its cast: a voter could re-cast another's
+    encrypted ballot verbatim under their own tag (Cortier–Smyth).
+  - **Certification ignored the lifecycle.** It accepted casts after close, a result before it, and
+    an early close a manifest forbade.
+
+  The changes:
+
+  - **vta/pcs/trustee/{deal,keys,justify,decrypt}/0.2 and vta/pcs/vote-encrypted/0.2** (the 0.1
+    versions retire) take the ceremony as its signed steps, which status now carries as `steps`. The
+    VTA verifies each step itself (CONVENTIONS §9.6). In particular:
+    - deal pins the transport keys it dealt to;
+    - justify needs the complainant's own confirm;
+    - keys never replaces a held share;
+    - the voter's VTA forms the key itself;
+    - vtc/elections/show carries `ceremony` for it.
+  - **voting/trustees/authorize/0.1 (new).** After close the community computes the decryption
+    targets from the board it checked, and signs their digest under the closing head. The box
+    accepts it only if its own targets match, and appends a `decryptionAuthorized` entry. A
+    trustee's VTA decrypts only an authorized set, once (decrypt/0.2). The box refuses partials
+    before an authorization.
+  - **CONVENTIONS §9.6 item 5:** the key forms only from at least t qualified dealers, with at least
+    t confirmations.
+  - **§9.3/§9.4:** an encrypted form's proofs, and a sealed form's AAD, bind the cast's tag. The box
+    refuses a form whose ciphertexts are already on the board under another tag.
+  - **§3.9 (new):** the board's order — opened, casts, close, authorization, partials, one result
+    whose head is the board before it — enforced at certification (`orderInvalid`,
+    `ceremonyInvalid` appended to boardInconsistent's faults).
+
+
+
 ## [0.33.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.32.10...trust-tasks-rs-v0.33.0) — 2026-10-21
 
 
