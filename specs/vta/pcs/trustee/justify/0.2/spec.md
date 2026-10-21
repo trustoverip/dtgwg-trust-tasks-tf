@@ -76,7 +76,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 A conforming **producer** (the client) **MUST**:
 
-1. Pass the ballot box's `steps` unchanged as `ceremony`, and call it only for a complaint they hold naming this trustee as dealer.
+1. Pass the manifest exactly as the community published it and the ballot box's `steps` unchanged as `ceremony`, and call it only for a complaint they hold naming this trustee as dealer.
 
 A conforming **consumer** (the VTA) **MUST**, in this order:
 
@@ -93,6 +93,7 @@ The authority is **standing over the context** the trustee persona lives in, exp
 
 ## Definitions
 
+- **`manifest`** — the election's manifest: its trustees are whom the steps are checked against.
 - **`ceremony`** — the ceremony as the board holds it (CONVENTIONS §9.6).
 - **`recipient`** — the complaining trustee.
 
@@ -115,6 +116,56 @@ The payload is the top-level schema in [`payload.schema.json`](payload.schema.js
     "electionId": "board-2026",
     "trustee": "did:webvh:QmTrustee:alice.example",
     "recipient": 2,
+    "manifest": {
+      "electionId": "board-2026",
+      "community": "did:webvh:QmCommunity:vtc.example.org",
+      "title": "Board election 2026",
+      "questions": [
+        {
+          "key": "chair",
+          "type": "choice",
+          "text": "Who should chair the board?",
+          "options": [
+            {
+              "key": "ana",
+              "label": "Ana"
+            },
+            {
+              "key": "ben",
+              "label": "Ben"
+            }
+          ],
+          "minSelections": 1,
+          "maxSelections": 1,
+          "optional": false
+        }
+      ],
+      "secrecy": "talliedEncrypted",
+      "roll": {
+        "rule": "members"
+      },
+      "registrationOpens": "2026-11-01T00:00:00Z",
+      "votingOpens": "2026-11-08T00:00:00Z",
+      "votingCloses": "2026-11-15T00:00:00Z",
+      "revote": "replace",
+      "board": {
+        "visibility": "public",
+        "auditors": []
+      },
+      "ballotBox": "did:webvh:QmBallotBox:vote.example.net",
+      "allowEarlyClose": false,
+      "resultsBeforeClose": false,
+      "textReleaseThreshold": 10,
+      "trustees": {
+        "dids": [
+          "did:webvh:QmTrustee:alice.example",
+          "did:webvh:QmTrustee2:bob.example",
+          "did:webvh:QmTrustee3:carol.example"
+        ],
+        "threshold": 2
+      },
+      "binding": true
+    },
     "ceremony": [
       {
         "id": "urn:uuid:0e2f9b1c-5d4a-4e3b-9a8c-7d6e5f4a3b2c",

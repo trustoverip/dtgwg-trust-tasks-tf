@@ -183,8 +183,12 @@ A digest of the decryption targets and the head they were computed under. Nothin
 
 ### Correlation
 
-The community and the ballot box are public parties of the election; the request names nothing
-else.
+The community's and the ballot box's identifier scope is `public`. The authorization is board
+evidence: a trustee's VTA and every auditor check that it was signed by the community that
+registered the election, and that it reached the box whose heads they verify, so both must be
+the DIDs the manifest and the board name. A pairwise identifier would leave nobody able to tell
+the authorization from one a ballot box made for itself. The request names nothing else; no voter
+appears in it.
 
 ### Retention
 

@@ -3,7 +3,7 @@
  * Source: specs/vta/pcs/trustee/justify/0.2/payload.schema.json
  */
 
-import type { ElectionId, Ext, SignedRequest, TrusteeCeremony, TrusteeIndex } from "../../../../../_shared/components.js";
+import type { BoardVisibility, ChoiceQuestion, ElectionId, Ext, Key_VotingV0_1 as Key, Manifest, Question, QuestionOption, RankingQuestion, Revote, RollRule, ScoreQuestion, SecrecyLevel, SignedRequest, TextQuestion, TrusteeCeremony, TrusteeIndex, Trustees } from "../../../../../_shared/components.js";
 
 
 /**
@@ -23,11 +23,12 @@ export interface VTAPCSTrusteeJustifyPayload {
    * The trustee's DID: a persona this VTA holds, named in the manifest's `trustees.dids`.
    */
   trustee: string;
-  recipient: TrusteeIndex;
+  manifest: Manifest;
   /**
    * The ceremony as the board holds it: voting/trustees/status's `steps`, passed on unchanged. The VTA verifies every step as its trustee's before taking it.
    */
   ceremony: TrusteeCeremony;
+  recipient: TrusteeIndex;
   ext?: Ext;
 }
 export interface VTAPCSTrusteeJustifyResponsePayload {
@@ -61,7 +62,7 @@ export interface JustifyDocument {
 }
 
 /** Shared definitions this specification references, re-exported under the names it used to declare them with. */
-export type { ElectionId, Ext, SignedRequest, TrusteeCeremony, TrusteeIndex };
+export type { BoardVisibility, ChoiceQuestion, ElectionId, Ext, Key, Manifest, Question, QuestionOption, RankingQuestion, Revote, RollRule, ScoreQuestion, SecrecyLevel, SignedRequest, TextQuestion, TrusteeCeremony, TrusteeIndex, Trustees };
 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/pcs/trustee/justify/0.2" as const;
@@ -96,8 +97,9 @@ export const PAYLOAD_SCHEMA = {
     "community",
     "electionId",
     "trustee",
-    "recipient",
-    "ceremony"
+    "manifest",
+    "ceremony",
+    "recipient"
   ],
   "properties": {
     "contextId": {
@@ -121,12 +123,15 @@ export const PAYLOAD_SCHEMA = {
       "maxLength": 2048,
       "description": "The trustee's DID: a persona this VTA holds, named in the manifest's `trustees.dids`."
     },
-    "recipient": {
-      "$ref": "#/$defs/TrusteeIndex"
+    "manifest": {
+      "$ref": "#/$defs/Manifest"
     },
     "ceremony": {
       "$ref": "#/$defs/TrusteeCeremony",
       "description": "The ceremony as the board holds it: voting/trustees/status's `steps`, passed on unchanged. The VTA verifies every step as its trustee's before taking it."
+    },
+    "recipient": {
+      "$ref": "#/$defs/TrusteeIndex"
     },
     "ext": {
       "$ref": "#/$defs/Ext"
@@ -208,6 +213,13 @@ export const PAYLOAD_SCHEMA = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
+    "TrusteeIndex": {
+      "title": "TrusteeIndex",
+      "description": "A trustee's index: its position in the manifest's `trustees.dids`, counting from 1.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 64
+    },
     "TrusteeCeremony": {
       "title": "TrusteeCeremony",
       "description": "The trustees' ceremony as the board holds it: the `request` of every `trusteeStep` entry, in board order, each exactly as the ballot box received it (CONVENTIONS §9.6). Whoever acts on it verifies each step as its trustee's before taking it; nothing in it is believed for having been passed along.",
@@ -224,12 +236,395 @@ export const PAYLOAD_SCHEMA = {
       "type": "object",
       "minProperties": 1
     },
-    "TrusteeIndex": {
-      "title": "TrusteeIndex",
-      "description": "A trustee's index: its position in the manifest's `trustees.dids`, counting from 1.",
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 64
+    "Manifest": {
+      "title": "Manifest",
+      "description": "What an election asks and how it is decided (VTI-VOT-010). Its digest (`manifestDigest`) is the SHA-256 multihash of its RFC 8785 (JCS) canonicalization, and every cast is bound to it (VTI-VOT-011).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "electionId",
+        "community",
+        "questions",
+        "secrecy",
+        "roll",
+        "registrationOpens",
+        "votingOpens",
+        "votingCloses",
+        "revote",
+        "board",
+        "ballotBox",
+        "binding",
+        "allowEarlyClose",
+        "resultsBeforeClose",
+        "textReleaseThreshold"
+      ],
+      "properties": {
+        "electionId": {
+          "$ref": "#/$defs/ElectionId"
+        },
+        "community": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The community's DID."
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 8192
+        },
+        "questions": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 128,
+          "items": {
+            "$ref": "#/$defs/Question"
+          }
+        },
+        "secrecy": {
+          "$ref": "#/$defs/SecrecyLevel"
+        },
+        "roll": {
+          "$ref": "#/$defs/RollRule"
+        },
+        "registrationOpens": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "votingOpens": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "votingCloses": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "revote": {
+          "$ref": "#/$defs/Revote"
+        },
+        "board": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "visibility",
+            "auditors"
+          ],
+          "properties": {
+            "visibility": {
+              "$ref": "#/$defs/BoardVisibility"
+            },
+            "auditors": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048
+              },
+              "uniqueItems": true
+            }
+          }
+        },
+        "ballotBox": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The DID of the voting service that holds the board."
+        },
+        "trustees": {
+          "$ref": "#/$defs/Trustees"
+        },
+        "binding": {
+          "type": "boolean",
+          "description": "Whether the community treats the result as deciding something; creating a binding election takes another administrator's consent (VTI-VOT-081)."
+        },
+        "allowEarlyClose": {
+          "type": "boolean"
+        },
+        "resultsBeforeClose": {
+          "type": "boolean",
+          "description": "Open elections only: whether running totals may be read while voting is open (VTI-VOT-061)."
+        },
+        "textReleaseThreshold": {
+          "type": "integer",
+          "minimum": 10,
+          "description": "Counted ballots required before any text answer is disclosed (VTI-VOT-065)."
+        }
+      }
+    },
+    "Trustees": {
+      "title": "Trustees",
+      "description": "The trustees of a sealed or tallied-encrypted election and the number of them decryption needs (VTI-VOT-062). Neither the community nor the ballot box may be one.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dids",
+        "threshold"
+      ],
+      "properties": {
+        "dids": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "uniqueItems": true
+        },
+        "threshold": {
+          "type": "integer",
+          "minimum": 2
+        }
+      }
+    },
+    "BoardVisibility": {
+      "title": "BoardVisibility",
+      "description": "`public`: anyone reads the board. `private`: the community, the auditors the manifest names and, for one cast's inclusion, the holder of its receipt (VTI-VOT-052).",
+      "type": "string",
+      "enum": [
+        "public",
+        "private"
+      ]
+    },
+    "Revote": {
+      "title": "Revote",
+      "description": "What a later, different ballot under one ticket does: `replace` the earlier one, or be refused (`refuse`) (VTI-VOT-041).",
+      "type": "string",
+      "enum": [
+        "replace",
+        "refuse"
+      ]
+    },
+    "RollRule": {
+      "title": "RollRule",
+      "description": "Who may be issued a ticket (VTI-VOT-021): the community's active members, its active members and the parties `listed` names, or only the parties `listed` names.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rule"
+      ],
+      "properties": {
+        "rule": {
+          "type": "string",
+          "enum": [
+            "members",
+            "membersAndListed",
+            "listed"
+          ]
+        },
+        "listed": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048,
+            "description": "A DID enfranchised by name."
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "SecrecyLevel": {
+      "title": "SecrecyLevel",
+      "description": "`open`: ballots are recorded on the board as cast. `sealed`: ballots are encrypted to a jointly generated election key and decrypted after voting closes. `talliedEncrypted`: ballots are encrypted and only the totals are ever decrypted (VTI-VOT-060). The encrypted levels are cast with `voting/ballot/cast-encrypted/0.1`, under an election key the trustees generate with `voting/trustees/*` (CONVENTIONS §9).",
+      "type": "string",
+      "enum": [
+        "open",
+        "sealed",
+        "talliedEncrypted"
+      ]
+    },
+    "Question": {
+      "title": "Question",
+      "description": "One question. Tagged union over `type`.",
+      "oneOf": [
+        {
+          "title": "ChoiceQuestion",
+          "description": "Select between `minSelections` and `maxSelections` of `options`. A yes/no/abstain motion is a choice of exactly one of three.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "key",
+            "type",
+            "options",
+            "minSelections",
+            "maxSelections",
+            "optional"
+          ],
+          "properties": {
+            "key": {
+              "$ref": "#/$defs/Key"
+            },
+            "type": {
+              "const": "choice"
+            },
+            "text": {
+              "type": "string",
+              "maxLength": 2048
+            },
+            "options": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 256,
+              "items": {
+                "$ref": "#/$defs/QuestionOption"
+              }
+            },
+            "minSelections": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "maxSelections": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "optional": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "title": "RankingQuestion",
+          "description": "Order `options`; a ballot ranks every option or, when `partial` is true, a prefix of them.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "key",
+            "type",
+            "options",
+            "partial",
+            "optional"
+          ],
+          "properties": {
+            "key": {
+              "$ref": "#/$defs/Key"
+            },
+            "type": {
+              "const": "ranking"
+            },
+            "text": {
+              "type": "string",
+              "maxLength": 2048
+            },
+            "options": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 64,
+              "items": {
+                "$ref": "#/$defs/QuestionOption"
+              }
+            },
+            "partial": {
+              "type": "boolean"
+            },
+            "optional": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "title": "ScoreQuestion",
+          "description": "Give each option an integer score within [min, max].",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "key",
+            "type",
+            "options",
+            "min",
+            "max",
+            "optional"
+          ],
+          "properties": {
+            "key": {
+              "$ref": "#/$defs/Key"
+            },
+            "type": {
+              "const": "score"
+            },
+            "text": {
+              "type": "string",
+              "maxLength": 2048
+            },
+            "options": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 256,
+              "items": {
+                "$ref": "#/$defs/QuestionOption"
+              }
+            },
+            "min": {
+              "type": "integer"
+            },
+            "max": {
+              "type": "integer"
+            },
+            "optional": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "title": "TextQuestion",
+          "description": "Free text of at most `maxLength` characters.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "key",
+            "type",
+            "maxLength",
+            "optional"
+          ],
+          "properties": {
+            "key": {
+              "$ref": "#/$defs/Key"
+            },
+            "type": {
+              "const": "text"
+            },
+            "text": {
+              "type": "string",
+              "maxLength": 2048
+            },
+            "maxLength": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 4096
+            },
+            "optional": {
+              "type": "boolean"
+            }
+          }
+        }
+      ]
+    },
+    "Key": {
+      "title": "Key",
+      "description": "A question or option key, unique within its manifest or question.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,64}$"
+    },
+    "QuestionOption": {
+      "title": "QuestionOption",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key"
+      ],
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/Key"
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 512,
+          "description": "Display text. Absent from a manifest registered with a ballot box that holds no question text (VTI-VOT-014)."
+        }
+      }
     },
     "ElectionId": {
       "title": "ElectionId",
@@ -320,6 +715,13 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
       }
     },
+    "TrusteeIndex": {
+      "title": "TrusteeIndex",
+      "description": "A trustee's index: its position in the manifest's `trustees.dids`, counting from 1.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 64
+    },
     "TrusteeCeremony": {
       "title": "TrusteeCeremony",
       "description": "The trustees' ceremony as the board holds it: the `request` of every `trusteeStep` entry, in board order, each exactly as the ballot box received it (CONVENTIONS §9.6). Whoever acts on it verifies each step as its trustee's before taking it; nothing in it is believed for having been passed along.",
@@ -336,12 +738,395 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "type": "object",
       "minProperties": 1
     },
-    "TrusteeIndex": {
-      "title": "TrusteeIndex",
-      "description": "A trustee's index: its position in the manifest's `trustees.dids`, counting from 1.",
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 64
+    "Manifest": {
+      "title": "Manifest",
+      "description": "What an election asks and how it is decided (VTI-VOT-010). Its digest (`manifestDigest`) is the SHA-256 multihash of its RFC 8785 (JCS) canonicalization, and every cast is bound to it (VTI-VOT-011).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "electionId",
+        "community",
+        "questions",
+        "secrecy",
+        "roll",
+        "registrationOpens",
+        "votingOpens",
+        "votingCloses",
+        "revote",
+        "board",
+        "ballotBox",
+        "binding",
+        "allowEarlyClose",
+        "resultsBeforeClose",
+        "textReleaseThreshold"
+      ],
+      "properties": {
+        "electionId": {
+          "$ref": "#/$defs/ElectionId"
+        },
+        "community": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The community's DID."
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 8192
+        },
+        "questions": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 128,
+          "items": {
+            "$ref": "#/$defs/Question"
+          }
+        },
+        "secrecy": {
+          "$ref": "#/$defs/SecrecyLevel"
+        },
+        "roll": {
+          "$ref": "#/$defs/RollRule"
+        },
+        "registrationOpens": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "votingOpens": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "votingCloses": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "revote": {
+          "$ref": "#/$defs/Revote"
+        },
+        "board": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "visibility",
+            "auditors"
+          ],
+          "properties": {
+            "visibility": {
+              "$ref": "#/$defs/BoardVisibility"
+            },
+            "auditors": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048
+              },
+              "uniqueItems": true
+            }
+          }
+        },
+        "ballotBox": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The DID of the voting service that holds the board."
+        },
+        "trustees": {
+          "$ref": "#/$defs/Trustees"
+        },
+        "binding": {
+          "type": "boolean",
+          "description": "Whether the community treats the result as deciding something; creating a binding election takes another administrator's consent (VTI-VOT-081)."
+        },
+        "allowEarlyClose": {
+          "type": "boolean"
+        },
+        "resultsBeforeClose": {
+          "type": "boolean",
+          "description": "Open elections only: whether running totals may be read while voting is open (VTI-VOT-061)."
+        },
+        "textReleaseThreshold": {
+          "type": "integer",
+          "minimum": 10,
+          "description": "Counted ballots required before any text answer is disclosed (VTI-VOT-065)."
+        }
+      }
+    },
+    "Trustees": {
+      "title": "Trustees",
+      "description": "The trustees of a sealed or tallied-encrypted election and the number of them decryption needs (VTI-VOT-062). Neither the community nor the ballot box may be one.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dids",
+        "threshold"
+      ],
+      "properties": {
+        "dids": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "uniqueItems": true
+        },
+        "threshold": {
+          "type": "integer",
+          "minimum": 2
+        }
+      }
+    },
+    "BoardVisibility": {
+      "title": "BoardVisibility",
+      "description": "`public`: anyone reads the board. `private`: the community, the auditors the manifest names and, for one cast's inclusion, the holder of its receipt (VTI-VOT-052).",
+      "type": "string",
+      "enum": [
+        "public",
+        "private"
+      ]
+    },
+    "Revote": {
+      "title": "Revote",
+      "description": "What a later, different ballot under one ticket does: `replace` the earlier one, or be refused (`refuse`) (VTI-VOT-041).",
+      "type": "string",
+      "enum": [
+        "replace",
+        "refuse"
+      ]
+    },
+    "RollRule": {
+      "title": "RollRule",
+      "description": "Who may be issued a ticket (VTI-VOT-021): the community's active members, its active members and the parties `listed` names, or only the parties `listed` names.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rule"
+      ],
+      "properties": {
+        "rule": {
+          "type": "string",
+          "enum": [
+            "members",
+            "membersAndListed",
+            "listed"
+          ]
+        },
+        "listed": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048,
+            "description": "A DID enfranchised by name."
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "SecrecyLevel": {
+      "title": "SecrecyLevel",
+      "description": "`open`: ballots are recorded on the board as cast. `sealed`: ballots are encrypted to a jointly generated election key and decrypted after voting closes. `talliedEncrypted`: ballots are encrypted and only the totals are ever decrypted (VTI-VOT-060). The encrypted levels are cast with `voting/ballot/cast-encrypted/0.1`, under an election key the trustees generate with `voting/trustees/*` (CONVENTIONS §9).",
+      "type": "string",
+      "enum": [
+        "open",
+        "sealed",
+        "talliedEncrypted"
+      ]
+    },
+    "Question": {
+      "title": "Question",
+      "description": "One question. Tagged union over `type`.",
+      "oneOf": [
+        {
+          "title": "ChoiceQuestion",
+          "description": "Select between `minSelections` and `maxSelections` of `options`. A yes/no/abstain motion is a choice of exactly one of three.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "key",
+            "type",
+            "options",
+            "minSelections",
+            "maxSelections",
+            "optional"
+          ],
+          "properties": {
+            "key": {
+              "$ref": "#/$defs/Key"
+            },
+            "type": {
+              "const": "choice"
+            },
+            "text": {
+              "type": "string",
+              "maxLength": 2048
+            },
+            "options": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 256,
+              "items": {
+                "$ref": "#/$defs/QuestionOption"
+              }
+            },
+            "minSelections": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "maxSelections": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "optional": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "title": "RankingQuestion",
+          "description": "Order `options`; a ballot ranks every option or, when `partial` is true, a prefix of them.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "key",
+            "type",
+            "options",
+            "partial",
+            "optional"
+          ],
+          "properties": {
+            "key": {
+              "$ref": "#/$defs/Key"
+            },
+            "type": {
+              "const": "ranking"
+            },
+            "text": {
+              "type": "string",
+              "maxLength": 2048
+            },
+            "options": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 64,
+              "items": {
+                "$ref": "#/$defs/QuestionOption"
+              }
+            },
+            "partial": {
+              "type": "boolean"
+            },
+            "optional": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "title": "ScoreQuestion",
+          "description": "Give each option an integer score within [min, max].",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "key",
+            "type",
+            "options",
+            "min",
+            "max",
+            "optional"
+          ],
+          "properties": {
+            "key": {
+              "$ref": "#/$defs/Key"
+            },
+            "type": {
+              "const": "score"
+            },
+            "text": {
+              "type": "string",
+              "maxLength": 2048
+            },
+            "options": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 256,
+              "items": {
+                "$ref": "#/$defs/QuestionOption"
+              }
+            },
+            "min": {
+              "type": "integer"
+            },
+            "max": {
+              "type": "integer"
+            },
+            "optional": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "title": "TextQuestion",
+          "description": "Free text of at most `maxLength` characters.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "key",
+            "type",
+            "maxLength",
+            "optional"
+          ],
+          "properties": {
+            "key": {
+              "$ref": "#/$defs/Key"
+            },
+            "type": {
+              "const": "text"
+            },
+            "text": {
+              "type": "string",
+              "maxLength": 2048
+            },
+            "maxLength": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 4096
+            },
+            "optional": {
+              "type": "boolean"
+            }
+          }
+        }
+      ]
+    },
+    "Key": {
+      "title": "Key",
+      "description": "A question or option key, unique within its manifest or question.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,64}$"
+    },
+    "QuestionOption": {
+      "title": "QuestionOption",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key"
+      ],
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/Key"
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 512,
+          "description": "Display text. Absent from a manifest registered with a ballot box that holds no question text (VTI-VOT-014)."
+        }
+      }
     },
     "ElectionId": {
       "title": "ElectionId",
