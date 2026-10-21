@@ -813,6 +813,7 @@ export * as VtcCommunityRequestedAttributesShow_v0_1 from "./vtc/community/reque
 export * as VtcCommunityRequestedAttributesUpdate_v0_1 from "./vtc/community/requested-attributes/update/0.1/payload.js";
 export * as VtcCommunityThemeShow_v0_1 from "./vtc/community/theme/show/0.1/payload.js";
 export * as VtcCommunityThemeUpdate_v0_1 from "./vtc/community/theme/update/0.1/payload.js";
+export * as VtcConfigDidHostingList_v0_1 from "./vtc/config/did-hosting/list/0.1/payload.js";
 export * as VtcConfigExport_v0_1 from "./vtc/config/export/0.1/payload.js";
 export * as VtcConfigImport_v0_1 from "./vtc/config/import/0.1/payload.js";
 export * as VtcCredentialsReissue_v0_1 from "./vtc/credentials/reissue/0.1/payload.js";
