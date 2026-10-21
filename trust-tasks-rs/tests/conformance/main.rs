@@ -1939,6 +1939,11 @@ mod vtc {
         }
     }
     mod config {
+        mod did_hosting {
+            mod list {
+                mod v0_1;
+            }
+        }
         mod export {
             mod v0_1;
         }
