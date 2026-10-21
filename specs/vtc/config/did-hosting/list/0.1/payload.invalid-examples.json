@@ -1,0 +1,18 @@
+[
+  {
+    "note": "Nothing to filter by: the list is every server the VTA reports. A member named here would be ignored, so it is refused.",
+    "payload": {
+      "serverId": "hosting-eu"
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  }
+]
