@@ -34,7 +34,7 @@ thiserror = "2"
 affinidi-data-integrity = { version = "0.8", optional = true }
 affinidi-crypto = { version = "0.2", optional = true }
 affinidi-encoding = { version = "0.1", optional = true }
-affinidi-did-resolver-cache-sdk = { version = "0.8", optional = true }
+affinidi-did-resolver-cache-sdk = { version = "0.8.42", optional = true }
 # 0.4.2: `VerificationMethod::decode_public_key` (Multikey and JWK).
 affinidi-did-common = { version = "0.4.4", optional = true }
 
