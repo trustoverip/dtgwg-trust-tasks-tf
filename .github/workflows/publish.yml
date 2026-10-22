@@ -225,9 +225,9 @@ jobs:
   # go tooling derives the tag prefix from the subdirectory, so this spelling is
   # a requirement rather than a convention — unlike the `trust-tasks-ts-v*` and
   # `<crate>-v*` tags elsewhere in this file, which are ours to choose.
-  # One matrix entry per Go module: the core, and the two nested modules that
+  # One matrix entry per Go module: the core, and the three nested modules that
   # version independently on their own `trust-tasks-go/<name>/vX.Y.Z` tags
-  # (proof and didcomm). tsp is deliberately absent — it depends on the
+  # (proof, didcomm and capabilityclient). tsp is deliberately absent — it depends on the
   # unpublished affinidi-tsp-go and so cannot be released. Each leg reads its own
   # `const Version`, and the nested legs' verify step fetches the published core.
   publish-go:
@@ -256,6 +256,11 @@ jobs:
             versionfile: trust-tasks-go/didcomm/version.go
             tagprefix: trust-tasks-go/didcomm/v
             module: github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/didcomm
+          - name: trust-tasks-go/capabilityclient
+            dir: trust-tasks-go/capabilityclient
+            versionfile: trust-tasks-go/capabilityclient/version.go
+            tagprefix: trust-tasks-go/capabilityclient/v
+            module: github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/capabilityclient
     concurrency:
       group: publish-go-${{ matrix.dir }}-${{ github.ref }}
       cancel-in-progress: false
