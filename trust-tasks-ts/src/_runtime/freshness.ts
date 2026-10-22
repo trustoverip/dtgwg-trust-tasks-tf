@@ -20,7 +20,7 @@
  * be kept forever.
  */
 
-import type { RejectReason, TrustTaskDocument } from "./document.js";
+import { parseRfc3339, type RejectReason, type TrustTaskDocument } from "./document.js";
 
 /** The clock-skew tolerance SPEC §4.2 sanctions ("typically ≤ 60s"), in ms. */
 export const DEFAULT_SKEW_MS = 60_000;
@@ -125,14 +125,14 @@ export function validateFreshness<P>(
   });
 
   if (doc.issuedAt !== undefined) {
-    const issuedAt = Date.parse(doc.issuedAt);
+    const issuedAt = parseRfc3339(doc.issuedAt);
     if (Number.isNaN(issuedAt)) {
       return malformed("issuedAt is not a valid RFC 3339 timestamp");
     }
     if (issuedAt > now + policy.skewMs) return malformed(FUTURE_ISSUED_AT);
 
     if (doc.expiresAt !== undefined) {
-      const expiresAt = Date.parse(doc.expiresAt);
+      const expiresAt = parseRfc3339(doc.expiresAt);
       // A malformed `expiresAt` is `validateBasic`'s to report; skip it here
       // rather than raise a second, differently-worded rejection for it.
       if (!Number.isNaN(expiresAt) && expiresAt <= issuedAt) {
@@ -173,11 +173,11 @@ export function recordExpiry<P>(
   now: number,
 ): number | undefined {
   if (doc.expiresAt !== undefined) {
-    const expiresAt = Date.parse(doc.expiresAt);
+    const expiresAt = parseRfc3339(doc.expiresAt);
     if (!Number.isNaN(expiresAt)) return expiresAt;
   }
   if (policy.maxAgeMs === undefined) return undefined;
-  const issuedAt = doc.issuedAt === undefined ? NaN : Date.parse(doc.issuedAt);
+  const issuedAt = doc.issuedAt === undefined ? NaN : parseRfc3339(doc.issuedAt);
   // Fall back to `now` when the producer stamped no usable `issuedAt`: the
   // record then lives a full window from first sight, which is the longest the
   // document could still be arriving from a queue.
