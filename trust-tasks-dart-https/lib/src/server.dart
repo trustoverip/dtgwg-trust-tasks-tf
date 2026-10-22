@@ -151,8 +151,10 @@ final class _Exchange {
 ///    else `400`.
 /// 4. Bearer token → transport-authenticated sender.
 /// 5. Route lookup: an unregistered `type` is `unsupportedType`.
-/// 6. Payload decode; identity cross-check (§4.8.1); expiry and recipient;
-///    freshness.
+/// 6. Payload decode; expiry and recipient; freshness; identity cross-check
+///    (§4.8.1) — §7.2 order, as `consumeInbound` runs them. With no
+///    authenticated sender the identity cross-check runs first, so a
+///    misaddressed document is suppressed (§8.1).
 /// 7. Attribution gate — see [requireAttribution].
 /// 8. DID-method pre-screen — see [allowedDidMethods].
 /// 9. Proof verification, the per-specification policy, the duplicate-execution
@@ -443,18 +445,35 @@ final class HttpsServer {
       );
     }
 
-    // The cheap, local checks, in the Rust server's order, so that an
-    // unattributable document that is also stale or misaddressed is refused
-    // for the same reason in both. consumeInbound repeats them below; they are
-    // pure, so the repeat changes nothing.
+    // The cheap, local checks, in §7.2 order, which is consumeInbound's and the
+    // Rust server's: a document that fails two of them is refused for the same
+    // reason by each. consumeInbound repeats them below; they are pure, so the
+    // repeat changes nothing.
+    //
+    // Except with no authenticated sender. Then the only identity that can
+    // disagree is the recipient, and §8.1 suppresses that refusal: there is
+    // nobody to address it to, and a wrongRecipient answer would tell an
+    // unauthenticated prober which VIDs this server is not. So identity runs
+    // first, and a misaddressed document stays indistinguishable from one that
+    // did not parse.
     final resolution = resolveParties(transport, doc);
-    if (resolution.error != null) {
-      return _reject(transport, doc, identityMismatchReason(resolution.error!));
+    HttpsReply? identity() => resolution.error == null
+        ? null
+        : _reject(transport, doc, identityMismatchReason(resolution.error!));
+
+    final unattributed = transport.peer == null;
+    if (unattributed) {
+      final refused = identity();
+      if (refused != null) return refused;
     }
     final basic = validateBasic(doc, now, localVid ?? '');
     if (basic != null) return _reject(transport, doc, basic);
     final fresh = validateFreshness(doc, now, freshness);
     if (fresh != null) return _reject(transport, doc, fresh);
+    if (!unattributed) {
+      final refused = identity();
+      if (refused != null) return refused;
+    }
 
     if (requireAttribution && transport.peer == null && doc.proof == null) {
       return _reject(

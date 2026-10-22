@@ -6,6 +6,7 @@
 library;
 
 import 'codes.dart';
+import 'rfc3339.dart';
 
 /// A W3C Data Integrity Proof object (SPEC.md §4.7). Opaque to the framework,
 /// which never inspects it beyond noticing that it is present.
@@ -530,7 +531,7 @@ RejectReason? validateBasic<P>(
 ) {
   final expiresAtRaw = doc.expiresAt;
   if (expiresAtRaw != null) {
-    final expiresAt = DateTime.tryParse(expiresAtRaw);
+    final expiresAt = parseRfc3339(expiresAtRaw);
     if (expiresAt == null) {
       return const RejectReason(
         code: StandardCode.malformedRequest,
