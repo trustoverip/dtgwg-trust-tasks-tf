@@ -54,9 +54,16 @@ pub enum TspError {
 impl TspError {
     /// Map this transport-level error into a framework [`RejectReason`].
     ///
-    /// The mapping is conservative: every failure collapses to
+    /// The mapping is conservative: most failures collapse to
     /// `malformedRequest`, since from the framework's perspective the bytes
     /// simply did not yield a well-formed, authenticated Trust Task document.
+    ///
+    /// The exception is [`Self::SenderMismatch`], which maps to
+    /// `proofRequired` as the DIDComm bindings map their sender failures: it
+    /// leaves no transport-authenticated sender the consumer can name, so only
+    /// an in-band `proof` could still attribute the document. Binding §4 puts
+    /// an authentication failure outside the framework pipeline altogether, so
+    /// a consumer should normally drop such a message rather than answer it.
     ///
     /// The reason is a category, never this error's `Display`: that names
     /// VIDs, upstream failures and the deserializer's offsets, which SPEC §10.4
@@ -64,6 +71,7 @@ impl TspError {
     pub fn into_reject_reason(self) -> RejectReason {
         match self {
             TspError::InvalidBody(e) => RejectReason::malformed_from_serde(&e),
+            TspError::SenderMismatch { .. } => RejectReason::ProofRequired,
             _ => RejectReason::MalformedRequest {
                 reason: ENVELOPE_MALFORMED.to_string(),
             },
@@ -96,13 +104,22 @@ mod tests {
             "deserializer offset on the wire: {parsed}"
         );
 
-        let mismatch = reason(TspError::SenderMismatch {
+        let other = reason(TspError::WrongEnvelopeType("internal/type".into()));
+        assert!(
+            !other.contains("internal/type"),
+            "envelope detail on the wire: {other}"
+        );
+    }
+
+    #[test]
+    fn a_sender_mismatch_asks_for_a_proof_as_the_didcomm_bindings_do() {
+        let mismatch = TspError::SenderMismatch {
             claimed: "did:web:claimed.example".into(),
             verified: "did:web:verified.example".into(),
-        });
-        assert!(
-            !mismatch.contains("example"),
-            "a VID on the wire: {mismatch}"
-        );
+        };
+        assert!(matches!(
+            mismatch.into_reject_reason(),
+            RejectReason::ProofRequired
+        ));
     }
 }
