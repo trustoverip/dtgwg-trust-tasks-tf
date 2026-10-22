@@ -26,6 +26,7 @@ import {
   STALE_WIRE_MESSAGE,
   recordExpiry,
   StaticTransport,
+  validateBasic,
   validateFreshness,
   type ConsumeOutcome,
   type ReplayGuard,
@@ -250,6 +251,21 @@ describe("SPEC §7.2 item 11 — duplicate execution", () => {
     assert.equal(state.executions, 0, "executed without a usable record");
   });
 
+  it("fails closed on a verdict it does not know", async () => {
+    // A guard written in plain JS, or against a newer verdict set, can answer
+    // with a kind the switch has no case for.
+    const unknown: ReplayGuard = {
+      claim: () => ({ kind: "Fresh" }) as unknown as ReturnType<ReplayGuard["claim"]>,
+    };
+    const { run, state } = runner(unknown);
+
+    const outcome = await run(doc());
+    assert.equal(outcome.kind, "rejected");
+    if (outcome.kind !== "rejected") return;
+    assert.equal(outcome.error.payload.code, "unavailable");
+    assert.equal(state.executions, 0, "executed without the guard saying fresh");
+  });
+
   it("keeps no record when the caller declares the task not consequential", async () => {
     let executions = 0;
     const run = (): Promise<ConsumeOutcome<Response>> =>
@@ -362,6 +378,26 @@ describe("SPEC §4.2 / §7.2 — freshness bounds", () => {
     const bad = validateFreshness(doc({ issuedAt: "2026-08-26T12:05:00Z" }), NOW, skew);
     assert.equal(bad?.code, "malformedRequest");
     assert.equal(bad?.message, FUTURE_ISSUED_AT);
+  });
+
+  it("refuses a timestamp with no zone designator, as Rust and Go do", () => {
+    // Date.parse reads "12:00:00" with no zone as local time, so the instant
+    // would depend on where the consumer runs.
+    for (const zoneless of ["2026-08-26T12:00:00", "2026-08-26", "Aug 26 2026 12:00:00"]) {
+      assert.equal(
+        validateFreshness(doc({ issuedAt: zoneless }), NOW, skew)?.code,
+        "malformedRequest",
+        `issuedAt ${zoneless}`,
+      );
+      assert.equal(
+        validateBasic(doc({ expiresAt: zoneless }), NOW, ME)?.code,
+        "malformedRequest",
+        `expiresAt ${zoneless}`,
+      );
+    }
+    for (const zoned of ["2026-08-26T12:00:00Z", "2026-08-26t12:00:00.250z", "2026-08-26T13:00:00+01:00"]) {
+      assert.equal(validateFreshness(doc({ issuedAt: zoned }), NOW, skew), null, zoned);
+    }
   });
 
   it("does not name the consumer's clock in the future-dated message", () => {

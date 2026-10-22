@@ -515,6 +515,15 @@ export async function consumeInbound<P, R>(
       case "fresh":
         claim = { guard, digest };
         break;
+      default:
+        // A guard answering with a verdict this runtime does not know has
+        // not said the document is fresh. Executing anyway would skip item
+        // 11, so fail closed, as for a guard that cannot answer at all.
+        return route({
+          code: "unavailable",
+          message: REPLAY_RECORD_UNAVAILABLE,
+          retryable: true,
+        });
     }
   }
 

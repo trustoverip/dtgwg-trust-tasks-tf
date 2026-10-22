@@ -557,6 +557,16 @@ func ConsumeInbound[P, R any](
 			}), nil
 		case VerdictFresh:
 			claimed = &claim{guard: guard, digest: digest}
+		default:
+			// A guard answering with a verdict this runtime does not know — the
+			// zero ReplayVerdict among them — has not said the document is fresh.
+			// Executing anyway would skip item 11, so fail closed, as for a guard
+			// that cannot answer at all.
+			return route(&RejectReason{
+				Code:      CodeUnavailable,
+				Message:   ReplayRecordUnavailable,
+				Retryable: true,
+			}), nil
 		}
 	}
 

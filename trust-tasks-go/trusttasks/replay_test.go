@@ -616,3 +616,26 @@ func TestItem11ReleasesTheClaimWhenTheHandlerFailsWithoutARefusal(t *testing.T) 
 		t.Errorf("expected two executions, got %d", executions)
 	}
 }
+
+// zeroVerdictGuard answers every claim with the zero ReplayVerdict and no error:
+// a guard written against a newer verdict set, or simply a buggy one.
+type zeroVerdictGuard struct{ failingGuard }
+
+func (zeroVerdictGuard) Claim(context.Context, string, string, time.Time, time.Time) (tt.ReplayVerdict, error) {
+	return tt.ReplayVerdict{}, nil
+}
+
+func TestItem11FailsClosedOnAVerdictItDoesNotKnow(t *testing.T) {
+	executions := 0
+	outcome := consequential(t, zeroVerdictGuard{}, consequentialDoc(nil), &executions, testNow)
+
+	if outcome.Kind != tt.OutcomeRejected {
+		t.Fatalf("expected rejected, got %q", outcome.Kind)
+	}
+	if outcome.Error.Payload.Code != string(tt.CodeUnavailable) {
+		t.Errorf("expected unavailable, got %q", outcome.Error.Payload.Code)
+	}
+	if executions != 0 {
+		t.Error("executed without the guard saying the document was fresh")
+	}
+}
