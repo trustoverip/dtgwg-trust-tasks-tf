@@ -41,6 +41,10 @@ export interface VaultCredentialsQuery {
    */
   status?: "valid" | "expired" | "revoked" | "unknown";
   /**
+   * Narrow the other constraints to credentials whose subject — the DID a presentation of the credential is made as — is this DID. Narrows only: it does not satisfy the at-least-one-filter requirement on its own.
+   */
+  subjectDid?: string;
+  /**
    * Modifier, not a filter: also return archived credentials matching the other constraints. Absent means false.
    */
   includeArchived?: boolean;
@@ -151,6 +155,10 @@ export const PAYLOAD_SCHEMA = {
     "status": {
       "$ref": "#/$defs/CredentialStatus",
       "description": "Match the validity dimension."
+    },
+    "subjectDid": {
+      "$ref": "#/$defs/Did",
+      "description": "Narrow the other constraints to credentials whose subject — the DID a presentation of the credential is made as — is this DID. Narrows only: it does not satisfy the at-least-one-filter requirement on its own."
     },
     "includeArchived": {
       "type": "boolean",

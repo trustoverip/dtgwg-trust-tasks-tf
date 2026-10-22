@@ -66,16 +66,17 @@ Every member is OPTIONAL, and the members that are present are combined with **A
 - **`issuerDid`** — matches credentials issued by this DID.
 - **`purpose`** — matches the maintainer's semantic classification of the credential: `invite`, `membership`, `role`, `endorsement`, `personhood`, or a maintainer-defined string. Derived by the maintainer when the credential was received, so a consumer can find a credential by what it is *for* without knowing its type tags.
 - **`status`** — matches the validity dimension: `valid`, `expired`, `revoked`, `unknown`.
+- **`subjectDid`** — narrows the other constraints to credentials whose **subject** is this DID: the DID the maintainer would make a presentation of the credential as ([`vault/credentials/present`](../../present/0.1/spec.md)) — a Data Integrity credential's `credentialSubject.id`, an SD-JWT-VC's `sub`. A credential the maintainer records no subject for does not match. Like the modifiers, it does **not** satisfy the at-least-one-filter requirement on its own: a holder with one identity holds every credential under it, so `subjectDid` alone is the whole vault.
 - **`includeArchived`** — a **modifier**, not a filter. When `true`, archived credentials matching the other constraints are returned as well. Defaults to `false`.
 - **`includeDeleted`** — a modifier on the same terms, surfacing soft-deleted tombstones so a consumer can offer restore or purge. Defaults to `false`.
 
 ### At least one filter is REQUIRED
 
-A request that sets no filter — even one setting both modifiers — **MUST** be refused with `vault/credentials/query:filterRequired`.
+A request that sets no filter — even one setting both modifiers, or `subjectDid` — **MUST** be refused with `vault/credentials/query:filterRequired`.
 
 This is a requirement on the **maintainer**, not on the payload schema. Expressing it schema-side would need a top-level `anyOf`, which the registry's code generators render as an untagged enum in Rust and as an index signature in TypeScript — both of which are worse than the rule being enforced where it is actually decided. A conforming maintainer **MUST NOT** treat a schema-valid empty filter as a request to enumerate.
 
-This is not a performance limit. An unconstrained query returns the shape of the holder's entire life: every community they belong to, every role they hold, every issuer they have dealt with. A consumer that has been granted read access to answer one question does not thereby acquire the right to ask all of them, and a maintainer that answers an empty filter has no way to tell those two apart. The modifiers are excluded from the requirement for the same reason: `{ "includeDeleted": true }` is an enumeration wearing a flag.
+This is not a performance limit. An unconstrained query returns the shape of the holder's entire life: every community they belong to, every role they hold, every issuer they have dealt with. A consumer that has been granted read access to answer one question does not thereby acquire the right to ask all of them, and a maintainer that answers an empty filter has no way to tell those two apart. The modifiers and `subjectDid` are excluded from the requirement for the same reason: `{ "includeDeleted": true }` is an enumeration wearing a flag.
 
 A stored credential carries two orthogonal states, and a consumer that collapses them will mis-render its own vault:
 
@@ -101,6 +102,25 @@ The credential-vault consumer sends the filter to the maintainer. The top-level 
   "payload": {
     "purpose": "membership",
     "communityDid": "did:web:community.example"
+  }
+}
+```
+
+### Finding a credential a verifier will accept from this identity
+
+A verifier that requires the presentation's holder to be a particular DID — a community's directory accepts a verified field only from a presentation its member holds — refuses one made as another identity, such as a credential bound to a separate holder key. A consumer offering the holder a choice narrows to the credentials that can satisfy it, rather than letting the holder pick one that will be refused:
+
+```json
+{
+  "id": "urn:uuid:00000000-0000-4000-8000-000000000003",
+  "type": "https://trusttasks.org/spec/vault/credentials/query/0.1#request",
+  "issuer": "did:example:wallet",
+  "recipient": "did:example:agent",
+  "issuedAt": "2026-01-01T00:00:00Z",
+  "payload": {
+    "type": "EmploymentCredential",
+    "status": "valid",
+    "subjectDid": "did:web:alice.example"
   }
 }
 ```
@@ -143,7 +163,7 @@ Each descriptor carries `id`, `types` and `status`; `issuerDid`, `purpose`, `val
 
 ### Data carried
 
-The request carries a filter over indexed envelope fields. The response carries metadata only: identifiers, type tags, issuer, purpose, validity window and lifecycle state.
+The request carries a filter over indexed envelope fields. `subjectDid` names one of the holder's own identities to the holder's own maintainer, which already knows every identity it holds credentials under. The response carries metadata only: identifiers, type tags, issuer, purpose, validity window and lifecycle state.
 
 Claim bodies are **never** carried. A search result that could return contents would be a way to read a credential without the maintainer evaluating a presentation, and the smallest payload that answers "which credential should I use" does not include them.
 

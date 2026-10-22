@@ -16,6 +16,15 @@ fn request_example_1() {
     assert_eq!(rendered, expected, "request example failed round-trip");
 }
 #[test]
+fn request_example_2() {
+    const JSON: &str = "{\n  \"id\": \"urn:uuid:00000000-0000-4000-8000-000000000003\",\n  \"type\": \"https://trusttasks.org/spec/vault/credentials/query/0.1#request\",\n  \"issuer\": \"did:example:wallet\",\n  \"recipient\": \"did:example:agent\",\n  \"issuedAt\": \"2026-01-01T00:00:00Z\",\n  \"payload\": {\n    \"type\": \"EmploymentCredential\",\n    \"status\": \"valid\",\n    \"subjectDid\": \"did:web:alice.example\"\n  }\n}\n";
+    let doc: trust_tasks_rs::TrustTask<spec::Payload> =
+        serde_json::from_str(JSON).expect("deserialize request example");
+    let rendered = serde_json::to_value(&doc).expect("re-serialize");
+    let expected: serde_json::Value = serde_json::from_str(JSON).expect("re-parse expected");
+    assert_eq!(rendered, expected, "request example failed round-trip");
+}
+#[test]
 fn response_example_1() {
     const JSON: &str = "{\n  \"id\": \"urn:uuid:00000000-0000-4000-8000-000000000002\",\n  \"type\": \"https://trusttasks.org/spec/vault/credentials/query/0.1#response\",\n  \"issuer\": \"did:example:agent\",\n  \"recipient\": \"did:example:wallet\",\n  \"issuedAt\": \"2026-01-01T00:00:01Z\",\n  \"threadId\": \"urn:uuid:00000000-0000-4000-8000-0000000000ff\",\n  \"payload\": {\n    \"credentials\": [\n      {\n        \"id\": \"cred-7f3a91c2\",\n        \"types\": [\"VerifiableCredential\", \"DTGCredential\", \"MembershipCredential\"],\n        \"issuerDid\": \"did:web:community.example\",\n        \"purpose\": \"membership\",\n        \"status\": \"valid\",\n        \"validFrom\": \"2026-01-01T00:00:00Z\",\n        \"validUntil\": \"2027-01-01T00:00:00Z\"\n      }\n    ]\n  }\n}\n";
     let doc: trust_tasks_rs::TrustTask<spec::Response> =
@@ -49,6 +58,10 @@ fn rejects_invalid_examples() {
         (
             "issuerDid that is not a DID.",
             "{\n  \"issuerDid\": \"https://issuer.example\"\n}",
+        ),
+        (
+            "subjectDid that is not a DID.",
+            "{\n  \"subjectDid\": \"member@community.example\",\n  \"type\": \"EmploymentCredential\"\n}",
         ),
     ];
     for (i, (note, raw)) in fixtures.iter().enumerate() {
