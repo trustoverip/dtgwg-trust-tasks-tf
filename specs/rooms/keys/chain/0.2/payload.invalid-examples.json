@@ -1,0 +1,29 @@
+[
+  {
+    "note": "Neither rungs nor a floor. A delivery with nothing in it extends nothing and forgets nothing; it is refused rather than answered.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind"
+    }
+  },
+  {
+    "note": "An empty `links` array. Absent is how a request that only relays a floor is spelled; an empty array is a second spelling of the same thing.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "links": [],
+      "epochFloor": 3
+    }
+  },
+  {
+    "note": "A rung claiming epoch 1. The room's first epoch has no predecessor, so a rung numbered 1 wraps something that is not an earlier epoch's key.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "links": [
+        {
+          "epoch": 1,
+          "wrapped": "Wq8zMd4XjBy7rTqU9yEn1Q",
+          "nonce": "e3Cw1Tp5Bt4vYyU3"
+        }
+      ]
+    }
+  }
+]

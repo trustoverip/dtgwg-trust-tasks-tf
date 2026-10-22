@@ -737,6 +737,26 @@ export type EnrolledVia = "install" | "invite" | "selfService" | "offline";
  */
 export type EntryId = string;
 /**
+ * The earliest epoch whose storage key a room still lets anybody derive: its chain was pruned below it (`rooms/epoch/prune`), and every epoch under it is meant to be unreadable — at the host, and, as far as each of them conforms, at every member's key holder. Absent means the room's chain has never been pruned.
+ *
+ * **The off-by-one, stated once.** A rung (`EpochLink`) numbered `e` opens with epoch `e`'s key and yields epoch `e − 1`'s. A prune with `beforeEpoch: N` drops the rungs numbered below `N`, so rung `N` survives and still yields epoch `N − 1`'s key; the floor after it is therefore `N − 1`, never `N`. A party applying a floor `F` discards the rungs numbered `F` and below — rung `F` would yield `F − 1` — and every key for an epoch below `F`.
+ *
+ * **Monotonic.** A floor only rises. A host raises the room's to the higher of the floor it held and `beforeEpoch − 1` at each prune it performs, and never lowers it; every other party keeps the highest it has learnt for the room, from any source, and never lowers it either. A lower floor learnt later — from a stale response, or a host that has not been pruned — changes nothing.
+ *
+ * **A host** that holds a floor for a room MUST NOT store, accept or serve a rung numbered at or below it, and MUST serve the floor wherever a response can carry it (`rooms/epoch/chain` 0.2, `rooms/epoch/prune` 0.2).
+ *
+ * **A member's key holder** — and any client of the member that keeps the room's rungs or keys itself — on learning a floor `F` above the one it held, by any means (`rooms/epoch/chain` 0.2 in its own reads, `rooms/keys/backfill` 0.2, `rooms/keys/chain` 0.2 from its principal):
+ *   1. MUST discard every rung it holds for the room numbered `F` or below, and every storage key, file key or other key material it holds or has cached for an epoch below `F` — including one it derived in passing while applying commits through those epochs (`rooms/keys/commit`, `rooms/epoch/commits`);
+ *   2. MUST NOT store such a rung or key again from any source — a delivery from its principal, a backfill, a repair, a catch-up, or a host that has not been pruned — and MUST NOT ask for one;
+ *   3. MUST refuse to derive or use a key for an epoch below `F`, answering exactly as it answers for an epoch its chain does not reach (`beyondChain`, with an earliest epoch at or above `F`), whatever it still holds;
+ *   4. MUST keep `F` itself for as long as it holds anything for the room, since it is what makes items 2 and 3 enforceable after the material is gone.
+ *
+ * A key holder SHOULD learn the floor whenever it fetches rungs or catches up, and SHOULD ask for it — a `rooms/epoch/chain` 0.2 read carries it whatever `fromEpoch` and `limit` it names — at least as often as it otherwise reads the room. One that never asks never learns, and keeps what it held.
+ *
+ * **What a floor does not do, stated plainly.** It is honoured by parties that conform; it does not reach into one that does not, and it recalls nothing. Plaintext a key holder already returned, records a member already opened, files already downloaded and decrypted, exports, and any key a member's own software extracted are beyond it. What it guarantees cryptographically is what the prune guarantees: a party that had not derived a key below the floor before the host erased its rungs can never derive it afterwards. What it adds is that every conforming key holder stops being able to — so that a restart, a new device or an agent's next recall reads nothing below the floor, rather than everything its holder happened to keep.
+ */
+export type EpochFloor = number;
+/**
  * Lowercase hex SHA-256 of the whole bundle's bytes. Kept in the hex form the 1.0 descriptor published rather than moved to DigestMultibase, because it is an unchanged member of an existing descriptor and re-encoding it would break every stream producer for no gain in what it checks. For a chunked transfer it is the check over the reassembled bundle, applied after every chunk has verified individually, so that a correct set of chunks assembled in the wrong order is still caught.
  */
 export type ExpectedSha256 = string;

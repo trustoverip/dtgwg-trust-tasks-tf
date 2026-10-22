@@ -1,0 +1,41 @@
+[
+  {
+    "note": "`beforeEpoch: 1`. Nothing is below epoch 1, so a prune asking for it is a caller who has the direction backwards; refused rather than answered `pruned: 0`.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "beforeEpoch": 1,
+      "presentation": {
+        "membership": "m",
+        "authority": [
+          "a"
+        ]
+      }
+    }
+  },
+  {
+    "note": "No presentation. Pruning ends the room's ability to read part of its past for every member; it is authorized by `admin` the room conferred, never by an account at the host.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "beforeEpoch": 5
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A response without the epoch floor. The floor is what members' key holders discard below, and what a host must keep; a 0.2 response that omits it has told nobody what to forget.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "pruned": 3,
+      "earliestRung": 5
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A floor of 0. Epochs start at 1; a floor below the first epoch is no floor, and absent is how a never-pruned room says so elsewhere — a prune always leaves one.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "pruned": 0,
+      "earliestRung": 2,
+      "epochFloor": 0
+    }
+  }
+]

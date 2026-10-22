@@ -171,7 +171,9 @@ A conforming **oracle** (`recipient`) **MUST**:
    - `notDelivered` when `E` is later than any epoch it holds and the removal case does not
      apply (a commit has not been delivered), with `heldEpoch` naming the latest epoch it
      holds.
-   - `beyondChain` with `earliestEpoch` when the chain does not reach back to `E`.
+   - `beyondChain` with `earliestEpoch` when the chain does not reach back to `E` — which
+     includes an `E` below the room's epoch floor once the oracle has learnt one, whatever it
+     still holds ([`EpochFloor`](../../../_shared/0.1/room.schema.json)).
 
    It **MUST NOT** derive under a different epoch and return that.
 5. Return only the derived key and its epoch. It **MUST NOT** return `storage_key(E)`, an
