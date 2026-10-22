@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/keys/chain/0.2",
+  "title": "Rooms Keys Chain — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "description": "The room whose chain these rungs belong to. The recipient MUST hold group state for it, and MUST NOT create any on the strength of this request: rungs are inert without an epoch key, so accepting them for a room one is not in would retain key material for nothing."
+    },
+    "links": {
+      "type": "array",
+      "minItems": 1,
+      "description": "The rungs, in any order. A recipient stores those numbered above the room's epoch floor — the higher of the one it holds and `epochFloor` — and reports how far back it can now reach; see the response's `earliestReadableEpoch`. Absent when the request only relays a floor.",
+      "items": {
+        "$ref": "../../../_shared/0.1/room.schema.json#/$defs/EpochLink"
+      }
+    },
+    "epochFloor": {
+      "$ref": "../../../_shared/0.1/room.schema.json#/$defs/EpochFloor",
+      "description": "The room's epoch floor, exactly as the host served it in the `rooms/epoch/chain` 0.2 response the rungs came from. A member relaying rungs MUST relay it when the host served one, and MAY send it alone, with no `links`, to pass on a floor it has just learnt. The recipient applies it as `EpochFloor` requires."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Keys Chain — response payload",
+      "description": "Success response to rooms/keys/chain. Type https://trusttasks.org/spec/rooms/keys/chain/0.2#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roomId",
+        "earliestReadableEpoch"
+      ],
+      "properties": {
+        "roomId": {
+          "type": "string"
+        },
+        "earliestReadableEpoch": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "The earliest epoch the recipient can now derive a key for, having walked the chain it holds. **This is the answer worth having**, and it is not a restatement of what was sent: a rung only extends reach if every rung above it is present too, so a caller that supplied a set with a gap in it learns that here rather than at the first record that will not open. `1` means the room's whole history is reachable."
+        },
+        "stored": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many rungs the recipient did not already hold and kept. Rungs numbered at or below the room's epoch floor are not kept and not counted, and are not an error: a member relaying a mirror's chain may hold some. Zero is a success, not a no-op: it means the caller's chain was already delivered, which is what a retry looks like."
+        },
+        "epochFloor": {
+          "$ref": "../../../_shared/0.1/room.schema.json#/$defs/EpochFloor",
+          "description": "The room's epoch floor the recipient now holds — the highest it has learnt from any source. Absent when it holds none. `earliestReadableEpoch` is never below it."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  },
+  "anyOf": [
+    {
+      "required": [
+        "links"
+      ]
+    },
+    {
+      "required": [
+        "epochFloor"
+      ]
+    }
+  ]
+}

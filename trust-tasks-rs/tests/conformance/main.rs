@@ -1096,6 +1096,7 @@ mod rooms {
     mod epoch {
         mod chain {
             mod v0_1;
+            mod v0_2;
         }
         mod commits {
             mod v0_1;
@@ -1105,6 +1106,7 @@ mod rooms {
         }
         mod prune {
             mod v0_1;
+            mod v0_2;
         }
     }
     mod info {
@@ -1122,6 +1124,7 @@ mod rooms {
         }
         mod backfill {
             mod v0_1;
+            mod v0_2;
         }
         mod browse {
             mod v0_1;
@@ -1129,6 +1132,7 @@ mod rooms {
         }
         mod chain {
             mod v0_1;
+            mod v0_2;
         }
         mod file_key {
             mod v0_1;

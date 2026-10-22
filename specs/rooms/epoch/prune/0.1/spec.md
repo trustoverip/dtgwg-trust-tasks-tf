@@ -81,7 +81,7 @@ A presentation that does not confer `admin` at the room's scope, or whose chain 
 
 That distinction matters in both directions and is easy to get wrong on screen:
 
-- A member who **already walked the chain** and holds an old epoch's key keeps it. A key someone has read is a key they have, and nothing here reaches into a member's agent. Pruning withholds *deriving it again* — after a restart, on another device, or on joining.
+- A member who **already walked the chain** and holds an old epoch's key keeps it. A key someone has read is a key they have, and nothing here reaches into a member's agent. Pruning withholds *deriving it again* — after a restart, on another device, or on joining. (Version [0.2](../0.2/spec.md) has the host keep the room's epoch floor, which members' key holders discard below.)
 - A member who **joins afterwards** can never read that span, however much authority they are granted. The host will serve them the ciphertext and no key exists to open it.
 
 So a prune is not a deletion and does not behave like one. It is closer to losing a key than to shredding a document, and an implementation that describes it as "deleting old records" is describing something else.

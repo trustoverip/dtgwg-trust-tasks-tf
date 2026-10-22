@@ -1,0 +1,17 @@
+[
+  {
+    "note": "No host. Nothing maps a room to its host — rooms are portable — so the caller names the one to fetch from; a recipient guessing one would contact a party of its own choosing with its principal's credentials.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A floor of 0. Epochs start at 1; absent is how a room that was never pruned is reported.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "earliestReadableEpoch": 1,
+      "epochFloor": 0
+    }
+  }
+]
