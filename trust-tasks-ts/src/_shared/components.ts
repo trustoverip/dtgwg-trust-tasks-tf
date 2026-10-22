@@ -1035,6 +1035,18 @@ export type MembershipSource = "added" | "joined" | "requestApproved" | "rule";
  */
 export type MerklePath = DigestMultibase[];
 /**
+ * A one-line summary of the last failure, for an administrator: the step, the config and the backend's error code or status (`put to eu-s3-primary: 503 SlowDown`). Never a credential, a presigned URL, a signed request, a room identifier or anything derived from a room's contents.
+ */
+export type MigrationLastError = string;
+/**
+ * Why a migration is `paused`. `capacity`: the destination config cannot hold the rest. `source`: a config the blobs are being moved off keeps failing to serve them. `destination`: the destination config keeps refusing writes, or is no longer `active`. `credential`: the community cannot obtain a credential for one of the configs.
+ */
+export type MigrationPauseCause = "capacity" | "source" | "destination" | "credential";
+/**
+ * `queued`: approved and waiting for another migration on this community to finish; nothing copied yet (a community that runs one migration at a time). `running`: copying, including while it retries a failing step with backoff. `paused`: halted after its automatic retries reached their cap without success, or on a cause that retrying cannot clear (`pausedCause`); resumed by issuing vtc/rooms/storage/migrate again, and by the community itself at `nextAttemptAt` when present. `complete`: every blob that was to move has moved. `failed`: halted on a blob whose copy did not verify against its manifest; that blob stays where it was.
+ */
+export type MigrationState = "queued" | "running" | "paused" | "complete" | "failed";
+/**
  * How the request reaches the approver. A CLOSED list. Version 0.1 defines `scan`: the starter shows a trigger link (as a QR code that is also a clickable link, TRIGGER-LINK.md) and the approver's wallet reads it. `code` (a typed code of at least 8 characters, under strict rate limits) and `push` (sent to the approver's enrolled devices) are reserved names.
  */
 export type Mode = "scan";

@@ -1,0 +1,85 @@
+[
+  {
+    "note": "No reason.",
+    "payload": {
+      "roomId": "room:z6MkRoomExample0001"
+    }
+  },
+  {
+    "note": "A target config — a migration always moves blobs to the room's assigned config; change that with vtc/rooms/storage/assign.",
+    "payload": {
+      "roomId": "room:z6MkRoomExample0001",
+      "toConfig": "eu-s3-primary",
+      "reason": "Move."
+    }
+  },
+  {
+    "note": "A copy rate below the 64 KiB/s floor.",
+    "payload": {
+      "roomId": "room:z6MkRoomExample0001",
+      "maxBytesPerSecond": 1024,
+      "reason": "Slowly."
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A pause cause outside MigrationPauseCause — a reader switching on the cause must know every value.",
+    "payload": {
+      "migrationId": "6f1c2b3a-4d5e-4f60-8172-93a4b5c6d7e8",
+      "roomId": "room:z6MkRoomExample0001",
+      "toConfig": "eu-s3-primary",
+      "fromConfigs": [
+        "local-default"
+      ],
+      "state": "paused",
+      "totalFiles": 12,
+      "totalBytes": 48234496,
+      "doneFiles": 7,
+      "doneBytes": 29360128,
+      "pausedCause": "network",
+      "lastError": "put to eu-s3-primary: 503 SlowDown",
+      "nextAttemptAt": "2026-10-10T14:30:00Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An unbounded lastError — it is a one-line summary, never a dump of the backend's response (which can carry a signed request).",
+    "payload": {
+      "migrationId": "6f1c2b3a-4d5e-4f60-8172-93a4b5c6d7e8",
+      "roomId": "room:z6MkRoomExample0001",
+      "toConfig": "eu-s3-primary",
+      "fromConfigs": [
+        "local-default"
+      ],
+      "state": "paused",
+      "totalFiles": 12,
+      "totalBytes": 48234496,
+      "doneFiles": 7,
+      "doneBytes": 29360128,
+      "pausedCause": "destination",
+      "lastError": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "nextAttemptAt": "2026-10-10T14:30:00Z"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An unknown response member — the response is closed.",
+    "payload": {
+      "migrationId": "6f1c2b3a-4d5e-4f60-8172-93a4b5c6d7e8",
+      "roomId": "room:z6MkRoomExample0001",
+      "toConfig": "eu-s3-primary",
+      "fromConfigs": [
+        "local-default"
+      ],
+      "state": "paused",
+      "totalFiles": 12,
+      "totalBytes": 48234496,
+      "doneFiles": 7,
+      "doneBytes": 29360128,
+      "pausedCause": "destination",
+      "lastError": "put to eu-s3-primary: 503 SlowDown",
+      "nextAttemptAt": "2026-10-10T14:30:00Z",
+      "retryCount": 7
+    }
+  }
+]
