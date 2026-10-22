@@ -387,7 +387,7 @@ void main() {
       );
       expect(
         recordExpiry(at(issuedAt: '2026-01-01T00:00:00Z'), policy, testNow),
-        testNow.add(defaultMaxAge),
+        testNow.add(defaultMaxAge + defaultSkew),
       );
       // No window at all: the caller must not execute a consequential task.
       expect(recordExpiry(at(), FreshnessPolicy.defaults, testNow), isNull);

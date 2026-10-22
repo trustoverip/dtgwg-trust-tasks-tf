@@ -473,8 +473,8 @@ func TestRecordExpiryPrefersExpiresAtThenIssuedAtPlusWindow(t *testing.T) {
 
 	aged := freshnessDoc(ptr("2026-01-01T00:00:00Z"), nil)
 	got, bounded = tt.RecordExpiry(aged, policy, testNow)
-	if !bounded || !got.Equal(testNow.Add(tt.DefaultMaxAge)) {
-		t.Errorf("expected issuedAt + MaxAge, got %v (%v)", got, bounded)
+	if !bounded || !got.Equal(testNow.Add(tt.DefaultMaxAge+tt.DefaultSkew)) {
+		t.Errorf("expected issuedAt + MaxAge + Skew, got %v (%v)", got, bounded)
 	}
 
 	// No window at all: the caller must not execute a consequential task.
