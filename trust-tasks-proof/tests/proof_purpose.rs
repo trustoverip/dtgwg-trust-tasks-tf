@@ -458,3 +458,54 @@ async fn signing_refuses_a_purpose_no_verifier_accepts() {
         );
     }
 }
+
+// ─── did:scid ───────────────────────────────────────────────────────────
+
+/// A did:scid identity is the bare DID; its document lists keys under it. A
+/// signer may name its key with the `?src=` locator a verifier needs to fetch
+/// the log (VTI-KEY-163), and the proof still binds to the bare DID.
+#[tokio::test]
+async fn a_did_scid_key_named_with_its_src_verifies() {
+    let did = "did:scid:vh:1:QmScid";
+    let url = "did:scid:vh:1:QmScid?src=issuer.example";
+    let vm = format!("{did}#key-1");
+    let verifier = verifier_with(
+        did,
+        json!({ "id": did, "verificationMethod": [method(&vm, did)], "assertionMethod": [vm] }),
+    )
+    .await;
+
+    for (issuer, signing_vm) in [
+        (did.to_string(), vm.clone()),
+        (url.to_string(), format!("{url}#key-1")),
+    ] {
+        verifier
+            .verify_raw(&signed(&issuer, &signing_vm, "assertionMethod").await)
+            .await
+            .unwrap_or_else(|e| panic!("{issuer} / {signing_vm}: {e}"));
+    }
+
+    // The issuer binding stays exact (SPEC §4.8): a signer writes `issuer` and
+    // its verificationMethod in the same form.
+    let err = verifier
+        .verify_raw(&signed(did, &format!("{url}#key-1"), "assertionMethod").await)
+        .await
+        .unwrap_err();
+    assert!(matches!(err, VerificationError::IssuerMismatch(_)), "{err}");
+}
+
+#[tokio::test]
+async fn a_did_scid_key_of_another_scid_is_refused() {
+    let did = "did:scid:vh:1:QmScid";
+    let vm = format!("{did}#key-1");
+    let verifier = verifier_with(
+        did,
+        json!({ "id": did, "verificationMethod": [method(&vm, did)], "assertionMethod": [vm] }),
+    )
+    .await;
+    let other = "did:scid:vh:1:QmOther?src=issuer.example";
+    assert!(verifier
+        .verify_raw(&signed(other, &format!("{other}#key-1"), "assertionMethod").await)
+        .await
+        .is_err());
+}

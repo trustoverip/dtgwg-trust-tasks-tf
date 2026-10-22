@@ -139,6 +139,11 @@ case holds in `details.reason`:
 - `beyondChain`, with `earliestEpoch`, when `E` is earlier than its current epoch and its
   retained epoch chain does not reach back to `E`.
 
+An epoch below the room's epoch floor, once the oracle has learnt one, is answered as
+`beyondChain` with `earliestEpoch` at or above the floor, whatever the oracle still holds — see
+[`EpochFloor`](../../../_shared/0.1/room.schema.json) and
+[`rooms/epoch/prune`](../../../epoch/prune/0.2/spec.md) 0.2.
+
 It **MUST NOT** attempt the record under a different epoch's key. A caller acts on
 `details.reason`, never on the message, and after `removed` **MUST NOT** retry after catching
 up.

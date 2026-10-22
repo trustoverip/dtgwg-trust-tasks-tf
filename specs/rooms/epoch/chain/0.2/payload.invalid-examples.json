@@ -1,0 +1,18 @@
+[
+  {
+    "note": "No presentation. The chain is the room's history in wrapped form; it is served on `read` the room conferred, never on an account at the host.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "fromEpoch": 5
+    }
+  },
+  {
+    "variant": "response",
+    "note": "The floor as a string. A key holder compares it with rung numbers to decide what to discard; a string invites one implementation to compare lexically and keep epoch 10 below epoch 9.",
+    "payload": {
+      "roomId": "did:webvh:example.com:rooms:northwind",
+      "links": [],
+      "epochFloor": "4"
+    }
+  }
+]

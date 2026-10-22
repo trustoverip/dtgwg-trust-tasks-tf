@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/epoch/prune/0.2",
+  "title": "Rooms Epoch Prune — payload",
+  "description": "A room's owner asks its host to drop the epoch key chain below an epoch, making the history before it unrecoverable for anyone who has not already derived it. 0.2 makes the host keep the room's resulting epoch floor and serve it, so that members' key holders discard what they hold below it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "beforeEpoch",
+    "presentation"
+  ],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "description": "The room to prune."
+    },
+    "beforeEpoch": {
+      "type": "integer",
+      "minimum": 2,
+      "description": "Drop every rung numbered *below* this epoch, exactly as 0.1. Rung `N` itself survives and still yields epoch `N − 1`'s key, so the earliest epoch anybody can still derive afterwards — the room's epoch floor — is `N − 1` (`EpochFloor`). To make the history sealed under epochs before `E` unreadable, send `beforeEpoch: E + 1`.\n\n`minimum: 2` because pruning below epoch 1 would drop nothing and asking to is a caller that has misunderstood the direction — the chain walks backwards, and epoch 1 is where it ends."
+    },
+    "presentation": {
+      "$ref": "../../../_shared/0.1/room.schema.json#/$defs/AuthorityPresentation",
+      "description": "Must confer `admin` at this room's scope. Not `curate`, and not `write`: pruning is not a statement about any record, and every member who can write can curate. It ends the room's ability to open a span of its own history, for everyone, which is the same class of act as advancing the epoch."
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 512,
+      "description": "Why, for the room's audit trail. A prune is irreversible and unattributable after the fact — the rungs are simply gone — so the only record of intent is the one made at the time."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roomId",
+        "pruned",
+        "earliestRung",
+        "epochFloor"
+      ],
+      "description": "Success response to rooms/epoch/prune. Type https://trusttasks.org/spec/rooms/epoch/prune/0.2#response.",
+      "properties": {
+        "roomId": {
+          "type": "string"
+        },
+        "pruned": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many rungs were dropped. `0` is a success: the chain already went back no further, and a caller that read it as a failure would retry an operation that has nothing left to do."
+        },
+        "earliestRung": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "The lowest epoch the chain still reaches, after pruning. **Not a restatement of `beforeEpoch`**: a chain with a gap in it already stopped somewhere, and a prune below that gap changes nothing about how far back a member can actually walk. Reporting the request back would tell an operator they had achieved something they had not."
+        },
+        "epochFloor": {
+          "$ref": "../../../_shared/0.1/room.schema.json#/$defs/EpochFloor",
+          "description": "The room's epoch floor after this prune: the higher of the floor the host held and `beforeEpoch − 1`. What every member's key holder discards below once it learns it (`EpochFloor`), and what `rooms/epoch/chain` 0.2 serves from now on. Unlike `earliestRung`, a statement of intent rather than of reach: a chain with a gap already reached less far, but the floor is what the owner decided."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      },
+      "title": "Rooms Epoch Prune — response payload"
+    }
+  }
+}

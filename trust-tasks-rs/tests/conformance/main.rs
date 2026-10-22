@@ -1091,10 +1091,12 @@ mod rooms {
     }
     mod create {
         mod v0_1;
+        mod v0_2;
     }
     mod epoch {
         mod chain {
             mod v0_1;
+            mod v0_2;
         }
         mod commits {
             mod v0_1;
@@ -1104,10 +1106,12 @@ mod rooms {
         }
         mod prune {
             mod v0_1;
+            mod v0_2;
         }
     }
     mod info {
         mod v0_1;
+        mod v0_2;
     }
     mod keys {
         mod act {
@@ -1120,12 +1124,15 @@ mod rooms {
         }
         mod backfill {
             mod v0_1;
+            mod v0_2;
         }
         mod browse {
             mod v0_1;
+            mod v0_2;
         }
         mod chain {
             mod v0_1;
+            mod v0_2;
         }
         mod file_key {
             mod v0_1;
@@ -1204,10 +1211,19 @@ mod rooms {
         }
         mod list {
             mod v0_2;
+            mod v0_3;
+        }
+        mod prune {
+            mod v0_1;
         }
         mod put {
             mod v0_2;
             mod v0_3;
+        }
+        mod retention {
+            mod set {
+                mod v0_1;
+            }
         }
     }
     mod revocations {
@@ -1757,6 +1773,7 @@ mod vta {
             mod create {
                 mod v1_0;
                 mod v1_1;
+                mod v1_2;
             }
             mod delete {
                 mod v1_0;

@@ -135,6 +135,11 @@ fn authorised_method(
     vm: &str,
     purpose: ProofPurpose,
 ) -> Result<VerificationMethod, DataIntegrityError> {
+    // A did:scid identity is the DID; a `?src=` locator on the reference is
+    // only where to fetch its log, and its document lists keys under the bare
+    // DID. Every other DID is compared exactly as given.
+    let did = &*affinidi_did_common::scid::strip_scid_src(did);
+    let vm = &*affinidi_did_common::scid::strip_scid_src(vm);
     if doc.id.as_str() != did {
         return Err(DataIntegrityError::Resolver(
             "the resolved DID document's id is not the verificationMethod's DID".to_string(),

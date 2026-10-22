@@ -2304,10 +2304,22 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/rooms/create/0.1#response" => <crate::specs::rooms::create::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/create/0.2" => <crate::specs::rooms::create::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/create/0.2#response" => <crate::specs::rooms::create::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/epoch/chain/0.1" => <crate::specs::rooms::epoch::chain::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/epoch/chain/0.1#response" => <crate::specs::rooms::epoch::chain::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/epoch/chain/0.2" => <crate::specs::rooms::epoch::chain::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/epoch/chain/0.2#response" => <crate::specs::rooms::epoch::chain::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/epoch/commits/0.1" => <crate::specs::rooms::epoch::commits::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -2328,10 +2340,22 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/rooms/epoch/prune/0.1#response" => <crate::specs::rooms::epoch::prune::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/epoch/prune/0.2" => <crate::specs::rooms::epoch::prune::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/epoch/prune/0.2#response" => <crate::specs::rooms::epoch::prune::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/info/0.1" => <crate::specs::rooms::info::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/info/0.1#response" => <crate::specs::rooms::info::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/info/0.2" => <crate::specs::rooms::info::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/info/0.2#response" => <crate::specs::rooms::info::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/act/0.1" => <crate::specs::rooms::keys::act::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -2376,16 +2400,34 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/rooms/keys/backfill/0.1#response" => <crate::specs::rooms::keys::backfill::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/backfill/0.2" => <crate::specs::rooms::keys::backfill::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/backfill/0.2#response" => <crate::specs::rooms::keys::backfill::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/browse/0.1" => <crate::specs::rooms::keys::browse::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/browse/0.1#response" => <crate::specs::rooms::keys::browse::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/browse/0.2" => <crate::specs::rooms::keys::browse::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/browse/0.2#response" => <crate::specs::rooms::keys::browse::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/chain/0.1" => <crate::specs::rooms::keys::chain::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/chain/0.1#response" => <crate::specs::rooms::keys::chain::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/chain/0.2" => <crate::specs::rooms::keys::chain::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/chain/0.2#response" => <crate::specs::rooms::keys::chain::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/commit/0.1" => <crate::specs::rooms::keys::commit::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -2640,6 +2682,18 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/rooms/records/list/0.2#response" => <crate::specs::rooms::records::list::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/records/list/0.3" => <crate::specs::rooms::records::list::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/records/list/0.3#response" => <crate::specs::rooms::records::list::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/records/prune/0.1" => <crate::specs::rooms::records::prune::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/records/prune/0.1#response" => <crate::specs::rooms::records::prune::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/records/put/0.1" => <crate::specs::rooms::records::put::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -2656,6 +2710,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/records/put/0.3#response" => <crate::specs::rooms::records::put::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/records/retention/set/0.1" => <crate::specs::rooms::records::retention::set::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/records/retention/set/0.1#response" => <crate::specs::rooms::records::retention::set::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/revocations/get/0.1" => <crate::specs::rooms::revocations::get::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -3717,6 +3777,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/webvh/dids/create/1.1#response" => <crate::specs::vta::webvh::dids::create::v1_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webvh/dids/create/1.2" => <crate::specs::vta::webvh::dids::create::v1_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webvh/dids/create/1.2#response" => <crate::specs::vta::webvh::dids::create::v1_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/webvh/dids/delete/1.0" => <crate::specs::vta::webvh::dids::delete::v1_0::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -7749,8 +7815,18 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/create/0.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::create::v0_2::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/epoch/chain/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::epoch::chain::v0_1::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/epoch/chain/0.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::epoch::chain::v0_2::Payload,
         >()),
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -7769,8 +7845,18 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/epoch/prune/0.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::epoch::prune::v0_2::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/info/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::info::v0_1::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/info/0.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::info::v0_2::Payload,
         >()),
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -7809,13 +7895,28 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/backfill/0.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::keys::backfill::v0_2::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/browse/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::keys::browse::v0_1::Payload,
         >()),
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/browse/0.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::keys::browse::v0_2::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/chain/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::keys::chain::v0_1::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/chain/0.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::keys::chain::v0_2::Payload,
         >()),
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -8045,6 +8146,16 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/records/list/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::records::list::v0_3::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/records/prune/0.1" => Some(crate::SpecPolicy::of::<
+            crate::specs::rooms::records::prune::v0_1::Payload,
+        >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/records/put/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::records::put::v0_1::Payload,
         >()),
@@ -8058,6 +8169,13 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/rooms/records/put/0.3" => Some(crate::SpecPolicy::of::<
             crate::specs::rooms::records::put::v0_3::Payload,
         >()),
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/records/retention/set/0.1" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::rooms::records::retention::set::v0_1::Payload,
+            >())
+        }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/revocations/get/0.1" => Some(crate::SpecPolicy::of::<
@@ -9067,6 +9185,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/webvh/dids/create/1.1" => Some(crate::SpecPolicy::of::<
             crate::specs::vta::webvh::dids::create::v1_1::Payload,
+        >()),
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webvh/dids/create/1.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::vta::webvh::dids::create::v1_2::Payload,
         >()),
         #[cfg(feature = "vta")]
         #[cfg(not(test))]
@@ -12851,8 +12974,18 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/create/0.2" => {
+            Some(crate::specs::rooms::create::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/epoch/chain/0.1" => {
             Some(crate::specs::rooms::epoch::chain::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/epoch/chain/0.2" => {
+            Some(crate::specs::rooms::epoch::chain::v0_2::ERROR_CODES)
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -12871,8 +13004,18 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/epoch/prune/0.2" => {
+            Some(crate::specs::rooms::epoch::prune::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/info/0.1" => {
             Some(crate::specs::rooms::info::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/info/0.2" => {
+            Some(crate::specs::rooms::info::v0_2::ERROR_CODES)
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -12911,13 +13054,28 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/backfill/0.2" => {
+            Some(crate::specs::rooms::keys::backfill::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/browse/0.1" => {
             Some(crate::specs::rooms::keys::browse::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/browse/0.2" => {
+            Some(crate::specs::rooms::keys::browse::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/keys/chain/0.1" => {
             Some(crate::specs::rooms::keys::chain::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/keys/chain/0.2" => {
+            Some(crate::specs::rooms::keys::chain::v0_2::ERROR_CODES)
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -13131,6 +13289,16 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/records/list/0.3" => {
+            Some(crate::specs::rooms::records::list::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/records/prune/0.1" => {
+            Some(crate::specs::rooms::records::prune::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/records/put/0.1" => {
             Some(crate::specs::rooms::records::put::v0_1::ERROR_CODES)
         }
@@ -13143,6 +13311,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/rooms/records/put/0.3" => {
             Some(crate::specs::rooms::records::put::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "rooms")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/rooms/records/retention/set/0.1" => {
+            Some(crate::specs::rooms::records::retention::set::v0_1::ERROR_CODES)
         }
         #[cfg(feature = "rooms")]
         #[cfg(not(test))]
@@ -14049,6 +14222,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vta/webvh/dids/create/1.1" => {
             Some(crate::specs::vta::webvh::dids::create::v1_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vta")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vta/webvh/dids/create/1.2" => {
+            Some(crate::specs::vta::webvh::dids::create::v1_2::ERROR_CODES)
         }
         #[cfg(feature = "vta")]
         #[cfg(not(test))]

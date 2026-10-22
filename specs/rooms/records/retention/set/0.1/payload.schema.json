@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/records/retention/set/0.1",
+  "title": "Rooms Records Retention Set — payload",
+  "description": "A holder of `admin` changes how long a room keeps its records by age — its record retention — which decides what `rooms/records/prune` may remove from then on.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["roomId", "presentation", "recordRetention", "reason"],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "description": "The room whose record retention to change. A host verifies the presentation against credentials issued by this identifier, never against a member list of its own."
+    },
+    "presentation": {
+      "$ref": "../../../../_shared/0.1/room.schema.json#/$defs/AuthorityPresentation",
+      "description": "Must confer `admin` at this room's scope — the same grant a prune takes, because shortening the retention is how a prune is made to reach further."
+    },
+    "recordRetention": {
+      "$ref": "../../../../_shared/0.1/room.schema.json#/$defs/RecordRetention",
+      "description": "The room's record retention from now on, replacing the one in force whole: a member left out is no longer stated. `{}` clears it, after which no record is eligible by age."
+    },
+    "expectedRetention": {
+      "$ref": "../../../../_shared/0.1/room.schema.json#/$defs/RecordRetention",
+      "description": "Optional precondition: the record retention the caller believes is in force — `{}` for none. On a mismatch the host refuses with `retentionConflict`, carrying the one in force, so that two administrators changing it at once do not each overwrite the other's decision unseen."
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "Why, for the room's audit trail. REQUIRED: a shortened retention is what lets a later prune remove records that were not eligible a moment before, so the change carries its own account of intent. Plain text; it MUST NOT name a member or quote a record."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Records Retention Set — response payload",
+      "description": "Success response to rooms/records/retention/set. Type https://trusttasks.org/spec/rooms/records/retention/set/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["roomId", "recordRetention"],
+      "properties": {
+        "roomId": {
+          "type": "string"
+        },
+        "recordRetention": {
+          "$ref": "../../../../_shared/0.1/room.schema.json#/$defs/RecordRetention",
+          "description": "The record retention now in force, as the host recorded it — what `rooms/info` will serve every member."
+        },
+        "previous": {
+          "$ref": "../../../../_shared/0.1/room.schema.json#/$defs/RecordRetention",
+          "description": "The record retention it replaced, `{}` when there was none. Returned so that a surface can say what changed, and in which direction."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
