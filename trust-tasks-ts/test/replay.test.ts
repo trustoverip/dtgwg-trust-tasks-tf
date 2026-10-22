@@ -250,6 +250,21 @@ describe("SPEC §7.2 item 11 — duplicate execution", () => {
     assert.equal(state.executions, 0, "executed without a usable record");
   });
 
+  it("fails closed on a verdict it does not know", async () => {
+    // A guard written in plain JS, or against a newer verdict set, can answer
+    // with a kind the switch has no case for.
+    const unknown: ReplayGuard = {
+      claim: () => ({ kind: "Fresh" }) as unknown as ReturnType<ReplayGuard["claim"]>,
+    };
+    const { run, state } = runner(unknown);
+
+    const outcome = await run(doc());
+    assert.equal(outcome.kind, "rejected");
+    if (outcome.kind !== "rejected") return;
+    assert.equal(outcome.error.payload.code, "unavailable");
+    assert.equal(state.executions, 0, "executed without the guard saying fresh");
+  });
+
   it("keeps no record when the caller declares the task not consequential", async () => {
     let executions = 0;
     const run = (): Promise<ConsumeOutcome<Response>> =>
