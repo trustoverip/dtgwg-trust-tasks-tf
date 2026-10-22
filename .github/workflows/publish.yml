@@ -548,6 +548,38 @@ jobs:
         with:
           tool: release-plz@0.3.171,cargo-semver-checks,git-cliff
 
+      # cargo-semver-checks on trust-tasks-rs peaks at ~12.6 GB resident
+      # (rustdoc JSON for the generated tree, current and baseline), measured
+      # locally against 0.33.1. A standard runner has 16 GB, and from #871 the
+      # job was SIGTERMed (exit 143, no error from the tool) about two minutes
+      # into the check, twice — the signature of systemd-oomd acting on memory
+      # pressure. Stop oomd so pressure alone ends nothing, and give the kernel
+      # a swapfile to spill into: slower under pressure, but it finishes.
+      # Weakening `semver_check` instead is what release-plz.toml argues
+      # against for a crate that owns its API.
+      #
+      # The swapfile goes on whichever of / and /mnt has more room, at up to
+      # 16 GB but leaving 8 GB free for the rustdoc builds themselves — the
+      # runner image's disk layout is not ours to assume.
+      - name: Add swap for cargo-semver-checks
+        run: |
+          sudo systemctl stop systemd-oomd || true
+          sudo swapoff -a
+          sudo rm -f /mnt/swapfile /swapfile
+          root_free=$(df --output=avail -BG / | tail -1 | tr -dc 0-9)
+          mnt_free=$(df --output=avail -BG /mnt | tail -1 | tr -dc 0-9)
+          if [ "$mnt_free" -gt "$root_free" ]; then dir=/mnt free=$mnt_free; else dir='' free=$root_free; fi
+          size=$(( free - 8 < 16 ? free - 8 : 16 ))
+          if [ "$size" -lt 4 ]; then
+            echo "::warning::only ${free}G free; not adding swap"
+          else
+            sudo fallocate -l "${size}G" "$dir/swapfile"
+            sudo chmod 600 "$dir/swapfile"
+            sudo mkswap "$dir/swapfile"
+            sudo swapon "$dir/swapfile"
+          fi
+          free -h
+
       - name: Open or update the Release PR
         env:
           GH_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
