@@ -3938,6 +3938,9 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vtc/admin/events/event/0.3" => <crate::specs::vtc::admin::events::event::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/admin/events/event/0.4" => <crate::specs::vtc::admin::events::event::v0_4::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/admin/events/subscribe/0.1" => <crate::specs::vtc::admin::events::subscribe::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
@@ -3954,6 +3957,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/admin/events/subscribe/0.3#response" => <crate::specs::vtc::admin::events::subscribe::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/admin/events/subscribe/0.4" => <crate::specs::vtc::admin::events::subscribe::v0_4::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/admin/events/subscribe/0.4#response" => <crate::specs::vtc::admin::events::subscribe::v0_4::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/admin/invites/create/0.1" => <crate::specs::vtc::admin::invites::create::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -9233,6 +9242,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/admin/events/event/0.4" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::admin::events::event::v0_4::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/admin/events/subscribe/0.1" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::vtc::admin::events::subscribe::v0_1::Payload,
@@ -9250,6 +9264,13 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/vtc/admin/events/subscribe/0.3" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::vtc::admin::events::subscribe::v0_3::Payload,
+            >())
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/admin/events/subscribe/0.4" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::admin::events::subscribe::v0_4::Payload,
             >())
         }
         #[cfg(feature = "vtc")]
@@ -14121,6 +14142,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/admin/events/event/0.4" => {
+            Some(crate::specs::vtc::admin::events::event::v0_4::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/admin/events/subscribe/0.1" => {
             Some(crate::specs::vtc::admin::events::subscribe::v0_1::ERROR_CODES)
         }
@@ -14133,6 +14159,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/admin/events/subscribe/0.3" => {
             Some(crate::specs::vtc::admin::events::subscribe::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/admin/events/subscribe/0.4" => {
+            Some(crate::specs::vtc::admin::events::subscribe::v0_4::ERROR_CODES)
         }
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]

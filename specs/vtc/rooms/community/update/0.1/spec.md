@@ -200,7 +200,7 @@ The community answers with the sub-schema reachable via `$anchor: "response"`: t
 
 ## Live updates
 
-The `rooms` topic of [`vtc/admin/events/subscribe`](../../../../../vtc/admin/events/subscribe/0.2/spec.md) hints at changes to the **host's** view of rooms, for holders of `vtc.rooms.admin`, and that view carries no room's details. A change made here therefore produces no hint at 0.2, consistently with what that topic covers. A console showing the owner's view re-reads it after its own update; a hint for other administrators' consoles would belong to a topic for the owner's view, in a later version of that specification.
+The `communityRooms` topic of [`vtc/admin/events/subscribe`](../../../../../vtc/admin/events/subscribe/0.4/spec.md), from `0.4`, hints at changes to the **owner's** view of the rooms the community owns, for holders of `vtc.rooms.manage`. A change made here is such a change: a community serving `0.4` sends a `communityRooms` hint to every console subscribed to that topic, and their consoles re-read [`get`](../../../../../vtc/rooms/community/get/0.2/spec.md) or [`list`](../../../../../vtc/rooms/community/list/0.2/spec.md) to see it. The hint names no room. The `rooms` topic (`0.2` and later) covers the **host's** view, for holders of `vtc.rooms.admin`, and that view carries no room's details, so a change made here produces no `rooms` hint. A console subscribed at an earlier version, which cannot ask for `communityRooms`, re-reads the owner's view after its own update and polls it otherwise.
 
 ## Security & Privacy
 
