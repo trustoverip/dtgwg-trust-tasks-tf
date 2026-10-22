@@ -1787,6 +1787,20 @@ export type Topic_VtcAdminEventsV0_3 =
   | "directory"
   | "groups";
 /**
+ * One kind of change a console can be told about. A closed set: a topic not listed here is a new MINOR version of this component, not an `ext` member, because each topic is bound to the read that authorizes it.
+ */
+export type Topic_VtcAdminEventsV0_4 =
+  | "actions"
+  | "acknowledgements"
+  | "joinRequests"
+  | "members"
+  | "singleAdminMode"
+  | "config"
+  | "rooms"
+  | "directory"
+  | "groups"
+  | "communityRooms";
+/**
  * How the traffic reached or left the mediator. `peerMediator` is mediator-to-mediator forwarding.
  */
 export type TrafficChannel = "websocket" | "rest" | "peerMediator" | "internal";
