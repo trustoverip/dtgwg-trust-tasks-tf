@@ -305,7 +305,7 @@ dependencies = [
  "crypto_secretbox",
  "ed25519-dalek",
  "rand 0.10.2",
- "salsa20",
+ "salsa20 0.10.2",
  "serde",
  "serde_json",
  "subtle",
@@ -631,9 +631,9 @@ dependencies = [
 
 [[package]]
 name = "affinidi-tsp"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "32049a0b3373d56d281438370530812d494b4d35d457e8872a979b9dedc0c915"
+checksum = "1252b085fb12a2dd4e62221821f334689eeb27ba28359744ea7ff43012a67fac"
 dependencies = [
  "affinidi-cesr",
  "affinidi-did-common",
@@ -646,8 +646,7 @@ dependencies = [
  "hex",
  "hkdf 0.13.0",
  "rand 0.10.2",
- "rand_core 0.6.4",
- "salsa20",
+ "salsa20 0.11.0",
  "serde",
  "serde_json",
  "sha2 0.11.0",
@@ -1497,7 +1496,7 @@ dependencies = [
  "cipher 0.4.4",
  "generic-array",
  "poly1305 0.8.0",
- "salsa20",
+ "salsa20 0.10.2",
  "subtle",
  "zeroize",
 ]
@@ -4140,6 +4139,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97a22f5af31f73a954c10289c93e8a50cc23d971e80ee446f1f6f7137a088213"
 dependencies = [
  "cipher 0.4.4",
+]
+
+[[package]]
+name = "salsa20"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2f874456e72520ff1375a06c588eaf074b0f01f9e9e1aada45bd9b7954a6e42c"
+dependencies = [
+ "cfg-if",
+ "cipher 0.5.2",
 ]
 
 [[package]]

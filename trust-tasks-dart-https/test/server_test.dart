@@ -147,6 +147,15 @@ void main() {
     });
 
     test(
+        'a misaddressed document is wrongRecipient even when its issuer '
+        'also contradicts the token (§7.2 order, as consumeInbound)', () async {
+      final reply = await echoServer().handle(
+        post(echoDoc(issuer: mallory, recipient: 'did:web:elsewhere.example')),
+      );
+      expect(codeOf(reply), 'wrongRecipient');
+    });
+
+    test(
         'a mismatch with no authenticated sender is indistinguishable from '
         'a body that did not parse', () async {
       // The server's own VID stands as the transport recipient, so a

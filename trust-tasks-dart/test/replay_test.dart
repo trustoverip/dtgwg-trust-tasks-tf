@@ -385,6 +385,37 @@ void main() {
           payload: const Payload('admin'),
         );
 
+    test('refuses a timestamp with no zone designator, as Rust and Go do', () {
+      // DateTime.tryParse reads "00:00:00" with no zone as local time, so the
+      // instant would depend on where the consumer runs.
+      const policy = FreshnessPolicy.defaults;
+      for (final zoneless in [
+        '2026-01-01T00:00:00',
+        '2026-01-01',
+        '2026-01-01 00:00:00Z',
+        '20260101T000000Z',
+      ]) {
+        expect(
+          validateFreshness(at(issuedAt: zoneless), testNow, policy)?.code,
+          StandardCode.malformedRequest,
+          reason: 'issuedAt $zoneless',
+        );
+        expect(
+          validateBasic(at(expiresAt: zoneless), testNow, me)?.code,
+          StandardCode.malformedRequest,
+          reason: 'expiresAt $zoneless',
+        );
+      }
+      for (final zoned in [
+        '2026-01-01T00:00:00Z',
+        '2026-01-01t00:00:00.250z',
+        '2026-01-01T01:00:00+01:00',
+      ]) {
+        expect(validateFreshness(at(issuedAt: zoned), testNow, policy), isNull,
+            reason: zoned);
+      }
+    });
+
     test('rejects an issuedAt beyond the skew tolerance', () {
       const policy = FreshnessPolicy.defaults;
       expect(

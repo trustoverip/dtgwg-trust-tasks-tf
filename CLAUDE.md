@@ -616,10 +616,13 @@ are not obvious:
   importing `dart:io` from the main library would take the web away from the
   client, which is the half a Flutter web app wants.
 - **Its request pipeline mirrors `trust-tasks-https/src/server.rs` step for
-  step**, including running identity, expiry and freshness *before* the
-  attribution gate — `consumeInbound` repeats them afterwards, harmlessly. A
-  reorder changes which code a document that fails two checks is refused with,
-  and the two servers would then disagree.
+  step**, including running expiry, freshness and identity (in §7.2 order, as
+  `consumeInbound` does — except that with no authenticated sender identity
+  runs first, so a misaddressed document stays suppressed per §8.1) *before*
+  the attribution gate — `consumeInbound`
+  repeats them afterwards, harmlessly. A reorder in one server changes which
+  code a document that fails two checks is refused with, and the servers would
+  then disagree with each other and with `consumeInbound`.
 - **Proofs are verified over the JSON as received**, not the typed re-encoding
   `consumeInbound` would hand the verifier, which drops payload members the
   generated type does not model and so breaks valid signatures.
