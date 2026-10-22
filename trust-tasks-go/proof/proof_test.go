@@ -98,6 +98,28 @@ func TestInteropRejectsTamperedRustFixture(t *testing.T) {
 	}
 }
 
+// ecdsa-jcs-2019.fixture.json is a copy of trust-tasks-ts-proof's: `ts-*`
+// signed by the TypeScript backend, `go-*` by this one, picked with a high S
+// (Go's ecdsa.Sign does not normalise S, so every verifier must accept it).
+func TestInteropVerifiesEcdsaFixtures(t *testing.T) {
+	b, err := os.ReadFile("testdata/ecdsa-jcs-2019.fixture.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var fixtures map[string]json.RawMessage
+	if err := json.Unmarshal(b, &fixtures); err != nil {
+		t.Fatal(err)
+	}
+	v := NewVerifier(WithClock(laterClock()))
+	for name, doc := range fixtures {
+		t.Run(name, func(t *testing.T) {
+			if err := v.Verify(context.Background(), doc); err != nil {
+				t.Errorf("verify %s fixture: %v", name, err)
+			}
+		})
+	}
+}
+
 func TestInteropReproducesRustSignatureByteForByte(t *testing.T) {
 	// Ed25519 is deterministic; the fixture was signed with seed [7; 32].
 	signer, err := SignerFromPrivateKey(Ed25519, bytes.Repeat([]byte{7}, 32))

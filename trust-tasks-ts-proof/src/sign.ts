@@ -29,7 +29,10 @@ export function signerFromPrivateKey(curve: Curve, privateKey: Uint8Array): Sign
       : (h: Uint8Array) => {
           const curveApi = curve === "p384" ? p384 : p256;
           const digest = curve === "p384" ? sha384 : sha256;
-          return curveApi.sign(digest(h), privateKey);
+          // ecdsa-jcs-2019 is ECDSA with the suite hash over hashData. We hash
+          // here, so noble must not hash again: its `prehash` defaults to true,
+          // which signed SHA(SHA(hashData)) and verified nowhere but here.
+          return curveApi.sign(digest(h), privateKey, { prehash: false });
         };
   return { curve, verificationMethod, did, sign };
 }

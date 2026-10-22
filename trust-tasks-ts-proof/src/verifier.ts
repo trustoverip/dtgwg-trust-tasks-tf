@@ -150,7 +150,13 @@ export class DataIntegrityProofVerifier implements ProofVerifier {
       const ok =
         key.curve === "ed25519"
           ? ed25519.verify(signature, hashData, key.bytes)
-          : (key.curve === "p384" ? p384 : p256).verify(signature, digest(hashData), key.bytes);
+          : // The digest is the ECDSA message hash, so no second hash
+            // (`prehash`). High-S is valid ECDSA and what Go's ecdsa.Sign
+            // emits half the time, so it is accepted (`lowS`).
+            (key.curve === "p384" ? p384 : p256).verify(signature, digest(hashData), key.bytes, {
+              prehash: false,
+              lowS: false,
+            });
       return ok ? { valid: true } : fail("signatureInvalid", "signature does not verify");
     } catch (e) {
       return fail("signatureInvalid", `verification error: ${String(e)}`);
