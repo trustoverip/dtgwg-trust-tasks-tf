@@ -84,6 +84,14 @@ class _FailingGuard implements ReplayGuard {
   Future<void> release(String id, String digest) async {}
 }
 
+/// An [InMemoryReplayGuard] that, like a store, keeps only what encodes as
+/// JSON, and keeps it as the decoded JSON.
+class _SerialisingGuard extends InMemoryReplayGuard {
+  @override
+  Future<void> recordResponse(String id, Object? response) =>
+      super.recordResponse(id, jsonDecode(jsonEncode(response)));
+}
+
 void main() {
   group('SPEC §7.2 item 11 — duplicate execution', () {
     test('absorbs a bit-for-bit resend and never executes twice (§8.4)',
@@ -133,6 +141,43 @@ void main() {
           await consequential(guard, consequentialDoc(), executions);
       expect(outcome, isA<Handled<Response>>());
       expect(executions.count, 1);
+    });
+
+    test('caches a success response as JSON a persistent guard can store',
+        () async {
+      // Stands in for a guard backed by a store: it keeps only what
+      // jsonEncode can write, as Redis or a database would.
+      final guard = _SerialisingGuard();
+      Future<ConsumeOutcome<Response>> run() =>
+          consumeInbound<Payload, Response>(
+            transport: const UnauthenticatedTransport(),
+            spec: consequentialSpec,
+            proofPolicy: const ProofPolicy.acceptUnverified(),
+            payloadPolicy: const PayloadPolicy.acceptUnvalidated(),
+            checks: consequentialChecks(guard),
+            doc: consequentialDoc(),
+            myVid: me,
+            now: testNow,
+            newErrorId: () => 'err-1',
+            payloadToJson: payloadToJson,
+            clock: fixedClock,
+            responseToJson: (r) => r.toJson(),
+            handler: (accepted, parties) async =>
+                respondWith<Payload, Response>(
+              accepted,
+              'resp-1',
+              const Response(true),
+              clock: fixedClock,
+            ),
+          );
+
+      expect(await run(), isA<Handled<Response>>());
+      final second = await run();
+      expect(second, isA<DuplicateOutcome<Response>>());
+      final prior = (second as DuplicateOutcome<Response>).priorResponse;
+      expect(prior, isA<Map<String, dynamic>>());
+      expect((prior! as Map<String, dynamic>)['id'], 'resp-1');
+      expect((prior as Map<String, dynamic>)['payload'], {'ok': true});
     });
 
     test('rejects differing content under a reused id with idConflict',

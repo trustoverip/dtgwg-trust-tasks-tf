@@ -320,6 +320,14 @@ Refusal refuse<P>(
 
 /// Run SPEC §7.2 items 4–8 against [doc], then either call [handler] or build
 /// the routed error response per §8.1.
+///
+/// Pass [responseToJson] whenever [checks] uses a [ReplayGuard] that persists
+/// what it records. With it, a success response reaches
+/// [ReplayGuard.recordResponse] as the same JSON map a refusal does, and a
+/// later [DuplicateOutcome.priorResponse] is that map. Without it, the guard
+/// receives the [TrustTaskDocument] object itself, which an in-memory guard can
+/// hold but a persistent one cannot serialise. Such a guard would then cache no
+/// success response, and a resend would be absorbed with nothing to return.
 Future<ConsumeOutcome<R>> consumeInbound<P, R>({
   required TransportHandler transport,
   required SpecPolicy spec,
@@ -333,6 +341,7 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
   required Object? Function(P payload) payloadToJson,
   required Handler<P, R> handler,
   Clock? clock,
+  Object? Function(R response)? responseToJson,
 }) async {
   ConsumeOutcome<R> route(RejectReason reason) {
     final error = reject(transport, doc, newErrorId(), reason, clock: clock);
@@ -550,7 +559,9 @@ Future<ConsumeOutcome<R>> consumeInbound<P, R>({
     return Accepted<R>();
   }
 
-  await settle(response);
+  await settle(
+    responseToJson == null ? response : response.toJson(responseToJson),
+  );
   return Handled<R>(response);
 }
 

@@ -124,6 +124,11 @@ abstract interface class ReplayGuard {
   /// A guard that records nothing still satisfies item 11 — the effect does not
   /// happen twice — and is the right shape for a fire-and-forget specification,
   /// which has no response to return.
+  ///
+  /// [response] is a JSON map for a refusal, and for a success when the caller
+  /// passed `responseToJson` to `consumeInbound`; otherwise a success arrives
+  /// as the [TrustTaskDocument] itself. A guard that persists the response
+  /// needs the map, so its callers must pass `responseToJson`.
   Future<void> recordResponse(String id, Object? response);
 
   /// Release a claim whose execution is not to stand — for example a refusal the
