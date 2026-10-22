@@ -2,7 +2,7 @@
 #
 # Applies the next release of one Go module to the working tree.
 #
-#   scripts/release-bump-go.sh [trust-tasks-go|trust-tasks-go/proof|trust-tasks-go/didcomm]
+#   scripts/release-bump-go.sh [trust-tasks-go|trust-tasks-go/proof|trust-tasks-go/didcomm|trust-tasks-go/capabilityclient]
 #
 # Called by scripts/release-pr.sh, once per module, while it assembles the ONE
 # Release PR; this script only edits files. The bump is computed the same way
@@ -42,7 +42,8 @@
 set -euo pipefail
 
 # Which Go module to release. The core defaults; the nested modules
-# (trust-tasks-go/proof, trust-tasks-go/didcomm) pass their own path. Each has
+# (trust-tasks-go/proof, trust-tasks-go/didcomm, trust-tasks-go/capabilityclient)
+# pass their own path. Each has
 # its own directory, version file, tag prefix and watch set — mirroring
 # release-bump-ts.sh and release-bump-dart.sh.
 #
@@ -62,7 +63,8 @@ case "$PKG" in
     # from it, and `scripts/build-go-bindings.mjs` because it is the generator.
     # The nested modules are excluded — they release on their own tags.
     WATCH=("specs" "$PKG_DIR" "scripts/build-go-bindings.mjs"
-           ":(exclude)$PKG_DIR/proof" ":(exclude)$PKG_DIR/didcomm" ":(exclude)$PKG_DIR/tsp")
+           ":(exclude)$PKG_DIR/proof" ":(exclude)$PKG_DIR/didcomm" ":(exclude)$PKG_DIR/tsp"
+           ":(exclude)$PKG_DIR/capabilityclient")
     CLIFF_PATHS=("trust-tasks-go/**" "specs/**" "scripts/build-go-bindings.mjs")
     ;;
   trust-tasks-go/proof)
@@ -78,6 +80,14 @@ case "$PKG" in
     PKG_DIR="trust-tasks-go/didcomm"
     VERSION_FILE="$PKG_DIR/version.go"
     TAG_PREFIX="trust-tasks-go/didcomm/v"
+    WATCH=("$PKG_DIR")
+    CLIFF_PATHS=("$PKG_DIR/**")
+    ;;
+  trust-tasks-go/capabilityclient)
+    MODULE="$GO_ROOT/capabilityclient"
+    PKG_DIR="trust-tasks-go/capabilityclient"
+    VERSION_FILE="$PKG_DIR/version.go"
+    TAG_PREFIX="trust-tasks-go/capabilityclient/v"
     WATCH=("$PKG_DIR")
     CLIFF_PATHS=("$PKG_DIR/**")
     ;;
