@@ -479,7 +479,9 @@ jobs:
   release-pr:
     name: Release PR
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # 90, not 60: the semver checks now run one after another (see "Run
+    # cargo-semver-checks one at a time"), and each takes several minutes.
+    timeout-minutes: 90
     # MUST run after every publish job. Each bump is measured from the tag (or,
     # for the crates, the registry version) that those jobs write, so running
     # beside them means the push that merges a release computes the next one
@@ -552,6 +554,28 @@ jobs:
         uses: taiki-e/install-action@v2
         with:
           tool: release-plz@0.3.171,cargo-semver-checks,git-cliff
+
+      # release-plz runs cargo-semver-checks for every changed crate AT ONCE,
+      # and each run compiles trust-tasks-rs into its own target directory.
+      # Run 39869780457 (#890's sampler) caught it: four checks in parallel,
+      # three rustc at ~3 GB and a rustdoc at ~6 GB, 16 GB of RAM and 16 GB of
+      # swap exhausted, and the kernel's OOM killer taking the runner agent
+      # down with rustdoc — the SIGTERM (exit 143) this job had been ending
+      # with. One check alone peaks at ~13 GB, which fits.
+      #
+      # release-plz has no setting for that parallelism, so the installed
+      # binary is replaced by a wrapper that takes a lock first. It replaces
+      # the binary in place rather than shadowing it on PATH because cargo
+      # looks in $CARGO_HOME/bin before PATH when resolving `cargo semver-checks`.
+      - name: Run cargo-semver-checks one at a time
+        run: |
+          real="$(command -v cargo-semver-checks)"
+          mv "$real" "$real-unserialised"
+          printf '#!/bin/sh\nexec flock %s %s "$@"\n' \
+            "$RUNNER_TEMP/cargo-semver-checks.lock" "$real-unserialised" > "$real"
+          chmod +x "$real"
+          cat "$real"
+          cargo semver-checks --version
 
       # cargo-semver-checks on trust-tasks-rs peaks at ~12.6 GB resident
       # (rustdoc JSON for the generated tree, current and baseline), measured
