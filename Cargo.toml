@@ -38,3 +38,11 @@ trust-tasks-proof = { path = "trust-tasks-proof" }
 # in backtraces, which is all a test failure needs, at a fraction of the memory.
 [profile.test]
 debug = "line-tables-only"
+
+# Dependencies need not even that: a test failure's backtrace is read in this
+# workspace's frames, not the TDK's. Measured on a cold `cargo test --workspace
+# --all-targets --no-run`: 258s → 217s and a 5.0 GB → 4.2 GB target directory.
+# Peak memory is unchanged, because it is set by compiling trust-tasks-rs, which
+# keeps its line tables.
+[profile.test.package."*"]
+debug = false
