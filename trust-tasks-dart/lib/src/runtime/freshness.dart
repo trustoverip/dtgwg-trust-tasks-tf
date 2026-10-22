@@ -21,6 +21,7 @@ library;
 
 import 'codes.dart';
 import 'document.dart';
+import 'rfc3339.dart';
 
 /// The clock-skew tolerance SPEC §4.2 sanctions ("typically ≤ 60s").
 const Duration defaultSkew = Duration(seconds: 60);
@@ -116,7 +117,7 @@ RejectReason? validateFreshness<P>(
 
   final issuedAtRaw = doc.issuedAt;
   if (issuedAtRaw != null) {
-    final issuedAt = DateTime.tryParse(issuedAtRaw);
+    final issuedAt = parseRfc3339(issuedAtRaw);
     if (issuedAt == null) {
       return malformed('issuedAt is not a valid RFC 3339 timestamp');
     }
@@ -128,7 +129,7 @@ RejectReason? validateFreshness<P>(
     if (expiresAtRaw != null) {
       // A malformed `expiresAt` is [validateBasic]'s to report; skip it here
       // rather than raise a second, differently-worded rejection for it.
-      final expiresAt = DateTime.tryParse(expiresAtRaw);
+      final expiresAt = parseRfc3339(expiresAtRaw);
       if (expiresAt != null && !expiresAt.isAfter(issuedAt)) {
         return malformed(expiryNotAfterIssuance);
       }
@@ -167,7 +168,7 @@ DateTime? recordExpiry<P>(
 ) {
   final expiresAtRaw = doc.expiresAt;
   if (expiresAtRaw != null) {
-    final expiresAt = DateTime.tryParse(expiresAtRaw);
+    final expiresAt = parseRfc3339(expiresAtRaw);
     if (expiresAt != null) return expiresAt;
   }
   final maxAge = policy.maxAge;
@@ -177,7 +178,6 @@ DateTime? recordExpiry<P>(
   // record then lives a full window from first sight, which is the longest the
   // document could still be arriving from a queue.
   final issuedAtRaw = doc.issuedAt;
-  final base =
-      issuedAtRaw == null ? now : (DateTime.tryParse(issuedAtRaw) ?? now);
+  final base = issuedAtRaw == null ? now : (parseRfc3339(issuedAtRaw) ?? now);
   return base.add(maxAge + policy.skew);
 }

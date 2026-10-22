@@ -237,13 +237,29 @@ export const TRUST_TASK_ERROR_TYPE_URI = "https://trusttasks.org/spec/trust-task
  *
  * @param now Milliseconds since the epoch, as from `Date.now()`.
  */
+/**
+ * Parse an RFC 3339 `date-time` (SPEC §4.2) to epoch milliseconds, or `NaN`.
+ *
+ * Stricter than `Date.parse`, which reads a timestamp with no zone designator
+ * as *local* time and accepts forms RFC 3339 does not (a bare date, `Jan 1
+ * 2026`). The Rust and Go runtimes refuse both, and an instant that depends on
+ * the consumer's time zone is not one instant at all.
+ */
+export function parseRfc3339(value: string): number {
+  if (!RFC3339.test(value)) return NaN;
+  return Date.parse(value.toUpperCase());
+}
+
+const RFC3339 =
+  /^\d{4}-\d{2}-\d{2}[Tt]\d{2}:\d{2}:\d{2}(\.\d+)?([Zz]|[+-]\d{2}:\d{2})$/;
+
 export function validateBasic<P>(
   doc: TrustTaskDocument<P>,
   now: number,
   myVid: string,
 ): RejectReason | null {
   if (doc.expiresAt !== undefined) {
-    const expiresAt = Date.parse(doc.expiresAt);
+    const expiresAt = parseRfc3339(doc.expiresAt);
     if (Number.isNaN(expiresAt)) {
       return {
         code: "malformedRequest",

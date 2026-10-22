@@ -755,6 +755,34 @@ async fn https_enforces_recipient_required_with_no_in_band_recipient() {
     assert_eq!(code, serde_json::json!("malformedRequest"));
 }
 
+/// The server runs the §7.2 checks in `consume_inbound`'s order: a document
+/// addressed elsewhere is `wrongRecipient` even when its in-band issuer also
+/// contradicts the bearer token, rather than `identityMismatch`.
+#[tokio::test]
+async fn a_misaddressed_document_is_wrong_recipient_before_identity_mismatch() {
+    let addr = spawn_server().await;
+    let resp = reqwest::Client::new()
+        .post(format!("http://{addr}/trust-tasks"))
+        .header("authorization", "Bearer alice")
+        .header("content-type", "application/json")
+        .body(
+            serde_json::json!({
+                "id": "urn:uuid:misaddressed",
+                "type": "https://trusttasks.org/spec/acl/grant/0.1",
+                "issuer": "did:web:carol.example",
+                "recipient": "did:web:elsewhere.example",
+                "issuedAt": chrono::Utc::now().to_rfc3339(),
+                "payload": { "entry": { "subject": "did:web:carol.example", "role": "admin" } }
+            })
+            .to_string(),
+        )
+        .send()
+        .await
+        .unwrap();
+    let code = resp.json::<serde_json::Value>().await.unwrap()["payload"]["code"].clone();
+    assert_eq!(code, serde_json::json!("wrongRecipient"));
+}
+
 /// The client must never hang on an unresponsive peer: its `reqwest::Client`
 /// carries finite timeouts by default, so a server that accepts the
 /// connection and then goes silent surfaces as an error.
