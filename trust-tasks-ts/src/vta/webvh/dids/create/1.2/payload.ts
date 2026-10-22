@@ -21,13 +21,9 @@ export type WebvhPathMode =
       mode: "autoAssign";
     };
 /**
- * The identity the new log is presented as. The log is a did:webvh log either way; `scid` makes the identity its `did:scid:vh:1` DID and requires the alias in `alsoKnownAs`. Absent means the VTA applies its configuration, `webvh` unless configured otherwise.
+ * The identity a did:webvh log is presented as. `webvh` is `did:webvh:<scid>:<host>[:<path>]`. `scid` is `did:scid:vh:1:<scid>`, verified by the same log and located by `?src=<host>[/<path>]`; it requires the alias in `alsoKnownAs`. In a request, absent means the VTA applies its configuration (`webvh` unless configured otherwise); in a response, the form the VTA applied, and `did` is in that form.
  */
 export type DidMethod = "webvh" | "scid";
-/**
- * The form the VTA applied.
- */
-export type DidMethod1 = "webvh" | "scid";
 
 /**
  * Mint a did:webvh: the VTA generates the keys, writes the log's first entry, and either hands it to a hosting server or returns it for the caller to serve.
@@ -157,7 +153,7 @@ export interface VTAWebVHDIDsCreateResponsePayload {
    * The log's first entry. For a serverless DID this is what the caller must serve — the DID does not resolve until they do.
    */
   logEntry?: string;
-  didMethod: DidMethod1;
+  didMethod: DidMethod;
   /**
    * Whether the first log entry lists `scidDidUrl` in `alsoKnownAs`.
    */
@@ -298,8 +294,7 @@ export const PAYLOAD_SCHEMA = {
       "description": "Variables for the template's placeholders."
     },
     "didMethod": {
-      "$ref": "#/$defs/DidMethod",
-      "description": "The identity the new log is presented as. The log is a did:webvh log either way; `scid` makes the identity its `did:scid:vh:1` DID and requires the alias in `alsoKnownAs`. Absent means the VTA applies its configuration, `webvh` unless configured otherwise."
+      "$ref": "#/$defs/DidMethod"
     },
     "scidAlsoKnownAs": {
       "type": "boolean",
@@ -359,7 +354,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "DidMethod": {
       "title": "DidMethod",
-      "description": "The identity a new did:webvh log is presented as. `webvh` is `did:webvh:<scid>:<host>[:<path>]`. `scid` is `did:scid:vh:1:<scid>`, verified by the same log and located by `?src=<host>[/<path>]`.",
+      "description": "The identity a did:webvh log is presented as. `webvh` is `did:webvh:<scid>:<host>[:<path>]`. `scid` is `did:scid:vh:1:<scid>`, verified by the same log and located by `?src=<host>[/<path>]`; it requires the alias in `alsoKnownAs`. In a request, absent means the VTA applies its configuration (`webvh` unless configured otherwise); in a response, the form the VTA applied, and `did` is in that form.",
       "type": "string",
       "enum": [
         "webvh",
@@ -438,8 +433,7 @@ export const PAYLOAD_SCHEMA = {
           "description": "The log's first entry. For a serverless DID this is what the caller must serve — the DID does not resolve until they do."
         },
         "didMethod": {
-          "$ref": "#/$defs/DidMethod",
-          "description": "The form the VTA applied."
+          "$ref": "#/$defs/DidMethod"
         },
         "scidAlsoKnownAs": {
           "type": "boolean",
@@ -525,7 +519,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
     },
     "DidMethod": {
       "title": "DidMethod",
-      "description": "The identity a new did:webvh log is presented as. `webvh` is `did:webvh:<scid>:<host>[:<path>]`. `scid` is `did:scid:vh:1:<scid>`, verified by the same log and located by `?src=<host>[/<path>]`.",
+      "description": "The identity a did:webvh log is presented as. `webvh` is `did:webvh:<scid>:<host>[:<path>]`. `scid` is `did:scid:vh:1:<scid>`, verified by the same log and located by `?src=<host>[/<path>]`; it requires the alias in `alsoKnownAs`. In a request, absent means the VTA applies its configuration (`webvh` unless configured otherwise); in a response, the form the VTA applied, and `did` is in that form.",
       "type": "string",
       "enum": [
         "webvh",
@@ -604,8 +598,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "description": "The log's first entry. For a serverless DID this is what the caller must serve — the DID does not resolve until they do."
         },
         "didMethod": {
-          "$ref": "#/$defs/DidMethod",
-          "description": "The form the VTA applied."
+          "$ref": "#/$defs/DidMethod"
         },
         "scidAlsoKnownAs": {
           "type": "boolean",
