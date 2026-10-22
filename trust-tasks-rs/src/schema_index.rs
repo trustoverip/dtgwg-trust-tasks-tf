@@ -4976,6 +4976,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/vtc/rooms/get/0.1#response" => <crate::specs::vtc::rooms::get::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/rooms/get/0.2" => <crate::specs::vtc::rooms::get::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/rooms/get/0.2#response" => <crate::specs::vtc::rooms::get::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/rooms/limits/set/0.1" => <crate::specs::vtc::rooms::limits::set::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
@@ -5028,6 +5034,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/rooms/storage/migrate/0.1#response" => <crate::specs::vtc::rooms::storage::migrate::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/rooms/storage/migrate/0.2" => <crate::specs::vtc::rooms::storage::migrate::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/rooms/storage/migrate/0.2#response" => <crate::specs::vtc::rooms::storage::migrate::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/rooms/usage/0.1" => <crate::specs::vtc::rooms::usage::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -10319,6 +10331,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/rooms/get/0.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::vtc::rooms::get::v0_2::Payload,
+        >()),
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/rooms/limits/set/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::vtc::rooms::limits::set::v0_1::Payload,
         >()),
@@ -10366,6 +10383,13 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         "https://trusttasks.org/spec/vtc/rooms/storage/migrate/0.1" => {
             Some(crate::SpecPolicy::of::<
                 crate::specs::vtc::rooms::storage::migrate::v0_1::Payload,
+            >())
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/rooms/storage/migrate/0.2" => {
+            Some(crate::SpecPolicy::of::<
+                crate::specs::vtc::rooms::storage::migrate::v0_2::Payload,
             >())
         }
         #[cfg(feature = "vtc")]
@@ -14990,6 +15014,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/rooms/get/0.2" => {
+            Some(crate::specs::vtc::rooms::get::v0_2::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/rooms/limits/set/0.1" => {
             Some(crate::specs::vtc::rooms::limits::set::v0_1::ERROR_CODES)
         }
@@ -15032,6 +15061,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/vtc/rooms/storage/migrate/0.1" => {
             Some(crate::specs::vtc::rooms::storage::migrate::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "vtc")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/vtc/rooms/storage/migrate/0.2" => {
+            Some(crate::specs::vtc::rooms::storage::migrate::v0_2::ERROR_CODES)
         }
         #[cfg(feature = "vtc")]
         #[cfg(not(test))]

@@ -2443,6 +2443,7 @@ mod vtc {
         }
         mod get {
             mod v0_1;
+            mod v0_2;
         }
         mod limits {
             mod set {
@@ -2473,6 +2474,7 @@ mod vtc {
             }
             mod migrate {
                 mod v0_1;
+                mod v0_2;
             }
         }
         mod usage {

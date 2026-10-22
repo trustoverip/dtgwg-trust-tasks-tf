@@ -774,6 +774,7 @@ export * as InviteShared_v0_1 from "./vtc/_shared/0.1/invite.js";
 export * as JoinRequestShared_v0_1 from "./vtc/_shared/0.1/join-request.js";
 export * as MemberShared_v0_1 from "./vtc/_shared/0.1/member.js";
 export * as RelationshipLifecycleShared_v0_1 from "./vtc/_shared/0.1/relationship-lifecycle.js";
+export * as RoomMigrationShared_v0_1 from "./vtc/_shared/0.1/room-migration.js";
 export * as RoomStorageShared_v0_1 from "./vtc/_shared/0.1/room-storage.js";
 export * as SchemaRegistryShared_v0_1 from "./vtc/_shared/0.1/schema-registry.js";
 export * as VetterProfileShared_v0_1 from "./vtc/_shared/0.1/vetter-profile.js";
@@ -980,6 +981,7 @@ export * as VtcRoomsCommunityMembersRemove_v0_2 from "./vtc/rooms/community/memb
 export * as VtcRoomsCommunityUpdate_v0_1 from "./vtc/rooms/community/update/0.1/payload.js";
 export * as VtcRoomsCommunityUpdate_v0_2 from "./vtc/rooms/community/update/0.2/payload.js";
 export * as VtcRoomsGet_v0_1 from "./vtc/rooms/get/0.1/payload.js";
+export * as VtcRoomsGet_v0_2 from "./vtc/rooms/get/0.2/payload.js";
 export * as VtcRoomsLimitsSet_v0_1 from "./vtc/rooms/limits/set/0.1/payload.js";
 export * as VtcRoomsList_v0_1 from "./vtc/rooms/list/0.1/payload.js";
 export * as VtcRoomsMembershipsList_v0_1 from "./vtc/rooms/memberships/list/0.1/payload.js";
@@ -989,6 +991,7 @@ export * as VtcRoomsOffersList_v0_2 from "./vtc/rooms/offers/list/0.2/payload.js
 export * as VtcRoomsOffersList_v0_3 from "./vtc/rooms/offers/list/0.3/payload.js";
 export * as VtcRoomsStorageAssign_v0_1 from "./vtc/rooms/storage/assign/0.1/payload.js";
 export * as VtcRoomsStorageMigrate_v0_1 from "./vtc/rooms/storage/migrate/0.1/payload.js";
+export * as VtcRoomsStorageMigrate_v0_2 from "./vtc/rooms/storage/migrate/0.2/payload.js";
 export * as VtcRoomsUsage_v0_1 from "./vtc/rooms/usage/0.1/payload.js";
 export * as VtcSchemasAcceptsDelete_v0_1 from "./vtc/schemas/accepts/delete/0.1/payload.js";
 export * as VtcSchemasAcceptsList_v0_1 from "./vtc/schemas/accepts/list/0.1/payload.js";
