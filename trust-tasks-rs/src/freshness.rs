@@ -147,7 +147,10 @@ impl FreshnessPolicy {
     /// same instant as the end of the replay record's required retention.
     ///
     /// `expiresAt` fixes it where present. Otherwise it is
-    /// `issuedAt + max_age`. `None` means this policy places no bound on the
+    /// `issuedAt + max_age + skew` — the same bound
+    /// [`validate_freshness`](TrustTask::validate_freshness) accepts up to, so a
+    /// replay arriving inside the skew allowance still finds the record.
+    /// `None` means this policy places no bound on the
     /// document, in which case a consumer **MUST NOT** execute a consequential
     /// task on it: it has no window in which to retain the record.
     pub fn record_expiry<P>(
@@ -162,7 +165,7 @@ impl FreshnessPolicy {
         // Fall back to `now` when the producer stamped no `issuedAt`: the
         // record then lives a full window from first sight, which is the
         // longest the document could still be arriving from a queue.
-        Some(doc.issued_at.unwrap_or(now) + max_age)
+        Some(doc.issued_at.unwrap_or(now) + max_age + self.skew)
     }
 }
 
@@ -418,7 +421,7 @@ mod tests {
         let without = doc_at(Some(t("2026-08-26T11:59:00Z")), None);
         assert_eq!(
             policy.record_expiry(&without, now),
-            Some(t("2026-08-26T12:04:00Z"))
+            Some(t("2026-08-26T12:05:00Z"))
         );
 
         // No window and no expiry: nothing to bound the record with, which is
@@ -426,6 +429,20 @@ mod tests {
         assert_eq!(
             FreshnessPolicy::default().record_expiry(&without, now),
             None
+        );
+    }
+
+    #[test]
+    fn record_outlives_the_skew_allowance_on_acceptance() {
+        // 5m30s old: past max_age, inside max_age + skew, so still accepted.
+        // A record dropped at issuedAt + max_age would let this replay run twice.
+        let now = t("2026-08-26T12:00:00Z");
+        let policy = FreshnessPolicy::consequential();
+        let late = doc_at(Some(t("2026-08-26T11:54:30Z")), None);
+        assert!(late.validate_freshness(now, &policy).is_ok());
+        assert_eq!(
+            policy.record_expiry(&late, now),
+            Some(t("2026-08-26T12:00:30Z"))
         );
     }
 }

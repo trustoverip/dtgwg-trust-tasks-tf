@@ -154,7 +154,9 @@ RejectReason? validateFreshness<P>(
 /// this consumer's willingness to execute it, which SPEC §7.2 makes the same
 /// instant as the end of the record's required retention.
 ///
-/// `expiresAt` fixes it where present; otherwise `issuedAt + maxAge`. Null means
+/// `expiresAt` fixes it where present; otherwise `issuedAt + maxAge + skew` — the
+/// same bound [validateFreshness] accepts up to, so a replay arriving inside the
+/// skew allowance still finds the record. Null means
 /// this policy places no bound on the document, in which case a consumer **MUST
 /// NOT** execute a consequential task on it — there is no window in which to
 /// keep the record.
@@ -177,5 +179,5 @@ DateTime? recordExpiry<P>(
   final issuedAtRaw = doc.issuedAt;
   final base =
       issuedAtRaw == null ? now : (DateTime.tryParse(issuedAtRaw) ?? now);
-  return base.add(maxAge);
+  return base.add(maxAge + policy.skew);
 }

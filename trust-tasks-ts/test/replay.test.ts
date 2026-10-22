@@ -24,6 +24,7 @@ import {
   PROOF_INVALID_WIRE_MESSAGE,
   sha256Hex,
   STALE_WIRE_MESSAGE,
+  recordExpiry,
   StaticTransport,
   validateFreshness,
   type ConsumeOutcome,
@@ -375,6 +376,17 @@ describe("SPEC §4.2 / §7.2 — freshness bounds", () => {
     // …unless the producer supplied an `expiresAt`, which is a window of its own.
     const bounded = doc({ issuedAt: undefined, expiresAt: "2026-08-26T12:30:00Z" });
     assert.equal(validateFreshness(bounded, NOW, windowed), null);
+  });
+
+  it("keeps the replay record for as long as the skew lets the document be accepted", () => {
+    // 5m30s old: past maxAgeMs, inside maxAgeMs + skewMs, so still accepted.
+    // A record dropped at issuedAt + maxAgeMs would let this replay run twice.
+    const policy = { skewMs: 60_000, maxAgeMs: 5 * 60_000 };
+    const late = doc({ issuedAt: "2026-08-26T11:54:30Z" });
+    assert.equal(validateFreshness(late, NOW, policy), null);
+    const retainUntil = recordExpiry(late, policy, NOW);
+    assert.ok(retainUntil !== undefined && retainUntil > NOW);
+    assert.equal(retainUntil, Date.parse("2026-08-26T12:00:30Z"));
   });
 });
 
