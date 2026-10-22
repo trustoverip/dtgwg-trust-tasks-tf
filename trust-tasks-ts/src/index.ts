@@ -553,6 +553,7 @@ export * as VaultSecretShared_v0_3 from "./vault/_shared/0.3/vault-secret.js";
 export * as VaultCredentialsArchive_v0_1 from "./vault/credentials/archive/0.1/payload.js";
 export * as VaultCredentialsDelete_v0_1 from "./vault/credentials/delete/0.1/payload.js";
 export * as VaultCredentialsGet_v0_1 from "./vault/credentials/get/0.1/payload.js";
+export * as VaultCredentialsPresent_v0_1 from "./vault/credentials/present/0.1/payload.js";
 export * as VaultCredentialsPurge_v0_1 from "./vault/credentials/purge/0.1/payload.js";
 export * as VaultCredentialsQuery_v0_1 from "./vault/credentials/query/0.1/payload.js";
 export * as VaultCredentialsReceive_v0_1 from "./vault/credentials/receive/0.1/payload.js";

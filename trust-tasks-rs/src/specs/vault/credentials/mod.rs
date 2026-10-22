@@ -3,6 +3,7 @@
 pub mod archive;
 pub mod delete;
 pub mod get;
+pub mod present;
 pub mod purge;
 pub mod query;
 pub mod receive;
