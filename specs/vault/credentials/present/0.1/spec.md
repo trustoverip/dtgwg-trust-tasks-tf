@@ -122,6 +122,8 @@ The **consumer** carries `presentation` to the verifier unchanged: it carries a 
 
 **Authority: custody of the credential and its subject's key.** The maintainer signs as the subject, so a consumer that may read a credential but not use its subject's key may not have it presented. Being able to read a credential with [`get`](../../get/0.1/spec.md) does not imply being able to present it, and the reverse.
 
+Where that entitlement is expressed as a capability, the registered value is **`credentialPresent`** — see `Capability` in [`device/_shared`](../../../../device/_shared/0.2/device-binding.schema.json). It is not `sign` and is not conferred by it: the maintainer signs only a presentation it builds itself, of a credential it holds, for one audience and nonce, so a holder of `credentialPresent` obtains that and nothing else. Nor is it `vaultRead`: reading a credential is not disclosing it to a third party under its subject's signature.
+
 ## Definitions
 
 - **`id`** — the local handle a [`query`](../../query/0.1/spec.md) descriptor carried. Opaque, as there.
