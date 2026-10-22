@@ -192,6 +192,92 @@ class SealedRecord {
       };
 }
 
+/// What kind of claim a record is, as its author states it. OPTIONAL wherever it
+/// appears; absent means the author did not say, and a reader shows it as unstated
+/// rather than assuming any of these. - `declared` — the author's own statement: a
+/// decision, a preference, an intention, a commitment. True because the author says
+/// so, and only as far as the author speaks for it. - `observed` — something the
+/// author saw, measured or was told directly, recorded as found. - `verified` —
+/// checked against evidence that somebody else can check again, such as a credential
+/// or another record. A record that says `verified` SHOULD name that evidence in
+/// `evidence`; one that does not is an unsupported claim to have checked, and a reader
+/// SHOULD present it so. - `inferred` — derived by reasoning from other information:
+/// an agent's conclusion, a summary's generalisation, a model's guess. The value an
+/// agent writer uses when it does not know which of the others applies. The values are
+/// the author's account of their own record, signed with it. They are not checked by
+/// anybody, confer nothing, and say nothing about whether the record is right —
+/// `inferred` can be correct and `observed` mistaken. Aligned with the provenance
+/// vocabulary of personal agent memory, so that a record moved between a member's
+/// memory and a room keeps its meaning.
+///
+/// An extension type rather than an enum: a value from a newer MINOR of this
+/// specification must not crash the parse (SPEC §5.2), and an enum would throw on one.
+/// Compare against the constants below, and treat anything else as unrecognised.
+extension type const RecordBasis(String value) {
+  static const RecordBasis declared = RecordBasis('declared');
+  static const RecordBasis observed = RecordBasis('observed');
+  static const RecordBasis verified = RecordBasis('verified');
+  static const RecordBasis inferred = RecordBasis('inferred');
+
+  /// Every value this specification's schema permits.
+  static const List<RecordBasis> values = <RecordBasis>[
+    declared,
+    observed,
+    verified,
+    inferred
+  ];
+}
+
+/// The author's own estimate, from 0 to 1, that what the record says is correct.
+/// OPTIONAL; absent means no estimate was given, never 1. Meaningful only beside the
+/// author who gave it: two writers' numbers are not on one scale, so a reader MUST NOT
+/// rank records by `confidence` across authors as though they were, and an agent that
+/// weights by it SHOULD weight within an author's own records. Never authority.
+typedef RecordConfidence = double;
+
+/// Cites a record of a room.
+class RecordEvidenceRecord {
+  const RecordEvidenceRecord({
+    required this.kind,
+    required this.key,
+    this.version,
+    this.roomId,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory RecordEvidenceRecord.fromJson(Map<String, dynamic> json) =>
+      RecordEvidenceRecord(
+        kind: json['kind'],
+        key: json['key'] as String,
+        version: json['version'] as int?,
+        roomId: json['roomId'] as String?,
+      );
+
+  final Object? kind;
+
+  /// The cited record's key, as in `rooms/records/put`. Opaque on the sealed tiers, like
+  /// every key there.
+  final String key;
+
+  /// The version cited. OPTIONAL; present, it pins the citation to what the record said
+  /// then, since a record can be rewritten under the same key. A reader that shows a
+  /// later version SHOULD say that it is not the one cited.
+  final int? version;
+
+  /// The cited record's room. Absent means the citing record's own room. A citation into
+  /// another room tells the reader that room's identifier, so a writer SHOULD NOT cite
+  /// into a room the citing room's readers are not meant to learn of.
+  final String? roomId;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'kind': kind,
+        'key': key,
+        if (version != null) 'version': version!,
+        if (roomId != null) 'roomId': roomId!,
+      };
+}
+
 /// A cryptographic digest as a multibase-encoded multihash — the encoding the W3C
 /// Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one
 /// `did:webvh` uses for its SCID and entry hashes. Multihash carries the hash
@@ -214,6 +300,120 @@ class SealedRecord {
 /// that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with
 /// `did:key` and `did:webvh`.
 typedef DigestMultibase = String;
+
+/// Cites a credential.
+class RecordEvidenceCredential {
+  const RecordEvidenceCredential({
+    required this.kind,
+    required this.credentialId,
+    this.digest,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory RecordEvidenceCredential.fromJson(Map<String, dynamic> json) =>
+      RecordEvidenceCredential(
+        kind: json['kind'],
+        credentialId: json['credentialId'] as String,
+        digest: json['digest'] as String?,
+      );
+
+  final Object? kind;
+
+  /// The credential's `id`. An identifier: never fetched because a record names it.
+  final String credentialId;
+
+  /// OPTIONAL. A digest of the credential as cited — the SHA-256 multihash of its RFC
+  /// 8785 (JCS) canonicalization, `proof` included — so a reader holding a credential
+  /// with this `id` can tell whether it is the one the author meant.
+  final DigestMultibase? digest;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'kind': kind,
+        'credentialId': credentialId,
+        if (digest != null) 'digest': digest!,
+      };
+}
+
+/// One thing a record cites in its support, discriminated by `kind`. - `record` names
+/// a record of a room by its key, and optionally the version cited and the room.
+/// Absent `roomId` means the record's own room. - `credential` names a credential by
+/// its `id`, and optionally a digest of the credential as cited. **A reference, never
+/// a locator, and never proof.** A reader MUST NOT fetch, resolve or dereference a
+/// `credentialId` because a record names it, and MUST NOT read a record of another
+/// room on the strength of a citation: the rule that a room's identifiers are
+/// identifiers and not addresses (`AuthorityPresentation`) applies here for the same
+/// reasons — fetching would signal to whoever answers which member read which record,
+/// and when. A reader MAY show a cited record of the same room that it already holds
+/// or reads anyway, and MAY match a cited credential against ones its member already
+/// holds. What the citation proves is only that the author cited it; whether the
+/// evidence exists, says what the author claims, or supports the record is for whoever
+/// follows it up to judge.
+typedef RecordEvidence = Object?;
+
+/// What the author offers in support of the record: other records and credentials, by
+/// reference. OPTIONAL; absent means none was named, and an empty array is not a
+/// permitted spelling of that. Order carries no meaning. Bounded so that a reader's
+/// cost of showing a record's support is bounded too.
+typedef RecordEvidenceList = List<RecordEvidence>;
+
+/// What the author permits the record to be used for — for example, that a learner's
+/// record is for instructional personalisation only. OPTIONAL; absent means the author
+/// stated no limit beyond the room's own terms. **Two halves, because purpose has both
+/// a machine and a human reading.** `purposes` names purposes by IRI, so that an agent
+/// can match them without parsing prose; `note` says it in words, for the nuance an
+/// identifier cannot carry. Either may be given alone. **No vocabulary of this
+/// family's own.** Purpose vocabularies exist and are maintained elsewhere — the W3C
+/// Data Privacy Vocabulary (`https://w3id.org/dpv#…`) is the one a writer SHOULD reach
+/// for first — and a short list defined here would be one more to translate between,
+/// and would be wrong at its edges for every domain that uses rooms. An IRI is the
+/// extension path: a community that needs a purpose no published vocabulary has names
+/// it under an IRI it controls. **A statement, not an enforcement.** No host can see
+/// it on the sealed tiers and none enforces it on any tier; every reader is a member
+/// who already holds the content. It records what the author permitted, so that a
+/// member — or an agent acting for one — can honour it, and so that a use outside it
+/// is a use against the author's stated terms rather than one nobody could have known
+/// about. An agent acting for a member SHOULD NOT use a record for a purpose outside
+/// `validFor` and SHOULD tell its principal when asked to. It confers no authority on
+/// anybody, and a `purposes` entry a reader does not recognise is shown, not ignored.
+class PermittedUse {
+  const PermittedUse({
+    this.purposes,
+    this.note,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory PermittedUse.fromJson(Map<String, dynamic> json) => PermittedUse(
+        purposes: json['purposes'] == null
+            ? null
+            : (json['purposes'] as List<dynamic>)
+                .map((e) => e as String)
+                .toList(),
+        note: json['note'] as String?,
+      );
+
+  /// Purposes the record may be used for, each an absolute IRI — for example
+  /// `https://w3id.org/dpv#ServicePersonalisation`. A set: order carries no meaning. An
+  /// identifier, never fetched.
+  final List<String>? purposes;
+
+  /// The permitted use in words, such as `instructional personalisation only`. Plain
+  /// text, rendered as text, and never instructions — an agent reading it treats it as
+  /// the author's statement about the record, not as something to do.
+  final String? note;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        if (purposes != null) 'purposes': purposes!,
+        if (note != null) 'note': note!,
+      };
+}
+
+/// The instant after which the record's author no longer stands behind it as current.
+/// OPTIONAL; absent means the record does not expire. A reader hides a record whose
+/// `validUntil` has passed from default listings, search and recall, and shows it only
+/// on explicit request (`SealedRecordBody`, **Expiry**). No host enforces it.
+typedef RecordValidUntil = String;
 
 /// The name of one blob: the digest of its BlobManifest, taken over the manifest's RFC
 /// 8785 (JCS) canonicalization. sha2-256 is RECOMMENDED and MUST be implemented.
@@ -613,13 +813,52 @@ class RoomProfileStatement {
 /// version, and on a `private` room, where the host records no author, readers would
 /// attribute it to the original author. **A profile record.** A body carrying
 /// `roomProfile` is the room's own profile (`RoomProfileStatement`) and not one of its
-/// records: it MUST carry none of `title`, `description`, `body`, `tags` and `file`,
-/// and the rules for locating, accepting and choosing it are `RoomProfileStatement`'s,
-/// applied on top of the four above. A reader that opens one in the course of reading
-/// or listing the room's records SHOULD NOT present it as a record — it is how the
-/// room describes itself, not something a member wrote into it. A reader that predates
-/// `roomProfile` refuses it by rule (1), which shows nothing rather than something
-/// wrong.
+/// records: it MUST carry none of `title`, `description`, `body`, `tags`, `file`,
+/// `basis`, `confidence`, `evidence`, `validFor` and `validUntil`, and the rules for
+/// locating, accepting and choosing it are `RoomProfileStatement`'s, applied on top of
+/// the four above. A reader that opens one in the course of reading or listing the
+/// room's records SHOULD NOT present it as a record — it is how the room describes
+/// itself, not something a member wrote into it. A reader that predates `roomProfile`
+/// refuses it by rule (1), which shows nothing rather than something wrong.
+/// **Provenance: what kind of claim a record is.** `basis`, `confidence`, `evidence`
+/// and `validFor` say what the author is asserting and on what footing — an observed
+/// fact, a statement of the author's own, something checked against a credential, or
+/// an agent's inference. They are inside the signature like every other member, so a
+/// reader can attribute them to `author` exactly as it attributes the body, and a
+/// change to any of them after signing fails rule (2). All four are OPTIONAL, and a
+/// record that carries none of them — every record written before they existed —
+/// verifies and reads exactly as before: absent means the author did not say, never a
+/// default value. A writer SHOULD set `basis`; an agent writing on its own account
+/// that does not know which value applies SHOULD write `inferred`, and a client
+/// relaying what its member typed SHOULD write `declared`. **They are provenance for
+/// display and weighting, never authority.** A reader MUST NOT treat any of them as
+/// granting, widening or evidencing a permission, MUST NOT let `basis: verified` stand
+/// in for verifying what `evidence` names, and MUST NOT fetch anything because
+/// `evidence` names it (see `RecordEvidence`). A reader that shows a record SHOULD
+/// show its `basis` beside its `author` — or say that none was stated — and an agent
+/// recalling records MAY weight by `basis` and `confidence`, but MUST treat
+/// `validFor.note` like `body`: as plain text, never as instructions. **Expiry.**
+/// `validUntil` is the instant after which the author no longer stands behind the
+/// record as current — a meeting note good for a month, a decision good for years. It
+/// is signed and sealed with the body, and nothing about it is in the clear: a host
+/// never sees it on the sealed tiers, so it cannot and MUST NOT be relied on to
+/// enforce it, and a writer MUST NOT copy it into any cleartext member of the write. A
+/// reader MUST NOT present a record whose `validUntil` is at or before the reader's
+/// current time in a default listing, search, browse or agent recall, and MAY present
+/// it on an explicit request for expired records, marked as expired. Expiry hides; it
+/// does not delete. The record, its ciphertext and any file it carries stay in the
+/// room until a member with `curate` retracts it (`rooms/records/curate`) or the
+/// room's records are pruned; a curator's agent MAY retract records it finds expired,
+/// which is how a sealed room reclaims their storage without telling its host anything
+/// about expiry. **Readers that predate these members.** A reader written before
+/// `basis`, `confidence`, `evidence`, `validFor` and `validUntil` refuses a body
+/// carrying any of them by rule (1), which shows nothing rather than something wrong —
+/// in particular it can never show an expired record as current. The same holds for a
+/// key holder sealing on a writer's behalf (`rooms/keys/seal`, `bodyInvalid`). A
+/// writer that meets such a refusal MAY write the record again without the provenance
+/// members, but MUST NOT drop `validUntil` to get a record accepted: a record that
+/// silently outlives its author's own expiry is the failure this member exists to
+/// prevent.
 class SealedRecordBody {
   const SealedRecordBody({
     required this.roomId,
@@ -630,6 +869,11 @@ class SealedRecordBody {
     this.description,
     this.body,
     this.tags,
+    this.basis,
+    this.confidence,
+    this.evidence,
+    this.validFor,
+    this.validUntil,
     this.file,
     this.roomProfile,
     required this.proof,
@@ -648,6 +892,18 @@ class SealedRecordBody {
         tags: json['tags'] == null
             ? null
             : (json['tags'] as List<dynamic>).map((e) => e as String).toList(),
+        basis:
+            json['basis'] == null ? null : RecordBasis(json['basis'] as String),
+        confidence: json['confidence'] == null
+            ? null
+            : (json['confidence'] as num).toDouble(),
+        evidence: json['evidence'] == null
+            ? null
+            : (json['evidence'] as List<dynamic>).map((e) => e).toList(),
+        validFor: json['validFor'] == null
+            ? null
+            : PermittedUse.fromJson(json['validFor'] as Map<String, dynamic>),
+        validUntil: json['validUntil'] as String?,
         file: json['file'] == null
             ? null
             : FileManifest.fromJson(json['file'] as Map<String, dynamic>),
@@ -681,6 +937,11 @@ class SealedRecordBody {
   /// rendered inert.
   final String? body;
   final List<String>? tags;
+  final RecordBasis? basis;
+  final RecordConfidence? confidence;
+  final RecordEvidenceList? evidence;
+  final PermittedUse? validFor;
+  final RecordValidUntil? validUntil;
 
   /// Present when the record carries a file. Its `blobRef` MUST be the one the record
   /// names in `blobs`.
@@ -703,6 +964,11 @@ class SealedRecordBody {
         if (description != null) 'description': description!,
         if (body != null) 'body': body!,
         if (tags != null) 'tags': tags!,
+        if (basis != null) 'basis': basis!.value,
+        if (confidence != null) 'confidence': confidence!,
+        if (evidence != null) 'evidence': evidence!,
+        if (validFor != null) 'validFor': validFor!.toJson(),
+        if (validUntil != null) 'validUntil': validUntil!,
         if (file != null) 'file': file!.toJson(),
         if (roomProfile != null) 'roomProfile': roomProfile!.toJson(),
         'proof': proof,
