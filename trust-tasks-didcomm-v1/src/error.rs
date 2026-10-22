@@ -85,14 +85,69 @@ impl DidcommV1Error {
     /// The two sender cases map to `proofRequired` instead. Neither yields a
     /// party the framework can attribute the document to, so the only thing
     /// that could still carry attribution is an in-band `proof`.
+    ///
+    /// The `malformedRequest` reason is a category, never this error's
+    /// `Display`: that names verkeys, upstream failures and the deserializer's
+    /// offsets, which SPEC §10.4 keeps off the wire. Log the error itself.
     pub fn into_reject_reason(self) -> RejectReason {
         match self {
             DidcommV1Error::UnauthenticatedSender | DidcommV1Error::UnknownSenderBinding { .. } => {
                 RejectReason::ProofRequired
             }
-            other => RejectReason::MalformedRequest {
-                reason: other.to_string(),
+            DidcommV1Error::InvalidDocument(e) => RejectReason::malformed_from_serde(&e),
+            DidcommV1Error::ThreadMismatch { header, member, .. } => {
+                RejectReason::MalformedRequest {
+                    reason: format!("~thread {header} disagrees with the document's {member}"),
+                }
+            }
+            _ => RejectReason::MalformedRequest {
+                reason: ENVELOPE_MALFORMED.to_string(),
             },
         }
+    }
+}
+
+/// Wire reason for a `malformedRequest` this binding cannot describe more
+/// precisely without echoing an upstream error. The error's `Display` keeps the
+/// detail for the log; SPEC §10.4 keeps it off the wire.
+const ENVELOPE_MALFORMED: &str = "message did not yield a well-formed Trust Task document";
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn reason(err: DidcommV1Error) -> String {
+        match err.into_reject_reason() {
+            RejectReason::MalformedRequest { reason } => reason,
+            other => panic!("expected malformedRequest, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn the_wire_reason_carries_no_detail_from_the_error() {
+        let serde = serde_json::from_str::<serde_json::Value>("{\"subject\": ").unwrap_err();
+        let parsed = reason(DidcommV1Error::InvalidDocument(serde));
+        assert!(
+            !parsed.contains("line"),
+            "deserializer offset on the wire: {parsed}"
+        );
+
+        let thread = reason(DidcommV1Error::ThreadMismatch {
+            header: "thid",
+            member: "threadId",
+            transport: "urn:uuid:transport-thread".into(),
+            in_band: "urn:uuid:in-band-thread".into(),
+        });
+        assert!(
+            !thread.contains("urn:uuid"),
+            "a thread id on the wire: {thread}"
+        );
+        assert!(thread.contains("thid") && thread.contains("threadId"));
+
+        let other = reason(DidcommV1Error::WrongMessageType("internal/type".into()));
+        assert!(
+            !other.contains("internal/type"),
+            "message detail on the wire: {other}"
+        );
     }
 }

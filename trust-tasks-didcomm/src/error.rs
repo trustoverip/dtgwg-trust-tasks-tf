@@ -140,6 +140,10 @@ impl DidcommError {
     /// `trust-task-error` response to, so a consumer should normally drop
     /// the message rather than answer it. This mapping exists for callers
     /// that fold every transport failure into one taxonomy for logging.
+    ///
+    /// The `malformedRequest` reason is a category, never this error's
+    /// `Display`: that names DIDs, resolver failures and the deserializer's
+    /// offsets, which SPEC §10.4 keeps off the wire. Log the error itself.
     pub fn into_reject_reason(self) -> RejectReason {
         match self {
             DidcommError::UnauthenticatedSender
@@ -155,9 +159,60 @@ impl DidcommError {
                 affinidi_messaging_didcomm::DIDCommError::SenderKeyBinding(_)
                 | affinidi_messaging_didcomm::DIDCommError::SignerKeyBinding(_),
             ) => RejectReason::ProofRequired,
-            other => RejectReason::MalformedRequest {
-                reason: other.to_string(),
+            DidcommError::InvalidBody(e) => RejectReason::malformed_from_serde(&e),
+            DidcommError::ThreadMismatch { header, member, .. } => RejectReason::MalformedRequest {
+                reason: format!(
+                    "DIDComm {header} disagrees with the document's {member} (binding §3.1)"
+                ),
+            },
+            _ => RejectReason::MalformedRequest {
+                reason: ENVELOPE_MALFORMED.to_string(),
             },
         }
+    }
+}
+
+/// Wire reason for a `malformedRequest` this binding cannot describe more
+/// precisely without echoing an upstream error. The error's `Display` keeps the
+/// detail for the log; SPEC §10.4 keeps it off the wire.
+const ENVELOPE_MALFORMED: &str = "envelope did not yield a well-formed Trust Task document";
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn reason(err: DidcommError) -> String {
+        match err.into_reject_reason() {
+            RejectReason::MalformedRequest { reason } => reason,
+            other => panic!("expected malformedRequest, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn the_wire_reason_carries_no_detail_from_the_error() {
+        let serde = serde_json::from_str::<serde_json::Value>("{\"subject\": ").unwrap_err();
+        let parsed = reason(DidcommError::InvalidBody(serde));
+        assert!(
+            !parsed.contains("line"),
+            "deserializer offset on the wire: {parsed}"
+        );
+
+        let thread = reason(DidcommError::ThreadMismatch {
+            header: "thid",
+            member: "threadId",
+            transport: "urn:uuid:transport-thread".into(),
+            in_band: "urn:uuid:in-band-thread".into(),
+        });
+        assert!(
+            !thread.contains("urn:uuid"),
+            "a thread id on the wire: {thread}"
+        );
+        assert!(thread.contains("thid") && thread.contains("threadId"));
+
+        let other = reason(DidcommError::WrongEnvelopeType("internal/type".into()));
+        assert!(
+            !other.contains("internal/type"),
+            "envelope detail on the wire: {other}"
+        );
     }
 }
