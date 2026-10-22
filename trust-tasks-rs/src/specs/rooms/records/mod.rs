@@ -3,4 +3,6 @@
 pub mod curate;
 pub mod get;
 pub mod list;
+pub mod prune;
 pub mod put;
+pub mod retention;

@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/rooms/records/prune/0.1",
+  "title": "Rooms Records Prune — payload",
+  "description": "A holder of `admin` asks a room's host to remove the records the room's record retention makes eligible — retracted tombstones, records older than it allows, or both — leaving a mark that records were removed and never what they said.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["roomId", "presentation", "kinds", "reason"],
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "description": "The room whose records to prune. A host verifies the presentation against credentials issued by this identifier, never against a member list of its own."
+    },
+    "presentation": {
+      "$ref": "../../../_shared/0.1/room.schema.json#/$defs/AuthorityPresentation",
+      "description": "Must confer `admin` at this room's scope. Not `curate`: every member who can write can be given curate, and curation is a statement about one record that leaves a tombstone behind, where a prune removes records — tombstones included — for every member, permanently."
+    },
+    "kinds": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 2,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": ["retracted", "aged"]
+      },
+      "description": "What to remove. `retracted`: tombstones older than the record retention's `tombstoneDays`. `aged`: records of any standing, pinned ones excepted, older than its `recordDays`. A set; order carries no meaning. A kind the retention in force states no rule for removes nothing, and a request all of whose kinds are such is refused with `noRetention`."
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "Why, for the room's audit trail. REQUIRED: a prune is irreversible and leaves nothing of what it removed, so the reason recorded at the time is the only account of intent there will ever be. Plain text; it MUST NOT name a member or quote a record."
+    },
+    "dryRun": {
+      "type": "boolean",
+      "description": "`true` asks what a prune would remove now, and removes nothing: no version is taken, no mark is left, no blob is released. Absent means `false`. A surface offering a prune SHOULD show this first — what is about to become unreadable — before asking for the real one."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1. A host MUST NOT treat a member here as widening what is removed."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Rooms Records Prune — response payload",
+      "description": "Success response to rooms/records/prune. Type https://trusttasks.org/spec/rooms/records/prune/0.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["roomId", "removed", "recordRetention"],
+      "properties": {
+        "roomId": {
+          "type": "string"
+        },
+        "dryRun": {
+          "type": "boolean",
+          "const": true,
+          "description": "Present, and `true`, only when nothing was removed because the request asked for a dry run. Absent on a real prune: one spelling per meaning."
+        },
+        "removed": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many records were removed — or, on a dry run, would be — tombstones included. `0` is a success: nothing was eligible, and a caller that read it as a failure would retry an operation with nothing to do."
+        },
+        "blobsReleased": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many stored blobs the removed records named and no remaining record names — released exactly as a rewrite or retraction releases them (`rooms/records/put` 0.2, consumer item 8). On a dry run, how many would be. Absent means none."
+        },
+        "recordRetention": {
+          "$ref": "../../../_shared/0.1/room.schema.json#/$defs/RecordRetention",
+          "description": "The record retention the prune was made under, as in force when the host performed it — which is what decided eligibility, and what a caller holding an earlier listing checks the removal against."
+        },
+        "prune": {
+          "$ref": "../../../_shared/0.1/room.schema.json#/$defs/RecordPrune",
+          "description": "The mark the prune left, now the room's `lastPrune`. Present when at least one record was removed and the request was not a dry run; absent otherwise."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

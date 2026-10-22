@@ -107,7 +107,10 @@ returning success would tell a member their record was restored when it was not 
 
 Permanent removal of a tombstone is **out of scope for this task**, and deliberately so:
 removing it breaks convergence for every caller that has not synchronised past it. It
-belongs to a host's retention lifecycle, not to a member's curation verb.
+belongs to a host's retention lifecycle, not to a member's curation verb. That act is
+[`rooms/records/prune`](../../prune/0.1/spec.md): a holder of `admin`, applying the room's
+stated record retention, which leaves a mark (`lastPrune`) from which an incremental reader
+learns to rebuild instead.
 
 ### Curation assigns a new version
 

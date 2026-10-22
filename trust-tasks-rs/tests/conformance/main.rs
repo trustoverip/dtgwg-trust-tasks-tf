@@ -1091,6 +1091,7 @@ mod rooms {
     }
     mod create {
         mod v0_1;
+        mod v0_2;
     }
     mod epoch {
         mod chain {
@@ -1108,6 +1109,7 @@ mod rooms {
     }
     mod info {
         mod v0_1;
+        mod v0_2;
     }
     mod keys {
         mod act {
@@ -1123,6 +1125,7 @@ mod rooms {
         }
         mod browse {
             mod v0_1;
+            mod v0_2;
         }
         mod chain {
             mod v0_1;
@@ -1204,10 +1207,19 @@ mod rooms {
         }
         mod list {
             mod v0_2;
+            mod v0_3;
+        }
+        mod prune {
+            mod v0_1;
         }
         mod put {
             mod v0_2;
             mod v0_3;
+        }
+        mod retention {
+            mod set {
+                mod v0_1;
+            }
         }
     }
     mod revocations {

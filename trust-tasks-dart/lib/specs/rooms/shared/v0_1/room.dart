@@ -54,6 +54,74 @@ extension type const RetentionPolicy(String value) {
   ];
 }
 
+/// Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a
+/// reverse-DNS namespace; structure under each namespace is opaque to the framework.
+typedef Ext = Map<String, dynamic>;
+
+/// How long a room keeps its records, by age: the room's **record retention**. Records
+/// older than it states become **eligible** to be removed by `rooms/records/prune`;
+/// nothing is removed until a holder of `admin` asks for a prune, and nothing a prune
+/// removes can be brought back. **Not `retentionPolicy`, and not `retentionDays`.**
+/// Both names are taken in this family and mean other things. `retentionPolicy`
+/// (`RetentionPolicy`) is whether a room's *key chain* lets a member read epochs from
+/// before they joined, fixed at creation because key material either exists for an
+/// epoch or it does not. `retentionDays` (`rooms/create`) is how long a host keeps a
+/// whole room after it lapses unrenewed. This is a third question — how long the room
+/// keeps its *records* while it is live — and unlike the first it is a decision a room
+/// revisits, so it is changeable (`rooms/records/retention/set`). A name sharing
+/// either's would invite a reader to apply one's rules to the other. **Age is the
+/// host's to measure, so age is `updatedAt`.** On the sealed tiers a host can read
+/// nothing of a record but its key, version, status, pinning and when it last changed,
+/// so a policy the host applies can only be stated in those terms. That is also why it
+/// cannot use a record's own `validUntil`, which is sealed: expiry is a reader's rule,
+/// retention a host's. A curation is a change, so it restarts a record's age — a
+/// retraction starts a tombstone's. **Absent, or `{}`, means no record is ever
+/// eligible by age**, and that is the reading a host MUST apply whenever it cannot
+/// read a policy: removing data under a rule nobody stated is the failure this member
+/// exists to prevent. Every member can read the policy in force (`rooms/info`), so a
+/// record is never removed under a rule its readers could not have known.
+class RecordRetention {
+  const RecordRetention({
+    this.tombstoneDays,
+    this.recordDays,
+    this.ext,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory RecordRetention.fromJson(Map<String, dynamic> json) =>
+      RecordRetention(
+        tombstoneDays: json['tombstoneDays'] as int?,
+        recordDays: json['recordDays'] as int?,
+        ext: json['ext'] as Map<String, dynamic>?,
+      );
+
+  /// Days a retracted record's tombstone is kept after its retraction. A tombstone whose
+  /// `updatedAt` is more than this long ago is eligible. Tombstones exist so that a
+  /// member syncing incrementally learns of a retraction (`rooms/records/curate`); this
+  /// is how long a member may stay away and still learn of one that way rather than by
+  /// rebuilding their copy of the room. Absent means tombstones are never eligible.
+  final int? tombstoneDays;
+
+  /// Days a record is kept after it last changed, whatever its standing. A record —
+  /// `active`, `deprecated` or `retracted` — whose `updatedAt` is more than this long
+  /// ago is eligible, **unless it is pinned**: pinning says what matters in the room,
+  /// and a room that wants a pinned record gone unpins it first. Absent means records
+  /// are never eligible by age.
+  final int? recordDays;
+
+  /// Ecosystem-defined extension members per SPEC.md §4.5.1. A host MUST NOT treat a
+  /// member here as making more records eligible: a removal rule a member's reader
+  /// cannot understand is one they were never told about.
+  final Ext? ext;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        if (tombstoneDays != null) 'tombstoneDays': tombstoneDays!,
+        if (recordDays != null) 'recordDays': recordDays!,
+        if (ext != null) 'ext': ext!,
+      };
+}
+
 /// What a party presents to act on a room. Carries the whole authority chain: a host
 /// MUST NOT dereference an authority credential's `parent` to fetch a link it was not
 /// given. Resolving over the network would make verification depend on availability,
@@ -568,10 +636,6 @@ class FileManifest {
         'blobRef': blobRef,
       };
 }
-
-/// Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a
-/// reverse-DNS namespace; structure under each namespace is opaque to the framework.
-typedef Ext = Map<String, dynamic>;
 
 /// What a room says about itself to its own members: a name and, optionally, a
 /// description, short tags and an emoji, so that a member's wallet, portal or CLI can
@@ -1424,30 +1488,89 @@ typedef RecordCount = int;
 /// different trees, labelled with one version. That reads as equivocation and is not,
 /// and a **false accusation discredits the mechanism rather than the host** — the
 /// worst outcome available here. Taken from the committed set, the version cannot
-/// disagree with the root it labels, whatever else is happening to the room. The
-/// corollary is worth stating: a host that **erases** a record — as distinct from
-/// retracting it, which leaves a tombstone in the tree — moves the root without
-/// necessarily moving this value, and two members straddling that erasure would see
-/// one version over two roots. Erasure is a retention act with its own answer, and a
-/// family that exposes one owes this definition another look. **This is what makes two
-/// roots comparable at all**, and without it the comparison this family is built on
-/// cannot be performed. A room moves: every put, curate and retraction assigns a new
-/// version, so two roots taken at two moments differ legitimately and a reader learns
-/// nothing from the difference. Shown two different roots, a host that equivocated and
-/// a host that was merely written to are indistinguishable — the first can always
-/// answer *the room moved between your reads*, and nothing contradicts it. A version
-/// is assigned by exactly the mutations that change the tree — every put, curate and
-/// retraction takes the next one — so the highest of them names the **state** the root
-/// describes. Two roots carrying the same `headVersion` and differing is a host
-/// caught: there is no write to attribute the difference to. Two roots carrying
-/// different ones are simply two moments, and a reader should draw nothing from them.
-/// A host can lie about this number too, and it is then lying about the counter it
-/// also uses for optimistic concurrency (`expectedVersion`) and for incremental sync
-/// (`sinceVersion`) — so a member holding a signed acknowledgement of a write at
-/// version `V` contradicts any head below `V` directly. **Not a timestamp.** A time is
-/// host-asserted, unverifiable and useless for this: two roots a second apart are not
-/// evidence of anything, while two roots at one version are.
+/// disagree with the root it labels, whatever else is happening to the room. **A prune
+/// is the one mutation that removes leaves, and it takes a version too.** A host that
+/// **erases** records — as distinct from retracting them, which leaves a tombstone in
+/// the tree — moves the root, and taken from the records alone this value need not
+/// move with it: it would stay put, or even fall if the erased record held the highest
+/// version, and two members straddling the erasure would see one version over two
+/// roots, which reads as equivocation and is not. So on a room whose records have been
+/// pruned (`rooms/records/prune`), this value is the higher of the highest version
+/// among the records the tree covers and the `version` of the room's latest
+/// `RecordPrune`, computed from the same snapshot as the root. A prune takes the next
+/// version from the room's counter exactly as a put or a curation does, so the pair
+/// stays a snapshot: a root and a head that agree before a prune and a root and a head
+/// that agree after it, never one head over two roots. A room that has never been
+/// pruned is unaffected. **This is what makes two roots comparable at all**, and
+/// without it the comparison this family is built on cannot be performed. A room
+/// moves: every put, curate and retraction assigns a new version, so two roots taken
+/// at two moments differ legitimately and a reader learns nothing from the difference.
+/// Shown two different roots, a host that equivocated and a host that was merely
+/// written to are indistinguishable — the first can always answer *the room moved
+/// between your reads*, and nothing contradicts it. A version is assigned by exactly
+/// the mutations that change the tree — every put, curate and retraction takes the
+/// next one — so the highest of them names the **state** the root describes. Two roots
+/// carrying the same `headVersion` and differing is a host caught: there is no write
+/// to attribute the difference to. Two roots carrying different ones are simply two
+/// moments, and a reader should draw nothing from them. A host can lie about this
+/// number too, and it is then lying about the counter it also uses for optimistic
+/// concurrency (`expectedVersion`) and for incremental sync (`sinceVersion`) — so a
+/// member holding a signed acknowledgement of a write at version `V` contradicts any
+/// head below `V` directly. **Not a timestamp.** A time is host-asserted, unverifiable
+/// and useless for this: two roots a second apart are not evidence of anything, while
+/// two roots at one version are.
 typedef HeadVersion = int;
+
+/// The mark a prune leaves: **that** records were removed, when, and how many — never
+/// which, and never anything they said. A prune removes records outright, tombstones
+/// included, so the room's record tree loses leaves and an incremental reader has
+/// nothing left to learn the removal from. This is what it learns from instead. A host
+/// keeps the latest one per room and serves it with every listing that can carry it
+/// (`rooms/records/list` 0.3, as `lastPrune`); a reader whose own copy of the room was
+/// synchronised to a version below `version` MUST rebuild that copy from a full
+/// listing — no `sinceVersion` — and drop every record the full listing no longer
+/// holds. Without that, a record the room removed lives on in every cache that
+/// synchronised before the prune, and a record retracted while the reader was away
+/// comes back as current. **What a host keeps and what it does not.** A host keeps
+/// this marker, and in its audit trail the prune's `reason`, its requester where the
+/// tier discloses one, and the retention it was made under. It MUST NOT keep anything
+/// a pruned record said — body, ciphertext, cleartext, title, description, file or
+/// blob — and SHOULD NOT keep pruned records' keys: the count is the audit, and a list
+/// of keys on an `open` room, where keys may be descriptive, is content by another
+/// name.
+class RecordPrune {
+  const RecordPrune({
+    required this.version,
+    required this.at,
+    required this.removed,
+  });
+
+  /// Read this payload from a decoded JSON object.
+  factory RecordPrune.fromJson(Map<String, dynamic> json) => RecordPrune(
+        version: json['version'] as int,
+        at: json['at'] as String,
+        removed: json['removed'] as int,
+      );
+
+  /// The version the prune took from the room's counter, as a put or a curation would.
+  /// No record carries it; it is what moves `HeadVersion` past the removal, so that a
+  /// root taken before and a root taken after are never labelled with one version.
+  final int version;
+
+  /// When the host performed it.
+  final String at;
+
+  /// How many records were removed, tombstones included. A prune that removed nothing
+  /// leaves no mark.
+  final int removed;
+
+  /// Serialize to a JSON-encodable map, omitting absent members.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'version': version,
+        'at': at,
+        'removed': removed,
+      };
+}
 
 /// What a room writes into its own witnessed log, so that a host serving a stale,
 /// forked or partial view of it becomes **evident rather than merely possible**.

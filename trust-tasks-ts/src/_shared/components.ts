@@ -894,7 +894,7 @@ export type Handle = string;
  *
  * **Derived from the same set as the root, and not read from the room's own counter.** The two agree for any host that has never erased a record — versions are assigned strictly increasing and a retraction keeps its tombstone — but they are not interchangeable, because a root and a counter are *two reads*, and two reads are not a snapshot. A write landing between them yields a pair that is individually correct and jointly false: two members holding roots taken over different trees, labelled with one version. That reads as equivocation and is not, and a **false accusation discredits the mechanism rather than the host** — the worst outcome available here. Taken from the committed set, the version cannot disagree with the root it labels, whatever else is happening to the room.
  *
- * The corollary is worth stating: a host that **erases** a record — as distinct from retracting it, which leaves a tombstone in the tree — moves the root without necessarily moving this value, and two members straddling that erasure would see one version over two roots. Erasure is a retention act with its own answer, and a family that exposes one owes this definition another look.
+ * **A prune is the one mutation that removes leaves, and it takes a version too.** A host that **erases** records — as distinct from retracting them, which leaves a tombstone in the tree — moves the root, and taken from the records alone this value need not move with it: it would stay put, or even fall if the erased record held the highest version, and two members straddling the erasure would see one version over two roots, which reads as equivocation and is not. So on a room whose records have been pruned (`rooms/records/prune`), this value is the higher of the highest version among the records the tree covers and the `version` of the room's latest `RecordPrune`, computed from the same snapshot as the root. A prune takes the next version from the room's counter exactly as a put or a curation does, so the pair stays a snapshot: a root and a head that agree before a prune and a root and a head that agree after it, never one head over two roots. A room that has never been pruned is unaffected.
  *
  * **This is what makes two roots comparable at all**, and without it the comparison this family is built on cannot be performed. A room moves: every put, curate and retraction assigns a new version, so two roots taken at two moments differ legitimately and a reader learns nothing from the difference. Shown two different roots, a host that equivocated and a host that was merely written to are indistinguishable — the first can always answer *the room moved between your reads*, and nothing contradicts it.
  *
@@ -9502,6 +9502,50 @@ export interface RecordMetadataV2 {
    * @maxItems 1
    */
   blobs?: [BlobRef];
+}
+/**
+ * The mark a prune leaves: **that** records were removed, when, and how many — never which, and never anything they said.
+ *
+ * A prune removes records outright, tombstones included, so the room's record tree loses leaves and an incremental reader has nothing left to learn the removal from. This is what it learns from instead. A host keeps the latest one per room and serves it with every listing that can carry it (`rooms/records/list` 0.3, as `lastPrune`); a reader whose own copy of the room was synchronised to a version below `version` MUST rebuild that copy from a full listing — no `sinceVersion` — and drop every record the full listing no longer holds. Without that, a record the room removed lives on in every cache that synchronised before the prune, and a record retracted while the reader was away comes back as current.
+ *
+ * **What a host keeps and what it does not.** A host keeps this marker, and in its audit trail the prune's `reason`, its requester where the tier discloses one, and the retention it was made under. It MUST NOT keep anything a pruned record said — body, ciphertext, cleartext, title, description, file or blob — and SHOULD NOT keep pruned records' keys: the count is the audit, and a list of keys on an `open` room, where keys may be descriptive, is content by another name.
+ */
+export interface RecordPrune {
+  /**
+   * The version the prune took from the room's counter, as a put or a curation would. No record carries it; it is what moves `HeadVersion` past the removal, so that a root taken before and a root taken after are never labelled with one version.
+   */
+  version: number;
+  /**
+   * When the host performed it.
+   */
+  at: string;
+  /**
+   * How many records were removed, tombstones included. A prune that removed nothing leaves no mark.
+   */
+  removed: number;
+}
+/**
+ * How long a room keeps its records, by age: the room's **record retention**. Records older than it states become **eligible** to be removed by `rooms/records/prune`; nothing is removed until a holder of `admin` asks for a prune, and nothing a prune removes can be brought back.
+ *
+ * **Not `retentionPolicy`, and not `retentionDays`.** Both names are taken in this family and mean other things. `retentionPolicy` (`RetentionPolicy`) is whether a room's *key chain* lets a member read epochs from before they joined, fixed at creation because key material either exists for an epoch or it does not. `retentionDays` (`rooms/create`) is how long a host keeps a whole room after it lapses unrenewed. This is a third question — how long the room keeps its *records* while it is live — and unlike the first it is a decision a room revisits, so it is changeable (`rooms/records/retention/set`). A name sharing either's would invite a reader to apply one's rules to the other.
+ *
+ * **Age is the host's to measure, so age is `updatedAt`.** On the sealed tiers a host can read nothing of a record but its key, version, status, pinning and when it last changed, so a policy the host applies can only be stated in those terms. That is also why it cannot use a record's own `validUntil`, which is sealed: expiry is a reader's rule, retention a host's. A curation is a change, so it restarts a record's age — a retraction starts a tombstone's.
+ *
+ * **Absent, or `{}`, means no record is ever eligible by age**, and that is the reading a host MUST apply whenever it cannot read a policy: removing data under a rule nobody stated is the failure this member exists to prevent. Every member can read the policy in force (`rooms/info`), so a record is never removed under a rule its readers could not have known.
+ */
+export interface RecordRetention {
+  /**
+   * Days a retracted record's tombstone is kept after its retraction. A tombstone whose `updatedAt` is more than this long ago is eligible. Tombstones exist so that a member syncing incrementally learns of a retraction (`rooms/records/curate`); this is how long a member may stay away and still learn of one that way rather than by rebuilding their copy of the room. Absent means tombstones are never eligible.
+   */
+  tombstoneDays?: number;
+  /**
+   * Days a record is kept after it last changed, whatever its standing. A record — `active`, `deprecated` or `retracted` — whose `updatedAt` is more than this long ago is eligible, **unless it is pinned**: pinning says what matters in the room, and a room that wants a pinned record gone unpins it first. Absent means records are never eligible by age.
+   */
+  recordDays?: number;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1. A host MUST NOT treat a member here as making more records eligible: a removal rule a member's reader cannot understand is one they were never told about.
+   */
+  ext?: Ext;
 }
 /**
  * A passkey already bound to a subject, as listed by `auth/passkey/list` and targeted by `auth/passkey/revoke/*`. This is the auth service's own management view of a credential — not a WebAuthn dictionary — so its members are camelCase per SPEC.md §4.10. The exception is `transports`, whose values are the externally-owned WebAuthn transport tokens and are carried verbatim.
