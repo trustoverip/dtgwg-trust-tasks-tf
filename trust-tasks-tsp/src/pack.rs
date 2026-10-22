@@ -150,6 +150,19 @@ pub fn unpack_trust_task<P>(
 where
     P: Payload + DeserializeOwned,
 {
+    unpack_received(wire, recipient, sender).map(|(doc, _, handler)| (doc, handler))
+}
+
+/// [`unpack_trust_task`], also returning the document as received — what a
+/// proof is verified over (see `ProofPolicy::with_received`).
+pub(crate) fn unpack_received<P>(
+    wire: &[u8],
+    recipient: &PrivateVid,
+    sender: &ResolvedVid,
+) -> Result<(TrustTask<P>, serde_json::Value, TspHandler), TspError>
+where
+    P: Payload + DeserializeOwned,
+{
     let unpacked = direct::unpack(wire, &recipient.decryption_key, &sender.signing_key)?;
 
     if unpacked.message_type != MessageType::Direct {
@@ -171,12 +184,13 @@ where
         return Err(TspError::WrongEnvelopeType(envelope.type_));
     }
 
+    let received = envelope.document;
     let doc: TrustTask<P> =
-        serde_json::from_value(envelope.document).map_err(TspError::InvalidBody)?;
+        serde_json::from_value(received.clone()).map_err(TspError::InvalidBody)?;
 
     // A TSP VID is a framework VID verbatim — no normalisation.
     let handler = TspHandler::new(Some(unpacked.receiver), Some(sender.id.clone()));
-    Ok((doc, handler))
+    Ok((doc, received, handler))
 }
 
 /// The binding envelope object: a `type` tag plus the carried Trust Task.

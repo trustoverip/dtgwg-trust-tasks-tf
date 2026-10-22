@@ -4,7 +4,7 @@
 //!
 //! # Why this type exists
 //!
-//! Through 0.12 this crate stopped at [`unpack_trust_task`]: it handed back a
+//! Through 0.12 this crate stopped at [`unpack_trust_task`](crate::unpack_trust_task): it handed back a
 //! document and a [`DidcommHandler`] and left every consumer to assemble
 //! [`consume_inbound`] for itself. Assembling it correctly means choosing a
 //! [`ReplayGuard`] and a [`FreshnessPolicy`], and the failure mode of not
@@ -74,7 +74,7 @@ use trust_tasks_rs::{
 
 use crate::error::DidcommError;
 use crate::handler::DidcommHandler;
-use crate::pack::{unpack_trust_task, unpack_trust_task_from, SenderAllowlist};
+use crate::pack::{unpack_received, unpack_received_from, SenderAllowlist};
 
 /// Where a [`DidcommConsumer`] keeps the SPEC §7.2 item 11 record.
 enum Record {
@@ -258,7 +258,7 @@ impl DidcommConsumer {
     /// Unpack an inbound authcrypt envelope and run the guarded §7.2 pipeline
     /// over the document it carries.
     ///
-    /// Every conformance rule of [`unpack_trust_task`] applies first — the
+    /// Every conformance rule of [`unpack_trust_task`](crate::unpack_trust_task) applies first — the
     /// envelope must be authcrypt, the `sender_kid` must be qualified, and
     /// where `expected_sender_did` is supplied it is enforced against the DID
     /// that actually opened the envelope. A transport-layer refusal comes back
@@ -291,13 +291,13 @@ impl DidcommConsumer {
         F: FnOnce(TrustTask<P>, ResolvedParties) -> Fut,
         Fut: Future<Output = Result<TrustTask<R>, ErrorResponse>>,
     {
-        let (doc, transport) = unpack_trust_task::<P>(wire, agent, expected_sender_did)?;
+        let (doc, received, transport) = unpack_received::<P>(wire, agent, expected_sender_did)?;
         Ok(self
             .consume(
                 &transport,
                 doc,
                 my_vid,
-                proof_policy,
+                proof_policy.with_received(&received),
                 payload_policy,
                 now,
                 error_id_factory,
@@ -308,7 +308,7 @@ impl DidcommConsumer {
 
     /// [`receive`](Self::receive) for a consumer that accepts from many peers:
     /// the envelope's `skid` is checked against `allowlist` before anything is
-    /// decrypted. See [`unpack_trust_task_from`].
+    /// decrypted. See [`unpack_trust_task_from`](crate::unpack_trust_task_from).
     #[allow(clippy::too_many_arguments)]
     pub async fn receive_from<P, R, V, W, F, Fut>(
         &self,
@@ -330,13 +330,13 @@ impl DidcommConsumer {
         F: FnOnce(TrustTask<P>, ResolvedParties) -> Fut,
         Fut: Future<Output = Result<TrustTask<R>, ErrorResponse>>,
     {
-        let (doc, transport) = unpack_trust_task_from::<P>(wire, agent, allowlist)?;
+        let (doc, received, transport) = unpack_received_from::<P>(wire, agent, allowlist)?;
         Ok(self
             .consume(
                 &transport,
                 doc,
                 my_vid,
-                proof_policy,
+                proof_policy.with_received(&received),
                 payload_policy,
                 now,
                 error_id_factory,
