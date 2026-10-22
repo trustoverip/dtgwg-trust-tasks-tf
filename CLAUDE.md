@@ -501,9 +501,11 @@ classification. No third-party dependency (only the core, for `Document` and
   attempt, distinct from a bit-for-bit retry the consumer's item-11 record
   absorbs. Sign built documents with `trust-tasks-go/proof`.
 - **Core CI does not reach it**; a `capabilityclient` job in `go.yml` builds/vets/
-  tests it on the `go 1.22` floor. Keep the files gofmt-clean. `go get` works via
-  the proxy, so the website matrix lists the Go `capability-client` cell as
-  shipped.
+  tests it on the `go 1.22` floor. Keep the files gofmt-clean. **Released on
+  its own `trust-tasks-go/capabilityclient/vX.Y.Z` tag** the same way `proof`
+  is — a `version.go`, a `publish-go` matrix leg, a `GO_MODULES` entry in
+  `release-pr.sh` and a `release-bump-go.sh` case — and the core's release
+  watch excludes it, so a change here releases this module, not the core.
 
 ## ⚠️ The hand-written TypeScript packages
 
