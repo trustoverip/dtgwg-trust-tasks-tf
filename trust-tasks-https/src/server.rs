@@ -20,9 +20,11 @@
 //! 3. Bearer token → transport-authenticated peer (local lookup).
 //! 4. **Route lookup** — an unregistered `type` is `unsupportedType` here,
 //!    before anything else touches the network.
-//! 5. `resolve_parties` (§4.8.1), `validate_basic` (expiry, recipient), and
-//!    the **freshness bound** over `issuedAt` / `expiresAt` (§7.2 item 13) —
-//!    see [`HttpsServerBuilder::freshness`].
+//! 5. `validate_basic` (expiry, recipient), the **freshness bound** over
+//!    `issuedAt` / `expiresAt` (§7.2 item 13) — see
+//!    [`HttpsServerBuilder::freshness`] — and `resolve_parties` (§4.8.1), in
+//!    `consume_inbound`'s order. With no authenticated peer, `resolve_parties`
+//!    runs first, so a misaddressed document is suppressed (§8.1).
 //! 6. **Attribution gate** — see [`HttpsServerBuilder::require_attribution`].
 //! 7. `proof.verificationMethod` DID-method pre-screen — see
 //!    [`HttpsServerBuilder::allowed_did_methods`].
@@ -724,15 +726,26 @@ async fn dispatch_handler(
         );
     };
 
-    // ─── 5. Identity resolution (§4.8.1), then the framework-level checks:
-    // expiry + recipient identity.
-    let resolved = match handler.resolve_parties(&doc) {
-        Ok(r) => r,
-        Err(consistency) => {
-            let reason: RejectReason = consistency.into();
-            return reject_response(Some(&handler), Some(&doc), reason);
+    // ─── 5. The framework-level checks, in §7.2 order and so in
+    // `consume_inbound`'s: expiry + recipient (items 4 and 5a), freshness
+    // (item 4), then identity resolution (item 6). A document that fails two
+    // of them is refused for the same reason by every consumer.
+    //
+    // Except with no authenticated sender. Then the only identity that can
+    // disagree is the recipient, and §8.1 suppresses that refusal: there is
+    // nobody to address it to, and a `wrongRecipient` answer would tell an
+    // unauthenticated prober which VIDs this server is not. So identity runs
+    // first, and a misaddressed document stays indistinguishable from one that
+    // did not parse.
+    let mut resolved = None;
+    if handler.peer().is_none() {
+        match handler.resolve_parties(&doc) {
+            Ok(r) => resolved = Some(r),
+            Err(consistency) => {
+                return reject_response(Some(&handler), Some(&doc), consistency.into());
+            }
         }
-    };
+    }
     let now = chrono::Utc::now();
     let my_vid = state.local_vid.as_deref().unwrap_or("");
     if let Err(reason) = doc.validate_basic(now, my_vid) {
@@ -748,6 +761,17 @@ async fn dispatch_handler(
     if let Err(reason) = doc.validate_freshness(now, &state.freshness) {
         return reject_response(Some(&handler), Some(&doc), reason);
     }
+
+    // ─── 5c. Identity resolution (§4.8.1, §7.2 item 6), unless step 5 ran it.
+    let resolved = match resolved {
+        Some(r) => r,
+        None => match handler.resolve_parties(&doc) {
+            Ok(r) => r,
+            Err(consistency) => {
+                return reject_response(Some(&handler), Some(&doc), consistency.into());
+            }
+        },
+    };
 
     // ─── 6. Attribution gate. A document with neither a transport-
     // authenticated peer nor a `proof` is attributable to nobody: the
