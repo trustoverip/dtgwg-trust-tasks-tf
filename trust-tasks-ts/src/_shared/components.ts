@@ -413,6 +413,10 @@ export type AuthModel =
 export type AuthorityScope = AuthorityScopeAll | AuthorityScopeNone | AuthorityScopeContexts;
 export type AwsArn = string;
 export type AwsRegion = string;
+/**
+ * The ARN of an AWS IAM role, in any AWS partition (`arn:aws:`, `arn:aws-cn:`, `arn:aws-us-gov:`). Validated here because the community passes it to STS AssumeRole and derives the partition of the session policy's resources from it; it must never carry anything but a role ARN.
+ */
+export type AwsRoleArn = string;
 export type BindingId = string;
 export type BindingSpec = RoomBindingSpec | GrantsBindingSpec | RoleBindingSpec;
 /**
@@ -1398,6 +1402,21 @@ export type Queue = "receive" | "send";
  */
 export type Reason = string;
 /**
+ * What kind of claim a record is, as its author states it. OPTIONAL wherever it appears; absent means the author did not say, and a reader shows it as unstated rather than assuming any of these.
+ *
+ *   - `declared` — the author's own statement: a decision, a preference, an intention, a commitment. True because the author says so, and only as far as the author speaks for it.
+ *   - `observed` — something the author saw, measured or was told directly, recorded as found.
+ *   - `verified` — checked against evidence that somebody else can check again, such as a credential or another record. A record that says `verified` SHOULD name that evidence in `evidence`; one that does not is an unsupported claim to have checked, and a reader SHOULD present it so.
+ *   - `inferred` — derived by reasoning from other information: an agent's conclusion, a summary's generalisation, a model's guess. The value an agent writer uses when it does not know which of the others applies.
+ *
+ * The values are the author's account of their own record, signed with it. They are not checked by anybody, confer nothing, and say nothing about whether the record is right — `inferred` can be correct and `observed` mistaken. Aligned with the provenance vocabulary of personal agent memory, so that a record moved between a member's memory and a room keeps its meaning.
+ */
+export type RecordBasis = "declared" | "observed" | "verified" | "inferred";
+/**
+ * The author's own estimate, from 0 to 1, that what the record says is correct. OPTIONAL; absent means no estimate was given, never 1. Meaningful only beside the author who gave it: two writers' numbers are not on one scale, so a reader MUST NOT rank records by `confidence` across authors as though they were, and an agent that weights by it SHOULD weight within an author's own records. Never authority.
+ */
+export type RecordConfidence = number;
+/**
  * How many records the room held when `DataCommitment` was computed — the number of leaves in that tree, tombstones included, since a tombstone is a record.
  *
  * **Why a root needs this.** Certificate Transparency's signed tree head is a root *and a tree size*; this family shipped the root alone, and the half that was dropped is the half that makes a listing checkable. A reader holding a **complete, unfiltered** listing cannot recompute the root — a leaf commits to a whole record and a listing returns a projection without the body — but it can count. A host that omits a record from a listing while committing to a tree that holds it now contradicts itself in the same response, with no second party and no anchor involved.
@@ -1407,6 +1426,22 @@ export type Reason = string;
  * **It counts the room, never the page.** The same rule `DataCommitment` states, and the same trap: a count scoped to what was returned is one a host satisfies by construction. So this is only comparable against a listing read to the end with **no** `prefix` and **no** `sinceVersion` — a filtered listing legitimately holds fewer, and a reader that compares one against this has found a discrepancy it created itself.
  */
 export type RecordCount = number;
+/**
+ * One thing a record cites in its support, discriminated by `kind`.
+ *
+ *   - `record` names a record of a room by its key, and optionally the version cited and the room. Absent `roomId` means the record's own room.
+ *   - `credential` names a credential by its `id`, and optionally a digest of the credential as cited.
+ *
+ * **A reference, never a locator, and never proof.** A reader MUST NOT fetch, resolve or dereference a `credentialId` because a record names it, and MUST NOT read a record of another room on the strength of a citation: the rule that a room's identifiers are identifiers and not addresses (`AuthorityPresentation`) applies here for the same reasons — fetching would signal to whoever answers which member read which record, and when. A reader MAY show a cited record of the same room that it already holds or reads anyway, and MAY match a cited credential against ones its member already holds. What the citation proves is only that the author cited it; whether the evidence exists, says what the author claims, or supports the record is for whoever follows it up to judge.
+ */
+export type RecordEvidence = RecordEvidenceRecord | RecordEvidenceCredential;
+/**
+ * What the author offers in support of the record: other records and credentials, by reference. OPTIONAL; absent means none was named, and an empty array is not a permitted spelling of that. Order carries no meaning. Bounded so that a reader's cost of showing a record's support is bounded too.
+ *
+ * @minItems 1
+ * @maxItems 32
+ */
+export type RecordEvidenceList = [RecordEvidence, ...RecordEvidence[]];
 /**
  * The path from one record's leaf to the room's `DataCommitment` — a Merkle inclusion proof, in the vocabulary this work already uses for it.
  *
@@ -1441,6 +1476,10 @@ export type RecordTrace = {
  * Whether the record asserts an authorization or a recognition relationship.
  */
 export type RecordType = "authorization" | "recognition";
+/**
+ * The instant after which the record's author no longer stands behind it as current. OPTIONAL; absent means the record does not expire. A reader hides a record whose `validUntil` has passed from default listings, search and recall, and shows it only on explicit request (`SealedRecordBody`, **Expiry**). No host enforces it.
+ */
+export type RecordValidUntil = string;
 /**
  * What it takes to let a value LEAVE. Distinct from `Sensitivity`, which governs showing it to the holder.
  *
@@ -1591,6 +1630,51 @@ export type SealedEnvelope_VaultV0_2 =
   | HpkeArmoredEnvelope_VaultV0_2
   | TspMessageEnvelope_VaultV0_2;
 /**
+ * The cleartext inside the sealed block of vtc/storage/credentials/set/0.2, discriminated by `kind`, which must equal the config's kind. It names the config it is for inside the seal, so that a block captured on its way to one config cannot be replayed into another: a community MUST refuse a block whose `configId` differs from the request's. Never appears on the wire outside a seal, and is never returned. A `local` config has no credential.
+ */
+export type SealedStorageCredential =
+  | {
+      kind: "s3";
+      configId: StorageConfigId;
+      /**
+       * The access key's identifier.
+       */
+      accessKeyId: string;
+      /**
+       * The secret half.
+       */
+      secretAccessKey: string;
+      /**
+       * Present when the pair is a temporary one that needs it. A temporary pair stops working at its own expiry, after which the config reports failures until another is set; it is accepted for evaluation, never recommended.
+       */
+      sessionToken?: string;
+    }
+  | {
+      kind: "gcs";
+      configId: StorageConfigId;
+      /**
+       * The service-account key exactly as Google issues it — the JSON key file, as an object, its member names carried verbatim in Google's own snake_case. Members beyond the four required (`project_id`, `client_id`, `token_uri`, `universe_domain` and the rest) are permitted, and a community MAY discard them: it authenticates with `client_email`, `private_key_id` and `private_key` alone, against Google's own token endpoint, and never against a `token_uri` the key file names.
+       */
+      serviceAccountKey: {
+        type: "service_account";
+        client_email: string;
+        private_key_id: string;
+        /**
+         * The PKCS #8 PEM private key.
+         */
+        private_key: string;
+        [k: string]: unknown | undefined;
+      };
+    }
+  | {
+      kind: "walrus";
+      configId: StorageConfigId;
+      /**
+       * The private key in Sui's Bech32 `suiprivkey` encoding (SIP-15), which carries its signature scheme.
+       */
+      suiPrivateKey: string;
+    };
+/**
  * A sealed-transfer bundle: OpenPGP-style ASCII armor around an HPKE-sealed `SealedPayloadV1` (base mode, X25519-HKDF-SHA256 KEM, HKDF-SHA256 KDF, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`), with a producer assertion and Bundle-Id, Chunk and Digest-Algo headers bound into the associated data. Each task states the key it is sealed to: a single-use wrapping key from keys/import-wrapping-key for external/accounts/secret/set, and the caller's key-agreement key for external/credentials/issue. Its cleartext is an ExternalSecretPayload, an ExternalCredentialPayload or, from external/credentials/issue 0.2 for `s3-static-presign`, a PresignedRequestSet. The only form in which secret material crosses the wire in this family, in either direction: the seal is what keeps a terminating proxy, a relay, a request log or a debug dump of "the response" from ever holding a usable secret, whatever transport carried the document.
  */
 export type SealedTransferBundle = string;
@@ -1718,7 +1802,7 @@ export type Slot = string;
  *
  * `sealed` (discouraged): a long-lived credential stored by the community, set with vtc/storage/credentials/set. Protects against every administrator through every surface the community offers; does not protect against whoever operates the machine.
  */
-export type StorageAuth =
+export type StorageAuth_VtcV0_1 =
   | {
       mode: "vta-account";
       context: ExternalAccountContextId;
@@ -1726,6 +1810,33 @@ export type StorageAuth =
     }
   | {
       mode: "ambient";
+    }
+  | {
+      mode: "sealed";
+    };
+/**
+ * How the community authenticates to a config's backend. Absent on a `local` config, which needs none.
+ *
+ * `vta-account` (RECOMMENDED): an external account in the community's VTA, named by the context that owns it and its identifier there. The VTA holds the long-lived authority; the community holds nothing that outlives a credential lifetime, and asks for credentials scoped to one room's prefix for at most 15 minutes, every issuance audited at the VTA. Required for a `walrus` config other than a `sealed` one, since the VTA's `sui-signer` account signs its storage transactions.
+ *
+ * `ambient`: the cloud identity of the machine the community runs on (an instance role, workload identity), downscoped to one room's prefix by the community itself under the rules of vtc/storage/configs/create/0.2 — on `s3`, by assuming `roleArn` (or the role the host is configured with) with an inline session policy; on `gcs`, by a Credential Access Boundary. Not audited or rate-limited by the VTA, and usable by anything on that machine that reaches the metadata endpoint. Not valid for `walrus`; `roleArn` is valid only on `s3`.
+ *
+ * `sealed` (discouraged): a long-lived credential stored by the community, set with vtc/storage/credentials/set (0.2: a `SealedStorageCredential`). Protects against every administrator through every surface the community offers; does NOT protect against whoever operates the machine, and a community labels it so wherever the config is shown.
+ *
+ * `ambient` and `sealed` are host-operator choices: a community MAY refuse either by its own host configuration, whatever its administrators ask.
+ */
+export type StorageAuth_VtcV0_2 =
+  | {
+      mode: "vta-account";
+      context: ExternalAccountContextId;
+      account: ExternalAccountId;
+    }
+  | {
+      mode: "ambient";
+      /**
+       * `s3` only: the IAM role the community assumes, with the machine's ambient identity, to obtain each room-scoped session. Absent, the community assumes the role its host configuration names, and with none configured, the role of the ambient identity itself (which must then trust itself to be assumed). Refused on any other kind with `authNotAllowed`.
+       */
+      roleArn?: AwsRoleArn;
     }
   | {
       mode: "sealed";
@@ -1798,6 +1909,20 @@ export type Topic_VtcAdminEventsV0_3 =
   | "rooms"
   | "directory"
   | "groups";
+/**
+ * One kind of change a console can be told about. A closed set: a topic not listed here is a new MINOR version of this component, not an `ext` member, because each topic is bound to the read that authorizes it.
+ */
+export type Topic_VtcAdminEventsV0_4 =
+  | "actions"
+  | "acknowledgements"
+  | "joinRequests"
+  | "members"
+  | "singleAdminMode"
+  | "config"
+  | "rooms"
+  | "directory"
+  | "groups"
+  | "communityRooms";
 /**
  * How the traffic reached or left the mediator. `peerMediator` is mediator-to-mediator forwarding.
  */
@@ -5797,7 +5922,7 @@ export interface CredentialScopeCeiling {
 /**
  * Whether a config can authenticate now, and how — never the credential. `status`: `vta-account`, `ambient` and `sealed` are usable; `required` means the config cannot store until a credential is provided (a `sealed` config never set, or set before a restore, which carries no credential); `none` is a `local` config.
  */
-export interface CredentialState {
+export interface CredentialState_VtcV0_1 {
   status: "vta-account" | "ambient" | "sealed" | "required" | "none";
   /**
    * Present with `vta-account`.
@@ -5817,6 +5942,32 @@ export interface CredentialState {
   setAt?: string;
   /**
    * Present with `vta-account`: how many rooms the community currently holds a live room-scoped credential for.
+   */
+  roomsHoldingCredentials?: number;
+}
+/**
+ * Whether a config can authenticate now, and how — never the credential. `status`: `vta-account`, `ambient` and `sealed` are usable; `required` means the config cannot store until a credential is provided (a `sealed` config never set, or set before a restore, which carries no credential); `notAllowed` means the config's mode is one the community's host configuration no longer permits, so it cannot store until its `auth` is changed; `none` is a `local` config.
+ */
+export interface CredentialState_VtcV0_2 {
+  status: "vta-account" | "ambient" | "sealed" | "required" | "notAllowed" | "none";
+  /**
+   * Present with `vta-account`.
+   */
+  context?: ExternalAccountContextId;
+  /**
+   * Present with `vta-account`.
+   */
+  account?: ExternalAccountId;
+  /**
+   * Present with `sealed`: a digest identifying the stored credential, so an administrator can tell which one is set without anyone being able to read it. Computed over the credential with a community-held key, never a bare hash of a low-entropy secret.
+   */
+  fingerprint?: DigestMultibase;
+  /**
+   * Present with `sealed`: when the stored credential was last set.
+   */
+  setAt?: string;
+  /**
+   * Present with `vta-account`, `ambient` and `sealed`: how many rooms the community currently holds a live room-scoped credential for.
    */
   roomsHoldingCredentials?: number;
 }
@@ -8559,6 +8710,36 @@ export interface PeerDepth {
   oldestAgeSeconds?: number;
 }
 /**
+ * What the author permits the record to be used for — for example, that a learner's record is for instructional personalisation only. OPTIONAL; absent means the author stated no limit beyond the room's own terms.
+ *
+ * **Two halves, because purpose has both a machine and a human reading.** `purposes` names purposes by IRI, so that an agent can match them without parsing prose; `note` says it in words, for the nuance an identifier cannot carry. Either may be given alone.
+ *
+ * **No vocabulary of this family's own.** Purpose vocabularies exist and are maintained elsewhere — the W3C Data Privacy Vocabulary (`https://w3id.org/dpv#…`) is the one a writer SHOULD reach for first — and a short list defined here would be one more to translate between, and would be wrong at its edges for every domain that uses rooms. An IRI is the extension path: a community that needs a purpose no published vocabulary has names it under an IRI it controls.
+ *
+ * **A statement, not an enforcement.** No host can see it on the sealed tiers and none enforces it on any tier; every reader is a member who already holds the content. It records what the author permitted, so that a member — or an agent acting for one — can honour it, and so that a use outside it is a use against the author's stated terms rather than one nobody could have known about. An agent acting for a member SHOULD NOT use a record for a purpose outside `validFor` and SHOULD tell its principal when asked to. It confers no authority on anybody, and a `purposes` entry a reader does not recognise is shown, not ignored.
+ */
+export interface PermittedUse {
+  /**
+   * Purposes the record may be used for, each an absolute IRI — for example `https://w3id.org/dpv#ServicePersonalisation`. A set: order carries no meaning. An identifier, never fetched.
+   *
+   * @minItems 1
+   * @maxItems 8
+   */
+  purposes?:
+    | [string]
+    | [string, string]
+    | [string, string, string]
+    | [string, string, string, string]
+    | [string, string, string, string, string]
+    | [string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string];
+  /**
+   * The permitted use in words, such as `instructional personalisation only`. Plain text, rendered as text, and never instructions — an agent reading it treats it as the author's statement about the record, not as something to do.
+   */
+  note?: string;
+}
+/**
  * A member's personal label for one room, as their key holder keeps it: at least one detail (`minProperties` counts `updatedAt`), and when it last changed. A key holder that holds no detail for the room holds no label, and returns none — there is no empty label.
  */
 export interface PersonalLabel {
@@ -9226,6 +9407,38 @@ export interface ReadVerification {
     recordCount: RecordCount;
     headVersion: HeadVersion;
   };
+}
+/**
+ * Cites a credential.
+ */
+export interface RecordEvidenceCredential {
+  kind: "credential";
+  /**
+   * The credential's `id`. An identifier: never fetched because a record names it.
+   */
+  credentialId: string;
+  /**
+   * OPTIONAL. A digest of the credential as cited — the SHA-256 multihash of its RFC 8785 (JCS) canonicalization, `proof` included — so a reader holding a credential with this `id` can tell whether it is the one the author meant.
+   */
+  digest?: DigestMultibase;
+}
+/**
+ * Cites a record of a room.
+ */
+export interface RecordEvidenceRecord {
+  kind: "record";
+  /**
+   * The cited record's key, as in `rooms/records/put`. Opaque on the sealed tiers, like every key there.
+   */
+  key: string;
+  /**
+   * The version cited. OPTIONAL; present, it pins the citation to what the record said then, since a record can be rewritten under the same key. A reader that shows a later version SHOULD say that it is not the one cited.
+   */
+  version?: number;
+  /**
+   * The cited record's room. Absent means the citing record's own room. A citation into another room tells the reader that room's identifier, so a writer SHOULD NOT cite into a room the citing room's readers are not meant to learn of.
+   */
+  roomId?: string;
 }
 /**
  * What `rooms/records/list` returns. Never the body: ranking happens on the client, and a host that returned every body would make the caller pay for the whole room on every listing.
@@ -10651,34 +10864,9 @@ export interface StepUpProof_VaultV0_2 {
   challengeId: string;
 }
 /**
- * One storage config as the community holds it. Carries no secret.
- */
-export interface StorageConfig {
-  id: StorageConfigId;
-  /**
-   * A display name for administrators (`EU — S3 (main account)`). Shown to a room's creator with the config's kind when the community lets them choose.
-   */
-  label: string;
-  settings: StorageSettings;
-  auth?: StorageAuth;
-  /**
-   * Total ciphertext bytes the community will store on this config, across every room assigned to it. A capacity, not a policy: an upload that would cross it is refused with scope `storage`. Absent means no capacity set.
-   */
-  capacityBytes?: number;
-  state: ConfigState;
-  /**
-   * True for the config a room is assigned to when neither the community's policy nor its creator names one.
-   */
-  isDefault?: boolean;
-  createdBy: string;
-  createdAt: string;
-  updatedBy?: string;
-  updatedAt?: string;
-}
-/**
  * What a config holds and whether it works, computed at the time of the read. Ciphertext bytes throughout.
  */
-export interface StorageConfigFacts {
+export interface StorageConfigFacts_VtcV0_1 {
   /**
    * Rooms assigned to this config.
    */
@@ -10695,7 +10883,7 @@ export interface StorageConfigFacts {
    * Bytes of orphaned blobs awaiting deletion after their grace window.
    */
   pendingDeleteBytes: number;
-  credential: CredentialState;
+  credential: CredentialState_VtcV0_1;
   health: StorageHealth;
   /**
    * Present on a `walrus` config.
@@ -10707,6 +10895,89 @@ export interface StorageConfigFacts {
     signerAddress?: string;
     nextExtensionDueAt?: string;
   };
+}
+/**
+ * What a config holds and whether it works, computed at the time of the read. Ciphertext bytes throughout.
+ */
+export interface StorageConfigFacts_VtcV0_2 {
+  /**
+   * Rooms assigned to this config.
+   */
+  rooms: number;
+  /**
+   * Blobs stored on this config that are not yet deleted, wherever their rooms are now assigned.
+   */
+  files: number;
+  /**
+   * Their total size. Counts against `capacityBytes` until the backend deletion has actually happened, unlike room and member usage, which stop counting an orphaned blob at once.
+   */
+  bytes: number;
+  /**
+   * Bytes of orphaned blobs awaiting deletion after their grace window.
+   */
+  pendingDeleteBytes: number;
+  credential: CredentialState_VtcV0_2;
+  health: StorageHealth;
+  /**
+   * Present on a `walrus` config.
+   */
+  walrus?: {
+    /**
+     * The Sui address that pays for storage, derived from the VTA account's key.
+     */
+    signerAddress?: string;
+    nextExtensionDueAt?: string;
+  };
+}
+/**
+ * One storage config as the community holds it. Carries no secret.
+ */
+export interface StorageConfig_VtcV0_1 {
+  id: StorageConfigId;
+  /**
+   * A display name for administrators (`EU — S3 (main account)`). Shown to a room's creator with the config's kind when the community lets them choose.
+   */
+  label: string;
+  settings: StorageSettings;
+  auth?: StorageAuth_VtcV0_1;
+  /**
+   * Total ciphertext bytes the community will store on this config, across every room assigned to it. A capacity, not a policy: an upload that would cross it is refused with scope `storage`. Absent means no capacity set.
+   */
+  capacityBytes?: number;
+  state: ConfigState;
+  /**
+   * True for the config a room is assigned to when neither the community's policy nor its creator names one.
+   */
+  isDefault?: boolean;
+  createdBy: string;
+  createdAt: string;
+  updatedBy?: string;
+  updatedAt?: string;
+}
+/**
+ * One storage config as the community holds it. Carries no secret.
+ */
+export interface StorageConfig_VtcV0_2 {
+  id: StorageConfigId;
+  /**
+   * A display name for administrators (`EU — S3 (main account)`). Shown to a room's creator with the config's kind when the community lets them choose.
+   */
+  label: string;
+  settings: StorageSettings;
+  auth?: StorageAuth_VtcV0_2;
+  /**
+   * Total ciphertext bytes the community will store on this config, across every room assigned to it. A capacity, not a policy: an upload that would cross it is refused with scope `storage`. Absent means no capacity set.
+   */
+  capacityBytes?: number;
+  state: ConfigState;
+  /**
+   * True for the config a room is assigned to when neither the community's policy nor its creator names one.
+   */
+  isDefault?: boolean;
+  createdBy: string;
+  createdAt: string;
+  updatedBy?: string;
+  updatedAt?: string;
 }
 /**
  * The last evidence the community has that a config works. Every member is optional: a config never probed and never used has none.
