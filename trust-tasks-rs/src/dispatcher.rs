@@ -296,7 +296,7 @@ where
     })
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "acl"))] // its specimens are acl payloads
 mod tests {
     use super::*;
     use crate::specs::acl::grant::v0_1 as grant;

@@ -135,6 +135,27 @@ jobs:
       - name: cargo test (--features validate)
         run: cargo test -p trust-tasks-rs --features validate --all-targets
 
+  # Every spec family is a Cargo feature, so a consumer — or a contributor
+  # working on one family — can build trust-tasks-rs with only that family:
+  # `cargo test -p trust-tasks-rs --no-default-features --features vault` is a
+  # ~1 GB, seconds-long build where the default one is the whole registry. That
+  # only holds while no test outside a family's own gate names it, which
+  # nothing else checks: every other job builds with all families on. The
+  # three below are the unit-test family (acl) and two that are not it.
+  test-single-family:
+    name: cargo test (trust-tasks-rs, one family at a time)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - name: cargo test --no-default-features --features <family>
+        run: |
+          for family in acl vault keys; do
+            echo "::group::$family"
+            cargo test -p trust-tasks-rs --no-default-features --features "$family" --all-targets
+            echo "::endgroup::"
+          done
+
   doc:
     name: cargo doc
     runs-on: ubuntu-latest

@@ -6,6 +6,9 @@
 //! the consequential effect lives. A guard that answers `Duplicate` correctly
 //! while `consume_inbound` executes anyway would pass every unit test and
 //! grant the ACL entry twice.
+//!
+//! Its specimens are `acl` payloads, so a build without that family skips it.
+#![cfg(feature = "acl")]
 
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;

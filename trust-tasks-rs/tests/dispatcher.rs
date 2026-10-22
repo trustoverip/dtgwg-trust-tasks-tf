@@ -1,4 +1,7 @@
 //! End-to-end tests for [`Dispatcher`] against the generated ACL types.
+//!
+//! Its specimens are `acl` payloads, so a build without that family skips it.
+#![cfg(feature = "acl")]
 
 use serde_json::Value;
 use trust_tasks_rs::{

@@ -586,32 +586,40 @@ jobs:
           free -h
 
       # Since 2026-10-22 this step has been ended by SIGTERM (exit 143) after
-      # ~12 minutes inside cargo-semver-checks, with 15 GiB of swap in place and
-      # no systemd-oomd on the image, so nothing in the log says what sent it.
-      # Sample memory, swap and disk while it runs, and on failure print the
-      # samples with whatever the kernel and journal recorded about a kill.
-      - name: Start resource sampler
-        run: |
-          # shellcheck disable=SC2016 # the loop's $(date) expands per sample
-          nohup bash -c 'while true; do
-            echo "== $(date -u +%H:%M:%S)"
-            free -m | sed -n "2,3p"
-            df -BG --output=target,avail / /mnt | tail -n +2
-            ps -eo rss,comm --sort=-rss | sed -n "2,4p"
-            sleep 30
-          done' > "$RUNNER_TEMP/resources.log" 2>&1 &
-
+      # ~10-13 minutes inside cargo-semver-checks, with 15 GiB of swap in place
+      # and no systemd-oomd on the image. Every later step, cleanup included,
+      # is then skipped — the runner itself going away, not a step failing — so
+      # a report step never runs. Everything is therefore printed into this
+      # step's own live log as it happens: a resource sample every 30 seconds,
+      # kernel messages about memory and kills as the kernel writes them, and
+      # on SIGTERM whatever the journal has recorded, before the step exits.
       - name: Open or update the Release PR
         env:
           GH_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
-        run: ./scripts/release-pr.sh
+        run: |
+          (while true; do
+            echo "[sample $(date -u +%H:%M:%S)] $(free -m | awk 'NR==2{print "mem used="$3"M avail="$7"M"} NR==3{print "swap used="$3"M"}' | paste -sd' ') $(df -BG --output=avail / | tail -1 | tr -d ' ')G free on /; top rss: $(ps -eo rss=,comm= --sort=-rss | head -3 | awk '{printf "%s=%dM ", $2, $1/1024}')"
+            sleep 30
+          done) &
+          sampler=$!
+          (sudo dmesg -w --level=err,warn,crit,alert,emerg 2>/dev/null | grep --line-buffered -iE "oom|kill|memory|hung|out of" | sed -u 's/^/[kernel] /') &
+          kernel=$!
+          # shellcheck disable=SC2329 # called from the TERM trap below
+          report() {
+            echo "[signal] $(date -u +%H:%M:%S) $1 received"
+            sudo journalctl --since "-30 min" --no-pager 2>/dev/null \
+              | grep -iE "oom|kill|sigterm|memory|shutdown|runner" | tail -n 40 | sed 's/^/[journal] /'
+          }
+          trap 'report SIGTERM; kill $sampler $kernel 2>/dev/null; exit 143' TERM
+          ./scripts/release-pr.sh &
+          wait $!
+          status=$?
+          kill $sampler $kernel 2>/dev/null || true
+          exit $status
 
       - name: Report what ended the Release PR step
         if: failure()
         run: |
-          echo "::group::Resource samples (last 20 minutes)"
-          tail -n 280 "$RUNNER_TEMP/resources.log" || true
-          echo "::endgroup::"
           echo "::group::Kernel messages about kills and memory"
           sudo dmesg -T | grep -iE "oom|kill|memory|out of" | tail -n 40 || true
           echo "::endgroup::"

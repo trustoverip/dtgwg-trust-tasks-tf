@@ -314,6 +314,15 @@ crate. So the generator keeps that second build small:
 
 Measured on the `validate` build: 63s → 23s, peak memory 9.0 GB → 4.3 GB.
 
+**A single family builds and tests on its own** —
+`cargo test -p trust-tasks-rs --no-default-features --features vault` is about
+13 s and 1 GB cold, against minutes and ~6 GB for the whole workspace — and the
+`test-single-family` job in `rust.yml` keeps it that way for `acl`, `vault` and
+`keys`. So a test naming a family must sit behind that family's feature: the
+`acl`-specimen unit-test modules are `#[cfg(all(test, feature = "acl"))]`, and an
+integration test file that uses a family opens with `#![cfg(feature = "…")]`
+for each one it names.
+
 ## Declared error codes are generated — Rust only, so far
 
 A spec's `errorCodes` front matter (SPEC §7.3 item 9) reaches `trust-tasks-rs`:
