@@ -510,6 +510,7 @@ export * as RoomsRecordsList_v0_1 from "./rooms/records/list/0.1/payload.js";
 export * as RoomsRecordsList_v0_2 from "./rooms/records/list/0.2/payload.js";
 export * as RoomsRecordsPut_v0_1 from "./rooms/records/put/0.1/payload.js";
 export * as RoomsRecordsPut_v0_2 from "./rooms/records/put/0.2/payload.js";
+export * as RoomsRecordsPut_v0_3 from "./rooms/records/put/0.3/payload.js";
 export * as RoomsRevocationsGet_v0_1 from "./rooms/revocations/get/0.1/payload.js";
 export * as RoomsRevocationsPut_v0_1 from "./rooms/revocations/put/0.1/payload.js";
 export * as RoomsUsage_v0_1 from "./rooms/usage/0.1/payload.js";
