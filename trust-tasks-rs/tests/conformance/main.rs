@@ -1091,10 +1091,12 @@ mod rooms {
     }
     mod create {
         mod v0_1;
+        mod v0_2;
     }
     mod epoch {
         mod chain {
             mod v0_1;
+            mod v0_2;
         }
         mod commits {
             mod v0_1;
@@ -1104,10 +1106,12 @@ mod rooms {
         }
         mod prune {
             mod v0_1;
+            mod v0_2;
         }
     }
     mod info {
         mod v0_1;
+        mod v0_2;
     }
     mod keys {
         mod act {
@@ -1120,12 +1124,15 @@ mod rooms {
         }
         mod backfill {
             mod v0_1;
+            mod v0_2;
         }
         mod browse {
             mod v0_1;
+            mod v0_2;
         }
         mod chain {
             mod v0_1;
+            mod v0_2;
         }
         mod file_key {
             mod v0_1;
@@ -1204,9 +1211,19 @@ mod rooms {
         }
         mod list {
             mod v0_2;
+            mod v0_3;
+        }
+        mod prune {
+            mod v0_1;
         }
         mod put {
             mod v0_2;
+            mod v0_3;
+        }
+        mod retention {
+            mod set {
+                mod v0_1;
+            }
         }
     }
     mod revocations {
@@ -1864,11 +1881,13 @@ mod vtc {
                 mod v0_1;
                 mod v0_2;
                 mod v0_3;
+                mod v0_4;
             }
             mod subscribe {
                 mod v0_1;
                 mod v0_2;
                 mod v0_3;
+                mod v0_4;
             }
         }
         mod invites {
@@ -2444,6 +2463,7 @@ mod vtc {
         }
         mod get {
             mod v0_1;
+            mod v0_2;
         }
         mod limits {
             mod set {
@@ -2474,6 +2494,7 @@ mod vtc {
             }
             mod migrate {
                 mod v0_1;
+                mod v0_2;
             }
         }
         mod usage {
@@ -2515,12 +2536,15 @@ mod vtc {
         mod configs {
             mod create {
                 mod v0_1;
+                mod v0_2;
             }
             mod get {
                 mod v0_1;
+                mod v0_2;
             }
             mod list {
                 mod v0_1;
+                mod v0_2;
             }
             mod probe {
                 mod v0_1;
@@ -2530,11 +2554,13 @@ mod vtc {
             }
             mod update {
                 mod v0_1;
+                mod v0_2;
             }
         }
         mod credentials {
             mod set {
                 mod v0_1;
+                mod v0_2;
             }
         }
     }

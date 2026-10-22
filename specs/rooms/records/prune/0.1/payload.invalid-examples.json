@@ -1,0 +1,66 @@
+[
+  {
+    "note": "No reason. A prune leaves nothing of what it removed, so the reason recorded at the time is the only account of intent there will ever be; it is REQUIRED rather than encouraged.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "presentation": { "membership": "m", "authority": ["a"] },
+      "kinds": ["retracted"]
+    }
+  },
+  {
+    "note": "No kinds. A prune says what it removes; an empty request that removed whatever the host thought eligible would be a destructive act nobody specified.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "presentation": { "membership": "m", "authority": ["a"] },
+      "kinds": [],
+      "reason": "quarterly retention run"
+    }
+  },
+  {
+    "note": "A kind outside the two. `expired` is the plausible wrong guess: a record's `validUntil` is sealed, and a host cannot see it, so expiry is never a host's to prune by — a curator retracts expired records and the tombstones age out.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "presentation": { "membership": "m", "authority": ["a"] },
+      "kinds": ["expired"],
+      "reason": "quarterly retention run"
+    }
+  },
+  {
+    "note": "Naming the records to remove. A prune removes what the room's stated retention makes eligible, which every member could read in advance; removing records an administrator picks by key is a different act, and not one this task performs.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "presentation": { "membership": "m", "authority": ["a"] },
+      "kinds": ["aged"],
+      "reason": "quarterly retention run",
+      "keys": ["giXFLTGBdnnQJRoIsktuIg"]
+    }
+  },
+  {
+    "note": "An override of the retention carried in the request. Eligibility is decided by the retention in force, which members can read; a prune carrying its own would remove records under a rule nobody was shown. Change the retention first, with rooms/records/retention/set.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "presentation": { "membership": "m", "authority": ["a"] },
+      "kinds": ["aged"],
+      "reason": "quarterly retention run",
+      "recordRetention": { "recordDays": 1 }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "`dryRun: false` on a real prune. Absent is how a real prune is spelled; two spellings of one meaning are two things for readers to disagree about.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "dryRun": false,
+      "removed": 0,
+      "recordRetention": { "tombstoneDays": 30 }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A response that does not say which retention decided eligibility. A caller holding an earlier listing checks every disappearance against it; without it the removal cannot be checked by anybody.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "removed": 3
+    }
+  }
+]

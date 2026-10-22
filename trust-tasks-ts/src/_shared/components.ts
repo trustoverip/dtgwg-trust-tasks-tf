@@ -413,6 +413,10 @@ export type AuthModel =
 export type AuthorityScope = AuthorityScopeAll | AuthorityScopeNone | AuthorityScopeContexts;
 export type AwsArn = string;
 export type AwsRegion = string;
+/**
+ * The ARN of an AWS IAM role, in any AWS partition (`arn:aws:`, `arn:aws-cn:`, `arn:aws-us-gov:`). Validated here because the community passes it to STS AssumeRole and derives the partition of the session policy's resources from it; it must never carry anything but a role ARN.
+ */
+export type AwsRoleArn = string;
 export type BindingId = string;
 export type BindingSpec = RoomBindingSpec | GrantsBindingSpec | RoleBindingSpec;
 /**
@@ -733,6 +737,26 @@ export type EnrolledVia = "install" | "invite" | "selfService" | "offline";
  */
 export type EntryId = string;
 /**
+ * The earliest epoch whose storage key a room still lets anybody derive: its chain was pruned below it (`rooms/epoch/prune`), and every epoch under it is meant to be unreadable — at the host, and, as far as each of them conforms, at every member's key holder. Absent means the room's chain has never been pruned.
+ *
+ * **The off-by-one, stated once.** A rung (`EpochLink`) numbered `e` opens with epoch `e`'s key and yields epoch `e − 1`'s. A prune with `beforeEpoch: N` drops the rungs numbered below `N`, so rung `N` survives and still yields epoch `N − 1`'s key; the floor after it is therefore `N − 1`, never `N`. A party applying a floor `F` discards the rungs numbered `F` and below — rung `F` would yield `F − 1` — and every key for an epoch below `F`.
+ *
+ * **Monotonic.** A floor only rises. A host raises the room's to the higher of the floor it held and `beforeEpoch − 1` at each prune it performs, and never lowers it; every other party keeps the highest it has learnt for the room, from any source, and never lowers it either. A lower floor learnt later — from a stale response, or a host that has not been pruned — changes nothing.
+ *
+ * **A host** that holds a floor for a room MUST NOT store, accept or serve a rung numbered at or below it, and MUST serve the floor wherever a response can carry it (`rooms/epoch/chain` 0.2, `rooms/epoch/prune` 0.2).
+ *
+ * **A member's key holder** — and any client of the member that keeps the room's rungs or keys itself — on learning a floor `F` above the one it held, by any means (`rooms/epoch/chain` 0.2 in its own reads, `rooms/keys/backfill` 0.2, `rooms/keys/chain` 0.2 from its principal):
+ *   1. MUST discard every rung it holds for the room numbered `F` or below, and every storage key, file key or other key material it holds or has cached for an epoch below `F` — including one it derived in passing while applying commits through those epochs (`rooms/keys/commit`, `rooms/epoch/commits`);
+ *   2. MUST NOT store such a rung or key again from any source — a delivery from its principal, a backfill, a repair, a catch-up, or a host that has not been pruned — and MUST NOT ask for one;
+ *   3. MUST refuse to derive or use a key for an epoch below `F`, answering exactly as it answers for an epoch its chain does not reach (`beyondChain`, with an earliest epoch at or above `F`), whatever it still holds;
+ *   4. MUST keep `F` itself for as long as it holds anything for the room, since it is what makes items 2 and 3 enforceable after the material is gone.
+ *
+ * A key holder SHOULD learn the floor whenever it fetches rungs or catches up, and SHOULD ask for it — a `rooms/epoch/chain` 0.2 read carries it whatever `fromEpoch` and `limit` it names — at least as often as it otherwise reads the room. One that never asks never learns, and keeps what it held.
+ *
+ * **What a floor does not do, stated plainly.** It is honoured by parties that conform; it does not reach into one that does not, and it recalls nothing. Plaintext a key holder already returned, records a member already opened, files already downloaded and decrypted, exports, and any key a member's own software extracted are beyond it. What it guarantees cryptographically is what the prune guarantees: a party that had not derived a key below the floor before the host erased its rungs can never derive it afterwards. What it adds is that every conforming key holder stops being able to — so that a restart, a new device or an agent's next recall reads nothing below the floor, rather than everything its holder happened to keep.
+ */
+export type EpochFloor = number;
+/**
  * Lowercase hex SHA-256 of the whole bundle's bytes. Kept in the hex form the 1.0 descriptor published rather than moved to DigestMultibase, because it is an unchanged member of an existing descriptor and re-encoding it would break every stream producer for no gain in what it checks. For a chunked transfer it is the check over the reassembled bundle, applied after every chunk has verified individually, so that a correct set of chunks assembled in the wrong order is still caught.
  */
 export type ExpectedSha256 = string;
@@ -890,7 +914,7 @@ export type Handle = string;
  *
  * **Derived from the same set as the root, and not read from the room's own counter.** The two agree for any host that has never erased a record — versions are assigned strictly increasing and a retraction keeps its tombstone — but they are not interchangeable, because a root and a counter are *two reads*, and two reads are not a snapshot. A write landing between them yields a pair that is individually correct and jointly false: two members holding roots taken over different trees, labelled with one version. That reads as equivocation and is not, and a **false accusation discredits the mechanism rather than the host** — the worst outcome available here. Taken from the committed set, the version cannot disagree with the root it labels, whatever else is happening to the room.
  *
- * The corollary is worth stating: a host that **erases** a record — as distinct from retracting it, which leaves a tombstone in the tree — moves the root without necessarily moving this value, and two members straddling that erasure would see one version over two roots. Erasure is a retention act with its own answer, and a family that exposes one owes this definition another look.
+ * **A prune is the one mutation that removes leaves, and it takes a version too.** A host that **erases** records — as distinct from retracting them, which leaves a tombstone in the tree — moves the root, and taken from the records alone this value need not move with it: it would stay put, or even fall if the erased record held the highest version, and two members straddling the erasure would see one version over two roots, which reads as equivocation and is not. So on a room whose records have been pruned (`rooms/records/prune`), this value is the higher of the highest version among the records the tree covers and the `version` of the room's latest `RecordPrune`, computed from the same snapshot as the root. A prune takes the next version from the room's counter exactly as a put or a curation does, so the pair stays a snapshot: a root and a head that agree before a prune and a root and a head that agree after it, never one head over two roots. A room that has never been pruned is unaffected.
  *
  * **This is what makes two roots comparable at all**, and without it the comparison this family is built on cannot be performed. A room moves: every put, curate and retraction assigns a new version, so two roots taken at two moments differ legitimately and a reader learns nothing from the difference. Shown two different roots, a host that equivocated and a host that was merely written to are indistinguishable — the first can always answer *the room moved between your reads*, and nothing contradicts it.
  *
@@ -1030,6 +1054,18 @@ export type MembershipSource = "added" | "joined" | "requestApproved" | "rule";
  * @maxItems 64
  */
 export type MerklePath = DigestMultibase[];
+/**
+ * A one-line summary of the last failure, for an administrator: the step, the config and the backend's error code or status (`put to eu-s3-primary: 503 SlowDown`). Never a credential, a presigned URL, a signed request, a room identifier or anything derived from a room's contents.
+ */
+export type MigrationLastError = string;
+/**
+ * Why a migration is `paused`. `capacity`: the destination config cannot hold the rest. `source`: a config the blobs are being moved off keeps failing to serve them. `destination`: the destination config keeps refusing writes, or is no longer `active`. `credential`: the community cannot obtain a credential for one of the configs.
+ */
+export type MigrationPauseCause = "capacity" | "source" | "destination" | "credential";
+/**
+ * `queued`: approved and waiting for another migration on this community to finish; nothing copied yet (a community that runs one migration at a time). `running`: copying, including while it retries a failing step with backoff. `paused`: halted after its automatic retries reached their cap without success, or on a cause that retrying cannot clear (`pausedCause`); resumed by issuing vtc/rooms/storage/migrate again, and by the community itself at `nextAttemptAt` when present. `complete`: every blob that was to move has moved. `failed`: halted on a blob whose copy did not verify against its manifest; that blob stays where it was.
+ */
+export type MigrationState = "queued" | "running" | "paused" | "complete" | "failed";
 /**
  * How the request reaches the approver. A CLOSED list. Version 0.1 defines `scan`: the starter shows a trigger link (as a QR code that is also a clickable link, TRIGGER-LINK.md) and the approver's wallet reads it. `code` (a typed code of at least 8 characters, under strict rate limits) and `push` (sent to the approver's enrolled devices) are reserved names.
  */
@@ -1386,6 +1422,21 @@ export type Queue = "receive" | "send";
  */
 export type Reason = string;
 /**
+ * What kind of claim a record is, as its author states it. OPTIONAL wherever it appears; absent means the author did not say, and a reader shows it as unstated rather than assuming any of these.
+ *
+ *   - `declared` — the author's own statement: a decision, a preference, an intention, a commitment. True because the author says so, and only as far as the author speaks for it.
+ *   - `observed` — something the author saw, measured or was told directly, recorded as found.
+ *   - `verified` — checked against evidence that somebody else can check again, such as a credential or another record. A record that says `verified` SHOULD name that evidence in `evidence`; one that does not is an unsupported claim to have checked, and a reader SHOULD present it so.
+ *   - `inferred` — derived by reasoning from other information: an agent's conclusion, a summary's generalisation, a model's guess. The value an agent writer uses when it does not know which of the others applies.
+ *
+ * The values are the author's account of their own record, signed with it. They are not checked by anybody, confer nothing, and say nothing about whether the record is right — `inferred` can be correct and `observed` mistaken. Aligned with the provenance vocabulary of personal agent memory, so that a record moved between a member's memory and a room keeps its meaning.
+ */
+export type RecordBasis = "declared" | "observed" | "verified" | "inferred";
+/**
+ * The author's own estimate, from 0 to 1, that what the record says is correct. OPTIONAL; absent means no estimate was given, never 1. Meaningful only beside the author who gave it: two writers' numbers are not on one scale, so a reader MUST NOT rank records by `confidence` across authors as though they were, and an agent that weights by it SHOULD weight within an author's own records. Never authority.
+ */
+export type RecordConfidence = number;
+/**
  * How many records the room held when `DataCommitment` was computed — the number of leaves in that tree, tombstones included, since a tombstone is a record.
  *
  * **Why a root needs this.** Certificate Transparency's signed tree head is a root *and a tree size*; this family shipped the root alone, and the half that was dropped is the half that makes a listing checkable. A reader holding a **complete, unfiltered** listing cannot recompute the root — a leaf commits to a whole record and a listing returns a projection without the body — but it can count. A host that omits a record from a listing while committing to a tree that holds it now contradicts itself in the same response, with no second party and no anchor involved.
@@ -1395,6 +1446,22 @@ export type Reason = string;
  * **It counts the room, never the page.** The same rule `DataCommitment` states, and the same trap: a count scoped to what was returned is one a host satisfies by construction. So this is only comparable against a listing read to the end with **no** `prefix` and **no** `sinceVersion` — a filtered listing legitimately holds fewer, and a reader that compares one against this has found a discrepancy it created itself.
  */
 export type RecordCount = number;
+/**
+ * One thing a record cites in its support, discriminated by `kind`.
+ *
+ *   - `record` names a record of a room by its key, and optionally the version cited and the room. Absent `roomId` means the record's own room.
+ *   - `credential` names a credential by its `id`, and optionally a digest of the credential as cited.
+ *
+ * **A reference, never a locator, and never proof.** A reader MUST NOT fetch, resolve or dereference a `credentialId` because a record names it, and MUST NOT read a record of another room on the strength of a citation: the rule that a room's identifiers are identifiers and not addresses (`AuthorityPresentation`) applies here for the same reasons — fetching would signal to whoever answers which member read which record, and when. A reader MAY show a cited record of the same room that it already holds or reads anyway, and MAY match a cited credential against ones its member already holds. What the citation proves is only that the author cited it; whether the evidence exists, says what the author claims, or supports the record is for whoever follows it up to judge.
+ */
+export type RecordEvidence = RecordEvidenceRecord | RecordEvidenceCredential;
+/**
+ * What the author offers in support of the record: other records and credentials, by reference. OPTIONAL; absent means none was named, and an empty array is not a permitted spelling of that. Order carries no meaning. Bounded so that a reader's cost of showing a record's support is bounded too.
+ *
+ * @minItems 1
+ * @maxItems 32
+ */
+export type RecordEvidenceList = [RecordEvidence, ...RecordEvidence[]];
 /**
  * The path from one record's leaf to the room's `DataCommitment` — a Merkle inclusion proof, in the vocabulary this work already uses for it.
  *
@@ -1429,6 +1496,10 @@ export type RecordTrace = {
  * Whether the record asserts an authorization or a recognition relationship.
  */
 export type RecordType = "authorization" | "recognition";
+/**
+ * The instant after which the record's author no longer stands behind it as current. OPTIONAL; absent means the record does not expire. A reader hides a record whose `validUntil` has passed from default listings, search and recall, and shows it only on explicit request (`SealedRecordBody`, **Expiry**). No host enforces it.
+ */
+export type RecordValidUntil = string;
 /**
  * What it takes to let a value LEAVE. Distinct from `Sensitivity`, which governs showing it to the holder.
  *
@@ -1579,6 +1650,51 @@ export type SealedEnvelope_VaultV0_2 =
   | HpkeArmoredEnvelope_VaultV0_2
   | TspMessageEnvelope_VaultV0_2;
 /**
+ * The cleartext inside the sealed block of vtc/storage/credentials/set/0.2, discriminated by `kind`, which must equal the config's kind. It names the config it is for inside the seal, so that a block captured on its way to one config cannot be replayed into another: a community MUST refuse a block whose `configId` differs from the request's. Never appears on the wire outside a seal, and is never returned. A `local` config has no credential.
+ */
+export type SealedStorageCredential =
+  | {
+      kind: "s3";
+      configId: StorageConfigId;
+      /**
+       * The access key's identifier.
+       */
+      accessKeyId: string;
+      /**
+       * The secret half.
+       */
+      secretAccessKey: string;
+      /**
+       * Present when the pair is a temporary one that needs it. A temporary pair stops working at its own expiry, after which the config reports failures until another is set; it is accepted for evaluation, never recommended.
+       */
+      sessionToken?: string;
+    }
+  | {
+      kind: "gcs";
+      configId: StorageConfigId;
+      /**
+       * The service-account key exactly as Google issues it — the JSON key file, as an object, its member names carried verbatim in Google's own snake_case. Members beyond the four required (`project_id`, `client_id`, `token_uri`, `universe_domain` and the rest) are permitted, and a community MAY discard them: it authenticates with `client_email`, `private_key_id` and `private_key` alone, against Google's own token endpoint, and never against a `token_uri` the key file names.
+       */
+      serviceAccountKey: {
+        type: "service_account";
+        client_email: string;
+        private_key_id: string;
+        /**
+         * The PKCS #8 PEM private key.
+         */
+        private_key: string;
+        [k: string]: unknown | undefined;
+      };
+    }
+  | {
+      kind: "walrus";
+      configId: StorageConfigId;
+      /**
+       * The private key in Sui's Bech32 `suiprivkey` encoding (SIP-15), which carries its signature scheme.
+       */
+      suiPrivateKey: string;
+    };
+/**
  * A sealed-transfer bundle: OpenPGP-style ASCII armor around an HPKE-sealed `SealedPayloadV1` (base mode, X25519-HKDF-SHA256 KEM, HKDF-SHA256 KDF, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`), with a producer assertion and Bundle-Id, Chunk and Digest-Algo headers bound into the associated data. Each task states the key it is sealed to: a single-use wrapping key from keys/import-wrapping-key for external/accounts/secret/set, and the caller's key-agreement key for external/credentials/issue. Its cleartext is an ExternalSecretPayload, an ExternalCredentialPayload or, from external/credentials/issue 0.2 for `s3-static-presign`, a PresignedRequestSet. The only form in which secret material crosses the wire in this family, in either direction: the seal is what keeps a terminating proxy, a relay, a request log or a debug dump of "the response" from ever holding a usable secret, whatever transport carried the document.
  */
 export type SealedTransferBundle = string;
@@ -1706,7 +1822,7 @@ export type Slot = string;
  *
  * `sealed` (discouraged): a long-lived credential stored by the community, set with vtc/storage/credentials/set. Protects against every administrator through every surface the community offers; does not protect against whoever operates the machine.
  */
-export type StorageAuth =
+export type StorageAuth_VtcV0_1 =
   | {
       mode: "vta-account";
       context: ExternalAccountContextId;
@@ -1714,6 +1830,33 @@ export type StorageAuth =
     }
   | {
       mode: "ambient";
+    }
+  | {
+      mode: "sealed";
+    };
+/**
+ * How the community authenticates to a config's backend. Absent on a `local` config, which needs none.
+ *
+ * `vta-account` (RECOMMENDED): an external account in the community's VTA, named by the context that owns it and its identifier there. The VTA holds the long-lived authority; the community holds nothing that outlives a credential lifetime, and asks for credentials scoped to one room's prefix for at most 15 minutes, every issuance audited at the VTA. Required for a `walrus` config other than a `sealed` one, since the VTA's `sui-signer` account signs its storage transactions.
+ *
+ * `ambient`: the cloud identity of the machine the community runs on (an instance role, workload identity), downscoped to one room's prefix by the community itself under the rules of vtc/storage/configs/create/0.2 — on `s3`, by assuming `roleArn` (or the role the host is configured with) with an inline session policy; on `gcs`, by a Credential Access Boundary. Not audited or rate-limited by the VTA, and usable by anything on that machine that reaches the metadata endpoint. Not valid for `walrus`; `roleArn` is valid only on `s3`.
+ *
+ * `sealed` (discouraged): a long-lived credential stored by the community, set with vtc/storage/credentials/set (0.2: a `SealedStorageCredential`). Protects against every administrator through every surface the community offers; does NOT protect against whoever operates the machine, and a community labels it so wherever the config is shown.
+ *
+ * `ambient` and `sealed` are host-operator choices: a community MAY refuse either by its own host configuration, whatever its administrators ask.
+ */
+export type StorageAuth_VtcV0_2 =
+  | {
+      mode: "vta-account";
+      context: ExternalAccountContextId;
+      account: ExternalAccountId;
+    }
+  | {
+      mode: "ambient";
+      /**
+       * `s3` only: the IAM role the community assumes, with the machine's ambient identity, to obtain each room-scoped session. Absent, the community assumes the role its host configuration names, and with none configured, the role of the ambient identity itself (which must then trust itself to be assumed). Refused on any other kind with `authNotAllowed`.
+       */
+      roleArn?: AwsRoleArn;
     }
   | {
       mode: "sealed";
@@ -1786,6 +1929,20 @@ export type Topic_VtcAdminEventsV0_3 =
   | "rooms"
   | "directory"
   | "groups";
+/**
+ * One kind of change a console can be told about. A closed set: a topic not listed here is a new MINOR version of this component, not an `ext` member, because each topic is bound to the read that authorizes it.
+ */
+export type Topic_VtcAdminEventsV0_4 =
+  | "actions"
+  | "acknowledgements"
+  | "joinRequests"
+  | "members"
+  | "singleAdminMode"
+  | "config"
+  | "rooms"
+  | "directory"
+  | "groups"
+  | "communityRooms";
 /**
  * How the traffic reached or left the mediator. `peerMediator` is mediator-to-mediator forwarding.
  */
@@ -5785,7 +5942,7 @@ export interface CredentialScopeCeiling {
 /**
  * Whether a config can authenticate now, and how — never the credential. `status`: `vta-account`, `ambient` and `sealed` are usable; `required` means the config cannot store until a credential is provided (a `sealed` config never set, or set before a restore, which carries no credential); `none` is a `local` config.
  */
-export interface CredentialState {
+export interface CredentialState_VtcV0_1 {
   status: "vta-account" | "ambient" | "sealed" | "required" | "none";
   /**
    * Present with `vta-account`.
@@ -5805,6 +5962,32 @@ export interface CredentialState {
   setAt?: string;
   /**
    * Present with `vta-account`: how many rooms the community currently holds a live room-scoped credential for.
+   */
+  roomsHoldingCredentials?: number;
+}
+/**
+ * Whether a config can authenticate now, and how — never the credential. `status`: `vta-account`, `ambient` and `sealed` are usable; `required` means the config cannot store until a credential is provided (a `sealed` config never set, or set before a restore, which carries no credential); `notAllowed` means the config's mode is one the community's host configuration no longer permits, so it cannot store until its `auth` is changed; `none` is a `local` config.
+ */
+export interface CredentialState_VtcV0_2 {
+  status: "vta-account" | "ambient" | "sealed" | "required" | "notAllowed" | "none";
+  /**
+   * Present with `vta-account`.
+   */
+  context?: ExternalAccountContextId;
+  /**
+   * Present with `vta-account`.
+   */
+  account?: ExternalAccountId;
+  /**
+   * Present with `sealed`: a digest identifying the stored credential, so an administrator can tell which one is set without anyone being able to read it. Computed over the credential with a community-held key, never a bare hash of a low-entropy secret.
+   */
+  fingerprint?: DigestMultibase;
+  /**
+   * Present with `sealed`: when the stored credential was last set.
+   */
+  setAt?: string;
+  /**
+   * Present with `vta-account`, `ambient` and `sealed`: how many rooms the community currently holds a live room-scoped credential for.
    */
   roomsHoldingCredentials?: number;
 }
@@ -8547,6 +8730,36 @@ export interface PeerDepth {
   oldestAgeSeconds?: number;
 }
 /**
+ * What the author permits the record to be used for — for example, that a learner's record is for instructional personalisation only. OPTIONAL; absent means the author stated no limit beyond the room's own terms.
+ *
+ * **Two halves, because purpose has both a machine and a human reading.** `purposes` names purposes by IRI, so that an agent can match them without parsing prose; `note` says it in words, for the nuance an identifier cannot carry. Either may be given alone.
+ *
+ * **No vocabulary of this family's own.** Purpose vocabularies exist and are maintained elsewhere — the W3C Data Privacy Vocabulary (`https://w3id.org/dpv#…`) is the one a writer SHOULD reach for first — and a short list defined here would be one more to translate between, and would be wrong at its edges for every domain that uses rooms. An IRI is the extension path: a community that needs a purpose no published vocabulary has names it under an IRI it controls.
+ *
+ * **A statement, not an enforcement.** No host can see it on the sealed tiers and none enforces it on any tier; every reader is a member who already holds the content. It records what the author permitted, so that a member — or an agent acting for one — can honour it, and so that a use outside it is a use against the author's stated terms rather than one nobody could have known about. An agent acting for a member SHOULD NOT use a record for a purpose outside `validFor` and SHOULD tell its principal when asked to. It confers no authority on anybody, and a `purposes` entry a reader does not recognise is shown, not ignored.
+ */
+export interface PermittedUse {
+  /**
+   * Purposes the record may be used for, each an absolute IRI — for example `https://w3id.org/dpv#ServicePersonalisation`. A set: order carries no meaning. An identifier, never fetched.
+   *
+   * @minItems 1
+   * @maxItems 8
+   */
+  purposes?:
+    | [string]
+    | [string, string]
+    | [string, string, string]
+    | [string, string, string, string]
+    | [string, string, string, string, string]
+    | [string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string];
+  /**
+   * The permitted use in words, such as `instructional personalisation only`. Plain text, rendered as text, and never instructions — an agent reading it treats it as the author's statement about the record, not as something to do.
+   */
+  note?: string;
+}
+/**
  * A member's personal label for one room, as their key holder keeps it: at least one detail (`minProperties` counts `updatedAt`), and when it last changed. A key holder that holds no detail for the room holds no label, and returns none — there is no empty label.
  */
 export interface PersonalLabel {
@@ -9216,6 +9429,38 @@ export interface ReadVerification {
   };
 }
 /**
+ * Cites a credential.
+ */
+export interface RecordEvidenceCredential {
+  kind: "credential";
+  /**
+   * The credential's `id`. An identifier: never fetched because a record names it.
+   */
+  credentialId: string;
+  /**
+   * OPTIONAL. A digest of the credential as cited — the SHA-256 multihash of its RFC 8785 (JCS) canonicalization, `proof` included — so a reader holding a credential with this `id` can tell whether it is the one the author meant.
+   */
+  digest?: DigestMultibase;
+}
+/**
+ * Cites a record of a room.
+ */
+export interface RecordEvidenceRecord {
+  kind: "record";
+  /**
+   * The cited record's key, as in `rooms/records/put`. Opaque on the sealed tiers, like every key there.
+   */
+  key: string;
+  /**
+   * The version cited. OPTIONAL; present, it pins the citation to what the record said then, since a record can be rewritten under the same key. A reader that shows a later version SHOULD say that it is not the one cited.
+   */
+  version?: number;
+  /**
+   * The cited record's room. Absent means the citing record's own room. A citation into another room tells the reader that room's identifier, so a writer SHOULD NOT cite into a room the citing room's readers are not meant to learn of.
+   */
+  roomId?: string;
+}
+/**
  * What `rooms/records/list` returns. Never the body: ranking happens on the client, and a host that returned every body would make the caller pay for the whole room on every listing.
  */
 export interface RecordMetadata {
@@ -9289,6 +9534,50 @@ export interface RecordMetadataV2 {
    * @maxItems 1
    */
   blobs?: [BlobRef];
+}
+/**
+ * The mark a prune leaves: **that** records were removed, when, and how many — never which, and never anything they said.
+ *
+ * A prune removes records outright, tombstones included, so the room's record tree loses leaves and an incremental reader has nothing left to learn the removal from. This is what it learns from instead. A host keeps the latest one per room and serves it with every listing that can carry it (`rooms/records/list` 0.3, as `lastPrune`); a reader whose own copy of the room was synchronised to a version below `version` MUST rebuild that copy from a full listing — no `sinceVersion` — and drop every record the full listing no longer holds. Without that, a record the room removed lives on in every cache that synchronised before the prune, and a record retracted while the reader was away comes back as current.
+ *
+ * **What a host keeps and what it does not.** A host keeps this marker, and in its audit trail the prune's `reason`, its requester where the tier discloses one, and the retention it was made under. It MUST NOT keep anything a pruned record said — body, ciphertext, cleartext, title, description, file or blob — and SHOULD NOT keep pruned records' keys: the count is the audit, and a list of keys on an `open` room, where keys may be descriptive, is content by another name.
+ */
+export interface RecordPrune {
+  /**
+   * The version the prune took from the room's counter, as a put or a curation would. No record carries it; it is what moves `HeadVersion` past the removal, so that a root taken before and a root taken after are never labelled with one version.
+   */
+  version: number;
+  /**
+   * When the host performed it.
+   */
+  at: string;
+  /**
+   * How many records were removed, tombstones included. A prune that removed nothing leaves no mark.
+   */
+  removed: number;
+}
+/**
+ * How long a room keeps its records, by age: the room's **record retention**. Records older than it states become **eligible** to be removed by `rooms/records/prune`; nothing is removed until a holder of `admin` asks for a prune, and nothing a prune removes can be brought back.
+ *
+ * **Not `retentionPolicy`, and not `retentionDays`.** Both names are taken in this family and mean other things. `retentionPolicy` (`RetentionPolicy`) is whether a room's *key chain* lets a member read epochs from before they joined, fixed at creation because key material either exists for an epoch or it does not. `retentionDays` (`rooms/create`) is how long a host keeps a whole room after it lapses unrenewed. This is a third question — how long the room keeps its *records* while it is live — and unlike the first it is a decision a room revisits, so it is changeable (`rooms/records/retention/set`). A name sharing either's would invite a reader to apply one's rules to the other.
+ *
+ * **Age is the host's to measure, so age is `updatedAt`.** On the sealed tiers a host can read nothing of a record but its key, version, status, pinning and when it last changed, so a policy the host applies can only be stated in those terms. That is also why it cannot use a record's own `validUntil`, which is sealed: expiry is a reader's rule, retention a host's. A curation is a change, so it restarts a record's age — a retraction starts a tombstone's.
+ *
+ * **Absent, or `{}`, means no record is ever eligible by age**, and that is the reading a host MUST apply whenever it cannot read a policy: removing data under a rule nobody stated is the failure this member exists to prevent. Every member can read the policy in force (`rooms/info`), so a record is never removed under a rule its readers could not have known.
+ */
+export interface RecordRetention {
+  /**
+   * Days a retracted record's tombstone is kept after its retraction. A tombstone whose `updatedAt` is more than this long ago is eligible. Tombstones exist so that a member syncing incrementally learns of a retraction (`rooms/records/curate`); this is how long a member may stay away and still learn of one that way rather than by rebuilding their copy of the room. Absent means tombstones are never eligible.
+   */
+  tombstoneDays?: number;
+  /**
+   * Days a record is kept after it last changed, whatever its standing. A record — `active`, `deprecated` or `retracted` — whose `updatedAt` is more than this long ago is eligible, **unless it is pinned**: pinning says what matters in the room, and a room that wants a pinned record gone unpins it first. Absent means records are never eligible by age.
+   */
+  recordDays?: number;
+  /**
+   * Ecosystem-defined extension members per SPEC.md §4.5.1. A host MUST NOT treat a member here as making more records eligible: a removal rule a member's reader cannot understand is one they were never told about.
+   */
+  ext?: Ext;
 }
 /**
  * A passkey already bound to a subject, as listed by `auth/passkey/list` and targeted by `auth/passkey/revoke/*`. This is the auth service's own management view of a credential — not a WebAuthn dictionary — so its members are camelCase per SPEC.md §4.10. The exception is `transports`, whose values are the externally-owned WebAuthn transport tokens and are carried verbatim.
@@ -10639,34 +10928,9 @@ export interface StepUpProof_VaultV0_2 {
   challengeId: string;
 }
 /**
- * One storage config as the community holds it. Carries no secret.
- */
-export interface StorageConfig {
-  id: StorageConfigId;
-  /**
-   * A display name for administrators (`EU — S3 (main account)`). Shown to a room's creator with the config's kind when the community lets them choose.
-   */
-  label: string;
-  settings: StorageSettings;
-  auth?: StorageAuth;
-  /**
-   * Total ciphertext bytes the community will store on this config, across every room assigned to it. A capacity, not a policy: an upload that would cross it is refused with scope `storage`. Absent means no capacity set.
-   */
-  capacityBytes?: number;
-  state: ConfigState;
-  /**
-   * True for the config a room is assigned to when neither the community's policy nor its creator names one.
-   */
-  isDefault?: boolean;
-  createdBy: string;
-  createdAt: string;
-  updatedBy?: string;
-  updatedAt?: string;
-}
-/**
  * What a config holds and whether it works, computed at the time of the read. Ciphertext bytes throughout.
  */
-export interface StorageConfigFacts {
+export interface StorageConfigFacts_VtcV0_1 {
   /**
    * Rooms assigned to this config.
    */
@@ -10683,7 +10947,7 @@ export interface StorageConfigFacts {
    * Bytes of orphaned blobs awaiting deletion after their grace window.
    */
   pendingDeleteBytes: number;
-  credential: CredentialState;
+  credential: CredentialState_VtcV0_1;
   health: StorageHealth;
   /**
    * Present on a `walrus` config.
@@ -10695,6 +10959,89 @@ export interface StorageConfigFacts {
     signerAddress?: string;
     nextExtensionDueAt?: string;
   };
+}
+/**
+ * What a config holds and whether it works, computed at the time of the read. Ciphertext bytes throughout.
+ */
+export interface StorageConfigFacts_VtcV0_2 {
+  /**
+   * Rooms assigned to this config.
+   */
+  rooms: number;
+  /**
+   * Blobs stored on this config that are not yet deleted, wherever their rooms are now assigned.
+   */
+  files: number;
+  /**
+   * Their total size. Counts against `capacityBytes` until the backend deletion has actually happened, unlike room and member usage, which stop counting an orphaned blob at once.
+   */
+  bytes: number;
+  /**
+   * Bytes of orphaned blobs awaiting deletion after their grace window.
+   */
+  pendingDeleteBytes: number;
+  credential: CredentialState_VtcV0_2;
+  health: StorageHealth;
+  /**
+   * Present on a `walrus` config.
+   */
+  walrus?: {
+    /**
+     * The Sui address that pays for storage, derived from the VTA account's key.
+     */
+    signerAddress?: string;
+    nextExtensionDueAt?: string;
+  };
+}
+/**
+ * One storage config as the community holds it. Carries no secret.
+ */
+export interface StorageConfig_VtcV0_1 {
+  id: StorageConfigId;
+  /**
+   * A display name for administrators (`EU — S3 (main account)`). Shown to a room's creator with the config's kind when the community lets them choose.
+   */
+  label: string;
+  settings: StorageSettings;
+  auth?: StorageAuth_VtcV0_1;
+  /**
+   * Total ciphertext bytes the community will store on this config, across every room assigned to it. A capacity, not a policy: an upload that would cross it is refused with scope `storage`. Absent means no capacity set.
+   */
+  capacityBytes?: number;
+  state: ConfigState;
+  /**
+   * True for the config a room is assigned to when neither the community's policy nor its creator names one.
+   */
+  isDefault?: boolean;
+  createdBy: string;
+  createdAt: string;
+  updatedBy?: string;
+  updatedAt?: string;
+}
+/**
+ * One storage config as the community holds it. Carries no secret.
+ */
+export interface StorageConfig_VtcV0_2 {
+  id: StorageConfigId;
+  /**
+   * A display name for administrators (`EU — S3 (main account)`). Shown to a room's creator with the config's kind when the community lets them choose.
+   */
+  label: string;
+  settings: StorageSettings;
+  auth?: StorageAuth_VtcV0_2;
+  /**
+   * Total ciphertext bytes the community will store on this config, across every room assigned to it. A capacity, not a policy: an upload that would cross it is refused with scope `storage`. Absent means no capacity set.
+   */
+  capacityBytes?: number;
+  state: ConfigState;
+  /**
+   * True for the config a room is assigned to when neither the community's policy nor its creator names one.
+   */
+  isDefault?: boolean;
+  createdBy: string;
+  createdAt: string;
+  updatedBy?: string;
+  updatedAt?: string;
 }
 /**
  * The last evidence the community has that a config works. Every member is optional: a config never probed and never used has none.

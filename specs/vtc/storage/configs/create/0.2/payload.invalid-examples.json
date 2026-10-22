@@ -1,0 +1,155 @@
+[
+  {
+    "note": "A secret in the S3 settings — credentials never travel in settings.",
+    "payload": {
+      "id": "eu-s3-primary",
+      "label": "EU",
+      "settings": {
+        "kind": "s3",
+        "region": "eu-west-1",
+        "bucket": "northwind-rooms-eu",
+        "secretAccessKey": "wJalrXUtnFEMI"
+      },
+      "auth": {
+        "mode": "ambient"
+      },
+      "reason": "New bucket."
+    }
+  },
+  {
+    "note": "vta-account authentication without the account.",
+    "payload": {
+      "id": "eu-s3-primary",
+      "label": "EU",
+      "settings": {
+        "kind": "s3",
+        "region": "eu-west-1",
+        "bucket": "northwind-rooms-eu"
+      },
+      "auth": {
+        "mode": "vta-account",
+        "context": "northwind"
+      },
+      "reason": "New bucket."
+    }
+  },
+  {
+    "note": "vta-account authentication without the context that owns the account: the VTA names an account by both.",
+    "payload": {
+      "id": "eu-s3-primary",
+      "label": "EU",
+      "settings": {
+        "kind": "s3",
+        "region": "eu-west-1",
+        "bucket": "northwind-rooms-eu"
+      },
+      "auth": {
+        "mode": "vta-account",
+        "account": "eu-s3-primary"
+      },
+      "reason": "New bucket."
+    }
+  },
+  {
+    "note": "A plain-HTTP Walrus relay.",
+    "payload": {
+      "id": "walrus-main",
+      "label": "Walrus",
+      "settings": {
+        "kind": "walrus",
+        "relayUrl": "http://relay.walrus.example",
+        "aggregatorUrl": "https://aggregator.walrus.example",
+        "epochs": 26,
+        "extendBeforeEpochs": 2
+      },
+      "auth": {
+        "mode": "vta-account",
+        "context": "northwind",
+        "account": "walrus-signer"
+      },
+      "reason": "Walrus."
+    }
+  },
+  {
+    "note": "A relative local root.",
+    "payload": {
+      "id": "local-default",
+      "label": "Local",
+      "settings": {
+        "kind": "local",
+        "root": "data/rooms"
+      },
+      "reason": "Local."
+    }
+  },
+  {
+    "note": "A roleArn that is not an IAM role ARN — it is passed to STS and placed in a session policy's partition, so only a role ARN is accepted.",
+    "payload": {
+      "id": "eu-s3-instance",
+      "label": "EU",
+      "settings": {
+        "kind": "s3",
+        "region": "eu-west-1",
+        "bucket": "northwind-rooms-eu"
+      },
+      "auth": {
+        "mode": "ambient",
+        "roleArn": "arn:aws:iam::123456789012:user/alice"
+      },
+      "reason": "Instance role."
+    }
+  },
+  {
+    "note": "A roleArn with characters outside the IAM role-name set (a quote, a space) — it must never be able to carry anything but a name.",
+    "payload": {
+      "id": "eu-s3-instance",
+      "label": "EU",
+      "settings": {
+        "kind": "s3",
+        "region": "eu-west-1",
+        "bucket": "northwind-rooms-eu"
+      },
+      "auth": {
+        "mode": "ambient",
+        "roleArn": "arn:aws:iam::123456789012:role/x\" ,\"Effect"
+      },
+      "reason": "Instance role."
+    }
+  },
+  {
+    "note": "roleArn belongs only to ambient authentication; a vta-account auth naming one is malformed.",
+    "payload": {
+      "id": "eu-s3-instance",
+      "label": "EU",
+      "settings": {
+        "kind": "s3",
+        "region": "eu-west-1",
+        "bucket": "northwind-rooms-eu"
+      },
+      "auth": {
+        "mode": "vta-account",
+        "context": "northwind",
+        "account": "eu-s3-primary",
+        "roleArn": "arn:aws:iam::123456789012:role/northwind-rooms-writer"
+      },
+      "reason": "Instance role."
+    }
+  },
+  {
+    "note": "A sealed auth carrying a credential — sealed credentials are set only with vtc/storage/credentials/set, sealed end to end.",
+    "payload": {
+      "id": "eu-s3-instance",
+      "label": "EU",
+      "settings": {
+        "kind": "s3",
+        "region": "eu-west-1",
+        "bucket": "northwind-rooms-eu"
+      },
+      "auth": {
+        "mode": "sealed",
+        "secretAccessKey": "wJalrXUtnFEMI"
+      },
+      "reason": "Instance role."
+    }
+  }
+]

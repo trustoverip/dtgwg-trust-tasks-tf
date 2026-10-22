@@ -42,6 +42,49 @@ const (
 	RetentionPolicyFromJoin RetentionPolicy = "fromJoin"
 )
 
+// RecordRetention How long a room keeps its records, by age: the room's **record
+// retention**. Records older than it states become **eligible** to be removed by
+// `rooms/records/prune`; nothing is removed until a holder of `admin` asks for a prune,
+// and nothing a prune removes can be brought back. **Not `retentionPolicy`, and not
+// `retentionDays`.** Both names are taken in this family and mean other things.
+// `retentionPolicy` (`RetentionPolicy`) is whether a room's *key chain* lets a member
+// read epochs from before they joined, fixed at creation because key material either
+// exists for an epoch or it does not. `retentionDays` (`rooms/create`) is how long a host
+// keeps a whole room after it lapses unrenewed. This is a third question — how long the
+// room keeps its *records* while it is live — and unlike the first it is a decision a
+// room revisits, so it is changeable (`rooms/records/retention/set`). A name sharing
+// either's would invite a reader to apply one's rules to the other. **Age is the host's
+// to measure, so age is `updatedAt`.** On the sealed tiers a host can read nothing of a
+// record but its key, version, status, pinning and when it last changed, so a policy the
+// host applies can only be stated in those terms. That is also why it cannot use a
+// record's own `validUntil`, which is sealed: expiry is a reader's rule, retention a
+// host's. A curation is a change, so it restarts a record's age — a retraction starts a
+// tombstone's. **Absent, or `{}`, means no record is ever eligible by age**, and that is
+// the reading a host MUST apply whenever it cannot read a policy: removing data under a
+// rule nobody stated is the failure this member exists to prevent. Every member can read
+// the policy in force (`rooms/info`), so a record is never removed under a rule its
+// readers could not have known.
+type RecordRetention struct {
+	// Days a retracted record's tombstone is kept after its retraction. A tombstone whose
+	// `updatedAt` is more than this long ago is eligible. Tombstones exist so that a member
+	// syncing incrementally learns of a retraction (`rooms/records/curate`); this is how long
+	// a member may stay away and still learn of one that way rather than by rebuilding their
+	// copy of the room. Absent means tombstones are never eligible.
+	TombstoneDays *int64 `json:"tombstoneDays,omitempty"`
+
+	// Days a record is kept after it last changed, whatever its standing. A record —
+	// `active`, `deprecated` or `retracted` — whose `updatedAt` is more than this long ago is
+	// eligible, **unless it is pinned**: pinning says what matters in the room, and a room
+	// that wants a pinned record gone unpins it first. Absent means records are never
+	// eligible by age.
+	RecordDays *int64 `json:"recordDays,omitempty"`
+
+	// Ecosystem-defined extension members per SPEC.md §4.5.1. A host MUST NOT treat a member
+	// here as making more records eligible: a removal rule a member's reader cannot
+	// understand is one they were never told about.
+	Ext *Ext `json:"ext,omitempty"`
+}
+
 // AuthorityPresentation What a party presents to act on a room. Carries the whole
 // authority chain: a host MUST NOT dereference an authority credential's `parent` to
 // fetch a link it was not given. Resolving over the network would make verification
@@ -163,12 +206,49 @@ type SealedRecord struct {
 // version, and on a `private` room, where the host records no author, readers would
 // attribute it to the original author. **A profile record.** A body carrying
 // `roomProfile` is the room's own profile (`RoomProfileStatement`) and not one of its
-// records: it MUST carry none of `title`, `description`, `body`, `tags` and `file`, and
-// the rules for locating, accepting and choosing it are `RoomProfileStatement`'s, applied
-// on top of the four above. A reader that opens one in the course of reading or listing
-// the room's records SHOULD NOT present it as a record — it is how the room describes
-// itself, not something a member wrote into it. A reader that predates `roomProfile`
-// refuses it by rule (1), which shows nothing rather than something wrong.
+// records: it MUST carry none of `title`, `description`, `body`, `tags`, `file`, `basis`,
+// `confidence`, `evidence`, `validFor` and `validUntil`, and the rules for locating,
+// accepting and choosing it are `RoomProfileStatement`'s, applied on top of the four
+// above. A reader that opens one in the course of reading or listing the room's records
+// SHOULD NOT present it as a record — it is how the room describes itself, not something
+// a member wrote into it. A reader that predates `roomProfile` refuses it by rule (1),
+// which shows nothing rather than something wrong. **Provenance: what kind of claim a
+// record is.** `basis`, `confidence`, `evidence` and `validFor` say what the author is
+// asserting and on what footing — an observed fact, a statement of the author's own,
+// something checked against a credential, or an agent's inference. They are inside the
+// signature like every other member, so a reader can attribute them to `author` exactly
+// as it attributes the body, and a change to any of them after signing fails rule (2).
+// All four are OPTIONAL, and a record that carries none of them — every record written
+// before they existed — verifies and reads exactly as before: absent means the author did
+// not say, never a default value. A writer SHOULD set `basis`; an agent writing on its
+// own account that does not know which value applies SHOULD write `inferred`, and a
+// client relaying what its member typed SHOULD write `declared`. **They are provenance
+// for display and weighting, never authority.** A reader MUST NOT treat any of them as
+// granting, widening or evidencing a permission, MUST NOT let `basis: verified` stand in
+// for verifying what `evidence` names, and MUST NOT fetch anything because `evidence`
+// names it (see `RecordEvidence`). A reader that shows a record SHOULD show its `basis`
+// beside its `author` — or say that none was stated — and an agent recalling records MAY
+// weight by `basis` and `confidence`, but MUST treat `validFor.note` like `body`: as
+// plain text, never as instructions. **Expiry.** `validUntil` is the instant after which
+// the author no longer stands behind the record as current — a meeting note good for a
+// month, a decision good for years. It is signed and sealed with the body, and nothing
+// about it is in the clear: a host never sees it on the sealed tiers, so it cannot and
+// MUST NOT be relied on to enforce it, and a writer MUST NOT copy it into any cleartext
+// member of the write. A reader MUST NOT present a record whose `validUntil` is at or
+// before the reader's current time in a default listing, search, browse or agent recall,
+// and MAY present it on an explicit request for expired records, marked as expired.
+// Expiry hides; it does not delete. The record, its ciphertext and any file it carries
+// stay in the room until a member with `curate` retracts it (`rooms/records/curate`) or
+// the room's records are pruned; a curator's agent MAY retract records it finds expired,
+// which is how a sealed room reclaims their storage without telling its host anything
+// about expiry. **Readers that predate these members.** A reader written before `basis`,
+// `confidence`, `evidence`, `validFor` and `validUntil` refuses a body carrying any of
+// them by rule (1), which shows nothing rather than something wrong — in particular it
+// can never show an expired record as current. The same holds for a key holder sealing on
+// a writer's behalf (`rooms/keys/seal`, `bodyInvalid`). A writer that meets such a
+// refusal MAY write the record again without the provenance members, but MUST NOT drop
+// `validUntil` to get a record accepted: a record that silently outlives its author's own
+// expiry is the failure this member exists to prevent.
 type SealedRecordBody struct {
 	// The room the record was written in, exactly as on the wire.
 	RoomID string `json:"roomId"`
@@ -190,8 +270,13 @@ type SealedRecordBody struct {
 
 	// The record's text, markdown. Human-readable, never a model-optimised blob, and rendered
 	// inert.
-	Body *string   `json:"body,omitempty"`
-	Tags *[]string `json:"tags,omitempty"`
+	Body       *string             `json:"body,omitempty"`
+	Tags       *[]string           `json:"tags,omitempty"`
+	Basis      *RecordBasis        `json:"basis,omitempty"`
+	Confidence *RecordConfidence   `json:"confidence,omitempty"`
+	Evidence   *RecordEvidenceList `json:"evidence,omitempty"`
+	ValidFor   *PermittedUse       `json:"validFor,omitempty"`
+	ValidUntil *RecordValidUntil   `json:"validUntil,omitempty"`
 
 	// Present when the record carries a file. Its `blobRef` MUST be the one the record names
 	// in `blobs`.
@@ -204,6 +289,129 @@ type SealedRecordBody struct {
 	// The author's Data Integrity proof over every other member.
 	Proof map[string]json.RawMessage `json:"proof"`
 }
+
+// RecordBasis What kind of claim a record is, as its author states it. OPTIONAL wherever
+// it appears; absent means the author did not say, and a reader shows it as unstated
+// rather than assuming any of these. - `declared` — the author's own statement: a
+// decision, a preference, an intention, a commitment. True because the author says so,
+// and only as far as the author speaks for it. - `observed` — something the author saw,
+// measured or was told directly, recorded as found. - `verified` — checked against
+// evidence that somebody else can check again, such as a credential or another record. A
+// record that says `verified` SHOULD name that evidence in `evidence`; one that does not
+// is an unsupported claim to have checked, and a reader SHOULD present it so. -
+// `inferred` — derived by reasoning from other information: an agent's conclusion, a
+// summary's generalisation, a model's guess. The value an agent writer uses when it does
+// not know which of the others applies. The values are the author's account of their own
+// record, signed with it. They are not checked by anybody, confer nothing, and say
+// nothing about whether the record is right — `inferred` can be correct and `observed`
+// mistaken. Aligned with the provenance vocabulary of personal agent memory, so that a
+// record moved between a member's memory and a room keeps its meaning.
+type RecordBasis string
+
+// Values RecordBasis may take, per this specification's schema.
+const (
+	RecordBasisDeclared RecordBasis = "declared"
+	RecordBasisObserved RecordBasis = "observed"
+	RecordBasisVerified RecordBasis = "verified"
+	RecordBasisInferred RecordBasis = "inferred"
+)
+
+// RecordConfidence The author's own estimate, from 0 to 1, that what the record says is
+// correct. OPTIONAL; absent means no estimate was given, never 1. Meaningful only beside
+// the author who gave it: two writers' numbers are not on one scale, so a reader MUST NOT
+// rank records by `confidence` across authors as though they were, and an agent that
+// weights by it SHOULD weight within an author's own records. Never authority.
+type RecordConfidence = float64
+
+// RecordEvidenceList What the author offers in support of the record: other records and
+// credentials, by reference. OPTIONAL; absent means none was named, and an empty array is
+// not a permitted spelling of that. Order carries no meaning. Bounded so that a reader's
+// cost of showing a record's support is bounded too.
+type RecordEvidenceList = []RecordEvidence
+
+// RecordEvidence One thing a record cites in its support, discriminated by `kind`. -
+// `record` names a record of a room by its key, and optionally the version cited and the
+// room. Absent `roomId` means the record's own room. - `credential` names a credential by
+// its `id`, and optionally a digest of the credential as cited. **A reference, never a
+// locator, and never proof.** A reader MUST NOT fetch, resolve or dereference a
+// `credentialId` because a record names it, and MUST NOT read a record of another room on
+// the strength of a citation: the rule that a room's identifiers are identifiers and not
+// addresses (`AuthorityPresentation`) applies here for the same reasons — fetching would
+// signal to whoever answers which member read which record, and when. A reader MAY show a
+// cited record of the same room that it already holds or reads anyway, and MAY match a
+// cited credential against ones its member already holds. What the citation proves is
+// only that the author cited it; whether the evidence exists, says what the author
+// claims, or supports the record is for whoever follows it up to judge.
+type RecordEvidence = json.RawMessage
+
+// RecordEvidenceRecord Cites a record of a room.
+type RecordEvidenceRecord struct {
+	Kind json.RawMessage `json:"kind"`
+
+	// The cited record's key, as in `rooms/records/put`. Opaque on the sealed tiers, like
+	// every key there.
+	Key string `json:"key"`
+
+	// The version cited. OPTIONAL; present, it pins the citation to what the record said
+	// then, since a record can be rewritten under the same key. A reader that shows a later
+	// version SHOULD say that it is not the one cited.
+	Version *int64 `json:"version,omitempty"`
+
+	// The cited record's room. Absent means the citing record's own room. A citation into
+	// another room tells the reader that room's identifier, so a writer SHOULD NOT cite into
+	// a room the citing room's readers are not meant to learn of.
+	RoomID *string `json:"roomId,omitempty"`
+}
+
+// RecordEvidenceCredential Cites a credential.
+type RecordEvidenceCredential struct {
+	Kind json.RawMessage `json:"kind"`
+
+	// The credential's `id`. An identifier: never fetched because a record names it.
+	CredentialID string `json:"credentialId"`
+
+	// OPTIONAL. A digest of the credential as cited — the SHA-256 multihash of its RFC 8785
+	// (JCS) canonicalization, `proof` included — so a reader holding a credential with this
+	// `id` can tell whether it is the one the author meant.
+	Digest *DigestMultibase `json:"digest,omitempty"`
+}
+
+// PermittedUse What the author permits the record to be used for — for example, that a
+// learner's record is for instructional personalisation only. OPTIONAL; absent means the
+// author stated no limit beyond the room's own terms. **Two halves, because purpose has
+// both a machine and a human reading.** `purposes` names purposes by IRI, so that an
+// agent can match them without parsing prose; `note` says it in words, for the nuance an
+// identifier cannot carry. Either may be given alone. **No vocabulary of this family's
+// own.** Purpose vocabularies exist and are maintained elsewhere — the W3C Data Privacy
+// Vocabulary (`https://w3id.org/dpv#…`) is the one a writer SHOULD reach for first — and
+// a short list defined here would be one more to translate between, and would be wrong at
+// its edges for every domain that uses rooms. An IRI is the extension path: a community
+// that needs a purpose no published vocabulary has names it under an IRI it controls. **A
+// statement, not an enforcement.** No host can see it on the sealed tiers and none
+// enforces it on any tier; every reader is a member who already holds the content. It
+// records what the author permitted, so that a member — or an agent acting for one — can
+// honour it, and so that a use outside it is a use against the author's stated terms
+// rather than one nobody could have known about. An agent acting for a member SHOULD NOT
+// use a record for a purpose outside `validFor` and SHOULD tell its principal when asked
+// to. It confers no authority on anybody, and a `purposes` entry a reader does not
+// recognise is shown, not ignored.
+type PermittedUse struct {
+	// Purposes the record may be used for, each an absolute IRI — for example
+	// `https://w3id.org/dpv#ServicePersonalisation`. A set: order carries no meaning. An
+	// identifier, never fetched.
+	Purposes *[]string `json:"purposes,omitempty"`
+
+	// The permitted use in words, such as `instructional personalisation only`. Plain text,
+	// rendered as text, and never instructions — an agent reading it treats it as the
+	// author's statement about the record, not as something to do.
+	Note *string `json:"note,omitempty"`
+}
+
+// RecordValidUntil The instant after which the record's author no longer stands behind it
+// as current. OPTIONAL; absent means the record does not expire. A reader hides a record
+// whose `validUntil` has passed from default listings, search and recall, and shows it
+// only on explicit request (`SealedRecordBody`, **Expiry**). No host enforces it.
+type RecordValidUntil = string
 
 // EpochLink One rung of a room's epoch key chain: the storage key of epoch `epoch - 1`,
 // sealed under the storage key of `epoch`. A group key schedule offers no way to derive
@@ -230,6 +438,50 @@ type EpochLink struct {
 	// AEAD nonce, base64url.
 	Nonce string `json:"nonce"`
 }
+
+// EpochFloor The earliest epoch whose storage key a room still lets anybody derive: its
+// chain was pruned below it (`rooms/epoch/prune`), and every epoch under it is meant to
+// be unreadable — at the host, and, as far as each of them conforms, at every member's
+// key holder. Absent means the room's chain has never been pruned. **The off-by-one,
+// stated once.** A rung (`EpochLink`) numbered `e` opens with epoch `e`'s key and yields
+// epoch `e − 1`'s. A prune with `beforeEpoch: N` drops the rungs numbered below `N`, so
+// rung `N` survives and still yields epoch `N − 1`'s key; the floor after it is therefore
+// `N − 1`, never `N`. A party applying a floor `F` discards the rungs numbered `F` and
+// below — rung `F` would yield `F − 1` — and every key for an epoch below `F`.
+// **Monotonic.** A floor only rises. A host raises the room's to the higher of the floor
+// it held and `beforeEpoch − 1` at each prune it performs, and never lowers it; every
+// other party keeps the highest it has learnt for the room, from any source, and never
+// lowers it either. A lower floor learnt later — from a stale response, or a host that
+// has not been pruned — changes nothing. **A host** that holds a floor for a room MUST
+// NOT store, accept or serve a rung numbered at or below it, and MUST serve the floor
+// wherever a response can carry it (`rooms/epoch/chain` 0.2, `rooms/epoch/prune` 0.2).
+// **A member's key holder** — and any client of the member that keeps the room's rungs or
+// keys itself — on learning a floor `F` above the one it held, by any means
+// (`rooms/epoch/chain` 0.2 in its own reads, `rooms/keys/backfill` 0.2,
+// `rooms/keys/chain` 0.2 from its principal): 1. MUST discard every rung it holds for the
+// room numbered `F` or below, and every storage key, file key or other key material it
+// holds or has cached for an epoch below `F` — including one it derived in passing while
+// applying commits through those epochs (`rooms/keys/commit`, `rooms/epoch/commits`); 2.
+// MUST NOT store such a rung or key again from any source — a delivery from its
+// principal, a backfill, a repair, a catch-up, or a host that has not been pruned — and
+// MUST NOT ask for one; 3. MUST refuse to derive or use a key for an epoch below `F`,
+// answering exactly as it answers for an epoch its chain does not reach (`beyondChain`,
+// with an earliest epoch at or above `F`), whatever it still holds; 4. MUST keep `F`
+// itself for as long as it holds anything for the room, since it is what makes items 2
+// and 3 enforceable after the material is gone. A key holder SHOULD learn the floor
+// whenever it fetches rungs or catches up, and SHOULD ask for it — a `rooms/epoch/chain`
+// 0.2 read carries it whatever `fromEpoch` and `limit` it names — at least as often as it
+// otherwise reads the room. One that never asks never learns, and keeps what it held.
+// **What a floor does not do, stated plainly.** It is honoured by parties that conform;
+// it does not reach into one that does not, and it recalls nothing. Plaintext a key
+// holder already returned, records a member already opened, files already downloaded and
+// decrypted, exports, and any key a member's own software extracted are beyond it. What
+// it guarantees cryptographically is what the prune guarantees: a party that had not
+// derived a key below the floor before the host erased its rungs can never derive it
+// afterwards. What it adds is that every conforming key holder stops being able to — so
+// that a restart, a new device or an agent's next recall reads nothing below the floor,
+// rather than everything its holder happened to keep.
+type EpochFloor = int64
 
 // RecordMetadataStatus Curation state. `retracted` is a tombstone: the body is gone, the
 // key and version remain so incremental sync converges and the audit chain stays intact.
@@ -483,16 +735,23 @@ type RecordCount = int64
 // trees, labelled with one version. That reads as equivocation and is not, and a **false
 // accusation discredits the mechanism rather than the host** — the worst outcome
 // available here. Taken from the committed set, the version cannot disagree with the root
-// it labels, whatever else is happening to the room. The corollary is worth stating: a
-// host that **erases** a record — as distinct from retracting it, which leaves a
-// tombstone in the tree — moves the root without necessarily moving this value, and two
-// members straddling that erasure would see one version over two roots. Erasure is a
-// retention act with its own answer, and a family that exposes one owes this definition
-// another look. **This is what makes two roots comparable at all**, and without it the
-// comparison this family is built on cannot be performed. A room moves: every put, curate
-// and retraction assigns a new version, so two roots taken at two moments differ
-// legitimately and a reader learns nothing from the difference. Shown two different
-// roots, a host that equivocated and a host that was merely written to are
+// it labels, whatever else is happening to the room. **A prune is the one mutation that
+// removes leaves, and it takes a version too.** A host that **erases** records — as
+// distinct from retracting them, which leaves a tombstone in the tree — moves the root,
+// and taken from the records alone this value need not move with it: it would stay put,
+// or even fall if the erased record held the highest version, and two members straddling
+// the erasure would see one version over two roots, which reads as equivocation and is
+// not. So on a room whose records have been pruned (`rooms/records/prune`), this value is
+// the higher of the highest version among the records the tree covers and the `version`
+// of the room's latest `RecordPrune`, computed from the same snapshot as the root. A
+// prune takes the next version from the room's counter exactly as a put or a curation
+// does, so the pair stays a snapshot: a root and a head that agree before a prune and a
+// root and a head that agree after it, never one head over two roots. A room that has
+// never been pruned is unaffected. **This is what makes two roots comparable at all**,
+// and without it the comparison this family is built on cannot be performed. A room
+// moves: every put, curate and retraction assigns a new version, so two roots taken at
+// two moments differ legitimately and a reader learns nothing from the difference. Shown
+// two different roots, a host that equivocated and a host that was merely written to are
 // indistinguishable — the first can always answer *the room moved between your reads*,
 // and nothing contradicts it. A version is assigned by exactly the mutations that change
 // the tree — every put, curate and retraction takes the next one — so the highest of them
@@ -506,6 +765,36 @@ type RecordCount = int64
 // host-asserted, unverifiable and useless for this: two roots a second apart are not
 // evidence of anything, while two roots at one version are.
 type HeadVersion = int64
+
+// RecordPrune The mark a prune leaves: **that** records were removed, when, and how many
+// — never which, and never anything they said. A prune removes records outright,
+// tombstones included, so the room's record tree loses leaves and an incremental reader
+// has nothing left to learn the removal from. This is what it learns from instead. A host
+// keeps the latest one per room and serves it with every listing that can carry it
+// (`rooms/records/list` 0.3, as `lastPrune`); a reader whose own copy of the room was
+// synchronised to a version below `version` MUST rebuild that copy from a full listing —
+// no `sinceVersion` — and drop every record the full listing no longer holds. Without
+// that, a record the room removed lives on in every cache that synchronised before the
+// prune, and a record retracted while the reader was away comes back as current. **What a
+// host keeps and what it does not.** A host keeps this marker, and in its audit trail the
+// prune's `reason`, its requester where the tier discloses one, and the retention it was
+// made under. It MUST NOT keep anything a pruned record said — body, ciphertext,
+// cleartext, title, description, file or blob — and SHOULD NOT keep pruned records' keys:
+// the count is the audit, and a list of keys on an `open` room, where keys may be
+// descriptive, is content by another name.
+type RecordPrune struct {
+	// The version the prune took from the room's counter, as a put or a curation would. No
+	// record carries it; it is what moves `HeadVersion` past the removal, so that a root
+	// taken before and a root taken after are never labelled with one version.
+	Version int64 `json:"version"`
+
+	// When the host performed it.
+	At string `json:"at"`
+
+	// How many records were removed, tombstones included. A prune that removed nothing leaves
+	// no mark.
+	Removed int64 `json:"removed"`
+}
 
 // EpochAnchor What a room writes into its own witnessed log, so that a host serving a
 // stale, forked or partial view of it becomes **evident rather than merely possible**.

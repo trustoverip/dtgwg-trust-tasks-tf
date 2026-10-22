@@ -1,0 +1,37 @@
+[
+  {
+    "note": "No reason. Shortening a retention is what lets a later prune remove records that were not eligible a moment before; the change carries its own account of intent.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "presentation": { "membership": "m", "authority": ["a"] },
+      "recordRetention": { "recordDays": 365 }
+    }
+  },
+  {
+    "note": "No recordRetention. The request replaces the retention whole; clearing it is spelled `{}`, never by leaving the member out, so that a request that forgot it cannot read as one that meant to clear it.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "presentation": { "membership": "m", "authority": ["a"] },
+      "reason": "clear the retention"
+    }
+  },
+  {
+    "note": "Changing the key chain's retention policy here. `retentionPolicy` (chained | fromJoin) is fixed at creation because key material either exists for an epoch or it does not; this task changes the record retention only, and an unknown member is refused rather than ignored.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "presentation": { "membership": "m", "authority": ["a"] },
+      "recordRetention": { "recordDays": 365 },
+      "retentionPolicy": "fromJoin",
+      "reason": "switch to a stream"
+    }
+  },
+  {
+    "note": "Days as a string. A retention a host applies by arithmetic is a number; `\"30\"` invites one implementation to parse it and another to refuse it.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "presentation": { "membership": "m", "authority": ["a"] },
+      "recordRetention": { "tombstoneDays": "30" },
+      "reason": "keep tombstones a month"
+    }
+  }
+]

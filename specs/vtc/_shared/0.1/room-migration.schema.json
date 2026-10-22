@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/_shared/0.1/room-migration",
+  "title": "VTC — shared room storage migration definitions",
+  "description": "Shared types for how a hosted room's storage migration is reported, by vtc/rooms/storage/migrate (0.2 and later) and vtc/rooms/get (0.2 and later), which return the same migration and must describe it the same way. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen).",
+  "$defs": {
+    "MigrationState": {
+      "title": "MigrationState",
+      "type": "string",
+      "enum": [
+        "queued",
+        "running",
+        "paused",
+        "complete",
+        "failed"
+      ],
+      "description": "`queued`: approved and waiting for another migration on this community to finish; nothing copied yet (a community that runs one migration at a time). `running`: copying, including while it retries a failing step with backoff. `paused`: halted after its automatic retries reached their cap without success, or on a cause that retrying cannot clear (`pausedCause`); resumed by issuing vtc/rooms/storage/migrate again, and by the community itself at `nextAttemptAt` when present. `complete`: every blob that was to move has moved. `failed`: halted on a blob whose copy did not verify against its manifest; that blob stays where it was."
+    },
+    "MigrationPauseCause": {
+      "title": "MigrationPauseCause",
+      "type": "string",
+      "enum": [
+        "capacity",
+        "source",
+        "destination",
+        "credential"
+      ],
+      "description": "Why a migration is `paused`. `capacity`: the destination config cannot hold the rest. `source`: a config the blobs are being moved off keeps failing to serve them. `destination`: the destination config keeps refusing writes, or is no longer `active`. `credential`: the community cannot obtain a credential for one of the configs."
+    },
+    "MigrationLastError": {
+      "title": "MigrationLastError",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "description": "A one-line summary of the last failure, for an administrator: the step, the config and the backend's error code or status (`put to eu-s3-primary: 503 SlowDown`). Never a credential, a presigned URL, a signed request, a room identifier or anything derived from a room's contents."
+    }
+  }
+}
