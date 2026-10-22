@@ -184,6 +184,7 @@ mod tests {
     /// ecosystem `ext` field, and the protected predicate checks the
     /// generated AclEntry's `role` directly.
     #[test]
+    #[cfg(feature = "acl")]
     fn works_with_codegen_acl_entry_shape() {
         use crate::specs::acl::grant::v0_1 as grant;
 

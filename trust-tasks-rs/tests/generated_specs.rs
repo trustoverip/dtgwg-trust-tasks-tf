@@ -5,6 +5,9 @@
 //! they prove that the generated `Payload` / `Response` structs implement the
 //! `Payload` trait correctly, deserialize and serialize the wire form, and
 //! compose with `TrustTask::for_payload`.
+//!
+//! Its specimens are `acl` payloads, so a build without that family skips it.
+#![cfg(feature = "acl")]
 
 use trust_tasks_rs::{specs::acl::grant::v0_1 as grant, Payload, TrustTask, TypeUri};
 

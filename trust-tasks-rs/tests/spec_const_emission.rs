@@ -19,6 +19,9 @@
 //!
 //! The assertions live in a `const _: () = …` so they fire at
 //! compile time. No runtime harness needed.
+//!
+//! Its specimens are `acl` payloads, so a build without that family skips it.
+#![cfg(feature = "acl")]
 
 use trust_tasks_rs::{
     specs::acl::{change_role, grant, list, revoke, show},
