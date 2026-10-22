@@ -108,6 +108,19 @@ pub fn unpack_trust_task<P>(
 where
     P: Payload + DeserializeOwned,
 {
+    unpack_received(wire, agent, expected_sender_did).map(|(doc, _, handler)| (doc, handler))
+}
+
+/// [`unpack_trust_task`], also returning the document as received — what a
+/// proof is verified over (see `ProofPolicy::with_received`).
+pub(crate) fn unpack_received<P>(
+    wire: &str,
+    agent: &DIDCommAgent,
+    expected_sender_did: Option<&str>,
+) -> Result<(TrustTask<P>, serde_json::Value, DidcommHandler), DidcommError>
+where
+    P: Payload + DeserializeOwned,
+{
     let (message, peer_did, local_did) = match agent.unpack(wire, expected_sender_did)? {
         UnpackResult::Encrypted {
             message,
@@ -174,8 +187,9 @@ where
         return Err(DidcommError::WrongEnvelopeType(message.typ.clone()));
     }
 
+    let received = message.body;
     let doc: TrustTask<P> =
-        serde_json::from_value(message.body).map_err(DidcommError::InvalidBody)?;
+        serde_json::from_value(received.clone()).map_err(DidcommError::InvalidBody)?;
 
     // Binding §3.1 — where both a DIDComm thread header and its framework
     // member are explicitly present they MUST agree. Scoped to both-present on
@@ -197,7 +211,7 @@ where
     )?;
 
     let handler = DidcommHandler::new(local_did, peer_did);
-    Ok((doc, handler))
+    Ok((doc, received, handler))
 }
 
 /// Compare a DIDComm thread header against its framework member, per binding
@@ -373,11 +387,23 @@ pub fn unpack_trust_task_from<P>(
 where
     P: Payload + DeserializeOwned,
 {
+    unpack_received_from(wire, agent, allowlist).map(|(doc, _, handler)| (doc, handler))
+}
+
+/// [`unpack_trust_task_from`], also returning the document as received.
+pub(crate) fn unpack_received_from<P>(
+    wire: &str,
+    agent: &DIDCommAgent,
+    allowlist: &SenderAllowlist,
+) -> Result<(TrustTask<P>, serde_json::Value, DidcommHandler), DidcommError>
+where
+    P: Payload + DeserializeOwned,
+{
     let advertised = advertised_sender_did(wire)?;
     if !allowlist.permits(&advertised) {
         return Err(DidcommError::SenderNotAllowed { did: advertised });
     }
-    unpack_trust_task(wire, agent, Some(&advertised))
+    unpack_received(wire, agent, Some(&advertised))
 }
 
 #[cfg(test)]

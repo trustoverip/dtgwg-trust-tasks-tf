@@ -105,6 +105,36 @@ void main() {
       expect((prior! as TrustTaskDocument<Response>).id, 'resp-1');
     });
 
+    test('releases the claim when the handler throws, so a resend executes',
+        () async {
+      final guard = InMemoryReplayGuard();
+      await expectLater(
+        consumeInbound<Payload, Response>(
+          transport: const UnauthenticatedTransport(),
+          spec: consequentialSpec,
+          proofPolicy: const ProofPolicy.acceptUnverified(),
+          payloadPolicy: const PayloadPolicy.acceptUnvalidated(),
+          checks: consequentialChecks(guard),
+          doc: consequentialDoc(),
+          myVid: me,
+          now: testNow,
+          newErrorId: () => 'err-1',
+          payloadToJson: payloadToJson,
+          handler: (accepted, parties) async =>
+              throw StateError('database connection reset'),
+        ),
+        throwsStateError,
+      );
+
+      // The handler never finished, so a resend is a fresh attempt, not an
+      // in-flight duplicate held until the record expires.
+      final executions = Executions();
+      final outcome =
+          await consequential(guard, consequentialDoc(), executions);
+      expect(outcome, isA<Handled<Response>>());
+      expect(executions.count, 1);
+    });
+
     test('rejects differing content under a reused id with idConflict',
         () async {
       final guard = InMemoryReplayGuard();

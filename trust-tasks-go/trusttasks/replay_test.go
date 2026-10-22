@@ -574,3 +574,45 @@ func TestDocumentDigestIsStableAcrossMemberOrder(t *testing.T) {
 		t.Error("a different payload produced the same digest")
 	}
 }
+
+func TestItem11ReleasesTheClaimWhenTheHandlerFailsWithoutARefusal(t *testing.T) {
+	guard := tt.NewInMemoryReplayGuard(0)
+	opts := func(fail bool, executions *int) tt.ConsumeOptions[payload, response] {
+		return tt.ConsumeOptions[payload, response]{
+			Transport:     tt.UnauthenticatedTransport{},
+			Spec:          relaxedSpec,
+			ProofPolicy:   tt.ProofPolicy{Kind: tt.ProofAcceptUnverified},
+			PayloadPolicy: tt.PayloadPolicy{Kind: tt.PayloadAcceptUnvalidated},
+			Checks:        tt.ConsequentialChecks(guard),
+			Doc:           consequentialDoc(nil),
+			MyVID:         me,
+			Now:           testNow,
+			NewErrorID:    func() string { return "err-1" },
+			Clock:         fixedClock,
+			Handler: func(_ context.Context, accepted *tt.Document[payload], _ tt.ResolvedParties) (*tt.Document[response], error) {
+				*executions++
+				if fail {
+					return nil, errors.New("database connection reset")
+				}
+				return tt.RespondWith[payload, response](accepted, "resp-1", response{OK: true}, fixedClock), nil
+			},
+		}
+	}
+
+	executions := 0
+	if _, err := tt.ConsumeInbound(context.Background(), opts(true, &executions)); err == nil {
+		t.Fatal("expected the handler's error to propagate")
+	}
+	// The handler never finished, so a resend is a fresh attempt, not an
+	// in-flight duplicate held until the record expires.
+	outcome, err := tt.ConsumeInbound(context.Background(), opts(false, &executions))
+	if err != nil {
+		t.Fatalf("ConsumeInbound: %v", err)
+	}
+	if outcome.Kind != tt.OutcomeHandled {
+		t.Fatalf("expected the resend to be handled, got %q (inFlight=%v)", outcome.Kind, outcome.InFlight)
+	}
+	if executions != 2 {
+		t.Errorf("expected two executions, got %d", executions)
+	}
+}

@@ -171,6 +171,22 @@ pub enum ProofPolicy<'a, V: ProofVerifier + ?Sized> {
     /// expects to honour in-band proofs.
     Verify(&'a V),
 
+    /// As [`Verify`](Self::Verify), but over the document **as it was
+    /// received** — the `&Value` the caller parsed `doc` from — through
+    /// [`ProofVerifier::verify_received`].
+    ///
+    /// Prefer it whenever the received JSON is still in hand, as it is in
+    /// every transport binding. [`Verify`](Self::Verify) re-serialises the
+    /// typed document, and a genuine proof fails whenever that differs from
+    /// what the producer signed: a payload member the type defaults rather
+    /// than omits, a member it does not model, a timestamp written `+00:00`.
+    ///
+    /// The value must be the document `doc` was parsed from.
+    /// [`consume_inbound`] re-parses it and refuses (`proofInvalid`) when the
+    /// two disagree, since a proof over one document vouches for nothing
+    /// about another.
+    VerifyReceived(&'a V, &'a Value),
+
     /// Reject documents that carry an in-band proof with
     /// `malformed_request`. Use this when the consumer has integrity
     /// guarantees from another layer (e.g. transport-bound signing) and
@@ -187,6 +203,25 @@ pub enum ProofPolicy<'a, V: ProofVerifier + ?Sized> {
     /// counterparty). This is the explicit opt-out — the variant name
     /// is deliberately uncomfortable to type.
     AcceptUnverified,
+}
+
+impl<'a, V: ProofVerifier + ?Sized> ProofPolicy<'a, V> {
+    /// Bind this policy to the document as received: [`Verify`](Self::Verify)
+    /// becomes [`VerifyReceived`](Self::VerifyReceived) over `received`, and
+    /// every other policy is returned unchanged.
+    ///
+    /// For a pipeline that takes a caller's policy and parses the document
+    /// itself — every transport binding's `receive` — so the caller asks for
+    /// verification and gets it over the bytes that were signed.
+    pub fn with_received<'b>(self, received: &'b Value) -> ProofPolicy<'b, V>
+    where
+        'a: 'b,
+    {
+        match self {
+            ProofPolicy::Verify(v) => ProofPolicy::VerifyReceived(v, received),
+            other => other,
+        }
+    }
 }
 
 /// Evaluates a payload against its `payload.schema.json` (SPEC.md §7.2 item 2).
@@ -473,6 +508,23 @@ where
                 );
             }
         }
+        (ProofPolicy::VerifyReceived(v, received), Some(_)) => {
+            let verified = if is_received_form_of(received, &doc) {
+                v.verify_received(received).await
+            } else {
+                Err(VerificationError::Other(
+                    "the received document is not the one being consumed".to_string(),
+                ))
+            };
+            if let Err(err) = verified {
+                return route_rejection(
+                    transport,
+                    &doc,
+                    proof_error_to_reject(err),
+                    error_id_factory,
+                );
+            }
+        }
         (ProofPolicy::RejectIfPresent, Some(_)) => {
             return route_rejection(
                 transport,
@@ -486,6 +538,7 @@ where
         // Verify-with-no-proof, AcceptUnverified-with-or-without-proof,
         // RejectIfPresent-with-no-proof — all accept and fall through.
         (ProofPolicy::Verify(_), None)
+        | (ProofPolicy::VerifyReceived(..), None)
         | (ProofPolicy::RejectIfPresent, None)
         | (ProofPolicy::AcceptUnverified, _) => {}
     }
@@ -629,6 +682,19 @@ where
     match transport.reject(doc, error_id_factory(), reason) {
         Some(error_response) => ConsumeOutcome::Rejected(error_response),
         None => ConsumeOutcome::Suppressed,
+    }
+}
+
+/// Whether `received` parses to the same document as `doc`, compared through
+/// the typed form both pass through — so a proof checked over `received`
+/// covers the document the handler is given.
+fn is_received_form_of<P: Payload>(received: &Value, doc: &TrustTask<P>) -> bool {
+    match serde_json::from_value::<TrustTask<P>>(received.clone()) {
+        Ok(parsed) => match (serde_json::to_value(&parsed), serde_json::to_value(doc)) {
+            (Ok(a), Ok(b)) => a == b,
+            _ => false,
+        },
+        Err(_) => false,
     }
 }
 

@@ -99,6 +99,29 @@ pub trait ProofVerifier: Send + Sync {
     async fn verify<P>(&self, doc: &TrustTask<P>) -> Result<(), VerificationError>
     where
         P: serde::Serialize + Send + Sync;
+
+    /// Verify `received.proof` over the document **exactly as it arrived**.
+    ///
+    /// A signature covers the canonicalisation of the JSON the signer
+    /// produced. [`verify`](Self::verify) has only a parsed `TrustTask<P>`
+    /// to work from and must re-serialise it, which reproduces the signed
+    /// document only when every member survives the round trip: a payload
+    /// member `P` defaults rather than omits, a member `P` does not model,
+    /// or a timestamp written `+00:00` or with a zero fraction all re-encode
+    /// differently, and a genuine proof then fails. A consumer that still
+    /// holds the received JSON should verify that —
+    /// [`crate::ProofPolicy::VerifyReceived`] routes it here.
+    ///
+    /// The default parses `received` as a `TrustTask<Value>` and calls
+    /// [`verify`](Self::verify), which keeps the payload exact but not the
+    /// framework timestamps. A verifier that can work over the raw JSON
+    /// should override it.
+    async fn verify_received(&self, received: &Value) -> Result<(), VerificationError> {
+        let doc: TrustTask<Value> = serde_json::from_value(received.clone()).map_err(|e| {
+            VerificationError::MalformedProof(format!("received document is not a Trust Task: {e}"))
+        })?;
+        self.verify(&doc).await
+    }
 }
 
 /// Reasons a [`ProofVerifier`] rejects a proof.
@@ -143,9 +166,10 @@ pub enum VerificationError {
 /// [`ProofVerifier::verify`] is generic over the payload type `P`,
 /// which makes it not object-safe. `DynProofVerifier` erases that
 /// parameter by operating on the JSON-form document
-/// [`TrustTask<serde_json::Value>`]; both typed and untyped documents
-/// canonicalise to the same bytes for signature checking, so the
-/// erasure is lossless for verification.
+/// [`TrustTask<serde_json::Value>`]. That keeps the payload exact, but the
+/// framework members are still re-serialised — a timestamp is re-rendered
+/// — so a holder of the received JSON should call
+/// [`verify_received`](Self::verify_received) instead.
 ///
 /// Use [`erase_verifier`] to wrap any concrete `ProofVerifier`.
 #[async_trait::async_trait]
@@ -155,6 +179,16 @@ pub trait DynProofVerifier: Send + Sync {
         &self,
         doc: &TrustTask<serde_json::Value>,
     ) -> Result<(), VerificationError>;
+
+    /// Verify `received.proof` over the document exactly as it arrived —
+    /// see [`ProofVerifier::verify_received`]. The default parses it and
+    /// calls [`verify_json`](Self::verify_json).
+    async fn verify_received(&self, received: &Value) -> Result<(), VerificationError> {
+        let doc: TrustTask<Value> = serde_json::from_value(received.clone()).map_err(|e| {
+            VerificationError::MalformedProof(format!("received document is not a Trust Task: {e}"))
+        })?;
+        self.verify_json(&doc).await
+    }
 }
 
 /// Adapter wrapping any concrete [`ProofVerifier`] as a
@@ -168,6 +202,10 @@ impl<V: ProofVerifier + Send + Sync> DynProofVerifier for ErasedVerifier<V> {
         doc: &TrustTask<serde_json::Value>,
     ) -> Result<(), VerificationError> {
         <V as ProofVerifier>::verify(&self.0, doc).await
+    }
+
+    async fn verify_received(&self, received: &Value) -> Result<(), VerificationError> {
+        <V as ProofVerifier>::verify_received(&self.0, received).await
     }
 }
 
