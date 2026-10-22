@@ -3,9 +3,11 @@
 This repo holds the Trust Tasks framework spec, the per-task spec/schema registry
 (`specs/<slug>/<version>/`), the transport bindings (`bindings/`), the registry
 website (`website/`), and the generated client libraries (`trust-tasks-rs`,
-`trust-tasks-ts`). `npm run build` (`scripts/build-registry.mjs`) regenerates the
-website registry; `cargo run -p trust-tasks-codegen` and `npm run build-ts-bindings`
-regenerate the libraries.
+`trust-tasks-ts`, `trust-tasks-go`, `trust-tasks-dart`) with their hand-written
+binding and proof packages. `npm run build` (`scripts/build-registry.mjs`)
+regenerates the website registry; `cargo run -p trust-tasks-codegen`,
+`npm run build-ts-bindings`, `npm run build-go-bindings` and
+`npm run build-dart-bindings` regenerate the libraries.
 
 ## ⚠️ `SPEC.md` is generated — never edit it here
 

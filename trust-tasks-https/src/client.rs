@@ -16,7 +16,7 @@
 //! The client serialises the request, attaches the configured bearer
 //! token, and POSTs to `<server_url>/trust-tasks`. The response body is
 //! deserialised either as the typed `#response`-variant document (HTTP
-//! 2xx) or as a `trust-task-error/0.1` document (non-2xx); both surface
+//! 2xx) or as a `trust-task-error` document (non-2xx); both surface
 //! to the caller as [`ClientError`] variants for ergonomic `?` chains.
 
 use std::sync::Arc;
@@ -424,9 +424,9 @@ pub enum ClientError {
     #[error("HTTP request failed: {0}")]
     Http(#[from] reqwest::Error),
 
-    /// The server returned a `trust-task-error/0.1` response document.
+    /// The server returned a `trust-task-error` response document.
     /// `http_status` is the response's HTTP status code.
-    #[error("server returned trust-task-error/0.1 (HTTP {http_status}): {error}")]
+    #[error("server returned trust-task-error (HTTP {http_status}): {error}")]
     TrustTaskError {
         /// The HTTP status code accompanying the error response.
         http_status: u16,
@@ -434,7 +434,7 @@ pub enum ClientError {
         error: Box<ErrorResponse>,
     },
 
-    /// Non-2xx HTTP response that did not parse as a `trust-task-error/0.1`
+    /// Non-2xx HTTP response that did not parse as a `trust-task-error`
     /// document (e.g. the server replied with plain text or an empty body).
     #[error("non-2xx HTTP response ({http_status}) with non-Trust-Task body: {body}")]
     HttpStatus {
