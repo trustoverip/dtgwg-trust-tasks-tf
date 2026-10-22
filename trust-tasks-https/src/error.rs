@@ -1,7 +1,7 @@
 //! Shared error type used by both the client and server.
 //!
 //! Most error responses *that the framework defines* are themselves
-//! Trust Task documents (`trust-task-error/0.1`); the consumer-side
+//! Trust Task documents (`trust-task-error`); the consumer-side
 //! pipeline assembles them via [`trust_tasks_rs::TransportHandler::reject`].
 //! [`TransportError`] is reserved for failures that don't fit the
 //! framework's payload model — connectivity issues, malformed JSON
@@ -10,7 +10,7 @@
 use thiserror::Error;
 
 /// Transport-level failures: I/O, broken HTTP framing, body that doesn't
-/// even parse as JSON. Distinct from `trust-task-error/0.1` documents,
+/// even parse as JSON. Distinct from `trust-task-error` documents,
 /// which a well-behaved peer returns inside an HTTP response body and
 /// which this crate surfaces as typed values via [`crate::ClientError`].
 #[derive(Debug, Error)]

@@ -30,6 +30,7 @@ import {
 } from './lib/security-privacy.mjs';
 import { checkDisclosureFloor } from './lib/disclosure-floor.mjs';
 import { createErrorCodeCasingLint, checkStandardErrorCodeCasing } from './lib/error-code-casing.mjs';
+import { checkMemberCasing } from './lib/member-casing.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SPECS_DIR = path.join(ROOT, 'specs');
@@ -373,11 +374,11 @@ function checkCategoryTaxonomy() {
   const meta = readJson(META_SCHEMA_PATH);
   const enumIds = meta?.properties?.category?.enum;
   if (!Array.isArray(enumIds)) {
-    warn('spec.meta.schema.json: could not read #/properties/category/enum — skipping taxonomy cross-check');
+    fail(path.relative(ROOT, META_SCHEMA_PATH), 'could not read #/properties/category/enum for the taxonomy cross-check');
     return;
   }
   if (!fs.existsSync(DATA_JS_PATH)) {
-    warn(`${path.relative(ROOT, DATA_JS_PATH)} not found — skipping taxonomy cross-check`);
+    fail(path.relative(ROOT, DATA_JS_PATH), 'not found — the taxonomy cross-check needs it');
     return;
   }
   let categories;
@@ -1854,7 +1855,7 @@ function checkLibraryRegistry() {
 function checkBindingRegistry() {
   if (!fs.existsSync(BINDINGS_DIR)) return;
   if (!fs.existsSync(BINDINGS_JS_PATH)) {
-    warn(`${path.relative(ROOT, BINDINGS_JS_PATH)} not found — skipping binding registry cross-check`);
+    fail(path.relative(ROOT, BINDINGS_JS_PATH), 'not found — the binding registry cross-check needs it');
     return;
   }
 
@@ -2178,6 +2179,13 @@ function main() {
     );
   }
   errorCodeCasing.report();
+  checkMemberCasing({
+    specsDir: SPECS_DIR,
+    allowlistPath: path.join(ROOT, 'scripts', 'lib', 'member-casing-allowlist.json'),
+    fail,
+    warn,
+    log: console.log,
+  });
   console.log(
     `  Error code shadowing: ${shadowLint.conforming}/${shadowLint.declared} extended code(s) ` +
       `avoid the §8.3 standard vocabulary (${standardErrorCodes().codes.size} code(s), derived ` +

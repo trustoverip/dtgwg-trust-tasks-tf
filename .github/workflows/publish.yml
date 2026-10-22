@@ -225,9 +225,9 @@ jobs:
   # go tooling derives the tag prefix from the subdirectory, so this spelling is
   # a requirement rather than a convention — unlike the `trust-tasks-ts-v*` and
   # `<crate>-v*` tags elsewhere in this file, which are ours to choose.
-  # One matrix entry per Go module: the core, and the two nested modules that
+  # One matrix entry per Go module: the core, and the three nested modules that
   # version independently on their own `trust-tasks-go/<name>/vX.Y.Z` tags
-  # (proof and didcomm). tsp is deliberately absent — it depends on the
+  # (proof, didcomm and capabilityclient). tsp is deliberately absent — it depends on the
   # unpublished affinidi-tsp-go and so cannot be released. Each leg reads its own
   # `const Version`, and the nested legs' verify step fetches the published core.
   publish-go:
@@ -256,6 +256,11 @@ jobs:
             versionfile: trust-tasks-go/didcomm/version.go
             tagprefix: trust-tasks-go/didcomm/v
             module: github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/didcomm
+          - name: trust-tasks-go/capabilityclient
+            dir: trust-tasks-go/capabilityclient
+            versionfile: trust-tasks-go/capabilityclient/version.go
+            tagprefix: trust-tasks-go/capabilityclient/v
+            module: github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/capabilityclient
     concurrency:
       group: publish-go-${{ matrix.dir }}-${{ github.ref }}
       cancel-in-progress: false
@@ -580,7 +585,36 @@ jobs:
           fi
           free -h
 
+      # Since 2026-10-22 this step has been ended by SIGTERM (exit 143) after
+      # ~12 minutes inside cargo-semver-checks, with 15 GiB of swap in place and
+      # no systemd-oomd on the image, so nothing in the log says what sent it.
+      # Sample memory, swap and disk while it runs, and on failure print the
+      # samples with whatever the kernel and journal recorded about a kill.
+      - name: Start resource sampler
+        run: |
+          # shellcheck disable=SC2016 # the loop's $(date) expands per sample
+          nohup bash -c 'while true; do
+            echo "== $(date -u +%H:%M:%S)"
+            free -m | sed -n "2,3p"
+            df -BG --output=target,avail / /mnt | tail -n +2
+            ps -eo rss,comm --sort=-rss | sed -n "2,4p"
+            sleep 30
+          done' > "$RUNNER_TEMP/resources.log" 2>&1 &
+
       - name: Open or update the Release PR
         env:
           GH_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
         run: ./scripts/release-pr.sh
+
+      - name: Report what ended the Release PR step
+        if: failure()
+        run: |
+          echo "::group::Resource samples (last 20 minutes)"
+          tail -n 280 "$RUNNER_TEMP/resources.log" || true
+          echo "::endgroup::"
+          echo "::group::Kernel messages about kills and memory"
+          sudo dmesg -T | grep -iE "oom|kill|memory|out of" | tail -n 40 || true
+          echo "::endgroup::"
+          echo "::group::Journal entries about kills and memory"
+          sudo journalctl --since "-90 min" --no-pager | grep -iE "oom|kill|sigterm|memory pressure|earlyoom|nohang" | tail -n 60 || true
+          echo "::endgroup::"

@@ -1,0 +1,251 @@
+{
+  "$comment": "SPEC §4.10 casing lint (scripts/lib/member-casing.mjs). `external` names and values are fixed by another vocabulary (rule 5) and are accepted anywhere; add one only with that vocabulary named. `frozen` holds deviations published before the lint, per spec family: a family keeps its own across versions, since re-casing is a breaking change, but no other family may adopt one. `frozen` is DEBT and may only shrink.",
+  "external": {
+    "members": {
+      "@context": "JSON-LD 1.1 (SPEC §4.6)",
+      "authority_id": "ToIP Trust Registry Query Protocol (TRQP)",
+      "client_email": "Google Cloud service-account key JSON",
+      "credential_offer": "OpenID for Verifiable Credential Issuance 1.0",
+      "credential_request": "OpenID for Verifiable Credential Issuance 1.0",
+      "credential_response": "OpenID for Verifiable Credential Issuance 1.0",
+      "dcql_query": "OpenID for Verifiable Presentations 1.0 (DCQL)",
+      "entity_id": "ToIP Trust Registry Query Protocol (TRQP)",
+      "private_key": "Google Cloud service-account key JSON",
+      "private_key_id": "Google Cloud service-account key JSON",
+      "time_evaluated": "ToIP Trust Registry Query Protocol (TRQP)",
+      "time_requested": "ToIP Trust Registry Query Protocol (TRQP)",
+      "vp_token": "OpenID for Verifiable Presentations 1.0"
+    },
+    "values": {
+      "C": "X.500 attribute type (RFC 4514)",
+      "CN": "X.500 attribute type (RFC 4514)",
+      "DELETE": "HTTP method (RFC 9110)",
+      "DataIntegrityProof": "W3C Verifiable Credential Data Integrity",
+      "EC": "JWK key type (RFC 7518)",
+      "ES256": "JOSE algorithm identifier (IANA JSON Web Signature and Encryption Algorithms)",
+      "ES256K": "JOSE algorithm identifier (IANA JSON Web Signature and Encryption Algorithms)",
+      "EdDSA": "JOSE algorithm identifier (IANA JSON Web Signature and Encryption Algorithms)",
+      "GET": "HTTP method (RFC 9110)",
+      "HEAD": "HTTP method (RFC 9110)",
+      "L": "X.500 attribute type (RFC 4514)",
+      "Lax": "cookie SameSite attribute (RFC 6265bis)",
+      "ML-DSA-44": "JOSE algorithm identifier (IANA JSON Web Signature and Encryption Algorithms)",
+      "ML-DSA-65": "JOSE algorithm identifier (IANA JSON Web Signature and Encryption Algorithms)",
+      "Multikey": "W3C Controlled Identifiers",
+      "None": "cookie SameSite attribute (RFC 6265bis)",
+      "O": "X.500 attribute type (RFC 4514)",
+      "OU": "X.500 attribute type (RFC 4514)",
+      "P-256": "JWK curve (RFC 7518)",
+      "POST": "HTTP method (RFC 9110)",
+      "PUT": "HTTP method (RFC 9110)",
+      "RS256": "JOSE algorithm identifier (IANA JSON Web Signature and Encryption Algorithms)",
+      "RSA": "JWK key type (RFC 7518)",
+      "SHA1": "TOTP algorithm (RFC 6238, otpauth key URI)",
+      "SHA256": "TOTP algorithm (RFC 6238, otpauth key URI)",
+      "SHA512": "TOTP algorithm (RFC 6238, otpauth key URI)",
+      "ST": "X.500 attribute type (RFC 4514)",
+      "Strict": "cookie SameSite attribute (RFC 6265bis)",
+      "cross-platform": "WebAuthn AuthenticatorAttachment",
+      "decentralized_identifier": "OpenID for Verifiable Presentations 1.0 client identifier prefix",
+      "eddsa-jcs-2022": "W3C Data Integrity EdDSA Cryptosuites",
+      "public-key": "WebAuthn PublicKeyCredentialType",
+      "service_account": "Google Cloud service-account key JSON",
+      "sha-256": "IANA Named Information Hash Algorithm Registry",
+      "sha-384": "IANA Named Information Hash Algorithm Registry",
+      "sha-512": "IANA Named Information Hash Algorithm Registry",
+      "x509_hash": "OpenID for Verifiable Presentations 1.0 client identifier prefix"
+    }
+  },
+  "frozen": {
+    "acl/list": [
+      "acting-in"
+    ],
+    "auth/passkey/login/finish": [
+      "step-up"
+    ],
+    "auth/passkey/login/start": [
+      "step-up"
+    ],
+    "auth/step-up/approve-request": [
+      "did-signed"
+    ],
+    "auth/step-up/approve-response": [
+      "did-signed"
+    ],
+    "auth/step-up/policy": [
+      "delegated-any"
+    ],
+    "consent/_shared": [
+      "bridge-relay"
+    ],
+    "device/_shared": [
+      "ai-agent",
+      "apple-app-attest",
+      "credential-present",
+      "credential-write",
+      "device-admin",
+      "external-accounts-manage",
+      "external-auth-use",
+      "fill-release",
+      "key-export",
+      "key-mint",
+      "memory-read",
+      "memory-write",
+      "nitro-enclave",
+      "pcs-applicant",
+      "pcs-trustee",
+      "pcs-vetter",
+      "pcs-voter",
+      "play-integrity",
+      "policy-admin",
+      "proxy-login",
+      "room-open",
+      "room-present",
+      "sign-csr",
+      "sign-document",
+      "sign-jws",
+      "sign-sshsig",
+      "sign-trust-task",
+      "vault-read",
+      "vault-write",
+      "witness-request"
+    ],
+    "device/heartbeat": [
+      "config-update",
+      "full-resync-required",
+      "policy-reload",
+      "sync-due",
+      "up-to-date"
+    ],
+    "device/list": [
+      "ai-agent"
+    ],
+    "device/wipe": [
+      "cache-and-keys"
+    ],
+    "external/_shared": [
+      "Secp256r1",
+      "abort-multipart",
+      "aws-roles-anywhere",
+      "azure-cert",
+      "complete-multipart",
+      "create-multipart",
+      "gcp-wif-pinned",
+      "list-parts",
+      "oauth2-private-key-jwt",
+      "s3-static-presign",
+      "static-secret",
+      "sui-signer",
+      "upload-part"
+    ],
+    "external/credentials/issue": [
+      "abort-multipart",
+      "complete-multipart",
+      "create-multipart",
+      "list-parts",
+      "upload-part"
+    ],
+    "policy/_shared": [
+      "proxy_login",
+      "push-approval",
+      "require_step_up",
+      "step_up_response",
+      "webauthn-uv"
+    ],
+    "provision/integration": [
+      "AdminRotation",
+      "TemplateBootstrap",
+      "did-signed",
+      "pinned-only"
+    ],
+    "push/wake": [
+      "token-unregistered"
+    ],
+    "registry/_shared": [
+      "record_type"
+    ],
+    "registry/did/rotate": [
+      "new_scid",
+      "new_version_id",
+      "pre_rotation_count"
+    ],
+    "registry/record/read": [
+      "record_type"
+    ],
+    "sync/_shared": [
+      "device_disabled",
+      "device_wiped",
+      "role_changed"
+    ],
+    "trust-task-error": [
+      "identity_mismatch",
+      "internal_error",
+      "malformed_request",
+      "permission_denied",
+      "proof_invalid",
+      "proof_required",
+      "task_failed",
+      "unsupported_type",
+      "unsupported_version",
+      "wrong_recipient"
+    ],
+    "vault/_shared": [
+      "android-app",
+      "bearer-token",
+      "before-expiry",
+      "did-self-issued",
+      "did-signed",
+      "didcomm-authcrypt",
+      "didcomm-peer",
+      "form-urlencoded",
+      "hpke-armored",
+      "ios-app",
+      "maintainer-only",
+      "oauth-tokens",
+      "on-401",
+      "pinned-only",
+      "push-approval",
+      "ssh-key",
+      "tsp-message",
+      "web-origin",
+      "webauthn-uv"
+    ],
+    "vault/usage": [
+      "credential_rejected",
+      "policy_deny",
+      "proxy-login",
+      "step_up_required",
+      "step_up_satisfied",
+      "target_unreachable"
+    ],
+    "vetting/_shared": [
+      "RelationshipCard",
+      "VerifiableDataStructure",
+      "VettingCard"
+    ],
+    "voting/_shared": [
+      "ps-ddh-bls12381"
+    ],
+    "vta/attestation/config-report": [
+      "sev-snp"
+    ],
+    "vta/attestation/report": [
+      "sev-snp"
+    ],
+    "vta/attestation/status": [
+      "sev-snp"
+    ],
+    "vta/health/details": [
+      "sev-snp"
+    ],
+    "vtc/_shared": [
+      "vta-account"
+    ],
+    "vtc/relationships/publish": [
+      "VrcPublishAuthorization"
+    ],
+    "vtc/relationships/revoke": [
+      "VrcRevokeAuthorization"
+    ]
+  }
+}

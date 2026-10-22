@@ -56,6 +56,7 @@ GO_MODULES=(
   "trust-tasks-go"
   "trust-tasks-go/proof"
   "trust-tasks-go/didcomm"
+  "trust-tasks-go/capabilityclient"
 )
 DART_PACKAGES=(
   "trust_tasks"
