@@ -706,7 +706,7 @@ fn proof_error_to_reject(err: VerificationError) -> RejectReason {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "acl"))] // its specimens are acl payloads
 mod tests {
     use super::*;
     use crate::handlers::NoopHandler;

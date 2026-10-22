@@ -368,7 +368,7 @@ fn parse_slug(uri: &str) -> Option<&str> {
     Some(&after_spec[..last_slash])
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "acl"))] // its specimens are acl payloads
 mod tests {
     use super::*;
 

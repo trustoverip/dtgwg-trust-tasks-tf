@@ -362,7 +362,7 @@ pub trait RequestPayload: Payload {
     type Response: Payload;
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "acl"))] // its specimens are acl payloads
 mod tests {
     use super::*;
     use crate::specs::acl::change_role::v0_1 as change_role;

@@ -8,6 +8,12 @@
 //! the expected list independently of the generator.
 //!
 //! The index half needs `schema_index`, which is behind the `validate` feature.
+//!
+//! The specimens come from the `keys`, `vta` and `vtc` families (and `rooms`
+//! and `vault` for the details checks), so the file compiles only when those
+//! are enabled, and a single-family build such as
+//! `--no-default-features --features acl` skips it instead of failing.
+#![cfg(all(feature = "keys", feature = "vta", feature = "vtc"))]
 
 use trust_tasks_rs::specs::keys::revoke::v0_1 as keys_revoke;
 use trust_tasks_rs::specs::trust_task_discovery::v0_1 as discovery;
@@ -118,7 +124,7 @@ fn a_code_without_a_details_schema_carries_none() {
     assert_eq!(withdraw::error_codes::NOT_FOUND.details_schema, None);
 }
 
-#[cfg(feature = "validate")]
+#[cfg(all(feature = "validate", feature = "rooms", feature = "vault"))]
 mod details {
     use serde_json::json;
     use trust_tasks_rs::specs::rooms::keys::file_key::v0_1 as file_key;

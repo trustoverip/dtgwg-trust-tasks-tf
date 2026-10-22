@@ -135,6 +135,27 @@ jobs:
       - name: cargo test (--features validate)
         run: cargo test -p trust-tasks-rs --features validate --all-targets
 
+  # Every spec family is a Cargo feature, so a consumer — or a contributor
+  # working on one family — can build trust-tasks-rs with only that family:
+  # `cargo test -p trust-tasks-rs --no-default-features --features vault` is a
+  # ~1 GB, seconds-long build where the default one is the whole registry. That
+  # only holds while no test outside a family's own gate names it, which
+  # nothing else checks: every other job builds with all families on. The
+  # three below are the unit-test family (acl) and two that are not it.
+  test-single-family:
+    name: cargo test (trust-tasks-rs, one family at a time)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - name: cargo test --no-default-features --features <family>
+        run: |
+          for family in acl vault keys; do
+            echo "::group::$family"
+            cargo test -p trust-tasks-rs --no-default-features --features "$family" --all-targets
+            echo "::endgroup::"
+          done
+
   doc:
     name: cargo doc
     runs-on: ubuntu-latest
@@ -381,9 +402,13 @@ jobs:
       # clean copy. That second step catches the bug class where
       # generated code references files outside the crate root via
       # `include_str!` (those paths get excluded from the tarball and
-      # the verify compile fails). We exercise both the default feature
-      # set and the `validate` feature so anything new that gets
-      # `include_str!`-ed is checked end-to-end. Every other published
+      # the verify compile fails). One verify compile, with `validate`, covers
+      # the default feature set too: nothing in the crate is compiled only
+      # when `validate` is off (no `cfg(not(feature = "validate"))`, no build
+      # script), so the default build is a strict subset and a second verify
+      # compile of it was ~4 minutes that could only fail when this one did.
+      # Should a `not(feature = "validate")` path ever appear, package the
+      # default set again. Every other published
       # crate is packaged by `package-workspace`, on the Release PR only:
       # trust-tasks-rs is the one whose generated tree changes on ordinary
       # PRs, so it is the one worth checking on each of them.
@@ -396,8 +421,12 @@ jobs:
           # informative — the *install* is the check, and it still fails loudly.
           sudo apt-get update || true
           sudo apt-get install -y libdbus-1-dev pkg-config
-      - name: cargo package trust-tasks-rs (default features)
-        run: cargo package -p trust-tasks-rs
+      - name: The validate build is a superset of the default one
+        run: |
+          if grep -rnE 'not\(\s*feature\s*=\s*"validate"' trust-tasks-rs --include='*.rs'; then
+            echo "::error::trust-tasks-rs now has code compiled only without \`validate\`, so packaging with \`validate\` no longer covers the default build. Add back \`cargo package -p trust-tasks-rs\` (default features) to this job."
+            exit 1
+          fi
       - name: cargo package trust-tasks-rs (--features validate)
         run: cargo package -p trust-tasks-rs --features validate
 

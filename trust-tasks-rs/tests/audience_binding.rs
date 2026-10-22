@@ -3,6 +3,9 @@
 //! Covers the cross-recipient replay attack: a document signed without an
 //! in-band `recipient` is replayable to any consumer who can verify the
 //! proof, since the signature does not cover the audience identity.
+//!
+//! Its specimens are `acl` payloads, so a build without that family skips it.
+#![cfg(feature = "acl")]
 
 use chrono::Utc;
 use trust_tasks_rs::{specs::acl::grant::v0_1 as grant, Payload, Proof, StandardCode, TrustTask};
