@@ -1111,7 +1111,7 @@ pub mod error_codes {
     };
     /// `vault/credentials/present:wouldOverDisclose`
     ///
-    /// The credential cannot disclose less than all its claims, and `claims` does not name them all. `details.undisclosed` lists the claims the request left out.
+    /// Every presentation of the credential discloses claims `claims` does not name — all of them, for a credential without selective disclosure. `details.undisclosed` lists those claims.
     ///
     /// Declared `retryable: false`.
     /// Declares a `detailsSchema` for the error's `details` member.

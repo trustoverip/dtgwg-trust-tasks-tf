@@ -67,7 +67,7 @@ errorCodes:
             maxLength: 128
   - code: vault/credentials/present:wouldOverDisclose
     meaning: >-
-      The credential cannot disclose less than all its claims, and `claims` does not name them all. `details.undisclosed` lists the claims the request left out.
+      Every presentation of the credential discloses claims `claims` does not name — all of them, for a credential without selective disclosure. `details.undisclosed` lists those claims.
     retryable: false
     detailsSchema:
       type: object
@@ -109,7 +109,7 @@ A conforming **maintainer** **MUST**:
 1. Resolve `id` to a credential the consumer may present and its subject to a key the consumer may use, both within the consumer's custody scope, and answer `notFound` otherwise — the same answer whichever of them failed.
 2. Refuse with `notPresentable` a credential that is archived or deleted, revoked or suspended, or outside its validity period at the time of the request. Where the credential names a status list, the maintainer **SHOULD** re-read it before answering rather than rely on what it read at receipt.
 3. Refuse with `claimNotHeld` a request naming a claim the credential's subject does not carry.
-4. Disclose nothing outside `claims`. A credential that cannot disclose less than all its subject claims — a Data Integrity credential without a selective-disclosure cryptosuite — **MUST** be refused with `wouldOverDisclose` unless `claims` names every one of them.
+4. Disclose nothing outside `claims`. A claim every presentation of the credential discloses — every subject claim of a Data Integrity credential without a selective-disclosure cryptosuite, a claim an SD-JWT carries in the clear — **MUST** be named in `claims`, and the request refused with `wouldOverDisclose` otherwise.
 5. Bind the presentation to `audience` and `nonce`, signed by the credential subject's key:
    - a **Data Integrity** presentation carries `holder` = the subject, `nonce` = `nonce` and `domain` = `audience` as members of the presentation its holder proof signs, and a proof that also states `challenge` or `domain` states the same values;
    - an **SD-JWT** presentation carries the disclosures for `claims` only and a key-binding JWT with `nonce` = `nonce` and `aud` = `audience`, signed by the key the credential's `cnf` names.
