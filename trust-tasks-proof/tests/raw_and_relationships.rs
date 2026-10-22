@@ -123,3 +123,115 @@ async fn the_document_as_received_verifies_where_a_reserialised_one_does_not() {
         "re-serialising the typed document changes what was signed"
     );
 }
+
+// ─── The pipeline: `consume_inbound` and the type-erased verifier ─────────────
+
+/// The shape typify generates for an optional boolean: `#[serde(default)]`
+/// with no `skip_serializing_if`, so a member the producer left out comes
+/// back as `false` when the typed document is re-serialised.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct DeleteContext {
+    name: String,
+    #[serde(default)]
+    force: bool,
+}
+
+impl Payload for DeleteContext {
+    const TYPE_URI: &'static str = "https://example.com/spec/delete-context/0.1";
+}
+
+/// Signed by the producer exactly as it would put it on the wire: `force`
+/// omitted and `issuedAt` written with `+00:00`. Both re-encode differently.
+async fn signed_delete(secret: &Secret) -> Value {
+    signed(
+        json!({
+            "id": "urn:uuid:received-1",
+            "type": DeleteContext::TYPE_URI,
+            "issuer": DID,
+            "recipient": "did:web:auditor.example",
+            "issuedAt": "2026-01-01T00:00:00+00:00",
+            "payload": { "name": "ctx" },
+        }),
+        secret,
+    )
+    .await
+}
+
+async fn consume(
+    policy: trust_tasks_rs::ProofPolicy<'_, Verifier>,
+    doc: TrustTask<DeleteContext>,
+    ran: &std::sync::atomic::AtomicBool,
+) -> trust_tasks_rs::ConsumeOutcome<Value> {
+    trust_tasks_rs::consume_inbound(
+        &trust_tasks_rs::handlers::NoopHandler::new(),
+        policy,
+        trust_tasks_rs::PayloadPolicy::<trust_tasks_rs::NoValidator>::AcceptUnvalidated,
+        trust_tasks_rs::ConsumeChecks::not_consequential(),
+        doc,
+        "did:web:auditor.example",
+        "2026-01-01T00:00:30Z".parse().unwrap(),
+        || "err-1".to_string(),
+        |req, _parties| async move {
+            ran.store(true, std::sync::atomic::Ordering::SeqCst);
+            Ok::<_, trust_tasks_rs::ErrorResponse>(req.respond_with("resp-1", json!({})))
+        },
+    )
+    .await
+}
+
+/// The defect this guards: every binding parsed the document into its typed
+/// form and verified that, re-serialised. A genuine proof over a document
+/// whose typed form re-encodes differently was refused `proofInvalid`.
+#[tokio::test]
+async fn consume_inbound_verifies_the_document_as_received() {
+    let (verifier, secret) = verifier_for("assertionMethod").await;
+    let received = signed_delete(&secret).await;
+    let doc: TrustTask<DeleteContext> = serde_json::from_value(received.clone()).unwrap();
+    assert_ne!(
+        serde_json::to_value(&doc).unwrap(),
+        received,
+        "precondition: the typed document must re-encode differently, or this test proves nothing"
+    );
+
+    let ran = std::sync::atomic::AtomicBool::new(false);
+    let policy = trust_tasks_rs::ProofPolicy::Verify(&verifier).with_received(&received);
+    match consume(policy, doc, &ran).await {
+        trust_tasks_rs::ConsumeOutcome::Handled(_) => {}
+        other => panic!("a genuine proof over the received document must verify: {other:?}"),
+    }
+    assert!(ran.load(std::sync::atomic::Ordering::SeqCst));
+}
+
+/// A proof over one document vouches for nothing about another: received JSON
+/// that does not parse to the document being consumed is refused, and the
+/// handler never runs.
+#[tokio::test]
+async fn a_received_document_that_is_not_the_one_consumed_is_refused() {
+    let (verifier, secret) = verifier_for("assertionMethod").await;
+    let received = signed_delete(&secret).await;
+    let mut doc: TrustTask<DeleteContext> = serde_json::from_value(received.clone()).unwrap();
+    doc.payload.name = "a-different-context".into();
+
+    let ran = std::sync::atomic::AtomicBool::new(false);
+    let policy = trust_tasks_rs::ProofPolicy::VerifyReceived(&verifier, &received);
+    match consume(policy, doc, &ran).await {
+        trust_tasks_rs::ConsumeOutcome::Rejected(err) => assert_eq!(
+            err.payload.code,
+            trust_tasks_rs::StandardCode::ProofInvalid.into()
+        ),
+        other => panic!("expected proofInvalid, got {other:?}"),
+    }
+    assert!(!ran.load(std::sync::atomic::Ordering::SeqCst));
+}
+
+/// The HTTPS server stores its verifier type-erased; erasure must reach the
+/// raw path rather than fall back to re-serialising.
+#[tokio::test]
+async fn the_type_erased_verifier_verifies_the_document_as_received() {
+    let (verifier, secret) = verifier_for("assertionMethod").await;
+    let received = signed_delete(&secret).await;
+    trust_tasks_rs::erase_verifier(verifier)
+        .verify_received(&received)
+        .await
+        .expect("the erased verifier forwards to verify_raw");
+}

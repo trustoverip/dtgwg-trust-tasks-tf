@@ -149,6 +149,17 @@ pub fn unpack_trust_task<P>(
 where
     P: Payload + DeserializeOwned,
 {
+    unpack_received(unpacked).map(|(doc, _, handler)| (doc, handler))
+}
+
+/// [`unpack_trust_task`], also returning the document as received — what a
+/// proof is verified over (see `ProofPolicy::with_received`).
+pub(crate) fn unpack_received<P>(
+    unpacked: UnpackResult,
+) -> Result<(TrustTask<P>, serde_json::Value, DidcommV1Handler), DidcommV1Error>
+where
+    P: Payload + DeserializeOwned,
+{
     // A v1 envelope authenticates a verkey, not a DID, so there are two ways to
     // arrive without an attributable sender and they are worth telling apart.
     let authenticated = match unpacked {
@@ -184,9 +195,9 @@ where
         );
     }
 
-    let document = attachment(msg)?;
+    let received = attachment(msg)?;
     let doc: TrustTask<P> =
-        serde_json::from_value(document).map_err(DidcommV1Error::InvalidDocument)?;
+        serde_json::from_value(received.clone()).map_err(DidcommV1Error::InvalidDocument)?;
 
     // Binding thread mapping — compare only where both sides are explicitly
     // present. v1's `thid` defaults to the message `@id` and the framework's
@@ -214,7 +225,7 @@ where
         Some(authenticated.sender.to_string()),
     )
     .with_carriage(carriage);
-    Ok((doc, handler))
+    Ok((doc, received, handler))
 }
 
 /// Which of the binding's two carriages a message arrived on.

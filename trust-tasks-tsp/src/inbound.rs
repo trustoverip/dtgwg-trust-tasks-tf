@@ -4,7 +4,7 @@
 //!
 //! # Why this type exists
 //!
-//! [`unpack_trust_task`] stops at the document. The consumer obligations of
+//! [`unpack_trust_task`](crate::unpack_trust_task) stops at the document. The consumer obligations of
 //! SPEC §7.2 still have to run over it, and two of them are stateful — item
 //! 11's record and the acceptance window that lets that record be dropped.
 //! Leaving both to the caller meant the crate shipped a defence nobody
@@ -67,7 +67,7 @@ use trust_tasks_rs::{
 
 use crate::error::TspError;
 use crate::handler::TspHandler;
-use crate::pack::unpack_trust_task;
+use crate::pack::unpack_received;
 
 /// Where a [`TspConsumer`] keeps the SPEC §7.2 item 11 record.
 enum Record {
@@ -235,7 +235,7 @@ impl TspConsumer {
     /// Open a TSP-sealed message and run the guarded §7.2 pipeline over the
     /// document it carries.
     ///
-    /// Every rule of [`unpack_trust_task`] applies first — HPKE authenticated
+    /// Every rule of [`unpack_trust_task`](crate::unpack_trust_task) applies first — HPKE authenticated
     /// decryption against `recipient`'s key, signature verification against
     /// `sender`'s, the `Direct`-carriage check, the cleartext-sender
     /// cross-check and the envelope `type` check. A refusal there comes back
@@ -267,13 +267,13 @@ impl TspConsumer {
         F: FnOnce(TrustTask<P>, ResolvedParties) -> Fut,
         Fut: Future<Output = Result<TrustTask<R>, ErrorResponse>>,
     {
-        let (doc, transport) = unpack_trust_task::<P>(wire, recipient, sender)?;
+        let (doc, received, transport) = unpack_received::<P>(wire, recipient, sender)?;
         Ok(self
             .consume(
                 &transport,
                 doc,
                 my_vid,
-                proof_policy,
+                proof_policy.with_received(&received),
                 payload_policy,
                 now,
                 error_id_factory,

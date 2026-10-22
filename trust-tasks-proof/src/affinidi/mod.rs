@@ -117,6 +117,10 @@ impl ProofVerifier for Verifier {
         })?;
         self.verify_raw(&doc_value).await
     }
+
+    async fn verify_received(&self, received: &Value) -> Result<(), VerificationError> {
+        self.verify_raw(received).await
+    }
 }
 
 impl Verifier {

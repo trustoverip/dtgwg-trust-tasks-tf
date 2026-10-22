@@ -5,7 +5,7 @@
 //!
 //! # Why this type exists
 //!
-//! [`unpack_trust_task`] stops at the document. The
+//! [`unpack_trust_task`](crate::unpack_trust_task) stops at the document. The
 //! consumer obligations of SPEC §7.2 still have to run over it, and two of
 //! them are stateful — item 11's record and the acceptance window that lets
 //! that record be dropped. Leaving both to the caller meant that the crate
@@ -69,7 +69,7 @@ use trust_tasks_rs::{
 
 use crate::error::DidcommV1Error;
 use crate::handler::DidcommV1Handler;
-use crate::pack::unpack_trust_task;
+use crate::pack::unpack_received;
 
 /// Where a [`DidcommV1Consumer`] keeps the SPEC §7.2 item 11 record.
 enum Record {
@@ -234,7 +234,7 @@ impl DidcommV1Consumer {
     /// Extract the document from an unpacked v1 message and run the guarded
     /// §7.2 pipeline over it.
     ///
-    /// Every rule of [`unpack_trust_task`] applies
+    /// Every rule of [`unpack_trust_task`](crate::unpack_trust_task) applies
     /// first — the authenticated-sender gate (including the
     /// verkey-bound-to-no-known-DID case v1 has and v2.1 does not), the
     /// carriage gate of §2/§2.3, the attachment lookup, and the `~thread`
@@ -264,13 +264,13 @@ impl DidcommV1Consumer {
         F: FnOnce(TrustTask<P>, ResolvedParties) -> Fut,
         Fut: Future<Output = Result<TrustTask<R>, ErrorResponse>>,
     {
-        let (doc, transport) = unpack_trust_task::<P>(unpacked)?;
+        let (doc, received, transport) = unpack_received::<P>(unpacked)?;
         Ok(self
             .consume(
                 &transport,
                 doc,
                 my_vid,
-                proof_policy,
+                proof_policy.with_received(&received),
                 payload_policy,
                 now,
                 error_id_factory,

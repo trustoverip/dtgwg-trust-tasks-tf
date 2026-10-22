@@ -685,6 +685,17 @@ async fn dispatch_handler(
             return reject_response(None, None, RejectReason::malformed_from_serde(&e));
         }
     };
+    // The same bytes as a plain `Value`, for step 8: a proof is verified over
+    // the document as received, not over `doc` re-serialised, which re-renders
+    // the framework timestamps. Parsed separately rather than `doc` being built
+    // from it, because the typed parse is the one that refuses a duplicated
+    // top-level member, which a `Value` silently resolves to the last.
+    let received: Value = match serde_json::from_slice(&body) {
+        Ok(v) => v,
+        Err(e) => {
+            return reject_response(None, None, RejectReason::malformed_from_serde(&e));
+        }
+    };
 
     // ─── 2. Authenticate the bearer token (if any) into a peer VID. Purely
     // local — an in-process map, a JWT signature check, a database lookup.
@@ -787,7 +798,7 @@ async fn dispatch_handler(
     if doc.proof.is_some() {
         match &state.verifier {
             Some(v) => {
-                if let Err(err) = v.verify_json(&doc).await {
+                if let Err(err) = v.verify_received(&received).await {
                     return reject_response(
                         Some(&handler),
                         Some(&doc),
