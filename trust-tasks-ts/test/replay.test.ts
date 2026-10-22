@@ -119,6 +119,33 @@ describe("SPEC §7.2 item 11 — duplicate execution", () => {
     assert.equal(state.executions, 1);
   });
 
+  it("releases the claim when the handler throws, so a resend executes", async () => {
+    const guard = new InMemoryReplayGuard(64);
+    await assert.rejects(
+      consumeInbound<Payload, Response>({
+        transport: new StaticTransport({ issuer: PEER, recipient: ME }),
+        spec: SPEC,
+        proofPolicy: { kind: "acceptUnverified" },
+        payloadPolicy: { kind: "acceptUnvalidated" },
+        checks: consequentialChecks(guard),
+        doc: doc(),
+        myVid: ME,
+        now: NOW,
+        newErrorId: () => "err-1",
+        handler: () => {
+          throw new Error("database connection reset");
+        },
+      }),
+      /database connection reset/,
+    );
+
+    // The handler never finished, so a resend is a fresh attempt, not an
+    // in-flight duplicate held until the record expires.
+    const { run, state } = runner(guard);
+    assert.equal((await run(doc())).kind, "handled");
+    assert.equal(state.executions, 1);
+  });
+
   it("rejects differing content under a reused id with idConflict", async () => {
     const { run, state } = runner(new InMemoryReplayGuard(64));
 

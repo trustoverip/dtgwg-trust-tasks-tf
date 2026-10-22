@@ -304,7 +304,8 @@ export interface ConsumeOptions<P, R> {
    *
    * Return a success response, an {@link ErrorResponse} to refuse, or nothing
    * at all for a specification that defines no success response (§4.4.1) —
-   * which yields the `accepted` outcome.
+   * which yields the `accepted` outcome. A throw aborts the pipeline, releases
+   * the item-11 claim so the document can be resent, and is rethrown.
    */
   handler: (
     doc: TrustTaskDocument<P>,
@@ -517,7 +518,21 @@ export async function consumeInbound<P, R>(
     }
   }
 
-  const result = await handler(doc, resolved.parties);
+  let result: Awaited<ReturnType<typeof handler>>;
+  try {
+    result = await handler(doc, resolved.parties);
+  } catch (e) {
+    // The handler did not finish, so nothing says the effect happened.
+    // Holding the claim would answer every resend with an in-flight duplicate
+    // until the record expired: the document could not be retried, and the
+    // producer would never learn why.
+    try {
+      await claim?.guard.release?.(doc.id, claim.digest);
+    } catch {
+      /* best-effort */
+    }
+    throw e;
+  }
 
   if (result === undefined || result === null) {
     // Fire-and-forget: nothing to cache, but the claim stands — the effect
