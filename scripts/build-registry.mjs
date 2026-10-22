@@ -373,11 +373,11 @@ function checkCategoryTaxonomy() {
   const meta = readJson(META_SCHEMA_PATH);
   const enumIds = meta?.properties?.category?.enum;
   if (!Array.isArray(enumIds)) {
-    warn('spec.meta.schema.json: could not read #/properties/category/enum — skipping taxonomy cross-check');
+    fail(path.relative(ROOT, META_SCHEMA_PATH), 'could not read #/properties/category/enum for the taxonomy cross-check');
     return;
   }
   if (!fs.existsSync(DATA_JS_PATH)) {
-    warn(`${path.relative(ROOT, DATA_JS_PATH)} not found — skipping taxonomy cross-check`);
+    fail(path.relative(ROOT, DATA_JS_PATH), 'not found — the taxonomy cross-check needs it');
     return;
   }
   let categories;
@@ -1854,7 +1854,7 @@ function checkLibraryRegistry() {
 function checkBindingRegistry() {
   if (!fs.existsSync(BINDINGS_DIR)) return;
   if (!fs.existsSync(BINDINGS_JS_PATH)) {
-    warn(`${path.relative(ROOT, BINDINGS_JS_PATH)} not found — skipping binding registry cross-check`);
+    fail(path.relative(ROOT, BINDINGS_JS_PATH), 'not found — the binding registry cross-check needs it');
     return;
   }
 
