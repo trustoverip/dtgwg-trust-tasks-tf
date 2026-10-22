@@ -11,6 +11,222 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.27.2 — 2026-10-22
+
+
+### Added
+
+- **vault/credentials/present**: Present a held credential to a verifier the client names, bound to its nonce, disclosing only the named claims (#871)
+
+* feat(vault/credentials/present): present a held credential to a verifier the client names, bound to its nonce, disclosing only the named claims
+
+  A client that holds no holder key (a browser wallet, a phone) could not
+  carry a presentation to a verifier that takes one inside its own request
+  document, such as vtc/directory/card/present: credential-exchange/present
+  answers only a verifier that asks the agent. The maintainer now signs as the
+  credential's subject for a named audience and nonce, refuses over-disclosure
+  of a credential without selective disclosure (wouldOverDisclose), records the
+  disclosure before answering, and conflates custody failures as notFound.
+
+- **vta/webvh/dids/create**: 1.2 chooses the did:scid identity and the alsoKnownAs alias (#862)
+
+* feat(vta/webvh/dids/create): 1.2 chooses the did:scid identity and the alsoKnownAs alias
+
+  A did:webvh log can be presented as its did:scid:vh:1 DID, an identity
+  the same log verifies but which does not name its host (VTI-KEY-160 to
+  VTI-KEY-166 of the VTI specification). 1.2's request may name `didMethod`
+  (`webvh` or `scid`) and `scidAlsoKnownAs`. Each falls back to the VTA's
+  configuration, then to `webvh` and `true`.
+
+  The response REQUIRES both as applied, plus `webvhDid` (the log) and
+  `scidDidUrl` (the did:scid with the `src` a recipient needs to resolve it).
+  `did` is the identity in the applied form, the bare did:scid DID when
+  `didMethod` is `scid`, and the family's other tasks accept either `did` or
+  `webvhDid`.
+
+  Asking for the did:scid identity when the alias cannot be listed (refused by
+  the request, forbidden by the template, or absent from a supplied log) is
+  refused with the new `scidAliasRequired` code.
+
+  1.2 is a new version because 1.1's response refuses unknown members. The
+  request members are additive, but a 1.1 client would refuse the response.
+
+  Bindings regenerated (Rust, TS, Go, Dart).
+
+- **rooms/records/prune**: A room states how long it keeps its records, and an administrator prunes what that rule makes eligible (#868)
+
+Records only had room-level lifecycle: a room could not keep a meeting note
+  for a month and a decision for years, and nothing ever removed a retracted
+  record's tombstone.
+
+  - rooms/_shared/0.1 (in place, additive): RecordRetention ({tombstoneDays,
+    recordDays}, by host-visible updatedAt; pinned records exempt from
+    recordDays; absent or {} means nothing is eligible) and RecordPrune (the
+    mark a prune leaves: version, time, count — never which records or what
+    they said). HeadVersion answers the note it carried about erasure: a prune
+    takes the next version, and on a pruned room headVersion is the higher of
+    the highest record version and the latest prune's, so two roots straddling
+    a prune never share a version.
+  - rooms/records/prune 0.1 (new): admin only, never curate; kinds retracted |
+    aged; required reason; dryRun. Removes eligible records outright, releases
+    their blobs, records lastPrune. noRetention when the room states no rule
+    for the kinds asked. Hosts never prune on their own. Audit keeps the mark,
+    reason, requester where the tier discloses one, and the retention applied,
+    never content; a reader holding an earlier listing can check every
+    disappearance against the reported retention.
+  - rooms/records/retention/set 0.1 (new): admin replaces the retention whole,
+    with a reason and an optional expectedRetention precondition.
+  - rooms/create 0.2: recordRetention at creation. rooms/info 0.2: serves
+    recordRetention and lastPrune to every reader. rooms/records/list 0.3 and
+    rooms/keys/browse 0.2: lastPrune on every page; a reader synced below it
+    rebuilds and drops what is gone.
+  - rooms/records/curate 0.1: editorial pointer to the prune.
+  - Rust, TypeScript, Go and Dart bindings regenerated.
+
+  Refs OpenVTC/verifiable-trust-infrastructure#2118.
+
+- **vtc/rooms/storage**: Migrate 0.2 and rooms/get 0.2 — reassignment, retry ownership, resume without re-consent, orphans, pause reporting, queueing (#867)
+
+migrate/0.2 fixes a migration's toConfig at approval and keeps it if the room
+  is reassigned (new uploads go to the new assignment; a second migration may
+  follow); makes the community the one retry owner (capped exponential backoff
+  with jitter before `paused`); answers a request for a room with a migration in
+  progress at once, resuming a paused one, without parking it for consent again;
+  does not migrate or count orphaned blobs; reports `pausedCause`, `lastError`
+  and `nextAttemptAt`; and permits one migration at a time with a `queued`
+  state.
+
+  rooms/get/0.2 reports the same migration through the new shared component
+  vtc/_shared/0.1/room-migration, and adds the required `toConfig`.
+
+- **vtc/storage**: Ambient and sealed storage auth — roleArn, room-scoped credential rules, sealed cleartext schema, host gating (#866)
+
+vtc/_shared/0.2/room-storage adds `roleArn` to `ambient` auth (S3 only), the
+  `notAllowed` credential status, and `SealedStorageCredential` — the cleartext a
+  `sealed` credential is carried in (s3 access-key pair with optional session
+  token, gcs service-account key file, walrus suiprivkey), naming its configId
+  inside the seal.
+
+  vtc/storage/configs/{create,update,get,list}/0.2 re-pin to it. create/0.2 makes
+  room-scoped credentials normative for ambient (and sealed where the backend can
+  mint them): one per (config, room), limited to the room prefix
+  `rooms/<32 hex of SHA-256(roomId)>/` and the object actions needed, built by a
+  JSON encoder / CEL builder and never by interpolation, at most 15 minutes,
+  never used for another room. A host MAY refuse ambient or sealed by
+  configuration (`authNotAllowed`, now with `details.reason`), and SHOULD label
+  sealed as offering no protection against the machine's operator.
+
+  vtc/storage/credentials/set/0.2 requires the sealed cleartext to be a
+  SealedStorageCredential for the request's config, and refuses sealed when the
+  host does not permit it.
+
+- **vtc/admin/events**: 0.4 adds a communityRooms topic — the owner's view of the rooms the community owns (#864)
+
+The console's Community rooms tab polls every 60 s, because no topic covers
+  it: `rooms` is the host's view (storage, limits, lifecycle) for holders of
+  `vtc.rooms.admin`, carries no room's details, and is not readable by a
+  `vtc.rooms.manage` holder who lacks `vtc.rooms.admin`.
+
+  - vtc/admin/events/_shared/0.4: Topic gains `communityRooms` (10 topics).
+  - vtc/admin/events/subscribe/0.4: `topics` maxItems 10; "What 0.4 adds";
+    Authorization row — holders of `vtc.rooms.manage`, prompting
+    vtc/rooms/community/list 0.2, get 0.2 and members/list 0.1;
+    `vtc.rooms.admin` alone does not qualify.
+  - vtc/admin/events/event/0.4: producer rules 8–9 — hint when anything those
+    reads show changes (a room created or its label, description or tags
+    changed; an admission offered, withdrawn, accepted or renewed; a removal
+    owed, retried, settled or failed, including on departure; the profile
+    write's state; the authority-renewal state). No room, member, DID, offer,
+    credential or record identifier in any member, ext included. Not a count
+    topic. Coalescing, standing re-checks and stream-ending on a shrink are
+    unchanged.
+  - vtc/rooms/community/update 0.1 and 0.2 (draft, editorial in place):
+    "Live updates" now points at `communityRooms` in events 0.4 instead of
+    "a later version".
+
+  0.1, 0.2 and 0.3 are unchanged; a community serving several versions answers
+  each subscription at its own.
+
+
+
+### Fixed
+
+- A replay record is kept until the skew-extended window closes, so a late replay cannot execute twice (#872)
+
+Freshness accepts a document until issuedAt + maxAge + skew, but the replay
+  record was retained only until issuedAt + maxAge. A replay arriving in the
+  final skew interval (60s under the consequential defaults) passed freshness,
+  found its record already dropped, and executed again — the double execution
+  SPEC §7.2 item 11 forbids, and a break of the "same bound" rule the record
+  expiry documents.
+
+  recordExpiry now returns issuedAt + maxAge + skew in Rust, TypeScript, Go and
+  Dart. The expiresAt branch is unchanged: expiry is checked without skew, so it
+  was already exact. Rust and TS gain a regression test at the boundary.
+
+
+
+### Specifications
+
+- **rooms/epoch/prune**: 0.2 — the host keeps the room's epoch floor, and members' key holders forget what they hold below it (#869)
+
+* spec(rooms/epoch/prune): 0.2 — the host keeps the room's epoch floor, and members' key holders forget what they hold below it
+
+  Each member's key holder keeps its own copy of a room's epoch chain, so
+  erasing the host's rungs left every key holder able to derive what the owner
+  had decided nobody should.
+
+  - rooms/_shared/0.1 (in place, additive): EpochFloor — the earliest epoch
+    whose key the room still lets anybody derive; monotonic. Hosts keep it,
+    never store or serve a rung at or below it, and serve it. A member's key
+    holder that learns a higher floor discards rungs at or below it and every
+    storage, file or cached key below it (including keys derived in passing
+    while catching up), never stores them again from any source, refuses to
+    derive below it (beyondChain), and keeps the floor. States plainly that
+    nothing already read, decrypted or exported is recalled, and that the
+    floor is honoured, not enforced.
+  - rooms/epoch/prune 0.2: the host raises the floor to beforeEpoch − 1 (also
+    where nothing is dropped: a gap, a fromJoin room) and returns it as the
+    required epochFloor. beforeEpoch keeps 0.1's meaning; the off-by-one is
+    stated with a table, and two 0.1 misstatements are corrected.
+  - rooms/epoch/chain 0.2: epochFloor on every response once pruned; never a
+    rung at or below it.
+  - rooms/keys/chain 0.2: the member relays the floor (alone if need be); the
+    key holder applies it. rooms/keys/backfill 0.2: fetches with epoch/chain
+    0.2, applies and reports the floor.
+  - Editorial pointers in rooms/keys/open 0.2, rooms/keys/file-key 0.2,
+    rooms/keys/read 0.1 and rooms/epoch/prune 0.1.
+  - Rust, TypeScript, Go and Dart bindings regenerated.
+
+  Refs OpenVTC/verifiable-trust-infrastructure#2118.
+
+- **rooms/records**: A record says what kind of claim it is, what it cites, what it may be used for, and when it lapses (#865)
+
+A sealed record proves who wrote it and whether a member or an agent did,
+  but not what kind of claim it is: an agent's inference read the same as an
+  observed fact or a credential-backed statement. And records could not
+  expire individually — a meeting note and a decision lived equally long.
+
+  - rooms/_shared/0.1 (in place, additive, as `roomProfile` was):
+    SealedRecordBody gains optional `basis` (declared | observed | verified |
+    inferred), `confidence` (0–1), `evidence` (record or credential
+    citations, discriminated by `kind`), `validFor` (purposes as IRIs plus a
+    plain-text note) and `validUntil`, all inside the author's signature.
+    Provenance is display and weighting only, never authority; writers
+    SHOULD set `basis`, agent writers that do not know SHOULD write
+    `inferred`. Readers hide a record past its `validUntil` from default
+    listings, search and recall and MAY show it on explicit request; no host
+    enforces it and nothing about it is in the clear on sealed tiers.
+    Records written before verify unchanged; readers that predate the
+    members refuse bodies carrying them by rule (1), showing nothing rather
+    than something wrong.
+  - rooms/records/put 0.3 (new): an open room's `cleartext` carries the same
+    five members, stored and served as received, never acted on by the
+    host. `sealed` writes are unchanged.
+  - Rust, TypeScript, Go and Dart bindings regenerated.
+
+  Refs OpenVTC/verifiable-trust-infrastructure#2117, #2118.
+
 ## 0.27.1 — 2026-10-21
 
 

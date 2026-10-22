@@ -6,6 +6,31 @@ this crate versions independently of `trust-tasks-rs` — it takes its own
 leading bump when a `trust-tasks-rs` break reaches it, rather than aligning
 to that crate's number (see the `0.6.5` → `0.7.0` release for the shape).
 
+## [0.33.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-proof-v0.33.1...trust-tasks-proof-v0.33.2) — 2026-10-22
+
+
+### Fixed
+
+- **trust-tasks-proof**: A did:scid key named with its src locator verifies ([#863](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/863))
+
+* fix(trust-tasks-proof): a did:scid key named with its src locator verifies
+
+  A did:scid identity is the bare DID `did:scid:vh:1:<scid>`; its resolved
+  document lists its keys under it. A signer may name its key with the `?src=`
+  locator a verifier needs to fetch the log (`did:scid:vh:1:<scid>?src=host#key-1`),
+  and `CachedDidResolver` compared that reference, and the DID it carries, to the
+  document's ids by exact string, so the proof never verified.
+
+  The resolver now strips a did:scid `src` (affinidi_did_common::scid, which
+  touches nothing else) before checking the document id, the relationship
+  listing and the controller. The issuer binding is unchanged and stays exact
+  (SPEC §4.8): a signer writes `issuer` and its verificationMethod in the same
+  form, and a test pins that a mixed pair is still refused.
+
+  Needs affinidi-did-common 0.4.4 (the `scid` module) once it is released.
+
+
+
 ## [0.33.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-proof-v0.33.0...trust-tasks-proof-v0.33.1) — 2026-10-21
 
 
