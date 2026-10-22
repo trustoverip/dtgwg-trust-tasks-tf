@@ -744,6 +744,7 @@ export * as VtaWebvhAgentNameRemove_v1_0 from "./vta/webvh/agent-name/remove/1.0
 export * as VtaWebvhAgentNameSet_v1_0 from "./vta/webvh/agent-name/set/1.0/payload.js";
 export * as VtaWebvhDidsCreate_v1_0 from "./vta/webvh/dids/create/1.0/payload.js";
 export * as VtaWebvhDidsCreate_v1_1 from "./vta/webvh/dids/create/1.1/payload.js";
+export * as VtaWebvhDidsCreate_v1_2 from "./vta/webvh/dids/create/1.2/payload.js";
 export * as VtaWebvhDidsDelete_v1_0 from "./vta/webvh/dids/delete/1.0/payload.js";
 export * as VtaWebvhDidsGet_v1_0 from "./vta/webvh/dids/get/1.0/payload.js";
 export * as VtaWebvhDidsKeysAdd_v1_0 from "./vta/webvh/dids/keys/add/1.0/payload.js";

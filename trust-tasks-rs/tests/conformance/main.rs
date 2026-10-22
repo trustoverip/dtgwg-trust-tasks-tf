@@ -1770,6 +1770,7 @@ mod vta {
             mod create {
                 mod v1_0;
                 mod v1_1;
+                mod v1_2;
             }
             mod delete {
                 mod v1_0;
