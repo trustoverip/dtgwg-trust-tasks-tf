@@ -3,7 +3,7 @@
  * Source: specs/vtc/storage/configs/update/0.1/payload.schema.json
  */
 
-import type { ConfigState, Ext, ExternalAccountContextId, ExternalAccountId, GcsSettings, LocalSettings, ObjectPrefix, S3Settings, StorageAuth, StorageConfig, StorageConfigId, StorageSettings, WalrusSettings } from "../../../../../_shared/components.js";
+import type { ConfigState, Ext, ExternalAccountContextId, ExternalAccountId, GcsSettings, LocalSettings, ObjectPrefix, S3Settings, StorageAuth_VtcV0_1 as StorageAuth, StorageConfig_VtcV0_1 as StorageConfig, StorageConfigId, StorageSettings, WalrusSettings } from "../../../../../_shared/components.js";
 
 
 /**

@@ -413,6 +413,10 @@ export type AuthModel =
 export type AuthorityScope = AuthorityScopeAll | AuthorityScopeNone | AuthorityScopeContexts;
 export type AwsArn = string;
 export type AwsRegion = string;
+/**
+ * The ARN of an AWS IAM role, in any AWS partition (`arn:aws:`, `arn:aws-cn:`, `arn:aws-us-gov:`). Validated here because the community passes it to STS AssumeRole and derives the partition of the session policy's resources from it; it must never carry anything but a role ARN.
+ */
+export type AwsRoleArn = string;
 export type BindingId = string;
 export type BindingSpec = RoomBindingSpec | GrantsBindingSpec | RoleBindingSpec;
 /**
@@ -1579,6 +1583,51 @@ export type SealedEnvelope_VaultV0_2 =
   | HpkeArmoredEnvelope_VaultV0_2
   | TspMessageEnvelope_VaultV0_2;
 /**
+ * The cleartext inside the sealed block of vtc/storage/credentials/set/0.2, discriminated by `kind`, which must equal the config's kind. It names the config it is for inside the seal, so that a block captured on its way to one config cannot be replayed into another: a community MUST refuse a block whose `configId` differs from the request's. Never appears on the wire outside a seal, and is never returned. A `local` config has no credential.
+ */
+export type SealedStorageCredential =
+  | {
+      kind: "s3";
+      configId: StorageConfigId;
+      /**
+       * The access key's identifier.
+       */
+      accessKeyId: string;
+      /**
+       * The secret half.
+       */
+      secretAccessKey: string;
+      /**
+       * Present when the pair is a temporary one that needs it. A temporary pair stops working at its own expiry, after which the config reports failures until another is set; it is accepted for evaluation, never recommended.
+       */
+      sessionToken?: string;
+    }
+  | {
+      kind: "gcs";
+      configId: StorageConfigId;
+      /**
+       * The service-account key exactly as Google issues it — the JSON key file, as an object, its member names carried verbatim in Google's own snake_case. Members beyond the four required (`project_id`, `client_id`, `token_uri`, `universe_domain` and the rest) are permitted, and a community MAY discard them: it authenticates with `client_email`, `private_key_id` and `private_key` alone, against Google's own token endpoint, and never against a `token_uri` the key file names.
+       */
+      serviceAccountKey: {
+        type: "service_account";
+        client_email: string;
+        private_key_id: string;
+        /**
+         * The PKCS #8 PEM private key.
+         */
+        private_key: string;
+        [k: string]: unknown | undefined;
+      };
+    }
+  | {
+      kind: "walrus";
+      configId: StorageConfigId;
+      /**
+       * The private key in Sui's Bech32 `suiprivkey` encoding (SIP-15), which carries its signature scheme.
+       */
+      suiPrivateKey: string;
+    };
+/**
  * A sealed-transfer bundle: OpenPGP-style ASCII armor around an HPKE-sealed `SealedPayloadV1` (base mode, X25519-HKDF-SHA256 KEM, HKDF-SHA256 KDF, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`), with a producer assertion and Bundle-Id, Chunk and Digest-Algo headers bound into the associated data. Each task states the key it is sealed to: a single-use wrapping key from keys/import-wrapping-key for external/accounts/secret/set, and the caller's key-agreement key for external/credentials/issue. Its cleartext is an ExternalSecretPayload, an ExternalCredentialPayload or, from external/credentials/issue 0.2 for `s3-static-presign`, a PresignedRequestSet. The only form in which secret material crosses the wire in this family, in either direction: the seal is what keeps a terminating proxy, a relay, a request log or a debug dump of "the response" from ever holding a usable secret, whatever transport carried the document.
  */
 export type SealedTransferBundle = string;
@@ -1706,7 +1755,7 @@ export type Slot = string;
  *
  * `sealed` (discouraged): a long-lived credential stored by the community, set with vtc/storage/credentials/set. Protects against every administrator through every surface the community offers; does not protect against whoever operates the machine.
  */
-export type StorageAuth =
+export type StorageAuth_VtcV0_1 =
   | {
       mode: "vta-account";
       context: ExternalAccountContextId;
@@ -1714,6 +1763,33 @@ export type StorageAuth =
     }
   | {
       mode: "ambient";
+    }
+  | {
+      mode: "sealed";
+    };
+/**
+ * How the community authenticates to a config's backend. Absent on a `local` config, which needs none.
+ *
+ * `vta-account` (RECOMMENDED): an external account in the community's VTA, named by the context that owns it and its identifier there. The VTA holds the long-lived authority; the community holds nothing that outlives a credential lifetime, and asks for credentials scoped to one room's prefix for at most 15 minutes, every issuance audited at the VTA. Required for a `walrus` config other than a `sealed` one, since the VTA's `sui-signer` account signs its storage transactions.
+ *
+ * `ambient`: the cloud identity of the machine the community runs on (an instance role, workload identity), downscoped to one room's prefix by the community itself under the rules of vtc/storage/configs/create/0.2 — on `s3`, by assuming `roleArn` (or the role the host is configured with) with an inline session policy; on `gcs`, by a Credential Access Boundary. Not audited or rate-limited by the VTA, and usable by anything on that machine that reaches the metadata endpoint. Not valid for `walrus`; `roleArn` is valid only on `s3`.
+ *
+ * `sealed` (discouraged): a long-lived credential stored by the community, set with vtc/storage/credentials/set (0.2: a `SealedStorageCredential`). Protects against every administrator through every surface the community offers; does NOT protect against whoever operates the machine, and a community labels it so wherever the config is shown.
+ *
+ * `ambient` and `sealed` are host-operator choices: a community MAY refuse either by its own host configuration, whatever its administrators ask.
+ */
+export type StorageAuth_VtcV0_2 =
+  | {
+      mode: "vta-account";
+      context: ExternalAccountContextId;
+      account: ExternalAccountId;
+    }
+  | {
+      mode: "ambient";
+      /**
+       * `s3` only: the IAM role the community assumes, with the machine's ambient identity, to obtain each room-scoped session. Absent, the community assumes the role its host configuration names, and with none configured, the role of the ambient identity itself (which must then trust itself to be assumed). Refused on any other kind with `authNotAllowed`.
+       */
+      roleArn?: AwsRoleArn;
     }
   | {
       mode: "sealed";
@@ -5785,7 +5861,7 @@ export interface CredentialScopeCeiling {
 /**
  * Whether a config can authenticate now, and how — never the credential. `status`: `vta-account`, `ambient` and `sealed` are usable; `required` means the config cannot store until a credential is provided (a `sealed` config never set, or set before a restore, which carries no credential); `none` is a `local` config.
  */
-export interface CredentialState {
+export interface CredentialState_VtcV0_1 {
   status: "vta-account" | "ambient" | "sealed" | "required" | "none";
   /**
    * Present with `vta-account`.
@@ -5805,6 +5881,32 @@ export interface CredentialState {
   setAt?: string;
   /**
    * Present with `vta-account`: how many rooms the community currently holds a live room-scoped credential for.
+   */
+  roomsHoldingCredentials?: number;
+}
+/**
+ * Whether a config can authenticate now, and how — never the credential. `status`: `vta-account`, `ambient` and `sealed` are usable; `required` means the config cannot store until a credential is provided (a `sealed` config never set, or set before a restore, which carries no credential); `notAllowed` means the config's mode is one the community's host configuration no longer permits, so it cannot store until its `auth` is changed; `none` is a `local` config.
+ */
+export interface CredentialState_VtcV0_2 {
+  status: "vta-account" | "ambient" | "sealed" | "required" | "notAllowed" | "none";
+  /**
+   * Present with `vta-account`.
+   */
+  context?: ExternalAccountContextId;
+  /**
+   * Present with `vta-account`.
+   */
+  account?: ExternalAccountId;
+  /**
+   * Present with `sealed`: a digest identifying the stored credential, so an administrator can tell which one is set without anyone being able to read it. Computed over the credential with a community-held key, never a bare hash of a low-entropy secret.
+   */
+  fingerprint?: DigestMultibase;
+  /**
+   * Present with `sealed`: when the stored credential was last set.
+   */
+  setAt?: string;
+  /**
+   * Present with `vta-account`, `ambient` and `sealed`: how many rooms the community currently holds a live room-scoped credential for.
    */
   roomsHoldingCredentials?: number;
 }
@@ -10639,34 +10741,9 @@ export interface StepUpProof_VaultV0_2 {
   challengeId: string;
 }
 /**
- * One storage config as the community holds it. Carries no secret.
- */
-export interface StorageConfig {
-  id: StorageConfigId;
-  /**
-   * A display name for administrators (`EU — S3 (main account)`). Shown to a room's creator with the config's kind when the community lets them choose.
-   */
-  label: string;
-  settings: StorageSettings;
-  auth?: StorageAuth;
-  /**
-   * Total ciphertext bytes the community will store on this config, across every room assigned to it. A capacity, not a policy: an upload that would cross it is refused with scope `storage`. Absent means no capacity set.
-   */
-  capacityBytes?: number;
-  state: ConfigState;
-  /**
-   * True for the config a room is assigned to when neither the community's policy nor its creator names one.
-   */
-  isDefault?: boolean;
-  createdBy: string;
-  createdAt: string;
-  updatedBy?: string;
-  updatedAt?: string;
-}
-/**
  * What a config holds and whether it works, computed at the time of the read. Ciphertext bytes throughout.
  */
-export interface StorageConfigFacts {
+export interface StorageConfigFacts_VtcV0_1 {
   /**
    * Rooms assigned to this config.
    */
@@ -10683,7 +10760,7 @@ export interface StorageConfigFacts {
    * Bytes of orphaned blobs awaiting deletion after their grace window.
    */
   pendingDeleteBytes: number;
-  credential: CredentialState;
+  credential: CredentialState_VtcV0_1;
   health: StorageHealth;
   /**
    * Present on a `walrus` config.
@@ -10695,6 +10772,89 @@ export interface StorageConfigFacts {
     signerAddress?: string;
     nextExtensionDueAt?: string;
   };
+}
+/**
+ * What a config holds and whether it works, computed at the time of the read. Ciphertext bytes throughout.
+ */
+export interface StorageConfigFacts_VtcV0_2 {
+  /**
+   * Rooms assigned to this config.
+   */
+  rooms: number;
+  /**
+   * Blobs stored on this config that are not yet deleted, wherever their rooms are now assigned.
+   */
+  files: number;
+  /**
+   * Their total size. Counts against `capacityBytes` until the backend deletion has actually happened, unlike room and member usage, which stop counting an orphaned blob at once.
+   */
+  bytes: number;
+  /**
+   * Bytes of orphaned blobs awaiting deletion after their grace window.
+   */
+  pendingDeleteBytes: number;
+  credential: CredentialState_VtcV0_2;
+  health: StorageHealth;
+  /**
+   * Present on a `walrus` config.
+   */
+  walrus?: {
+    /**
+     * The Sui address that pays for storage, derived from the VTA account's key.
+     */
+    signerAddress?: string;
+    nextExtensionDueAt?: string;
+  };
+}
+/**
+ * One storage config as the community holds it. Carries no secret.
+ */
+export interface StorageConfig_VtcV0_1 {
+  id: StorageConfigId;
+  /**
+   * A display name for administrators (`EU — S3 (main account)`). Shown to a room's creator with the config's kind when the community lets them choose.
+   */
+  label: string;
+  settings: StorageSettings;
+  auth?: StorageAuth_VtcV0_1;
+  /**
+   * Total ciphertext bytes the community will store on this config, across every room assigned to it. A capacity, not a policy: an upload that would cross it is refused with scope `storage`. Absent means no capacity set.
+   */
+  capacityBytes?: number;
+  state: ConfigState;
+  /**
+   * True for the config a room is assigned to when neither the community's policy nor its creator names one.
+   */
+  isDefault?: boolean;
+  createdBy: string;
+  createdAt: string;
+  updatedBy?: string;
+  updatedAt?: string;
+}
+/**
+ * One storage config as the community holds it. Carries no secret.
+ */
+export interface StorageConfig_VtcV0_2 {
+  id: StorageConfigId;
+  /**
+   * A display name for administrators (`EU — S3 (main account)`). Shown to a room's creator with the config's kind when the community lets them choose.
+   */
+  label: string;
+  settings: StorageSettings;
+  auth?: StorageAuth_VtcV0_2;
+  /**
+   * Total ciphertext bytes the community will store on this config, across every room assigned to it. A capacity, not a policy: an upload that would cross it is refused with scope `storage`. Absent means no capacity set.
+   */
+  capacityBytes?: number;
+  state: ConfigState;
+  /**
+   * True for the config a room is assigned to when neither the community's policy nor its creator names one.
+   */
+  isDefault?: boolean;
+  createdBy: string;
+  createdAt: string;
+  updatedBy?: string;
+  updatedAt?: string;
 }
 /**
  * The last evidence the community has that a config works. Every member is optional: a config never probed and never used has none.

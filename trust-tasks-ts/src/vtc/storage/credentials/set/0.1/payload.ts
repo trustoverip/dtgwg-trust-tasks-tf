@@ -3,7 +3,7 @@
  * Source: specs/vtc/storage/credentials/set/0.1/payload.schema.json
  */
 
-import type { CredentialState, DigestMultibase, Ext, ExternalAccountContextId, ExternalAccountId, StorageConfigId } from "../../../../../_shared/components.js";
+import type { CredentialState_VtcV0_1 as CredentialState, DigestMultibase, Ext, ExternalAccountContextId, ExternalAccountId, StorageConfigId } from "../../../../../_shared/components.js";
 
 
 /**

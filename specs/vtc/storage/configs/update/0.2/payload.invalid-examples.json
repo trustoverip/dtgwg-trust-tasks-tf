@@ -1,0 +1,71 @@
+[
+  {
+    "note": "Nothing to change.",
+    "payload": {
+      "configId": "eu-s3-primary",
+      "reason": "No-op."
+    }
+  },
+  {
+    "note": "Renaming the config — its identifier is immutable, because blobs name it.",
+    "payload": {
+      "configId": "eu-s3-primary",
+      "id": "eu-s3-main",
+      "reason": "Rename."
+    }
+  },
+  {
+    "note": "A state change — retiring is vtc/storage/configs/retire.",
+    "payload": {
+      "configId": "eu-s3-primary",
+      "state": "retired",
+      "reason": "Retire."
+    }
+  },
+  {
+    "note": "A roleArn that is not an IAM role ARN — it is passed to STS and placed in a session policy's partition, so only a role ARN is accepted.",
+    "payload": {
+      "configId": "eu-s3-instance",
+      "auth": {
+        "mode": "ambient",
+        "roleArn": "arn:aws:iam::123456789012:user/alice"
+      },
+      "reason": "Instance role."
+    }
+  },
+  {
+    "note": "A roleArn with characters outside the IAM role-name set (a quote, a space) — it must never be able to carry anything but a name.",
+    "payload": {
+      "configId": "eu-s3-instance",
+      "auth": {
+        "mode": "ambient",
+        "roleArn": "arn:aws:iam::123456789012:role/x\" ,\"Effect"
+      },
+      "reason": "Instance role."
+    }
+  },
+  {
+    "note": "roleArn belongs only to ambient authentication; a vta-account auth naming one is malformed.",
+    "payload": {
+      "configId": "eu-s3-instance",
+      "auth": {
+        "mode": "vta-account",
+        "context": "northwind",
+        "account": "eu-s3-primary",
+        "roleArn": "arn:aws:iam::123456789012:role/northwind-rooms-writer"
+      },
+      "reason": "Instance role."
+    }
+  },
+  {
+    "note": "A sealed auth carrying a credential — sealed credentials are set only with vtc/storage/credentials/set, sealed end to end.",
+    "payload": {
+      "configId": "eu-s3-instance",
+      "auth": {
+        "mode": "sealed",
+        "secretAccessKey": "wJalrXUtnFEMI"
+      },
+      "reason": "Instance role."
+    }
+  }
+]

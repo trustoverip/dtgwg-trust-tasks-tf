@@ -2514,12 +2514,15 @@ mod vtc {
         mod configs {
             mod create {
                 mod v0_1;
+                mod v0_2;
             }
             mod get {
                 mod v0_1;
+                mod v0_2;
             }
             mod list {
                 mod v0_1;
+                mod v0_2;
             }
             mod probe {
                 mod v0_1;
@@ -2529,11 +2532,13 @@ mod vtc {
             }
             mod update {
                 mod v0_1;
+                mod v0_2;
             }
         }
         mod credentials {
             mod set {
                 mod v0_1;
+                mod v0_2;
             }
         }
     }
