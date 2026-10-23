@@ -31,6 +31,51 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.34.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.33.2...trust-tasks-rs-v0.34.0) — 2026-10-23
+
+
+### Added
+
+- **vault**: Vault/credentials/query subjectDid narrows to credentials presented as one identity ([#884](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/884))
+
+An optional request member: the maintainer returns only credentials whose subject — the DID vault/credentials/present would present them as — is the named DID. It narrows the other constraints and does not satisfy the at-least-one-filter requirement on its own.
+
+  A verifier that requires a particular holder (a community directory accepts a verified field only from a presentation its member holds) refuses a credential bound to a separate holder key; a wallet offering the holder a choice can now offer only the credentials that verifier will accept. A request member rather than a descriptor member, because every generated descriptor reader denies unknown members: a new descriptor member would break existing consumers, while a maintainer that predates this filter refuses it rather than ignoring it.
+
+
+
+### Fixed
+
+- Proofs are verified over the document as received, so a genuine proof survives a typed re-encoding ([#875](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/875))
+
+Every Rust consumer verified a proof over its parsed TrustTask re-serialised:
+  consume_inbound through ProofVerifier::verify, the HTTPS server through
+  DynProofVerifier::verify_json on a TrustTask<Value>. Re-serialisation
+  reproduces the signed bytes only when every member round-trips, and several
+  do not — a generated `#[serde(default)]` member the producer omitted comes
+  back as `false`, a member the payload type does not model is dropped, and a
+  framework timestamp written `+00:00` is re-rendered as `Z`. A genuine proof
+  over any such document was refused proofInvalid.
+
+  - ProofVerifier and DynProofVerifier gain a provided `verify_received(&Value)`;
+    the affinidi Verifier overrides it with its exact `verify_raw`, and
+    ErasedVerifier forwards it. Existing implementations keep the old,
+    re-serialising behaviour by default.
+  - ProofPolicy gains `VerifyReceived(&V, &Value)` and `with_received`, which
+    turns a caller's `Verify` into it. consume_inbound re-parses the received
+    value and refuses proofInvalid when it is not the document being consumed,
+    since a proof over one document vouches for nothing about another.
+  - The TSP, DIDComm v2 and DIDComm v1 `receive` paths keep the document as
+    received and apply `with_received`, so their callers change nothing.
+  - The HTTPS server verifies over the request body parsed as a Value, keeping
+    the typed parse that refuses a duplicated top-level member.
+  - DynProofVerifier's doc no longer claims the erasure is lossless.
+
+  All additive: cargo semver-checks reports no update required for
+  trust-tasks-rs, trust-tasks-proof or trust-tasks-https.
+
+
+
 ## [0.33.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.33.1...trust-tasks-rs-v0.33.2) — 2026-10-22
 
 
