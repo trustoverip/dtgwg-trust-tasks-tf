@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/contact/lists/put/1.1",
+  "title": "Persona Contact Lists Put — payload",
+  "description": "Create one of the holder's contact lists, or rename, recolour or reorder an existing one. Without `listId`: create, and `name` is required. With `listId`: update; each detail given replaces the stored one, `removeColour` removes the colour, and each detail absent is unchanged. Membership is not changed here — a contact's lists are set with persona/contact/put 1.1. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contextId"],
+  "oneOf": [
+    {
+      "required": ["name"],
+      "not": { "anyOf": [{ "required": ["listId"] }, { "required": ["removeColour"] }] }
+    },
+    {
+      "required": ["listId"],
+      "anyOf": [
+        { "required": ["name"] },
+        { "required": ["colour"] },
+        { "required": ["removeColour"] },
+        { "required": ["order"] }
+      ]
+    }
+  ],
+  "dependentSchemas": {
+    "removeColour": { "not": { "required": ["colour"] } }
+  },
+  "properties": {
+    "contextId": { "type": "string", "minLength": 1 },
+    "listId": {
+      "$ref": "../../../../_shared/0.1/contact-annotations.schema.json#/$defs/ListId",
+      "description": "The list to update. Absent: create a new list, whose identifier the agent assigns and returns."
+    },
+    "name": {
+      "$ref": "../../../../_shared/0.1/contact-annotations.schema.json#/$defs/ListName",
+      "description": "The list's name. Required to create; on an update, replaces the name. Unique within the context."
+    },
+    "colour": {
+      "$ref": "../../../../_shared/0.1/contact-annotations.schema.json#/$defs/ListColour",
+      "description": "The list's colour, replacing any it had. Absent: unchanged (none, on a create)."
+    },
+    "removeColour": {
+      "type": "boolean",
+      "const": true,
+      "description": "Remove the list's colour. Update only. Only `true` is accepted."
+    },
+    "order": {
+      "$ref": "../../../../_shared/0.1/contact-annotations.schema.json#/$defs/ListOrder",
+      "description": "Where the list sorts among the holder's lists. Absent on a create: after every existing list."
+    },
+    "ext": { "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona Contact Lists Put — response payload",
+      "description": "Success response to persona/contact/lists/put. Type https://trusttasks.org/spec/persona/contact/lists/put/1.1#response. The list as it now stands.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["list", "wasCreated", "changed"],
+      "properties": {
+        "list": { "$ref": "../../../../_shared/0.1/contact-annotations.schema.json#/$defs/ContactList" },
+        "wasCreated": { "type": "boolean", "description": "True when this request created the list." },
+        "changed": { "type": "boolean", "description": "True when this request created the list or changed any detail of it. False when every detail given already matched." },
+        "ext": { "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

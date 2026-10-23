@@ -1,0 +1,33 @@
+[
+  {
+    "note": "Empty payload omits required member(s): name, module.",
+    "payload": {}
+  },
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "__notARealMember__": true
+    }
+  },
+  {
+    "note": "Required member `name` has the wrong type (expected string).",
+    "payload": {
+      "name": 12345
+    }
+  },
+  {
+    "note": "Response carrying the pre-0.3 `created` flag — renamed `wasCreated`, since `created` is reserved for a timestamp; additionalProperties: false rejects the old name and `wasCreated` is required.",
+    "variant": "response",
+    "payload": {
+      "policy": {
+        "id": "pol-default",
+        "name": "Default",
+        "module": "package trusttasks\n\ndefault decision := \"deny\"",
+        "version": 1,
+        "createdAt": "2026-10-23T09:30:00Z",
+        "updatedAt": "2026-10-23T09:30:00Z"
+      },
+      "created": true
+    }
+  }
+]

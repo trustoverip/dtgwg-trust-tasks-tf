@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/persona/local/profile/put/1.1",
+  "title": "Persona Local Profile Put — payload",
+  "description": "Compose a throwaway profile inside a context, from values supplied here rather than drawn from the holder's pool. Inline entries only: a reference is refused, and that refusal is what keeps the local surface pool-free.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contextId",
+    "name",
+    "entries"
+  ],
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "profileId": {
+      "$ref": "../../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "entries": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "inline"
+        ],
+        "description": "Inline entries only. The `ref`, pinned and override forms of a pool profile are absent from this schema deliberately — a context-local profile that could reference the pool would be a context-authored object acquiring pool reach, which is exactly what the boundary exists to prevent.",
+        "properties": {
+          "inline": {
+            "description": "A value the holder keeps in this context and nowhere else.\n\nDeliberately NARROWER than a pool profile's inline entry, which also carries `provenance` and requires it. There is no `provenance` member here, and its absence is a rule rather than an omission: a `credentialBacked` provenance names a `credentialId` and a `claimPath`, and a value authored inside a context has nowhere to put either. So a context-local value is SELF-ASSERTED by construction, and a maintainer MUST present it as such.\n\nThat is the same boundary the missing `ref`, pinned and override forms enforce, one member along. Those stop a context-authored object acquiring pool REACH; this stops it acquiring an issuer's AUTHORITY — asserting that a value is attested when no credential was ever checked, over a value the issuer never saw. A holder who needs a context to present an attested claim binds a pool profile, which is holder-authorized, rather than authoring one here.\n\nAdding a `provenance` member to this object would therefore be a privilege escalation dressed as a convenience, not a gap to fill.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type",
+              "valueType",
+              "value"
+            ],
+            "properties": {
+              "type": {
+                "$ref": "../../../../_shared/0.1/persona-record.schema.json#/$defs/ClaimType"
+              },
+              "valueType": {
+                "$ref": "../../../../_shared/0.1/persona-record.schema.json#/$defs/ValueType"
+              },
+              "value": {},
+              "label": {
+                "type": "string",
+                "maxLength": 128
+              }
+            }
+          },
+          "slot": {
+            "$ref": "../../../../_shared/0.1/persona-record.schema.json#/$defs/Slot"
+          }
+        }
+      }
+    },
+    "expectedVersion": {
+      "$ref": "../../../../_shared/0.1/persona-record.schema.json#/$defs/ExpectedVersion"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Persona Local Profile Put — response payload",
+      "description": "Success response to persona/local/profile/put. Type https://trusttasks.org/spec/persona/local/profile/put/1.1#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profileId",
+        "version",
+        "wasCreated"
+      ],
+      "properties": {
+        "profileId": {
+          "$ref": "../../../../_shared/0.1/persona-record.schema.json#/$defs/Ulid"
+        },
+        "version": {
+          "$ref": "../../../../_shared/0.1/persona-record.schema.json#/$defs/Version"
+        },
+        "wasCreated": {
+          "type": "boolean"
+        },
+        "correlation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "severity"
+          ],
+          "description": "A correlation assessment of what was just written, and it is **conditional**: a maintainer MUST include it only for a caller authorized to read across the holder's contexts, and MUST omit it entirely otherwise. Local profiles ARE correlation-indexed, and the naive implementation that skips them loses the guard exactly where a human most needs it: a throwaway identity is precisely where somebody reuses a real value. But the index is answerable only to the holder, and returning its answer to a context-scoped caller hands that caller a yes/no oracle on any value it cares to guess — one guess per write, against the whole pool. No value leaves either way; a confirmed guess at a low-entropy value (a name, an address, a date of birth) is disclosure all the same.",
+          "properties": {
+            "severity": {
+              "type": "string",
+              "enum": [
+                "none",
+                "low",
+                "high"
+              ]
+            },
+            "matchesPoolValue": {
+              "type": "boolean",
+              "description": "True when a value here also appears in the holder's pool — the signal that a throwaway is not throwaway. Present only under the condition on `correlation` itself: this member is the oracle, and a maintainer that omits `correlation` for a context-scoped caller has omitted this."
+            }
+          }
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

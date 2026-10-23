@@ -1,0 +1,40 @@
+[
+  {
+    "note": "Empty payload omits required member(s): contextId, targets, label, secretKind.",
+    "payload": {}
+  },
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "__notARealMember__": true
+    }
+  },
+  {
+    "note": "Required member `contextId` has the wrong type (expected string).",
+    "payload": {
+      "contextId": 12345
+    }
+  },
+  {
+    "note": "Response carrying the pre-0.4 `created` flag — renamed `wasCreated`, since `created` is reserved for a timestamp; additionalProperties: false rejects the old name.",
+    "variant": "response",
+    "payload": {
+      "entry": {
+        "id": "vault_01HZX2QY",
+        "contextId": "ctx_personal",
+        "targets": [
+          {
+            "kind": "webOrigin",
+            "origin": "https://news.ycombinator.com"
+          }
+        ],
+        "label": "Hacker News",
+        "secretKind": "password",
+        "createdAt": "2026-10-23T09:30:00Z",
+        "updatedAt": "2026-10-23T09:30:00Z",
+        "version": 1
+      },
+      "created": true
+    }
+  }
+]
