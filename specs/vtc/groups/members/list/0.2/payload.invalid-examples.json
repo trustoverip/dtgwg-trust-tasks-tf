@@ -1,0 +1,16 @@
+[
+  {
+    "note": "`groupId` is REQUIRED.",
+    "payload": {
+      "limit": 10
+    }
+  },
+  {
+    "note": "Response variant: `nextCursor` is `null`. On the last page it is absent, never `null`.",
+    "variant": "response",
+    "payload": {
+      "items": [],
+      "nextCursor": null
+    }
+  }
+]

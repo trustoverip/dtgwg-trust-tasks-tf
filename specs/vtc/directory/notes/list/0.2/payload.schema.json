@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/directory/notes/list/0.2",
+  "title": "VTC Directory — Notes — List — payload",
+  "description": "An administrator holding the notes capability reads the community's administrative notes about one member, newest first. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "entryId"
+  ],
+  "properties": {
+    "entryId": {
+      "$ref": "../../../_shared/0.1/directory-card.schema.json#/$defs/EntryId"
+    },
+    "cursor": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "An opaque continuation token from a previous response's `nextCursor`, bound to the caller and the entry; a responder MUST NOT accept a cursor it did not issue."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "description": "The most items to return, at most 100; the responder chooses a default (50) and MAY return fewer."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Directory — Notes — List — response payload",
+      "description": "The success response to a vtc/directory/notes/list/0.2 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/notes/list/0.2#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "$ref": "../../../_shared/0.1/admin-note.schema.json#/$defs/AdminNote"
+          },
+          "description": "Newest first. A redacted note appears without `text`, with `redactedBy`."
+        },
+        "nextCursor": {
+          "type": "string",
+          "maxLength": 1024,
+          "description": "Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

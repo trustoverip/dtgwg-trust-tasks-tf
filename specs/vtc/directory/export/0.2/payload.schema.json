@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/directory/export/0.2",
+  "title": "VTC Directory — Export — payload",
+  "description": "A directory administrator exports the whole member directory as JSContact cards, a page at a time. Members cannot export. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "reason"
+  ],
+  "properties": {
+    "format": {
+      "type": "string",
+      "const": "jscontact",
+      "description": "The export format. Only JSContact (RFC 9553) in this version."
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "Why, recorded with the change and shown to anyone who must approve it."
+    },
+    "cursor": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "An opaque continuation token from a previous response's `nextCursor`, bound to the caller and this export; a responder MUST NOT accept a cursor it did not issue."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500,
+      "description": "The most items to return, at most 500; the responder chooses a default (200) and MAY return fewer."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Directory — Export — response payload",
+      "description": "The success response to a vtc/directory/export/0.2 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/export/0.2#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items",
+        "exportedAt"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "maxItems": 500,
+          "items": {
+            "$ref": "../../_shared/0.1/directory-card.schema.json#/$defs/JSContactCard"
+          }
+        },
+        "nextCursor": {
+          "type": "string",
+          "maxLength": 1024,
+          "description": "Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`."
+        },
+        "exportedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

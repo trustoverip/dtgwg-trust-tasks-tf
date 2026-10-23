@@ -1,0 +1,33 @@
+[
+  {
+    "note": "Page size is capped at 100.",
+    "payload": {
+      "limit": 1000
+    }
+  },
+  {
+    "note": "Filters name a field and at least one value.",
+    "payload": {
+      "filters": [
+        {
+          "field": "org.example.chapter",
+          "values": []
+        }
+      ]
+    }
+  },
+  {
+    "note": "There is no DID filter: a DID is never a member's search key.",
+    "payload": {
+      "did": "did:example:carol"
+    }
+  },
+  {
+    "note": "Response variant: `nextCursor` is `null`. On the last page it is absent, never `null`.",
+    "variant": "response",
+    "payload": {
+      "items": [],
+      "nextCursor": null
+    }
+  }
+]
