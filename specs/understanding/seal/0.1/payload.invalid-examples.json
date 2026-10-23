@@ -1,0 +1,70 @@
+[
+  {
+    "note": "Missing exchangeId — a seal MUST be grounded in a named understanding/exchange.",
+    "payload": {
+      "agreement": {
+        "name": "Data retention (12 months)",
+        "rosterItems": ["data-retention-12mo"],
+        "effectiveFrom": "2026-09-24T10:10:00Z"
+      }
+    }
+  },
+  {
+    "note": "Agreement with an empty rosterItems array — an agreement over no terms is not an agreement.",
+    "payload": {
+      "exchangeId": "urn:uuid:1a2b3c4d-0003-4000-8000-000000000002",
+      "agreement": {
+        "name": "Data retention (12 months)",
+        "rosterItems": [],
+        "effectiveFrom": "2026-09-24T10:10:00Z"
+      }
+    }
+  },
+  {
+    "note": "Agreement missing effectiveFrom — an agreement with no start is not placeable in time.",
+    "payload": {
+      "exchangeId": "urn:uuid:1a2b3c4d-0003-4000-8000-000000000002",
+      "agreement": {
+        "name": "Data retention (12 months)",
+        "rosterItems": ["data-retention-12mo"]
+      }
+    }
+  },
+  {
+    "note": "Agreement missing name — IEEE 7012-2025 §4.3 requires a consistent, transparent name; rosterItems alone are opaque identifiers, not a name.",
+    "payload": {
+      "exchangeId": "urn:uuid:1a2b3c4d-0003-4000-8000-000000000002",
+      "agreement": {
+        "rosterItems": ["data-retention-12mo"],
+        "effectiveFrom": "2026-09-24T10:10:00Z"
+      }
+    }
+  },
+  {
+    "note": "legalRef missing digestMultibase — a URI alone is not hash-pinned.",
+    "payload": {
+      "exchangeId": "urn:uuid:1a2b3c4d-0003-4000-8000-000000000002",
+      "agreement": {
+        "name": "Data retention (12 months)",
+        "rosterItems": ["data-retention-12mo"],
+        "legalRef": { "uri": "https://mytermsregistry.example/terms/2026-3.2/legal" },
+        "effectiveFrom": "2026-09-24T10:10:00Z"
+      }
+    }
+  },
+  {
+    "note": "legalRef missing version — RegisterRef now requires the same {uri, version, digestMultibase} shape as understanding/offer's termsRef, not the pre-review shape that omitted version.",
+    "payload": {
+      "exchangeId": "urn:uuid:1a2b3c4d-0003-4000-8000-000000000002",
+      "agreement": {
+        "name": "Data retention (12 months)",
+        "rosterItems": ["data-retention-12mo"],
+        "legalRef": {
+          "uri": "https://mytermsregistry.example/terms/2026-3.2/legal",
+          "digestMultibase": "zQmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbd"
+        },
+        "effectiveFrom": "2026-09-24T10:10:00Z"
+      }
+    }
+  }
+]

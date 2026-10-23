@@ -1,0 +1,22 @@
+[
+  {
+    "note": "Missing purpose — the only required request member.",
+    "payload": {}
+  },
+  {
+    "note": "Empty purpose string — the field names a category, not an empty answer.",
+    "payload": { "purpose": "" }
+  },
+  {
+    "note": "Unknown top-level payload member — additionalProperties: false catches `note`.",
+    "payload": { "purpose": "membership", "note": "please let me in" }
+  },
+  {
+    "note": "proposedIdentifier as an empty string — a producer that has no identifier to propose omits the member entirely rather than sending an empty one.",
+    "payload": { "purpose": "conversation", "proposedIdentifier": "" }
+  },
+  {
+    "note": "proposedIdentifier that is not a DID — the identifier the engagement would continue under must be resolvable and verifiable, so the schema requires the `did:` scheme.",
+    "payload": { "purpose": "conversation", "proposedIdentifier": "https://alice.example/me" }
+  }
+]
