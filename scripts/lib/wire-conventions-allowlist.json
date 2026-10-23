@@ -1,0 +1,8 @@
+{
+  "$comment": "Shapes the wire conventions (CONTRIBUTING-SPECS.md \"Wire conventions for common members\") do not mean, keyed by slug, then by \"<rule> <member>\", each with the reason. Read by scripts/lib/wire-conventions.mjs. An entry is for a member whose name matches a convention's but whose meaning is something else — never for a spec that would rather not follow one. An entry no longer found is reported as stale.",
+  "exceptions": {
+    "messaging/queue/list": {
+      "truncated-flag truncated": "Not a paging flag: it says the periodic queue survey stopped before covering every account. `nextCursor` already says whether more pages remain."
+    }
+  }
+}
