@@ -251,17 +251,18 @@ codegen can't produce.
 
 ### Compiling only the families you use
 
-`specs/` is 344 generated modules and ~15 MB of source. Depending on the crate
+`specs/` is 941 generated modules and ~66 MB of source, across 34 feature-gated families. Depending on the crate
 with default features compiles all of it. If you use three tasks, say so:
 
 ```toml
 [dependencies]
-trust-tasks-rs = { version = "0.13", default-features = false, features = ["vault"] }
+trust-tasks-rs = { version = "0.34", default-features = false, features = ["vault"] }
 ```
 
-Measured on one machine with dependencies cached and `CARGO_INCREMENTAL=0`:
-**22 s** for the default feature set, **4.0 s** for `vault` alone, **1.2 s**
-for `acl` alone.
+Rebuilding the crate alone, with dependencies cached and `CARGO_INCREMENTAL=0`,
+on an Apple-silicon laptop: **14 s** for the default feature set, about **1 s**
+for `vault` or `acl` alone. On a CI runner the gap is wider in memory than in
+time — the default set needs several GB to compile, one family about 1 GB.
 
 The framework surface — `TrustTask`, the §7.2 consume pipeline, the transport
 traits, `ErrorPayload`, discovery — is always compiled, along with the five

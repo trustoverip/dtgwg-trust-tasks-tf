@@ -173,6 +173,13 @@ declarations that must stay equal: `version:` in `pubspec.yaml` and
 `packageVersion` in `lib/src/runtime/version.dart`. The others watch only their
 own directory and move `version:` alone.
 
+`release-plz` runs one `cargo-semver-checks` per changed crate, in parallel, and
+each builds rustdoc for its crate and every dependency. With `trust-tasks-rs`
+alone peaking near 13 GB, four at once exhausted the 16 GB runner and the
+kernel killed the job (exit 143, with no error in the log). `publish.yml`
+therefore wraps the binary in `flock` so they run one at a time; the Release PR
+job takes about 40 minutes as a result, and its timeout is 90.
+
 > ⚠️ **Only the crates have a `cargo-semver-checks` equivalent.** The npm, Go and
 > Dart bumps are only as accurate as the commit subjects: if a change breaks one
 > of those APIs and nobody wrote `!` in the PR title, the package ships a patch.
