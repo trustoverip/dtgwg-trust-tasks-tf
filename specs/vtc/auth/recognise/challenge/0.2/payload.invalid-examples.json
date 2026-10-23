@@ -1,0 +1,5 @@
+[
+  { "note": "Unknown top-level member is rejected — the request is deliberately empty.", "payload": { "__x__": true } },
+  { "note": "The caller must not identify itself here; `did` is not a member.", "payload": { "did": "did:key:z6MkForeign" } },
+  {"variant": "response", "note": "`expiresAt` is an RFC 3339 date-time; an integer count of seconds (the 0.1 form) is rejected.", "payload": {"nonce": "n-4b1c9e", "expiresAt": 1792747800}}
+]

@@ -16,13 +16,13 @@ inside another task:
 
 | Task | From → to | Signed by | Carries |
 |---|---|---|---|
-| [`auth/oob/request`](../../request/0.1/spec.md) | starter → service | starter key `K_b` | — |
-| [`auth/oob/claim`](../../claim/0.1/spec.md) | approver → service | lock key `K_a` | — |
-| [`auth/oob/prove`](../../prove/0.1/spec.md) | approver → service | `K_a` | `identify` |
+| [`auth/oob/request`](../../request/0.2/spec.md) | starter → service | starter key `K_b` | — |
+| [`auth/oob/claim`](../../claim/0.2/spec.md) | approver → service | lock key `K_a` | — |
+| [`auth/oob/prove`](../../prove/0.3/spec.md) | approver → service | `K_a` | `identify` |
 | [`auth/oob/identify`](../../identify/0.1/spec.md) | (carried) | approving DID, `authentication` | — |
-| [`auth/oob/respond`](../../respond/0.1/spec.md) | approver → service | `K_a` | `grant` |
-| [`auth/oob/grant`](../../grant/0.1/spec.md) | (carried) | approving DID, `assertionMethod` | — |
-| [`auth/oob/redeem`](../../redeem/0.1/spec.md) | starter → service | `K_b` | — |
+| [`auth/oob/respond`](../../respond/0.3/spec.md) | approver → service | `K_a` | `grant` |
+| [`auth/oob/grant`](../../grant/0.3/spec.md) | (carried) | approving DID, `assertionMethod` | — |
+| [`auth/oob/redeem`](../../redeem/0.2/spec.md) | starter → service | `K_b` | — |
 | [`auth/oob/cancel`](../../cancel/0.1/spec.md) | starter or approver → service | `K_b` or `K_a` | — |
 
 Carrying a signed document inside another follows the precedent of
@@ -46,7 +46,7 @@ the window lengths. A service refuses any other value with
 
 | Purpose | Status | Step 1 (claim) reveals | Step 2 (prove) reveals | Grant authorizes | `redeem` returns | Windows |
 |---|---|---|---|---|---|---|
-| `login` | defined | service, portal origin, purpose, decision deadline | step 1 plus `sessionKey`, `requester`, `identifiedAs` | `sessionKey` acts as the approving DID at `origin` until `notAfter`; from grant 0.2, and only where step 2 offered a `signingScope`, it also signs documents of those task families as that DID for the session | a `Session` for the DID, bound to the starter key | claim ≤ 180 s, decision ≤ 180 s; 120 s each RECOMMENDED |
+| `login` | defined | service, portal origin, purpose, decision deadline | step 1 plus `sessionKey`, `requester`, `identifiedAs` | `sessionKey` acts as the approving DID at `origin` until `sessionEndsAt`; from grant 0.2, and only where step 2 offered a `signingScope`, it also signs documents of those task families as that DID for the session | a `Session` for the DID, bound to the starter key | claim ≤ 180 s, decision ≤ 180 s; 120 s each RECOMMENDED |
 | `stepUp` | reserved | — | — | — | — | — |
 | `deviceEnrol` | reserved | — | — | — | — | — |
 
@@ -69,8 +69,8 @@ A service keeps one record per request:
 `cancelled` and `expired` are final. Every change of state is a
 compare-and-set, so only one caller can make it.
 
-- A request must be claimed by its **claim deadline** (`claimDeadline`). A
-  successful claim starts a fresh **decision window** (`decisionDeadline`)
+- A request must be claimed by the time its **claim window** closes (`claimClosesAt`). A
+  successful claim starts a fresh **decision window**, closing at `decisionClosesAt`,
   covering prove, respond and redeem.
 - A failed claim leaves the request as it was. A failed `prove` or `respond`
   from the lock holder moves it to `declined`: each request allows one claim,
@@ -97,15 +97,21 @@ compare-and-set, so only one caller can make it.
    documents of those families as the member's for the session `redeem`
    creates, within the exclusions `auth/oob/grant/0.2` states. Prove, grant and
    respond are versioned together: a 0.2 grant travels in a 0.2 respond and
-   copies a 0.2 step 2.
+   copies a 0.2 step 2, and a 0.3 grant travels in a 0.3 respond and copies a
+   0.3 step 2.
 4. **Proof purposes.** The starter and lock keys sign with `authentication`.
    `identify` is signed by the approving DID for `authentication`. `grant` is
    an attestation and is signed for `assertionMethod`. The service's `claim` and
    `prove` responses are attestations the approver relies on (and the grant
    cites by digest), and are signed with the service's `assertionMethod` key
    ([SPEC §4.7.3](/SPEC.md#473-proof-purpose-and-verification-relationship)).
-5. **Times.** `claimDeadline`, `decisionDeadline` and the grant's and redeem's
-   `notAfter` are integer UTC epoch seconds, the unit of the trigger link's `_exp`.
+5. **Times.** `claimClosesAt` (request), `decisionClosesAt` (claim and prove)
+   and `sessionEndsAt` (grant and redeem) are RFC 3339 date-time strings. The
+   trigger link's `_exp` stays integer UTC epoch seconds, as VTI-LNK defines it,
+   and is computed from `claimClosesAt` when the link is built. The earlier
+   versions — request 0.1, claim 0.1, grant 0.1 and 0.2, prove 0.1 and 0.2,
+   redeem 0.1 — carried these instants as integer UTC epoch seconds under the
+   names `claimDeadline`, `decisionDeadline` and `notAfter`.
 6. **No caching.** Every response, including every error, is sent with
    `Cache-Control: no-store` where the transport has such a header.
 7. **Generic failures.** A non-member and a bad signature at `prove` or

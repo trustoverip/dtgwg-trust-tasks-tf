@@ -1,0 +1,6 @@
+[
+  { "note": "`accessToken` is required.", "payload": {} },
+  { "note": "`accessToken` must not be empty.", "payload": { "accessToken": "" } },
+  { "note": "Unknown top-level member is rejected.", "payload": { "accessToken": "eyJhbGciOi", "__x__": true } },
+  {"variant": "response", "note": "`expiresAt` is an RFC 3339 date-time; an integer count of seconds (the 0.1 form) is rejected.", "payload": {"sessionId": "sess-7f3a", "expiresAt": 1792747800}}
+]

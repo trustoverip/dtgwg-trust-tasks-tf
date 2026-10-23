@@ -16,14 +16,14 @@ design. That scheme is not defined and **MUST NOT** be emitted.
 For `purpose: login` with `mode: scan`, the starter shows:
 
 ```
-https://<link host>/t#_from=<service DID>&_id=<requestId>&_exp=<claimDeadline>&_type=/vti/flow/sign-in/0.1
+https://<link host>/t#_from=<service DID>&_id=<requestId>&_exp=<claimClosesAt, as epoch seconds>&_type=/vti/flow/sign-in/0.1
 ```
 
 | Parameter | Value |
 |---|---|
 | `_from` | The service's DID: the `recipient` of the `auth/oob/request` that opened the request. Percent-encode `&`, `=`, `#` and `%`, and nothing else. |
 | `_id` | The `requestId` from the `auth/oob/request` response, as received (VTI-LNK-033, VTI-LNK-103). |
-| `_exp` | The `claimDeadline` from the same response, unchanged (both are integer UTC epoch seconds). VTI-LNK-100 caps it at 300 s after the code is made; this family recommends 120 s. |
+| `_exp` | The `claimClosesAt` from the same response, converted: `_exp` stays integer UTC epoch seconds, as VTI-LNK defines it, and is computed from the RFC 3339 `claimClosesAt` when the link is built. (Request 0.1 returned this instant as `claimDeadline`, already in integer epoch seconds, and it was copied unchanged.) VTI-LNK-100 caps it at 300 s after the code is made; this family recommends 120 s. |
 | `_type` | The `sign-in` flow, `/vti/flow/sign-in/0.1` (path form, VTI-LNK-042). |
 
 The **link host** is configuration, defaulting to `link.trustoverip.org`, and
@@ -70,7 +70,7 @@ the page's origin with it (VTI-LNK-105).
 
 The reader follows VTI-LNK-050 to VTI-LNK-056 and the `sign-in` rules
 (VTI-LNK-100 to VTI-LNK-105). Only after the person continues does the approver
-generate its lock key `K_a` and send [`auth/oob/claim`](../../claim/0.1/spec.md),
+generate its lock key `K_a` and send [`auth/oob/claim`](../../claim/0.2/spec.md),
 which is the first request of VTI-LNK-054:
 
 - `issuer` is `K_a`, fresh for this exchange;
