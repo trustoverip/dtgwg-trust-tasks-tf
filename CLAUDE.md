@@ -298,7 +298,7 @@ construction path). The consequence worth knowing:
 ### ⚠️ `trust-tasks-rs` unit tests see only the `acl` family
 
 `cargo test` compiles a library twice — as the library, and again with
-`cfg(test)` as its unit-test harness — and the generated tree is ~46 MB of the
+`cfg(test)` as its unit-test harness — and the generated tree is ~66 MB of the
 crate. So the generator keeps that second build small:
 
 - **Every gated family except those in `UNIT_TEST_FAMILIES`** (in
@@ -602,6 +602,12 @@ are not obvious:
   `../trust-tasks-dart`, the Dart form of a Rust `path =` dependency. pub never
   publishes it. `tag-dart` deletes it before verifying a release, so the release
   is checked against the *published* core.
+- **A sibling's `trust_tasks` constraint must admit the current core.** pub
+  reads `^0.1.0` as `<0.2.0`, so until #895 every sibling declared a range that
+  excluded the core it was developed against: consumers got core 0.1.19, and an
+  app on core 0.9 could not add a sibling at all. `tag-dart` cannot see this —
+  it verifies against the newest core the constraint admits — so when the core
+  crosses a `0.x` minor, raise the siblings' floor in the same release cycle.
 - **`ssi: ">=3.9.6 <5.0.0"` spans two majors on purpose.** `package:didcomm`
   pins ssi 3, so requiring ssi 4 would make this package impossible to use
   beside a DIDComm transport. The `packages` job in `dart.yml` tests with ssi

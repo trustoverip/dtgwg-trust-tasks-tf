@@ -308,6 +308,37 @@ The registry has a single canonical casing convention: member names and enumerat
 
 Casing is part of the wire contract: changing the casing of a member name or a value you define is a breaking change ([SPEC §5](SPEC.md#5-versioning)) — except while your spec is `draft`, where normalizing to the canonical convention is an in-place edit, never a new version folder ([SPEC §5.2](SPEC.md#52-compatibility-rules)).
 
+## Wire conventions for common members
+
+Four shapes recur across families, and the registry spells each one exactly one
+way. Specs published before this was written down get new versions that
+follow it; a new spec or a new version follows it from the start.
+
+- **Instants are RFC 3339 strings.** `"type": "string", "format":
+  "date-time"`, the same encoding the framework uses for `issuedAt`,
+  `expiresAt` and `retryAfter` — never Unix seconds. An instant that records
+  when something happens is named `<event>At` (`recordedAt`, `sessionEndsAt`,
+  `decisionClosesAt`), not a bare `timestamp`. Range bounds and filters keep
+  their prepositions (`since`, `until`, `validFrom`, `validUntil`), and a name
+  an external vocabulary defines (`created`, `notBefore`) is carried verbatim.
+  A duration is not an instant: it stays an integer and names its unit
+  (`latencyMs`, `retentionDays`).
+- **Pagination is `cursor` + `limit` → `nextCursor`.** The request takes an
+  optional opaque `cursor`, from a previous response's `nextCursor`, which a
+  responder **MUST NOT** accept unless it issued it, and an optional `limit`,
+  the most items to return. The response carries `nextCursor`, **absent on the
+  last page** — never `null` and never accompanied by a `truncated` flag,
+  since its presence already says more remain. No `pageSize`, `offset` or
+  `total`. A change feed that always returns its position (`vault/sync`) keeps a
+  `truncated` flag, because its position is not a cursor that disappears.
+- **`since` is an inclusive time filter.** An RFC 3339 lower bound: "only items
+  at or after this instant". A cursor is a `cursor`; a stream resume token is a
+  `resumeToken`; an incremental-sync position is a `syncToken`, answered with
+  `nextSyncToken`.
+- **`created` is a timestamp.** Data Integrity proofs define it that way and
+  this registry does not reuse the name for anything else. The response flag
+  "this write created the record rather than replacing one" is `wasCreated`.
+
 ## Read-one and read-many tasks
 
 The registry's default for a family that enumerates a collection is the **split pair**: a `list` task (paged, filtered enumeration) *and* a sibling `show`/`get` task (single-record fetch by identifier). The rationale is the one [`policy/get/0.1`](specs/policy/get/0.1/spec.md) spells out — the two reads have different failure semantics. A `get` for an unknown id returns `notFound`, a definite determination the caller can act on; a `list` filtered down to one id returns an **empty page**, which is a *successful* response and indistinguishable from "exists but filtered out". Collapsing the pair into list-with-an-id-filter loses that distinction (and, with it, per-record error codes and per-record authorization decisions).
@@ -433,9 +464,9 @@ npm run validate       # validate only, no website writes
 
 If validation fails, the script prints the offending file and a specific reason. Fix and re-run.
 
-## Regenerate the bindings and bump the libraries
+## Regenerate the bindings
 
-Adding or changing anything under `specs/` (a new task, a schema edit, a new category a task uses) changes the generated client libraries. You **MUST** regenerate **all four** bindings **in the same PR** — otherwise the merge to `main` never publishes your spec's bindings to crates.io / npm / pub.dev.
+Adding or changing anything under `specs/` (a new task, a schema edit, a new category a task uses) changes the generated client libraries. You **MUST** regenerate **all four** bindings **in the same PR** — otherwise the drift jobs fail it, and a spec merged without them would reach no library.
 
 ```sh
 cargo run -p trust-tasks-codegen && cargo fmt --all   # 1. regenerate Rust bindings, commit the diff
@@ -458,25 +489,19 @@ What you *do* owe the release is a **conventional-commit PR title**, since PRs s
 
 Additive changes (new task, backwards-compatible schema edit) are a patch/minor bump; a breaking schema change needs a new spec **version** folder, not an in-place edit (see [Version rules](#version-rules-per-spec-5)).
 
-### A patch bump promises wire compatibility, not source compatibility
+### Adding a member does not break Rust consumers — by construction
 
-Adding an optional member to an existing payload is additive **on the wire** — every document valid before stays valid, which is why it is a patch bump. It is *not* additive for the generated Rust types: `trust-tasks-rs` emits plain structs with public fields, so any consumer that builds one with struct-literal syntax stops compiling the moment a member is added.
+Adding an optional member to an existing payload is additive **on the wire**,
+and since `trust-tasks-rs` 0.14.0 it is additive for the generated Rust types
+too: every generated struct and enum is `#[non_exhaustive]`, and consumers build
+payloads with `X::builder()` or deserialize them, so a new member is one more
+builder setter rather than a compile error. Inside `trust-tasks-rs` itself
+(including its unit tests) struct literals still compile, so
+`cargo build --workspace --all-targets` is the check that sees what a consumer
+sees. The TypeScript, Go and Dart types take an added optional member without a
+source change.
 
-```rust
-// Breaks when the schema gains a member:
-let entry = grant::v0_1::AclEntry { subject, role, scopes, ..  };
-//          ^ error[E0063]: missing field `allowedKeys`
-```
-
-This is a loud compile error rather than a silent behaviour change, and the fix is one line per site — but it lands on consumers who only bumped a patch version, so it is worth stating plainly:
-
-- **Spec authors:** an additive member is still a patch bump (the wire contract is what the version tracks), but call it out in the `CHANGELOG.md` entry so downstream maintainers can budget for the edit. Both instances so far — `messaging/account/list` + `messaging/access-list/list` gaining filters, and `AclEntry` gaining `allowedKeys` — broke at least one downstream crate.
-- **Library consumers:** prefer constructing payloads by deserialization (`serde_json::from_value::<Payload>(v)?`), which is unaffected by added members and is what the wire path does anyway. Reserve struct literals for tests you are happy to touch.
-- **Binding examples in this repo** are consumers too: `trust-tasks-https` and `trust-tasks-didcomm` examples and end-to-end tests all broke this way. The full-workspace `cargo test` job catches it before merge — if it fires on an additive change, that is the expected signal, not a mistake in your schema.
-
-Making this structurally impossible was considered and rejected: deriving `Default` on the generated types (so consumers could write `..Default::default()`) does not compile, because generated enums have no natural default variant, and inventing one is unsafe — a `decision` enum silently defaulting to `approved` is a worse failure than a compile error.
-
-CI guards both sides — `rust.yml`'s `codegen-drift` job and `ts.yml`'s `bindings-drift` job fail the PR if either set of generated files is stale. Publishing is automated but **not triggered by your merge**: `publish.yml` keeps a Release PR up to date with the bumps and changelog entries the merged commits imply, and merging that PR is the release. Never publish by hand. See [RELEASING.md](RELEASING.md).
+CI guards all four — `codegen.yml`'s `codegen-drift` job and the `bindings-drift` jobs in `ts.yml`, `go.yml` and `dart.yml` fail the PR if any set of generated files is stale. Publishing is automated but **not triggered by your merge**: `publish.yml` keeps a Release PR up to date with the bumps and changelog entries the merged commits imply, and merging that PR is the release. Never publish by hand. See [RELEASING.md](RELEASING.md).
 
 ## Submitting a PR
 
