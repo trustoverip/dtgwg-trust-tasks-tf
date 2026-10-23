@@ -11,6 +11,15 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.27.4 — 2026-10-23
+
+
+### Added
+
+- **specs**: One spelling for instants, pagination, since and created, in 74 new spec versions (#901)
+
+* spec(auth/oob, vtc/auth): instants are RFC 3339 strings named *At
+
 ## 0.27.3 — 2026-10-23
 
 ## 0.27.2 — 2026-10-22

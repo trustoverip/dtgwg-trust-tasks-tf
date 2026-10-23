@@ -11,6 +11,15 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.9.4 — 2026-10-23
+
+
+### Added
+
+- **specs**: One spelling for instants, pagination, since and created, in 74 new spec versions (#901)
+
+* spec(auth/oob, vtc/auth): instants are RFC 3339 strings named *At
+
 ## 0.9.3 — 2026-10-23
 
 ## 0.9.2 — 2026-10-22

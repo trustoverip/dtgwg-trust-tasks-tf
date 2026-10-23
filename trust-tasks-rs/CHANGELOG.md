@@ -31,6 +31,36 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.34.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.34.0...trust-tasks-rs-v0.34.1) — 2026-10-23
+
+
+### Added
+
+- **specs**: One spelling for instants, pagination, since and created, in 74 new spec versions ([#901](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/901))
+
+* spec(auth/oob, vtc/auth): instants are RFC 3339 strings named *At
+
+
+
+### Documentation
+
+- Wire conventions, and contributor and release docs brought up to date ([#899](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/899))
+
+* docs: wire conventions, and contributor and release docs brought up to date
+
+  CONTRIBUTING-SPECS.md gains "Wire conventions for common members": instants
+  are RFC 3339 strings named *At, pagination is cursor + limit -> nextCursor
+  (absent on the last page), `since` is an inclusive time filter, and
+  `created` is a timestamp, with `wasCreated` for the response flag. Specs
+  that predate them get new versions in a follow-up.
+
+  The same file no longer says a merge to main publishes, no longer tells
+  spec authors to write a CHANGELOG entry, replaces the pre-0.14 warning
+  that an added member breaks Rust consumers (non_exhaustive + builders made
+  that untrue), and names all four drift jobs.
+
+
+
 ## [0.34.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.33.2...trust-tasks-rs-v0.34.0) — 2026-10-23
 
 
