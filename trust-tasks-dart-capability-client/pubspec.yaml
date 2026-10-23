@@ -4,7 +4,7 @@ name: trust_tasks_capability_client
 description: >-
   Client-side wire helpers for the capability Trust Task families: document
   builders and reply classification for governance/capability and git-trust.
-version: 0.1.0
+version: 0.1.1
 repository: https://github.com/trustoverip/dtgwg-trust-tasks-tf
 issue_tracker: https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues
 documentation: https://trusttasks.org/implementations
