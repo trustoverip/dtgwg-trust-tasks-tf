@@ -1,0 +1,49 @@
+[
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "action": "member.removed",
+      "__notARealMember__": true
+    }
+  },
+  {
+    "note": "`limit` is capped at 1000.",
+    "payload": {
+      "limit": 5000
+    }
+  },
+  {
+    "note": "`limit` must be at least 1.",
+    "payload": {
+      "limit": 0
+    }
+  },
+  {
+    "note": "0.1's `pageSize` does not exist in 0.2; it is `limit`.",
+    "payload": {
+      "pageSize": 100
+    }
+  },
+  {
+    "note": "`from` must be a date-time.",
+    "payload": {
+      "from": "yesterday"
+    }
+  },
+  {
+    "note": "`nextCursor` is absent on the last page, never `null`.",
+    "variant": "response",
+    "payload": {
+      "entries": [],
+      "nextCursor": null
+    }
+  },
+  {
+    "note": "0.1's `truncated` does not exist in 0.2; the presence of `nextCursor` says more entries match.",
+    "variant": "response",
+    "payload": {
+      "entries": [],
+      "truncated": false
+    }
+  }
+]

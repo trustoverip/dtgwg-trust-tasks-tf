@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/witness/list/0.2",
+  "title": "VTA Witness — List — payload",
+  "description": "A client reads back from its VTA the Verifiable Witness Credentials vta/witness/accept stored for its principal, each with the outcome evidence stored beside it. Every filter is optional and those present are AND-combined.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "relationshipDid": {
+      "type": "string",
+      "pattern": "^did:",
+      "maxLength": 2048,
+      "description": "Only VWCs whose credentialSubject.id is this relationship DID."
+    },
+    "witness": {
+      "type": "string",
+      "pattern": "^did:",
+      "maxLength": 2048,
+      "description": "Only VWCs issued by this witness."
+    },
+    "cursor": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096,
+      "description": "An opaque continuation token from a previous response's `nextCursor`; a responder MUST NOT accept a cursor it did not issue. Opaque: a consumer MUST NOT construct or parse one."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "description": "The most entries to return; the responder chooses a default and MAY return fewer. The VTA caps this value."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA Witness — List — response payload",
+      "description": "One entry per stored VWC that matched and that the caller may read. Empty when nothing matched, which is a successful answer, not an error.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "witnessings"
+      ],
+      "properties": {
+        "witnessings": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "$ref": "#/$defs/StoredWitnessing"
+          },
+          "description": "The matching stored VWCs, each with its evidence."
+        },
+        "nextCursor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "description": "Pass to the next request as `cursor` to continue. Present when the VTA stopped before the last match; absent when the page is the last. A consumer MUST NOT read a page carrying a `nextCursor` as a complete account of what is stored."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    },
+    "StoredWitnessing": {
+      "title": "StoredWitnessing",
+      "description": "One VWC vta/witness/accept stored, as accept answered it, with the time it was stored. The VWC itself travels once, inside evidence.outcome, under the witness's proof.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "credentialId",
+        "witness",
+        "relationshipDid",
+        "vwcDigestMultibase",
+        "acceptedAt",
+        "evidence"
+      ],
+      "properties": {
+        "credentialId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "The credential-vault handle the VWC is stored under: the credentialId vta/witness/accept returned."
+        },
+        "witness": {
+          "type": "string",
+          "pattern": "^did:",
+          "maxLength": 2048,
+          "description": "The witness that issued the VWC: its issuer, which is the recipient of evidence.session."
+        },
+        "relationshipDid": {
+          "type": "string",
+          "pattern": "^did:",
+          "maxLength": 2048,
+          "description": "The relationship DID the VWC names as its credentialSubject.id."
+        },
+        "vwcDigestMultibase": {
+          "$ref": "../../../../_framework/0.3/framework.schema.json#/$defs/DigestMultibase",
+          "description": "The VWC's digest, as the witness returned it and the VTA checked it at accept: over the RFC 8785 canonicalization of the VWC, proof included."
+        },
+        "acceptedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When vta/witness/accept stored the VWC."
+        },
+        "evidence": {
+          "$ref": "../../../../witness/_shared/0.1/outcome-evidence.schema.json#/$defs/OutcomeEvidence",
+          "description": "The outcome evidence stored with the VWC, each document exactly as stored, never re-serialised: `session`, the witness/session document as the VTA built it, and `outcome`, the witness/session/submit #response as received, which carries the VWC. Of whichever version the session was conducted under."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

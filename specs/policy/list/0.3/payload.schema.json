@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/policy/list/0.3",
+  "title": "Policy List — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "contextId": { "type": "string", "minLength": 1 },
+    "enabledOnly": { "type": "boolean", "default": false },
+    "cursor": {
+      "type": "string",
+      "description": "An opaque continuation token from a previous response's `nextCursor`; a responder MUST NOT accept a cursor it did not issue."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "description": "The most policies to return; the responder chooses a default and MAY return fewer."
+    },
+    "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Policy List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["policies"],
+      "properties": {
+        "policies": {
+          "type": "array",
+          "items": { "$ref": "../../_shared/0.2/policy.schema.json#/$defs/PolicyModule" }
+        },
+        "nextCursor": {
+          "type": "string",
+          "description": "Opaque continuation token for the next page, sent back as the request's `cursor`. Present when more matching policies remain; absent on the last page."
+        },
+        "ext": { "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

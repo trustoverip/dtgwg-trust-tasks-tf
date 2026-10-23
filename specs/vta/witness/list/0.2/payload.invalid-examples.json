@@ -1,0 +1,43 @@
+[
+  {
+    "note": "A page is at most one hundred entries: each carries two whole Trust Task documents.",
+    "payload": {
+      "limit": 500
+    }
+  },
+  {
+    "note": "0.1's `pageSize` does not exist in 0.2; it is `limit`.",
+    "payload": {
+      "pageSize": 20
+    }
+  },
+  {
+    "note": "The filters name DIDs: a relationship is filtered by the DID the VWC names, not by a vault handle.",
+    "payload": {
+      "relationshipDid": "vrc-alice-to-bob"
+    }
+  },
+  {
+    "note": "A list reads the vault and changes nothing: there is no member to archive or delete what it finds.",
+    "payload": {
+      "witness": "did:webvh:QmWitness:witness.example.org:a",
+      "purge": true
+    }
+  },
+  {
+    "note": "`nextCursor` is absent on the last page, never `null`.",
+    "variant": "response",
+    "payload": {
+      "witnessings": [],
+      "nextCursor": null
+    }
+  },
+  {
+    "note": "0.1's `truncated` does not exist in 0.2; the presence of `nextCursor` says the VTA stopped early.",
+    "variant": "response",
+    "payload": {
+      "witnessings": [],
+      "truncated": false
+    }
+  }
+]

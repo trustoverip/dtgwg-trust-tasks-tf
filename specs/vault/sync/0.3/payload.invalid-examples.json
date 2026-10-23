@@ -1,0 +1,20 @@
+[
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "__notARealMember__": true
+    }
+  },
+  {
+    "note": "0.2's `pageSize` does not exist in 0.3; it is `limit`.",
+    "payload": {
+      "pageSize": 1000
+    }
+  },
+  {
+    "note": "`limit` is capped at 5000.",
+    "payload": {
+      "limit": 10000
+    }
+  }
+]

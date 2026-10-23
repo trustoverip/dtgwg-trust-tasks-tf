@@ -1,0 +1,36 @@
+[
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "__notARealMember__": true
+    }
+  },
+  {
+    "note": "0.2's `pageSize` does not exist in 0.3; it is `limit`.",
+    "payload": {
+      "pageSize": 100
+    }
+  },
+  {
+    "note": "`limit` is capped at 1000.",
+    "payload": {
+      "limit": 5000
+    }
+  },
+  {
+    "note": "`nextCursor` is absent on the last page, never `null`.",
+    "variant": "response",
+    "payload": {
+      "devices": [],
+      "nextCursor": null
+    }
+  },
+  {
+    "note": "0.2's `truncated` does not exist in 0.3; the presence of `nextCursor` says more devices remain.",
+    "variant": "response",
+    "payload": {
+      "devices": [],
+      "truncated": false
+    }
+  }
+]
