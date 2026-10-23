@@ -3,7 +3,7 @@
  * Source: specs/vtc/rooms/get/0.2/payload.schema.json
  */
 
-import type { EffectiveLimits, Ext, HostedRoom, LimitSource, MigrationLastError, MigrationPauseCause, MigrationState, RetentionPolicy, RoomLimits, ScopeLimits, StorageConfigId, Usage, Visibility } from "../../../../_shared/components.js";
+import type { EffectiveLimits, Ext, HostedRoom_VtcV0_1 as HostedRoom, LimitSource, MigrationLastError, MigrationPauseCause, MigrationState, RetentionPolicy, RoomLimits, ScopeLimits, StorageConfigId, Usage, Visibility } from "../../../../_shared/components.js";
 
 
 /**

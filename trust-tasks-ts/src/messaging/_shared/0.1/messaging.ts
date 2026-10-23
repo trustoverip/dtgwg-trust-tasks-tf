@@ -14,4 +14,4 @@ export interface MessagingAdministrationSharedDefinitionsForTheMessagingSpecFami
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../_shared/components.js".
  */
-export type { Account, AccountStats, AccountType, AdminAccount, AuditAction, AuditEntry, MediatorAcl, ProtocolCounts, QueueLimits, Vid } from "../../../_shared/components.js";
+export type { Account_MessagingV0_1 as Account, AccountStats, AccountType, AdminAccount, AuditAction, AuditEntry, MediatorAcl, ProtocolCounts, QueueLimits, Vid } from "../../../_shared/components.js";

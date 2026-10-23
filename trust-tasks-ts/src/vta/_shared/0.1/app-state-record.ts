@@ -20,4 +20,4 @@ export interface AppStateRecordSharedDefinitionForTheVtaAppStateSpecFamily {
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../_shared/components.js".
  */
-export type { AppStateRecord, ExpectedVersion_VtaV0_1 as ExpectedVersion, Key_VtaV0_1 as Key, Namespace, Version_VtaV0_1 as Version, WriteResult } from "../../../_shared/components.js";
+export type { AppStateRecord, ExpectedVersion_VtaV0_1 as ExpectedVersion, Key_VtaV0_1 as Key, Namespace, Version_VtaV0_1 as Version, WriteResult_VtaV0_1 as WriteResult } from "../../../_shared/components.js";

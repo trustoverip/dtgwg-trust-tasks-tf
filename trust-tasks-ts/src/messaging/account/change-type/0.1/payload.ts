@@ -3,7 +3,7 @@
  * Source: specs/messaging/account/change-type/0.1/payload.schema.json
  */
 
-import type { Account, AccountStats, AccountType, Ext, MediatorAcl, ProtocolCounts, QueueLimits, Vid } from "../../../../_shared/components.js";
+import type { Account_MessagingV0_1 as Account, AccountStats, AccountType, Ext, MediatorAcl, ProtocolCounts, QueueLimits, Vid } from "../../../../_shared/components.js";
 
 
 export interface MessagingChangeAccountTypePayload {

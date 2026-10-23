@@ -3,7 +3,7 @@
  * Source: specs/vtc/rooms/community/create/0.2/payload.schema.json
  */
 
-import type { CommunityRoomV2, Ext, HostedRoom, Reason, RetentionPolicy, RoomDescription, RoomLabel, RoomTag, RoomTags, StorageConfigId, Visibility } from "../../../../../_shared/components.js";
+import type { CommunityRoomV2_VtcV0_1 as CommunityRoomV2, Ext, HostedRoom_VtcV0_1 as HostedRoom, Reason, RetentionPolicy, RoomDescription, RoomLabel, RoomTag, RoomTags, StorageConfigId, Visibility } from "../../../../../_shared/components.js";
 
 
 export interface VTCRoomsCommunityCreatePayload {
