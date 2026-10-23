@@ -1,0 +1,6 @@
+[
+  { "note": "Negative limit.", "payload": { "limit": -1 } },
+  { "note": "limit above max.", "payload": { "limit": 5000 } },
+  { "note": "offset removed in 0.2 — page with cursor.", "payload": { "offset": 50 } },
+  { "note": "Non-string cursor.", "payload": { "cursor": 50 } }
+]

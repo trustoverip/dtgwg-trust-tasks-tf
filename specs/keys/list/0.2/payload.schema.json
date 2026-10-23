@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/keys/list/0.2",
+  "title": "Keys List — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "status": {
+      "$ref": "../../_shared/0.1/key-record.schema.json#/$defs/KeyStatus",
+      "description": "Return only keys in this lifecycle state. Omitted returns every state, including revoked keys."
+    },
+    "contextId": {
+      "type": "string",
+      "description": "Return only keys filed under this scope."
+    },
+    "cursor": {
+      "type": "string",
+      "description": "An opaque continuation token from a previous response's `nextCursor`; a responder MUST NOT accept a cursor it did not issue."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "The most items to return; the responder chooses a default and MAY return fewer, and MAY impose its own ceiling."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext",
+      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1."
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Keys List — response payload",
+      "description": "The success response to a keys/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/list/0.2#response.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "keys"
+      ],
+      "properties": {
+        "keys": {
+          "type": "array",
+          "items": {
+            "$ref": "../../_shared/0.1/key-record.schema.json#/$defs/KeyRecord"
+          },
+          "description": "The page of records, in the custodian's own order."
+        },
+        "nextCursor": {
+          "type": "string",
+          "description": "Opaque continuation token for the next page; pass it back as the request's `cursor`. Absent on the last page. Its presence is what tells a key audit or rotation sweep it has not yet seen the whole set — a producer that stops while `nextCursor` is present has silently skipped every key past the page boundary."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/did/list/0.2",
+  "title": "DID Management List — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "owner": { "type": "string", "description": "Admin-only filter — list slots owned by this VID." },
+    "domain": { "type": "string" },
+    "cursor": {
+      "type": "string",
+      "description": "An opaque continuation token from a previous response's `nextCursor`; a responder MUST NOT accept a cursor it did not issue."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "description": "The most items to return; the responder chooses a default and MAY return fewer."
+    },
+    "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "DID Management List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["records"],
+      "properties": {
+        "records": {
+          "type": "array",
+          "items": { "$ref": "../../../_shared/0.1/did-record.schema.json#/$defs/DidRecord" }
+        },
+        "nextCursor": {
+          "type": "string",
+          "description": "Opaque continuation token for the next page; pass it back as the request's `cursor`. Absent on the last page."
+        },
+        "ext": { "$ref": "../../../../_framework/0.1/framework.schema.json#/$defs/Ext" }
+      }
+    }
+  }
+}

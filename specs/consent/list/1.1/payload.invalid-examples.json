@@ -1,0 +1,31 @@
+[
+  {
+    "note": "Unknown property.",
+    "payload": {
+      "agent": "did:key:z6MkAgentExample",
+      "limit": 50
+    }
+  },
+  {
+    "note": "Subject filter present but malformed (missing agent).",
+    "payload": {
+      "subject": {
+        "platform": "signal",
+        "conversationRef": "sig-1a2b3c4d",
+        "kind": "group"
+      }
+    }
+  },
+  {
+    "note": "since was renamed to syncToken in 1.1 — since is reserved for an RFC 3339 time filter.",
+    "payload": {
+      "since": "c-2026-06-17T15:02:00Z"
+    }
+  },
+  {
+    "note": "Non-string syncToken.",
+    "payload": {
+      "syncToken": 42
+    }
+  }
+]

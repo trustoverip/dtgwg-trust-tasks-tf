@@ -1,0 +1,23 @@
+[
+  {
+    "note": "limit below the minimum of 1.",
+    "payload": { "limit": 0 }
+  },
+  {
+    "note": "limit above the maximum of 200.",
+    "payload": { "limit": 500 }
+  },
+  {
+    "note": "cursor must be a string, not a number.",
+    "payload": { "cursor": 42 }
+  },
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": { "entityId": "did:example:entity" }
+  },
+  {
+    "variant": "response",
+    "note": "nextCursor must not be null — the last page omits it.",
+    "payload": { "records": [], "nextCursor": null }
+  }
+]
