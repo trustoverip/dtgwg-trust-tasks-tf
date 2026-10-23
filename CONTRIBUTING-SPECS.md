@@ -333,7 +333,8 @@ follow it; a new spec or a new version follows it from the start.
   `truncated` flag, because its position is not a cursor that disappears.
 - **`since` is an inclusive time filter.** An RFC 3339 lower bound: "only items
   at or after this instant". A cursor is a `cursor`; a stream resume token is a
-  `resumeToken`.
+  `resumeToken`; an incremental-sync position is a `syncToken`, answered with
+  `nextSyncToken`.
 - **`created` is a timestamp.** Data Integrity proofs define it that way and
   this registry does not reuse the name for anything else. The response flag
   "this write created the record rather than replacing one" is `wasCreated`.
