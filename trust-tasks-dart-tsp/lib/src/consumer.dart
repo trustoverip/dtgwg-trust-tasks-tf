@@ -211,43 +211,29 @@ final class TspConsumer {
 
     final verifier = proofVerifier;
     final validator = payloadValidator;
-    final ConsumeOutcome<R> outcome;
-    try {
-      outcome = await consumeInbound<P, R>(
-        transport: transport,
-        spec: spec,
-        proofPolicy: verifier == null
-            ? const ProofPolicy.rejectIfPresent()
-            : ProofPolicy.verify(_AsReceived(verifier, json)),
-        payloadPolicy: validator == null
-            ? const PayloadPolicy.acceptUnvalidated()
-            : PayloadPolicy.validate(validator),
-        checks: ConsumeChecks(
-          freshness: freshness,
-          replay: replayProtection
-              ? ReplayPolicy.guarded(replayGuard)
-              : const ReplayPolicy.notConsequential(),
-        ),
-        doc: doc,
-        myVid: transport.local ?? '',
-        now: now,
-        newErrorId: newUrnUuid,
-        payloadToJson: encode,
-        handler: handler,
-      );
-    } on Object {
-      // The handler threw something that is not a Refusal. Release the claim
-      // before the error propagates: holding it would absorb every re-forward
-      // of this document in silence until the record expires.
-      if (replayProtection) {
-        try {
-          await replayGuard.release(doc.id, documentDigest(doc, encode));
-        } on Object {
-          /* best-effort */
-        }
-      }
-      rethrow;
-    }
+    final outcome = await consumeInbound<P, R>(
+      transport: transport,
+      spec: spec,
+      proofPolicy: verifier == null
+          ? const ProofPolicy.rejectIfPresent()
+          : ProofPolicy.verify(_AsReceived(verifier, json)),
+      payloadPolicy: validator == null
+          ? const PayloadPolicy.acceptUnvalidated()
+          : PayloadPolicy.validate(validator),
+      checks: ConsumeChecks(
+        freshness: freshness,
+        replay: replayProtection
+            ? ReplayPolicy.guarded(replayGuard)
+            : const ReplayPolicy.notConsequential(),
+      ),
+      doc: doc,
+      myVid: transport.local ?? '',
+      now: now,
+      newErrorId: newUrnUuid,
+      payloadToJson: encode,
+      responseToJson: encodeResponse,
+      handler: handler,
+    );
 
     final reply = switch (outcome) {
       Handled(:final response) => response.toJson(encodeResponse),

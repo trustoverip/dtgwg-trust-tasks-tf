@@ -15,7 +15,7 @@ environment:
   sdk: ^3.3.0
 
 dependencies:
-  trust_tasks: ^0.1.0
+  trust_tasks: ^0.9.3
   # The client only. It runs on the web and in Flutter as well as the VM; the
   # server's dart:io adapter lives in a separate library so that it does not
   # take the web away from the client.

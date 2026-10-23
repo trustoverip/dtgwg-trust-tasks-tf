@@ -14,7 +14,7 @@ environment:
   sdk: ^3.6.0
 
 dependencies:
-  trust_tasks: ^0.1.0
+  trust_tasks: ^0.9.3
   # Affinidi's DIDComm v2.1 implementation: ECDH-1PU authcrypt, and the
   # addressing-consistency checks between the envelope and the message.
   didcomm: ^2.3.4

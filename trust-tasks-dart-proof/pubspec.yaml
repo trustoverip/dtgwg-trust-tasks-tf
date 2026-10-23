@@ -15,7 +15,7 @@ environment:
   sdk: ^3.6.0
 
 dependencies:
-  trust_tasks: ^0.1.0
+  trust_tasks: ^0.9.3
 
   # A range spanning two majors, deliberately.
   #
