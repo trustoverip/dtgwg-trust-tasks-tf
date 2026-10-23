@@ -534,19 +534,10 @@ final class HttpsServer {
         now: now,
         newErrorId: newUrnUuid,
         payloadToJson: encode,
+        responseToJson: encodeResponse,
         handler: (accepted, parties) => handler(accepted, ctx),
       );
     } on Object {
-      // The handler threw something that is not a Refusal. Nothing may be
-      // remembered as executed on its behalf: holding the claim would absorb
-      // every honest resend in silence until the record expires.
-      if (replayProtection) {
-        try {
-          await replayGuard.release(doc.id, documentDigest(doc, encode));
-        } on Object {
-          /* best-effort */
-        }
-      }
       return _reject(
         transport,
         doc,
