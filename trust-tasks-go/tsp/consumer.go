@@ -199,13 +199,8 @@ func Consume[P, R any](
 		Handler:       handler,
 	})
 	if err != nil {
-		// A handler error that is not a Refusal, or a misconfiguration. Release
-		// the claim so a re-forward is not absorbed in silence, then surface it.
-		if c.ReplayProtection {
-			if digest, derr := tt.DocumentDigest(doc); derr == nil {
-				_ = c.Guard.Release(ctx, doc.ID, digest)
-			}
-		}
+		// A handler error that is not a Refusal, or a misconfiguration. The core
+		// has already released the claim if the handler failed.
 		return nil, err
 	}
 
