@@ -3,7 +3,7 @@
  * Source: specs/git-ns/right/grant/0.1/payload.schema.json
  */
 
-import type { Did_GitNsV0_1 as Did, Ext, Resource, Right, RightRecord_GitNsV0_1 as RightRecord } from "../../../../_shared/components.js";
+import type { Did_GitNsV0_1 as Did, Ext, Resource_GitNsV0_1 as Resource, Right, RightRecord_GitNsV0_1 as RightRecord } from "../../../../_shared/components.js";
 
 
 /**

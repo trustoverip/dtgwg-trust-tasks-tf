@@ -1,0 +1,53 @@
+[
+  {
+    "note": "`outcome` is `succeeded`, `failed` or `partial`.",
+    "payload": {
+      "jobId": "job_1",
+      "outcome": "ok"
+    }
+  },
+  {
+    "note": "A repository in a result carries the forge's id; a name alone does not survive a rename.",
+    "payload": {
+      "jobId": "job_1",
+      "outcome": "succeeded",
+      "repo": {
+        "resource": "github.com/acme/widgets"
+      }
+    }
+  },
+  {
+    "note": "Forge ids are strings, so a forge whose ids are not numbers needs no new version.",
+    "payload": {
+      "jobId": "job_1",
+      "outcome": "succeeded",
+      "repo": {
+        "resource": "github.com/acme/widgets",
+        "forgeId": 812736451
+      }
+    }
+  },
+  {
+    "note": "A step outcome is `applied`, `unchanged`, `failed` or `skipped`.",
+    "payload": {
+      "jobId": "job_1",
+      "outcome": "partial",
+      "steps": [
+        {
+          "step": "workflow",
+          "outcome": "done"
+        }
+      ]
+    }
+  },
+  {
+    "note": "`error.code` is required when `error` is present.",
+    "payload": {
+      "jobId": "job_1",
+      "outcome": "failed",
+      "error": {
+        "message": "boom"
+      }
+    }
+  }
+]

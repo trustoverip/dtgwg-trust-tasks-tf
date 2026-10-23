@@ -3,7 +3,7 @@
  * Source: specs/git-ns/right/revoke/0.3/payload.schema.json
  */
 
-import type { BreakGlass, Did_GitNsV0_3 as Did, Ext, Resource, Right, RightRecord_GitNsV0_4 as RightRecord } from "../../../../_shared/components.js";
+import type { BreakGlass, Did_GitNsV0_3 as Did, Ext, Resource_GitNsV0_1 as Resource, Right, RightRecord_GitNsV0_4 as RightRecord } from "../../../../_shared/components.js";
 
 
 /**

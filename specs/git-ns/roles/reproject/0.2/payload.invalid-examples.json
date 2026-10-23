@@ -1,0 +1,26 @@
+[
+  {
+    "note": "`resource` is required: a re-projection names what it covers.",
+    "payload": {}
+  },
+  {
+    "note": "A resource names its forge; `acme/widgets` alone is not one.",
+    "payload": {
+      "resource": "acme/widgets"
+    }
+  },
+  {
+    "note": "A re-projection sends what the VTC's records say; it carries no roles of its own.",
+    "payload": {
+      "resource": "github.com/acme/widgets",
+      "desiredRoles": []
+    }
+  },
+  {
+    "note": "`reason` is not empty.",
+    "payload": {
+      "resource": "github.com/acme",
+      "reason": ""
+    }
+  }
+]
