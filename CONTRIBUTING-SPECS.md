@@ -314,12 +314,15 @@ Four shapes recur across families, and the registry spells each one exactly one
 way. Specs published before this was written down get new versions that
 follow it; a new spec or a new version follows it from the start.
 
-- **Instants are RFC 3339 strings named `*At`.** `"type": "string", "format":
+- **Instants are RFC 3339 strings.** `"type": "string", "format":
   "date-time"`, the same encoding the framework uses for `issuedAt`,
-  `expiresAt` and `retryAfter`, and a name that ends in `At` (`recordedAt`,
-  `sessionEndsAt`, `decisionClosesAt`). Not Unix seconds, and not a bare
-  `timestamp`. A duration is not an instant: it stays an integer and names its
-  unit (`latencyMs`, `retentionDays`).
+  `expiresAt` and `retryAfter` — never Unix seconds. An instant that records
+  when something happens is named `<event>At` (`recordedAt`, `sessionEndsAt`,
+  `decisionClosesAt`), not a bare `timestamp`. Range bounds and filters keep
+  their prepositions (`since`, `until`, `validFrom`, `validUntil`), and a name
+  an external vocabulary defines (`created`, `notBefore`) is carried verbatim.
+  A duration is not an instant: it stays an integer and names its unit
+  (`latencyMs`, `retentionDays`).
 - **Pagination is `cursor` + `limit` → `nextCursor`.** The request takes an
   optional opaque `cursor`, from a previous response's `nextCursor`, which a
   responder **MUST NOT** accept unless it issued it, and an optional `limit`,
