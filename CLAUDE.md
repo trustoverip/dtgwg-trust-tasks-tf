@@ -691,12 +691,10 @@ logic, no crypto** — document builders for the `governance/capability/*` and
 - **It reuses the core's `slugFromTypeUri`** (which throws on a non-Trust-Task
   URI, so `slugOf` wraps it and returns `null`); the response-variant check is a
   `#response` suffix test. Sign built documents with `package:trust_tasks_proof`.
-- **Like `trust_tasks_tsp` it is tested but not released yet** — it is in the
-  `dart.yml` `packages` job but deliberately absent from the release matrices
-  (`tag-dart`, `DART_PACKAGES`), `publish-dart.yml` and `release-bump-dart.sh`,
-  which `check-dart-packages` permits. Unlike `tsp`, nothing blocks it (it has no
-  unpublished dependency): the first pub.dev publish is manual, and adding the
-  five release entries + flipping the website matrix cell is a clean follow-up.
+- **Released like the other siblings** — a `tag-dart` matrix leg, a
+  `DART_PACKAGES` entry, a `publish-dart.yml` tag pattern and a
+  `release-bump-dart.sh` case, which `check-dart-packages` holds in agreement.
+  Its first pub.dev publish (`0.1.0`) was the manual one.
 
 ## Build / validate / publish
 
