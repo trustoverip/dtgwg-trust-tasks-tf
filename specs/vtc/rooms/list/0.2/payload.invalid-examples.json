@@ -1,0 +1,117 @@
+[
+  {
+    "note": "An unknown lifecycle filter.",
+    "payload": {
+      "lifecycle": "archived"
+    }
+  },
+  {
+    "note": "An owner filter — not offered; the listing is the host's operating view.",
+    "payload": {
+      "ownerDid": "did:example:member"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A room carrying a member list — the host has none to return.",
+    "payload": {
+      "items": [
+        {
+          "roomId": "room:z6MkRoomExample0001",
+          "ownerDid": "did:example:member",
+          "visibility": "private",
+          "retentionPolicy": "chained",
+          "epoch": 3,
+          "lifecycle": "live",
+          "epochExpiresAt": "2027-01-01T00:00:00Z",
+          "retentionDays": 30,
+          "createdAt": "2026-01-01T00:00:00Z",
+          "updatedAt": "2026-09-21T14:13:20Z",
+          "members": [
+            "did:example:member"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A room without its owner — the owner is visible at every tier.",
+    "payload": {
+      "items": [
+        {
+          "roomId": "room:z6MkRoomExample0001",
+          "visibility": "private",
+          "retentionPolicy": "chained",
+          "epoch": 3,
+          "lifecycle": "live",
+          "epochExpiresAt": "2027-01-01T00:00:00Z",
+          "retentionDays": 30,
+          "createdAt": "2026-01-01T00:00:00Z",
+          "updatedAt": "2026-09-21T14:13:20Z"
+        }
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An unknown visibility tier.",
+    "payload": {
+      "items": [
+        {
+          "roomId": "room:z6MkRoomExample0001",
+          "ownerDid": "did:example:member",
+          "visibility": "secret",
+          "retentionPolicy": "chained",
+          "epoch": 3,
+          "lifecycle": "live",
+          "epochExpiresAt": "2027-01-01T00:00:00Z",
+          "retentionDays": 30,
+          "createdAt": "2026-01-01T00:00:00Z",
+          "updatedAt": "2026-09-21T14:13:20Z"
+        }
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An epochExpiresAt in integer seconds — the 0.1 encoding; an instant is an RFC 3339 date-time string from 0.2 on.",
+    "payload": {
+      "items": [
+        {
+          "roomId": "room:z6MkRoomExample0001",
+          "ownerDid": "did:example:member",
+          "visibility": "private",
+          "retentionPolicy": "chained",
+          "epoch": 3,
+          "lifecycle": "live",
+          "epochExpiresAt": 1798761600,
+          "retentionDays": 30,
+          "createdAt": "2026-01-01T00:00:00Z",
+          "updatedAt": "2026-09-21T14:13:20Z"
+        }
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A null nextCursor — on the last page nextCursor is absent, never null.",
+    "payload": {
+      "items": [
+        {
+          "roomId": "room:z6MkRoomExample0001",
+          "ownerDid": "did:example:member",
+          "visibility": "private",
+          "retentionPolicy": "chained",
+          "epoch": 3,
+          "lifecycle": "live",
+          "epochExpiresAt": "2027-01-01T00:00:00Z",
+          "retentionDays": 30,
+          "createdAt": "2026-01-01T00:00:00Z",
+          "updatedAt": "2026-09-21T14:13:20Z"
+        }
+      ],
+      "nextCursor": null
+    }
+  }
+]

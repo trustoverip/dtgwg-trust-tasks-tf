@@ -1,0 +1,114 @@
+[
+  {
+    "note": "No visibility. The tier is fixed for the life of the room, so a community never chooses it on an administrator's behalf.",
+    "payload": {
+      "label": "Board pack",
+      "reason": "x"
+    }
+  },
+  {
+    "note": "No reason. Creating a room the community owns is an act of the community, and the audit trail records why.",
+    "payload": {
+      "label": "Board pack",
+      "visibility": "private"
+    }
+  },
+  {
+    "note": "A room identifier supplied by the caller. The community's VTA mints the room's identity; an administrator naming one would be asking the community to own a DID whose key it does not hold.",
+    "payload": {
+      "label": "Board pack",
+      "visibility": "private",
+      "reason": "The board's working papers.",
+      "roomId": "did:webvh:example.com:rooms:board"
+    }
+  },
+  {
+    "note": "An empty description. A room without one omits the member; an empty string would display as a description that says nothing.",
+    "payload": {
+      "label": "Board pack",
+      "description": "",
+      "visibility": "private",
+      "reason": "The board's working papers."
+    }
+  },
+  {
+    "note": "A tag that is not an identifier. Tags are for filtering, so they are short lower-case identifiers; prose belongs in `description`.",
+    "payload": {
+      "label": "Board pack",
+      "tags": [
+        "Board Papers!"
+      ],
+      "visibility": "private",
+      "reason": "The board's working papers."
+    }
+  },
+  {
+    "note": "Bare/unnamespaced ext key — SPEC §4.5.1 requires every immediate child of ext to be reverse-DNS namespaced.",
+    "payload": {
+      "label": "Board pack",
+      "visibility": "private",
+      "reason": "The board's working papers.",
+      "ext": {
+        "bare-key": {
+          "anything": "here"
+        }
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "No `roomProfile`. An administrator is owed whether the room's members can read what it is called yet.",
+    "payload": {
+      "room": {
+        "room": {
+          "roomId": "did:webvh:example.com:rooms:board",
+          "ownerDid": "did:example:community",
+          "visibility": "private",
+          "epoch": 1,
+          "lifecycle": "live",
+          "epochExpiresAt": "2026-10-19T00:00:00Z",
+          "retentionDays": 90,
+          "createdAt": "2025-10-14T10:00:00Z",
+          "updatedAt": "2025-10-14T10:00:00Z"
+        },
+        "label": "Board pack",
+        "storageConfig": "local",
+        "admitted": 0,
+        "offered": 0,
+        "ownerAuthorityValidUntil": "2027-10-14T10:00:00Z",
+        "createdBy": "did:example:administrator"
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A host record whose createdAt is integer seconds — the 0.3 encoding; HostedRoom's instants are RFC 3339 date-time strings from 0.4 on.",
+    "payload": {
+      "room": {
+        "room": {
+          "roomId": "did:webvh:example.com:rooms:board",
+          "ownerDid": "did:example:community",
+          "visibility": "private",
+          "retentionPolicy": "chained",
+          "epoch": 1,
+          "lifecycle": "live",
+          "epochExpiresAt": "2026-10-19T00:00:00Z",
+          "retentionDays": 90,
+          "createdAt": 1760436000,
+          "updatedAt": "2025-10-14T10:00:00Z"
+        },
+        "label": "Board pack",
+        "description": "Papers for the next board meeting: agenda, minutes in draft, and the finance pack.",
+        "tags": [
+          "board"
+        ],
+        "storageConfig": "local",
+        "admitted": 0,
+        "offered": 0,
+        "ownerAuthorityValidUntil": "2027-10-14T10:00:00Z",
+        "createdBy": "did:example:administrator"
+      },
+      "roomProfile": "written"
+    }
+  }
+]

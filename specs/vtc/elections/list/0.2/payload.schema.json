@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/elections/list/0.2",
+  "title": "VTC Elections — List — payload",
+  "description": "A member or an administrator pages through the community's elections that the caller may see. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "state": {
+      "$ref": "#/$defs/RegistrarState"
+    },
+    "cursor": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "An opaque continuation token from a previous response's `nextCursor`, bound to the caller and to `state`; a responder MUST NOT accept a cursor it did not issue."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "description": "The most items to return; the responder chooses a default and MAY return fewer."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "RegistrarState": {
+      "title": "RegistrarState",
+      "description": "An election's state as its registrar holds it: the ballot box's `ElectionState` once the ballot box has registered the election, or, before that, `pendingRegistration` (the community is still delivering the registration) or `registrationRefused` (the ballot box refused it on a later delivery, and only a cancellation clears it). The first six values are the ballot box's `ElectionState` (voting/_shared/0.1).",
+      "type": "string",
+      "enum": [
+        "registered",
+        "registration",
+        "voting",
+        "closed",
+        "tallied",
+        "cancelled",
+        "pendingRegistration",
+        "registrationRefused"
+      ]
+    },
+    "ElectionListItem": {
+      "title": "ElectionListItem",
+      "description": "One election as a list shows it. vtc/elections/show reads it whole.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "electionId",
+        "state",
+        "votingOpens",
+        "votingCloses",
+        "binding",
+        "ticketHeld"
+      ],
+      "properties": {
+        "electionId": {
+          "$ref": "../../../../voting/_shared/0.1/voting.schema.json#/$defs/ElectionId"
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 512,
+          "description": "The manifest's `title`, when it has one."
+        },
+        "state": {
+          "$ref": "#/$defs/RegistrarState"
+        },
+        "votingOpens": {
+          "type": "string",
+          "format": "date-time",
+          "maxLength": 64
+        },
+        "votingCloses": {
+          "type": "string",
+          "format": "date-time",
+          "maxLength": 64
+        },
+        "binding": {
+          "type": "boolean",
+          "description": "The manifest's `binding`."
+        },
+        "ticketHeld": {
+          "type": "boolean",
+          "description": "Whether the community has issued a ticket for this election to the caller. About the caller only, never anyone else."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Elections — List — response payload",
+      "description": "Success response to vtc/elections/list/0.2: one page of the elections the caller may see.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "elections"
+      ],
+      "properties": {
+        "elections": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "$ref": "#/$defs/ElectionListItem"
+          }
+        },
+        "nextCursor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "Continuation token for the next page; pass it as `cursor`. Absent on the last page — never `null`."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/rooms/community/update/0.3",
+  "title": "VTC Rooms Community Update — payload",
+  "description": "Change the details an administrator keeps track of a community-owned room by: its label, its description, its tags. Each member given replaces the stored one; a member absent is unchanged. At least one detail is required (`minProperties` counts `roomId` and `reason`), and `description` and `removeDescription` are mutually exclusive. A changed label or description is also re-written into the room's own profile, sealed inside the room for its members, through the community's VTA; tags never are. Nothing here reaches the room's host record or any credential. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "roomId",
+    "reason"
+  ],
+  "minProperties": 3,
+  "dependentSchemas": {
+    "removeDescription": {
+      "not": {
+        "required": [
+          "description"
+        ]
+      }
+    }
+  },
+  "properties": {
+    "roomId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "description": "The room's identifier: its DID."
+    },
+    "label": {
+      "$ref": "../../../../../vtc/_shared/0.1/community-room.schema.json#/$defs/RoomLabel",
+      "description": "The room's new name. Absent: unchanged."
+    },
+    "description": {
+      "$ref": "../../../../../vtc/_shared/0.1/community-room.schema.json#/$defs/RoomDescription",
+      "description": "The room's new description, replacing any it has. Absent: unchanged."
+    },
+    "removeDescription": {
+      "type": "boolean",
+      "const": true,
+      "description": "Remove the room's description. Only `true` is meaningful, so only `true` is accepted. A separate member rather than `description: null`, because a nullable optional member makes \"unchanged\" and \"remove\" the same value in libraries that map both to one absent option."
+    },
+    "tags": {
+      "$ref": "../../../../../vtc/_shared/0.1/community-room.schema.json#/$defs/RoomTags",
+      "description": "The room's tags, replacing the whole set. An empty list removes them all. Absent: unchanged."
+    },
+    "reason": {
+      "$ref": "../../../../../vtc/_shared/0.1/community-room.schema.json#/$defs/Reason"
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Rooms Community Update — response payload",
+      "description": "Success response to vtc/rooms/community/update. Type https://trusttasks.org/spec/vtc/rooms/community/update/0.2#response. The room as it now stands, and whether this request changed it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "room",
+        "changed",
+        "roomProfile"
+      ],
+      "properties": {
+        "room": {
+          "$ref": "../../../../../vtc/_shared/0.3/community-room.schema.json#/$defs/CommunityRoomV2"
+        },
+        "changed": {
+          "type": "boolean",
+          "description": "`false` when every value given already matched what the room had: nothing was written, `detailsUpdatedAt` and `detailsUpdatedBy` did not move, and no change was audited."
+        },
+        "roomProfile": {
+          "type": "string",
+          "enum": [
+            "written",
+            "pending",
+            "unchanged"
+          ],
+          "description": "Whether the room's own profile — sealed inside the room for its members — now carries the new label and description. `written`: it does. `pending`: the details changed and the profile has not yet been re-written — the room is lapsed, or its VTA or host did not answer, or refused — and the community will keep trying. `unchanged`: nothing the profile carries changed (only tags, or `changed: false`), so nothing was written."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

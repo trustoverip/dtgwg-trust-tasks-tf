@@ -1,0 +1,245 @@
+[
+  {
+    "note": "No roomId — the task reads one room; enumeration is vtc/rooms/list.",
+    "payload": {}
+  },
+  {
+    "note": "A record filter — the host returns nothing derived from a room's contents.",
+    "payload": {
+      "roomId": "room:z6MkRoomExample0001",
+      "recordKey": "k1"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A member list — the host has none, and per-member figures belong to vtc/rooms/usage.",
+    "payload": {
+      "room": {
+        "roomId": "room:z6MkRoomExample0001",
+        "ownerDid": "did:example:owner",
+        "visibility": "attributed",
+        "retentionPolicy": "chained",
+        "epoch": 7,
+        "lifecycle": "live",
+        "retentionDays": 30,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-09-21T14:13:20Z"
+      },
+      "storage": {
+        "configId": "eu-s3-primary",
+        "earlierConfigs": []
+      },
+      "limits": {
+        "limits": {
+          "filesEnabled": true
+        },
+        "roomSource": "policy",
+        "memberSource": "policy"
+      },
+      "usage": {
+        "room": {
+          "files": 0,
+          "bytes": 0,
+          "reservedBytes": 0
+        },
+        "orphans": {
+          "files": 0,
+          "bytes": 0
+        }
+      },
+      "members": [
+        "did:example:member"
+      ]
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A migration without toConfig — after a reassignment during the migration, the assigned config is not where it moves blobs, so a reader cannot tell otherwise.",
+    "payload": {
+      "room": {
+        "roomId": "room:z6MkRoomExample0001",
+        "ownerDid": "did:example:owner",
+        "visibility": "attributed",
+        "retentionPolicy": "chained",
+        "epoch": 7,
+        "lifecycle": "live",
+        "epochExpiresAt": "2027-01-01T00:00:00Z",
+        "retentionDays": 30,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-09-21T14:13:20Z"
+      },
+      "storage": {
+        "configId": "eu-s3-primary",
+        "earlierConfigs": [
+          {
+            "configId": "local-default",
+            "files": 12,
+            "bytes": 48234496
+          }
+        ],
+        "migration": {
+          "migrationId": "6f1c2b3a-4d5e-4f60-8172-93a4b5c6d7e8",
+          "state": "running",
+          "totalFiles": 12,
+          "totalBytes": 48234496,
+          "doneFiles": 5,
+          "doneBytes": 20971520
+        }
+      },
+      "limits": {
+        "limits": {
+          "filesEnabled": true,
+          "room": {
+            "maxFiles": 10000,
+            "maxFileBytes": 104857600,
+            "maxBytes": 5368709120
+          },
+          "member": {
+            "maxFiles": 2000,
+            "maxFileBytes": 104857600,
+            "maxBytes": 1073741824
+          }
+        },
+        "roomSource": "override",
+        "memberSource": "policy",
+        "hostCeilingBytes": 1073741824
+      },
+      "usage": {
+        "room": {
+          "files": 312,
+          "bytes": 1288490188,
+          "reservedBytes": 4718880,
+          "reservedFiles": 1
+        },
+        "orphans": {
+          "files": 3,
+          "bytes": 9437184,
+          "oldestOrphanedAt": "2026-10-05T08:12:00Z"
+        }
+      },
+      "largestBlobs": [
+        {
+          "size": 98566144,
+          "configId": "eu-s3-primary",
+          "createdAt": "2026-09-30T14:02:11Z"
+        }
+      ],
+      "membersWithUsage": 9
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A migration state outside the shared MigrationState set.",
+    "payload": {
+      "room": {
+        "roomId": "room:z6MkRoomExample0001",
+        "ownerDid": "did:example:owner",
+        "visibility": "attributed",
+        "retentionPolicy": "chained",
+        "epoch": 7,
+        "lifecycle": "live",
+        "epochExpiresAt": "2027-01-01T00:00:00Z",
+        "retentionDays": 30,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-09-21T14:13:20Z"
+      },
+      "storage": {
+        "configId": "eu-s3-primary",
+        "earlierConfigs": [
+          {
+            "configId": "local-default",
+            "files": 12,
+            "bytes": 48234496
+          }
+        ],
+        "migration": {
+          "migrationId": "6f1c2b3a-4d5e-4f60-8172-93a4b5c6d7e8",
+          "toConfig": "eu-s3-primary",
+          "state": "cancelled",
+          "totalFiles": 12,
+          "totalBytes": 48234496,
+          "doneFiles": 5,
+          "doneBytes": 20971520
+        }
+      },
+      "limits": {
+        "limits": {
+          "filesEnabled": true,
+          "room": {
+            "maxFiles": 10000,
+            "maxFileBytes": 104857600,
+            "maxBytes": 5368709120
+          },
+          "member": {
+            "maxFiles": 2000,
+            "maxFileBytes": 104857600,
+            "maxBytes": 1073741824
+          }
+        },
+        "roomSource": "override",
+        "memberSource": "policy",
+        "hostCeilingBytes": 1073741824
+      },
+      "usage": {
+        "room": {
+          "files": 312,
+          "bytes": 1288490188,
+          "reservedBytes": 4718880,
+          "reservedFiles": 1
+        },
+        "orphans": {
+          "files": 3,
+          "bytes": 9437184,
+          "oldestOrphanedAt": "2026-10-05T08:12:00Z"
+        }
+      },
+      "largestBlobs": [
+        {
+          "size": 98566144,
+          "configId": "eu-s3-primary",
+          "createdAt": "2026-09-30T14:02:11Z"
+        }
+      ],
+      "membersWithUsage": 9
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A host record whose createdAt is integer seconds — the 0.2 encoding; an instant is an RFC 3339 date-time string from 0.3 on.",
+    "payload": {
+      "room": {
+        "roomId": "room:z6MkRoomExample0001",
+        "ownerDid": "did:example:owner",
+        "visibility": "attributed",
+        "retentionPolicy": "chained",
+        "epoch": 7,
+        "lifecycle": "live",
+        "retentionDays": 30,
+        "createdAt": 1767225600,
+        "updatedAt": "2026-09-21T14:13:20Z"
+      },
+      "storage": {
+        "configId": "eu-s3-primary",
+        "earlierConfigs": []
+      },
+      "limits": {
+        "limits": {
+          "filesEnabled": true
+        },
+        "roomSource": "policy",
+        "memberSource": "policy"
+      },
+      "usage": {
+        "room": {
+          "files": 0,
+          "bytes": 0,
+          "reservedBytes": 0
+        },
+        "orphans": {
+          "files": 0,
+          "bytes": 0
+        }
+      }
+    }
+  }
+]

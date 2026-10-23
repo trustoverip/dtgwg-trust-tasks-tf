@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/rooms/list/0.2",
+  "title": "VTC Rooms — List — payload",
+  "description": "A community administrator pages through the data rooms this community hosts, as their host can honestly describe them. The outer document members are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "lifecycle": {
+      "$ref": "#/$defs/RoomLifecycle"
+    },
+    "cursor": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "An opaque continuation token from a previous response's `nextCursor`; a responder MUST NOT accept a cursor it did not issue."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "description": "The most items to return; the responder chooses a default (50 in the reference implementation) and MAY return fewer."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "RoomLifecycle": {
+      "title": "RoomLifecycle",
+      "type": "string",
+      "enum": [
+        "live",
+        "lapsed",
+        "dormant",
+        "reclaimable"
+      ],
+      "description": "Where a room sits on the hosting lifecycle clock, computed at the time of the read from its epoch expiry and retention: `live`, `lapsed`, `dormant` or `reclaimable`. Computed, never stored — minting an epoch is the renewal."
+    },
+    "HostedRoom": {
+      "title": "HostedRoom",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roomId",
+        "ownerDid",
+        "visibility",
+        "retentionPolicy",
+        "epoch",
+        "lifecycle",
+        "retentionDays",
+        "createdAt",
+        "updatedAt"
+      ],
+      "description": "One room, as its host holds it: who is accountable for it, its tier, its epoch and its place on the lifecycle clock. Nothing derived from the room's contents, and no member list — the host has none.",
+      "properties": {
+        "roomId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "The room's identifier, as its owner minted it."
+        },
+        "ownerDid": {
+          "type": "string",
+          "pattern": "^did:",
+          "maxLength": 2048,
+          "description": "The accountable party — visible at every tier, including `private`, because it is who the host must reach about quota, abuse and reclamation."
+        },
+        "visibility": {
+          "$ref": "../../../../rooms/_shared/0.1/room.schema.json#/$defs/Visibility"
+        },
+        "retentionPolicy": {
+          "$ref": "../../../../rooms/_shared/0.1/room.schema.json#/$defs/RetentionPolicy"
+        },
+        "epoch": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The room's current epoch."
+        },
+        "lifecycle": {
+          "$ref": "#/$defs/RoomLifecycle"
+        },
+        "epochExpiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the current epoch expires. Absent means the room never lapses."
+        },
+        "retentionDays": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How long the host keeps the room after it lapses, in days."
+        },
+        "mirrorOf": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "Present when this host serves a read-only copy, naming the primary it pulls from."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the room was created here."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the room's host record last changed."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Rooms — List — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "$ref": "#/$defs/HostedRoom"
+          }
+        },
+        "nextCursor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "description": "Present when more remain; pass it as `cursor`. Absent on the last page — never `null`."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}
