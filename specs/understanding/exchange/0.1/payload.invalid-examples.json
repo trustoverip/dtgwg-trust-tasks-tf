@@ -1,0 +1,30 @@
+[
+  {
+    "note": "Missing offerId — nothing names which terms version the answers are about.",
+    "payload": {
+      "answers": [{ "questionId": "retention-period", "answer": "12-months" }]
+    }
+  },
+  {
+    "note": "Empty answers array — an exchange with no answers demonstrates nothing.",
+    "payload": {
+      "offerId": "urn:uuid:1a2b3c4d-0001-4000-8000-000000000002",
+      "answers": []
+    }
+  },
+  {
+    "note": "Answer missing questionId — SPEC requires both members of every Answer.",
+    "payload": {
+      "offerId": "urn:uuid:1a2b3c4d-0001-4000-8000-000000000002",
+      "answers": [{ "answer": "12-months" }]
+    }
+  },
+  {
+    "note": "Unknown top-level payload member — additionalProperties: false catches `score`, which belongs only in the response.",
+    "payload": {
+      "offerId": "urn:uuid:1a2b3c4d-0001-4000-8000-000000000002",
+      "answers": [{ "questionId": "retention-period", "answer": "12-months" }],
+      "score": 0.9
+    }
+  }
+]
