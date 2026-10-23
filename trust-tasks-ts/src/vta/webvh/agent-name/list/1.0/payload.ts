@@ -3,7 +3,7 @@
  * Source: specs/vta/webvh/agent-name/list/1.0/payload.schema.json
  */
 
-import type { AgentNameEntry, Ext } from "../../../../../_shared/components.js";
+import type { AgentNameEntry_VtaV0_1 as AgentNameEntry, Ext } from "../../../../../_shared/components.js";
 
 
 /**

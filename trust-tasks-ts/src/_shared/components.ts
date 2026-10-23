@@ -4526,7 +4526,7 @@ export interface AdmittedMembership {
 /**
  * An agent name bound to a DID. A name is only ever authoritative in the DID→name direction: the DID document's `alsoKnownAs` is what proves the binding, because anyone controlling a domain can point a name at somebody else's DID.
  */
-export interface AgentNameEntry {
+export interface AgentNameEntry_VtaV0_1 {
   /**
    * The name, without the host — the full form is `<host>/@<name>`.
    */
@@ -4539,6 +4539,24 @@ export interface AgentNameEntry {
    * Unix epoch seconds.
    */
   createdAt?: number;
+  ext?: Ext;
+}
+/**
+ * An agent name bound to a DID. A name is only ever authoritative in the DID→name direction: the DID document's `alsoKnownAs` is what proves the binding, because anyone controlling a domain can point a name at somebody else's DID.
+ */
+export interface AgentNameEntry_VtaV0_7 {
+  /**
+   * The name, without the host — the full form is `<host>/@<name>`.
+   */
+  name: string;
+  /**
+   * Whether the name currently resolves. A disabled name is still held — it is not available for anyone else to take.
+   */
+  enabled: boolean;
+  /**
+   * When the entry was created (RFC 3339).
+   */
+  createdAt?: string;
   ext?: Ext;
 }
 /**
@@ -6502,6 +6520,69 @@ export interface DidTemplateRecord_VtaV0_2 {
    * UTC unix-epoch seconds of the last write.
    */
   updatedAt: number;
+  /**
+   * DID of the admin who last wrote the template.
+   */
+  createdBy: string;
+}
+/**
+ * A persisted template. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/create/update and carried per-item by list.
+ */
+export interface DidTemplateRecord_VtaV0_7 {
+  /**
+   * Template schema version. 1 is the historical shape, whose keys are implicitly an Ed25519 signing key and an X25519 key-agreement key. 2 adds the `keys` block, which makes those explicit and allows others.
+   */
+  schemaVersion: 1 | 2;
+  name: string;
+  kind: string;
+  description?: string | null;
+  methods?: string[];
+  requiredVars?: string[];
+  optionalVars?: {
+    [k: string]: unknown | undefined;
+  };
+  defaults?: {
+    [k: string]: unknown | undefined;
+  };
+  /**
+   * The keys this template needs, by slot name. REQUIRES `schemaVersion` 2.
+   *
+   * A slot's name becomes a document placeholder by an explicit rule — uppercase, `-` to `_`, suffix `_KEY_MB` — so slot `signing` is rendered into `{SIGNING_KEY_MB}` and slot `ka` into `{KA_KEY_MB}`. Those are the two names a `schemaVersion` 1 template already uses, which is deliberate: a v1 template is exactly a v2 template whose `keys` block is `{signing: [ed25519], ka: [x25519]}`, so an implementation can read both through one path and raising the version cannot change how a v1 template renders.
+   *
+   * An implementation MUST refuse a template that declares a slot whose placeholder never appears in `document` — the key would be minted and never published, so verifiers would continue to see only the keys that are, while the operator believes the template migrated. It MUST likewise refuse a slot placeholder in `document` that no slot declares, which would render as an unsubstituted literal.
+   */
+  keys?: {
+    [k: string]:
+      | {
+          /**
+           * What the key is for. Deliberately coarser than DID Core's five verification relationships: the template says what the key is, and the `document` body says where it appears. Encoding the relationship here as well would let the two disagree.
+           */
+          purpose: "signing" | "keyAgreement";
+          /**
+           * Acceptable algorithms, MOST PREFERRED FIRST. A list rather than a single value because a fleet does not migrate atomically: `["mldsa44", "ed25519"]` means mint ML-DSA-44 where the implementation can and Ed25519 otherwise, so one template serves a VTA with post-quantum support and one without. An implementation MUST NOT substitute an algorithm absent from this list; running out of candidates is an error, never a silent downgrade — a deployment intended to be post-quantum would otherwise ship classical keys with nothing reporting it. `minItems: 1` for the same reason: an empty list would express no preference and inherit whatever the implementation defaulted to.
+           *
+           * @minItems 1
+           */
+          algorithms: [
+            "ed25519" | "x25519" | "p256" | "mldsa44" | "mldsa65",
+            ...("ed25519" | "x25519" | "p256" | "mldsa44" | "mldsa65")[]
+          ];
+        }
+      | undefined;
+  };
+  document: {};
+  /**
+   * Resolved scope of the stored template.
+   */
+  scope: Scope_VtaV0_1;
+  /**
+   * When the template was first stored (RFC 3339).
+   */
+  createdAt: string;
+  /**
+   * When the template was last written (RFC 3339).
+   */
+  updatedAt: string;
   /**
    * DID of the admin who last wrote the template.
    */

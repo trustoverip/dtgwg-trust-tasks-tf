@@ -1597,6 +1597,7 @@ mod vta {
         mod create {
             mod v1_0;
             mod v2_0;
+            mod v3_1;
         }
         mod delete {
             mod v1_0;
@@ -1605,10 +1606,12 @@ mod vta {
         mod get {
             mod v1_0;
             mod v2_0;
+            mod v3_1;
         }
         mod list {
             mod v1_0;
             mod v2_0;
+            mod v3_1;
         }
         mod render {
             mod v1_0;
@@ -1617,6 +1620,7 @@ mod vta {
         mod update {
             mod v1_0;
             mod v2_0;
+            mod v3_1;
         }
     }
     mod health {
@@ -1799,6 +1803,7 @@ mod vta {
             }
             mod list {
                 mod v1_0;
+                mod v1_1;
             }
             mod remove {
                 mod v1_0;

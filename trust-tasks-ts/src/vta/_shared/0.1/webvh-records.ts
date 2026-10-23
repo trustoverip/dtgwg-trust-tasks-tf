@@ -14,4 +14,4 @@ export interface WebVHRecordsSharedDefinitionsForTheVtaWebvhSpecFamily {
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../_shared/components.js".
  */
-export type { AgentNameEntry, WebvhDidRecord, WebvhServerRecord } from "../../../_shared/components.js";
+export type { AgentNameEntry_VtaV0_1 as AgentNameEntry, WebvhDidRecord, WebvhServerRecord } from "../../../_shared/components.js";
