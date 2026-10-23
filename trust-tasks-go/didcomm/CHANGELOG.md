@@ -3,6 +3,18 @@
 All notable changes to `trust-tasks-go/didcomm` are documented here. Entries are
 generated from conventional commits by the release automation (see RELEASING.md).
 
+## 0.2.1 — 2026-10-23
+
+
+### Fixed
+
+- **go**: The DIDComm and TSP consumers leave the replay claim to the core (#896)
+
+Core v0.9.3 releases the claim itself when a handler returns an error that
+  is not a Refusal (#876), so the didcomm and tsp modules now require it and
+  no longer release a second time. TestConsumerHandlerErrorReleasesClaim
+  still passes, now on the core's release.
+
 ## 0.2.0 — 2026-09-16
 
 
