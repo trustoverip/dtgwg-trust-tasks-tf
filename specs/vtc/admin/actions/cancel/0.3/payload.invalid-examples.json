@@ -1,0 +1,112 @@
+[
+  {
+    "note": "`actionId` is required.",
+    "payload": {
+      "reason": "No longer needed."
+    }
+  },
+  {
+    "note": "`reason` over 500 characters — it is shown to every approver and kept in the audit record.",
+    "payload": {
+      "actionId": "act_7Hq2mZp9Lx4vRk8T",
+      "reason": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    }
+  },
+  {
+    "note": "Unknown top-level member — cancellation takes no `force` override.",
+    "payload": {
+      "actionId": "act_7Hq2mZp9Lx4vRk8T",
+      "force": true
+    }
+  },
+  {
+    "note": "Response action with an unknown member.",
+    "variant": "response",
+    "payload": {
+      "action": {
+        "actionId": "act_7Hq2mZp9Lx4vRk8T",
+        "category": "approval",
+        "kind": "acl.grant.authority",
+        "typeUri": "https://trusttasks.org/spec/acl/grant/0.1",
+        "requester": "did:web:alice.example",
+        "status": "open",
+        "createdAt": "2026-10-02T08:00:00Z",
+        "expiresAt": "2026-10-05T08:00:00Z",
+        "threshold": 2,
+        "approvals": [],
+        "summary": {
+          "title": "Grant administrative authority",
+          "fields": {
+            "grantee": {
+              "pointer": "/entry/subject",
+              "format": "did",
+              "value": "did:web:carol.example"
+            }
+          },
+          "templateDigest": "zQmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco"
+        },
+        "payload": {
+          "entry": {
+            "subject": "did:web:carol.example",
+            "role": "admin"
+          }
+        },
+        "payloadDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
+        "callerRole": "requester",
+        "cancelledBy": "did:web:alice.example"
+      }
+    }
+  },
+  {
+    "note": "0.2's `approvals[].at` does not exist in 0.3; when the decision was recorded is `decidedAt`.",
+    "variant": "response",
+    "payload": {
+      "action": {
+        "actionId": "act_7Hq2mZp9Lx4vRk8T",
+        "category": "approval",
+        "kind": "acl.grant.authority",
+        "typeUri": "https://trusttasks.org/spec/acl/grant/0.1",
+        "requester": "did:web:alice.example",
+        "status": "cancelled",
+        "createdAt": "2026-10-02T08:00:00Z",
+        "expiresAt": "2026-10-05T08:00:00Z",
+        "closedAt": "2026-10-02T10:30:01Z",
+        "closedReason": "cancelledByRequester",
+        "threshold": 2,
+        "approvals": [
+          {
+            "subject": "did:web:dana.example",
+            "at": "2026-10-02T08:40:12Z"
+          }
+        ],
+        "summary": {
+          "title": "Grant administrative authority",
+          "effect": "The named DID becomes an administrator of this community with the role shown.",
+          "fields": {
+            "grantee": {
+              "pointer": "/entry/subject",
+              "format": "did",
+              "value": "did:web:carol.example"
+            },
+            "role": {
+              "pointer": "/entry/role",
+              "format": "text",
+              "value": "admin"
+            }
+          },
+          "templateDigest": "zQmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco"
+        },
+        "payload": {
+          "entry": {
+            "subject": "did:web:carol.example",
+            "role": "admin",
+            "label": "Carol — operations"
+          }
+        },
+        "payloadDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
+        "callerRole": "requester",
+        "requesterOpenActions": 0
+      }
+    }
+  }
+]

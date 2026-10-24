@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/rooms/offers/list/0.4",
+  "title": "VTC Rooms Offers List — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "cursor": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "Opaque continuation token from a previous page's `nextCursor`."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "description": "Page size. The community chooses when absent (50 in the reference implementation)."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Rooms Offers List — response payload",
+      "description": "Success response to vtc/rooms/offers/list. Type https://trusttasks.org/spec/vtc/rooms/offers/list/0.4#response. The offers addressed to the caller, and the renewals of admissions they hold, and no one else's.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "$ref": "../../../../../vtc/_shared/0.4/community-room.schema.json#/$defs/OfferV2"
+          }
+        },
+        "renewals": {
+          "type": "array",
+          "maxItems": 100,
+          "description": "Renewals of admissions the caller holds, each with the two credentials to store in place of the ones it renews. Present only on the page answered without a `cursor`, in full; absent on every later page and when there are none.",
+          "items": {
+            "$ref": "../../../../../vtc/_shared/0.4/community-room.schema.json#/$defs/Renewal"
+          }
+        },
+        "nextCursor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "description": "Present when more remain; pass it as `cursor`."
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

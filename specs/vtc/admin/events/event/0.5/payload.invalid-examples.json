@@ -1,0 +1,125 @@
+[
+  {
+    "note": "Room identifier in a communityRooms hint — additionalProperties: false catches `roomId`. Which community room changed is the owner's data; it reaches the console only through vtc/rooms/community/get and list.",
+    "payload": {
+      "topic": "communityRooms",
+      "observedAt": "2026-10-22T09:15:00Z",
+      "resumeToken": "evt.000160",
+      "roomId": "did:webvh:QmRoomScid:community.example:rooms:board"
+    }
+  },
+  {
+    "note": "Member DID in a communityRooms hint — additionalProperties: false catches `member`. Whose admission was accepted, or whose removal is owed, is read through vtc/rooms/community/members/list, never pushed.",
+    "payload": {
+      "topic": "communityRooms",
+      "observedAt": "2026-10-22T09:15:00Z",
+      "resumeToken": "evt.000161",
+      "member": "did:web:carol.example"
+    }
+  },
+  {
+    "note": "What changed in a communityRooms hint — additionalProperties: false catches `state`. A hint says the owner's view changed, never how (a removal owed, a profile pending): the console learns that from the reads.",
+    "payload": {
+      "topic": "communityRooms",
+      "observedAt": "2026-10-22T09:15:00Z",
+      "resumeToken": "evt.000162",
+      "state": "removalOwed"
+    }
+  },
+  {
+    "note": "Record identifier in a directory hint — additionalProperties: false catches `entryId`. Which entry changed is directory data; an administrator who cannot read that entry would learn it exists.",
+    "payload": {
+      "topic": "directory",
+      "observedAt": "2026-10-18T09:15:00Z",
+      "resumeToken": "evt.000150",
+      "entryId": "e_7Hq2mZp9Lx4v"
+    }
+  },
+  {
+    "note": "Record identifier in a groups hint — additionalProperties: false catches `groupId`. A groups hint says the groups pages changed, never which group.",
+    "payload": {
+      "topic": "groups",
+      "observedAt": "2026-10-18T09:15:00Z",
+      "resumeToken": "evt.000151",
+      "groupId": "grp_mentors"
+    }
+  },
+  {
+    "note": "A note's text in a directory hint — additionalProperties: false catches `note`. Administrators' notes reach the console only through the notes read.",
+    "payload": {
+      "topic": "directory",
+      "observedAt": "2026-10-18T09:15:00Z",
+      "resumeToken": "evt.000152",
+      "note": "Asked to be removed from the mentors group."
+    }
+  },
+  {
+    "note": "Record data in a hint — additionalProperties: false catches `actionId`. An event says which topic to re-read, never what changed; the record comes from the signed read, where authorization is decided.",
+    "payload": {
+      "topic": "actions",
+      "observedAt": "2026-10-03T09:15:00Z",
+      "count": 2,
+      "resumeToken": "evt.000142",
+      "actionId": "act_7Hq2mZp9Lx4vRk8T"
+    }
+  },
+  {
+    "note": "Personal data in a hint — additionalProperties: false catches `applicant`. A join-request hint carries a count, never who applied.",
+    "payload": {
+      "topic": "joinRequests",
+      "observedAt": "2026-10-03T09:15:00Z",
+      "count": 1,
+      "resumeToken": "evt.000143",
+      "applicant": "did:web:dave.example"
+    }
+  },
+  {
+    "note": "`topic` outside the closed enum — each topic is bound to the read that authorizes it, so an unknown topic has no read to check entitlement against.",
+    "payload": {
+      "topic": "auditLog",
+      "observedAt": "2026-10-03T09:15:00Z",
+      "resumeToken": "evt.000144"
+    }
+  },
+  {
+    "note": "`resumeToken` is required — without it a console that reconnects cannot resume, and must re-read everything.",
+    "payload": {
+      "topic": "members",
+      "observedAt": "2026-10-03T09:15:00Z"
+    }
+  },
+  {
+    "note": "Negative `count` — a badge count cannot be below zero.",
+    "payload": {
+      "topic": "acknowledgements",
+      "observedAt": "2026-10-03T09:15:00Z",
+      "count": -1,
+      "resumeToken": "evt.000145"
+    }
+  },
+  {
+    "note": "`observedAt` must be an RFC 3339 date-time.",
+    "payload": {
+      "topic": "config",
+      "observedAt": "just now",
+      "resumeToken": "evt.000146"
+    }
+  },
+  {
+    "note": "`resumeToken` with a newline — it is carried as the SSE `id` field over HTTPS, where a line break would end the field and corrupt the stream.",
+    "payload": {
+      "topic": "singleAdminMode",
+      "observedAt": "2026-10-03T09:15:00Z",
+      "resumeToken": "evt.000147\ndata: {}"
+    }
+  },
+  {
+    "note": "0.4's `at` does not exist in 0.5; when the community observed the change is `observedAt`.",
+    "payload": {
+      "topic": "actions",
+      "at": "2026-10-03T09:12:40Z",
+      "count": 2,
+      "resumeToken": "evt.000148"
+    }
+  }
+]

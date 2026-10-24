@@ -1,0 +1,34 @@
+[
+  {
+    "note": "Missing id.",
+    "payload": {}
+  },
+  {
+    "note": "An id that is not a UUID.",
+    "payload": {
+      "id": "edge-1"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A state object with an unknown member.",
+    "payload": {
+      "id": "4f3e2d1c-0b9a-4887-9766-5544332211aa",
+      "state": {
+        "state": "yes",
+        "restoredBy": "did:example:administrator"
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "0.1's `at` does not exist in 0.2; when a superseded or withdrawn edge stopped being in force is `endedAt`.",
+    "payload": {
+      "id": "4f3e2d1c-0b9a-4887-9766-5544332211aa",
+      "state": {
+        "state": "withdrawn",
+        "at": "2026-05-01T12:00:00Z"
+      }
+    }
+  }
+]
