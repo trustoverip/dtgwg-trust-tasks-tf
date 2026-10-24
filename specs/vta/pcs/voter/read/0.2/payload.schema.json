@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vta/pcs/voter/read/0.2",
+  "title": "VTA PCS — Voter Read — payload",
+  "description": "A voter's client asks its VTA for a vtc/elections/list or vtc/elections/show request signed as the voter's membership DID, so the client can read the community's elections as the member without holding the member's key.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contextId",
+    "community",
+    "member",
+    "read",
+    "payload"
+  ],
+  "properties": {
+    "contextId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "The context the voter belongs to."
+    },
+    "community": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "The community's DID: the recipient of the signed request."
+    },
+    "member": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "pattern": "^did:",
+      "description": "The voter's membership DID at the community. MUST be a DID the engine holds an authentication key of that the caller may act as."
+    },
+    "read": {
+      "type": "string",
+      "enum": [
+        "list",
+        "show"
+      ],
+      "description": "Which read to sign: vtc/elections/list/0.3 or vtc/elections/show/0.2."
+    },
+    "payload": {
+      "type": "object",
+      "description": "The request payload of that task, validated against its own schema."
+    },
+    "ext": {
+      "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "ReadDocument": {
+      "title": "ReadDocument",
+      "description": "A complete, signed vtc/elections/list/0.3 or vtc/elections/show/0.2 request document, ready to send to the community unchanged.",
+      "type": "object",
+      "required": [
+        "id",
+        "type",
+        "issuer",
+        "recipient",
+        "issuedAt",
+        "payload",
+        "proof"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "https://trusttasks.org/spec/vtc/elections/list/0.3",
+            "https://trusttasks.org/spec/vtc/elections/show/0.2"
+          ]
+        },
+        "issuer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The request's `member`."
+        },
+        "recipient": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The request's `community`."
+        },
+        "issuedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "payload": {
+          "type": "object",
+          "description": "The request's `payload`, exactly."
+        },
+        "proof": {
+          "type": "object",
+          "description": "A Data Integrity proof by an `authentication` key of `issuer`."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTA PCS — Voter Read — response payload",
+      "description": "The signed read, to send to the community.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "document"
+      ],
+      "properties": {
+        "document": {
+          "$ref": "#/$defs/ReadDocument"
+        },
+        "ext": {
+          "$ref": "../../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

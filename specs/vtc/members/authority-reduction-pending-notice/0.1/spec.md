@@ -100,7 +100,7 @@ A conforming **producer** (the community) **MUST**:
 2. Send it when the reduction is parked as a `coolingOff` action, and not for a reduction that takes effect at once or that awaits another administrator's consent — those are reported, when they land, by [`authority-reduced-notice`](../../authority-reduced-notice/0.1/spec.md) alone.
 3. Set `landsAt` and `actionId` to the parked action's `landsAt` and `actionId`, and `requestedAt` to the action's `createdAt`.
 4. Omit `resultingRole` exactly when `code` is `revoked`, and include it otherwise.
-5. Show the parked action to the subject, with `callerRole: subject`, on [`vtc/admin/actions/show/0.2`](../../../admin/actions/show/0.2/spec.md) for as long as the subject keeps the standing to call it.
+5. Show the parked action to the subject, with `callerRole: subject`, on [`vtc/admin/actions/show`](../../../admin/actions/show/0.3/spec.md) (0.2 or later) for as long as the subject keeps the standing to call it.
 6. When the reduction lands, send [`authority-reduced-notice`](../../authority-reduced-notice/0.1/spec.md) with `agreement: unopposed`; when its requester cancels it, send no authority-reduced notice.
 
 A conforming **producer** **MUST NOT** make the reduction's landing conditional on delivery of this notice. Delivery is best-effort over an asynchronous transport, and a reduction that waited on it would hand the subject a veto by unreachability.
