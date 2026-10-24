@@ -1,0 +1,13 @@
+[
+  { "note": "Missing publicUrl.", "payload": { "instanceId": "i", "did": "d", "servedDomains": [] } },
+  { "note": "Missing servedDomains.", "payload": { "instanceId": "i", "did": "d", "publicUrl": "https://x" } },
+  {
+    "note": "0.1's `lastSeen` does not exist in 0.2; it is `lastSeenAt`.",
+    "variant": "response",
+    "payload": {
+      "instanceId": "did_web_node1_example_com",
+      "accepted": true,
+      "lastSeen": "2026-06-20T09:00:01Z"
+    }
+  }
+]

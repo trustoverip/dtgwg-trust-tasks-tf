@@ -1,0 +1,15 @@
+[
+  { "note": "Missing publicUrl.", "payload": { "instanceId": "i", "did": "d" } },
+  { "note": "Missing did.", "payload": { "instanceId": "i", "publicUrl": "https://x" } },
+  {
+    "note": "0.1's `lastSeen` does not exist in 0.2; the entry's instant is `lastSeenAt` (did-management/_shared/0.3/registered-instance).",
+    "variant": "response",
+    "payload": {
+      "entry": {
+        "instanceId": "did_web_node2_example_com",
+        "did": "did:web:node2.example.com",
+        "lastSeen": "2026-06-23T09:00:01Z"
+      }
+    }
+  }
+]

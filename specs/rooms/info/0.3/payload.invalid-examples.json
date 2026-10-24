@@ -1,0 +1,161 @@
+[
+  {
+    "note": "No presentation. The host answers about a room only to a party the room itself has authorized to read it; a host-side account or session is never the authority in this family.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal"
+    }
+  },
+  {
+    "note": "Asking for another member's figures. A member reads the room's totals and their own; per-member usage is the room owner's read (rooms/usage), and an unknown member is refused rather than ignored.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "presentation": {
+        "membership": "m",
+        "authority": [
+          "a"
+        ]
+      },
+      "member": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A response with no room totals. `usage.room` is what a member checks a file against before uploading it; a response without it cannot answer the question the task exists for.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "visibility": "attributed",
+      "epoch": 7,
+      "limits": {
+        "filesEnabled": true
+      },
+      "usage": {}
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A room-wide file size ceiling above 1 GiB, the transfer ceiling. No limit may promise more than the chunked transfer can carry.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "visibility": "attributed",
+      "epoch": 7,
+      "limits": {
+        "filesEnabled": true,
+        "room": {
+          "maxFileBytes": 2147483648
+        }
+      },
+      "usage": {
+        "room": {
+          "files": 0,
+          "bytes": 0,
+          "reservedBytes": 0
+        }
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "A prune marker naming the records it removed. A host keeps that records were pruned, when and how many — never which; a list of keys on an `open` room, where keys may be descriptive, is content by another name.",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "visibility": "attributed",
+      "epoch": 7,
+      "recordRetention": {
+        "tombstoneDays": 30,
+        "recordDays": 730
+      },
+      "lastPrune": {
+        "version": 118,
+        "prunedAt": "2026-10-01T00:00:05Z",
+        "removed": 14,
+        "keys": [
+          "giXFLTGBdnnQJRoIsktuIg"
+        ]
+      },
+      "limits": {
+        "filesEnabled": true,
+        "room": {
+          "maxFiles": 10000,
+          "maxFileBytes": 104857600,
+          "maxBytes": 5368709120
+        },
+        "member": {
+          "maxFiles": 2000,
+          "maxFileBytes": 104857600,
+          "maxBytes": 1073741824
+        }
+      },
+      "usage": {
+        "room": {
+          "files": 312,
+          "bytes": 1288490188,
+          "reservedBytes": 4718880,
+          "reservedFiles": 1
+        },
+        "member": {
+          "usage": {
+            "files": 41,
+            "bytes": 209600000,
+            "reservedBytes": 0
+          },
+          "limits": {
+            "maxFiles": 2000,
+            "maxFileBytes": 104857600,
+            "maxBytes": 209715200
+          }
+        }
+      }
+    }
+  },
+  {
+    "variant": "response",
+    "note": "0.2's `lastPrune.at` does not exist in 0.3; it is `prunedAt` (rooms/_shared/0.2).",
+    "payload": {
+      "roomId": "did:webvh:QmRoom:rooms.northwind.example:deal",
+      "visibility": "attributed",
+      "epoch": 7,
+      "recordRetention": {
+        "tombstoneDays": 30,
+        "recordDays": 730
+      },
+      "lastPrune": {
+        "version": 118,
+        "at": "2026-10-01T00:00:05Z",
+        "removed": 14
+      },
+      "limits": {
+        "filesEnabled": true,
+        "room": {
+          "maxFiles": 10000,
+          "maxFileBytes": 104857600,
+          "maxBytes": 5368709120
+        },
+        "member": {
+          "maxFiles": 2000,
+          "maxFileBytes": 104857600,
+          "maxBytes": 1073741824
+        }
+      },
+      "usage": {
+        "room": {
+          "files": 312,
+          "bytes": 1288490188,
+          "reservedBytes": 4718880,
+          "reservedFiles": 1
+        },
+        "member": {
+          "usage": {
+            "files": 41,
+            "bytes": 209600000,
+            "reservedBytes": 0
+          },
+          "limits": {
+            "maxFiles": 2000,
+            "maxFileBytes": 104857600,
+            "maxBytes": 209715200
+          }
+        }
+      }
+    }
+  }
+]

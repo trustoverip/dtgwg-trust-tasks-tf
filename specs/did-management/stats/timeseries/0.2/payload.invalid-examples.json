@@ -1,0 +1,20 @@
+[
+  { "note": "Missing range.", "payload": { "mnemonic": "alice" } },
+  { "note": "Range outside the enumeration.", "payload": { "range": "24h" } },
+  { "note": "Empty domain.", "payload": { "range": "lastDay", "domain": "" } },
+  {
+    "note": "0.1's `points[].at` does not exist in 0.2; the bucket's start is `startsAt`.",
+    "variant": "response",
+    "payload": {
+      "range": "lastHour",
+      "bucketSeconds": 300,
+      "points": [
+        {
+          "at": "2026-09-27T08:00:00Z",
+          "resolves": 3,
+          "updates": 0
+        }
+      ]
+    }
+  }
+]

@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/did-management/_shared/0.3/registered-instance",
+  "title": "ServiceInstance — the registry entry did-management/registry/admin-register returns",
+  "description": "0.1's `service-instance` ServiceInstance with its one instant renamed to the registry's `<event>At` convention (`lastSeen` → `lastSeenAt`) and nothing else changed. Kept apart from `service-instance.schema.json`, the richer record the registry reads return, because re-pinning admin-register to that one would change its response beyond the rename. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen).",
+  "$defs": {
+    "RegisteredInstance": {
+      "title": "RegisteredInstance",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "instanceId",
+        "did"
+      ],
+      "properties": {
+        "instanceId": {
+          "type": "string",
+          "description": "Stable identifier the control plane uses for this instance. SHOULD be derived from the instance's DID (e.g. `did:web:host.example` → `did_web_host_example`) so it survives restarts."
+        },
+        "did": {
+          "type": "string",
+          "description": "VID identifying the registered service."
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "publicUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "servedDomains": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Hosting domains this instance currently serves. Updated by `domain/assign` / `domain/unassign` ack flow."
+        },
+        "lastSeenAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.1/framework.schema.json#/$defs/Ext"
+        }
+      },
+      "description": "The `ServiceInstance` shape of `did-management/_shared/0.1`, with `lastSeen` renamed `lastSeenAt`; named apart from `service-instance.schema.json`'s `ServiceInstance`, a different shape, so the two do not collide in generated code."
+    }
+  }
+}

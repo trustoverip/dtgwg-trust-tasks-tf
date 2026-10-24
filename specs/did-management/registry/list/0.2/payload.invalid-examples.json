@@ -1,0 +1,42 @@
+[
+  { "note": "Unknown service type.", "payload": { "serviceType": "mediator" } },
+  { "note": "Unknown status.", "payload": { "status": "down" } },
+  { "note": "Paging is not offered — the registry is a small operator-scoped collection.", "payload": { "limit": 10 } },
+  {
+    "note": "0.1's `lastHealthCheck` does not exist in 0.2; it is `lastHealthCheckAt` (did-management/_shared/0.3).",
+    "variant": "response",
+    "payload": {
+      "instances": [
+        {
+          "instanceId": "did_webvh_node1_example_com",
+          "did": "did:webvh:QmNodeScid3:node1.example.com",
+          "serviceType": "server",
+          "status": "active",
+          "servedDomains": [],
+          "registeredAt": "2026-09-01T10:00:00Z",
+          "lastHealthCheck": "2026-09-27T08:54:10Z"
+        }
+      ]
+    }
+  },
+  {
+    "note": "0.1's `TransportObservation.at` does not exist in 0.2; it is `observedAt` (did-management/_shared/0.3).",
+    "variant": "response",
+    "payload": {
+      "instances": [
+        {
+          "instanceId": "did_webvh_node1_example_com",
+          "did": "did:webvh:QmNodeScid3:node1.example.com",
+          "serviceType": "server",
+          "status": "active",
+          "servedDomains": [],
+          "registeredAt": "2026-09-01T10:00:00Z",
+          "lastInbound": {
+            "transport": "tsp",
+            "at": "2026-09-27T08:59:30Z"
+          }
+        }
+      ]
+    }
+  }
+]
