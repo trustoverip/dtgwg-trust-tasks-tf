@@ -50,7 +50,7 @@ related:
 ## Abstract
 
 **VTA Services Drain — Cancel** ends a drain immediately, dropping the mediator
-now rather than at `drainsUntil`.
+now rather than at `drainEndsAt` (`drainsUntil` in a record pinned to `vta/_shared/0.1`).
 
 **Messages still in flight through it are lost.** That is not a side effect to
 be mitigated — it is the whole reason the drain window existed, and cancelling
@@ -132,7 +132,7 @@ Two failure modes are worth stating plainly:
   written locally but not published; a consumer that reports success without
   surfacing this tells the operator a change is live when no verifier can
   observe it.
-- **A drain is not a completed disable.** While `drainUntil` is in the future the
+- **A drain is not a completed disable.** While `drainEndsAt` is in the future the
   old mediator is still accepting delivery. Reporting "disabled" at that point is
   wrong in the direction that loses messages.
 
