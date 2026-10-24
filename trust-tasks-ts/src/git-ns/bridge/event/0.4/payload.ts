@@ -3,7 +3,7 @@
  * Source: specs/git-ns/bridge/event/0.4/payload.schema.json
  */
 
-import type { DriftItem, Ext, ForgeAccount, ForgeHost, ForgeId, NamespaceId, RepoResource } from "../../../../_shared/components.js";
+import type { DriftItem_GitNsV0_1 as DriftItem, Ext, ForgeAccount_GitNsV0_1 as ForgeAccount, ForgeHost_GitNsV0_1 as ForgeHost, ForgeId_GitNsV0_1 as ForgeId, NamespaceId, RepoResource_GitNsV0_1 as RepoResource } from "../../../../_shared/components.js";
 
 
 /**

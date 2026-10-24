@@ -885,11 +885,19 @@ export type FileData = string;
 /**
  * The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, or a self-hosted Forgejo instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.
  */
-export type ForgeHost = string;
+export type ForgeHost_GitNsV0_1 = string;
+/**
+ * The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, `gitlab.com`, or a self-hosted Forgejo or GitLab instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.
+ */
+export type ForgeHost_GitNsV0_6 = string;
 /**
  * An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub and Forgejo ids are decimal integers written as strings (`"812736451"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.
  */
-export type ForgeId = string;
+export type ForgeId_GitNsV0_1 = string;
+/**
+ * An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub, Forgejo and GitLab ids are decimal integers written as strings (`"812736451"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.
+ */
+export type ForgeId_GitNsV0_6 = string;
 /**
  * Validity of a grant the sweep issues, in seconds: between one day and two years, the bounds vtc/vetting/vetters/grant applies to an administrator's grants.
  */
@@ -1534,7 +1542,11 @@ export type ReleaseRequirement = "consent" | "stepUp";
 /**
  * A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo>`, lowercase.
  */
-export type RepoResource = string;
+export type RepoResource_GitNsV0_1 = string;
+/**
+ * A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo-path>`, lowercase, where the repository path has 1 to 21 segments (see `Resource`).
+ */
+export type RepoResource_GitNsV0_6 = string;
 /**
  * Repository visibility on the forge.
  */
@@ -1550,13 +1562,17 @@ export type RequestId = string;
  */
 export type RequestedAttributes = RequestedAttribute[];
 /**
- * A forge-qualified resource: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo>` for one repository, all lowercase — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.
- */
-export type Resource = string;
-/**
  * Opaque qualifier naming the part of the maintainer's resources a capability applies to (e.g. `git-ns:github.com/acme`, `git-repo:github.com/acme/r#4211`, `policy:join`). Its grammar and containment rule are the maintainer's: a qualified capability covers the named resource and the resources inside it. A qualifier MUST NOT be read as widening the entry's act scope.
  */
 export type ResourceQualifier = string;
+/**
+ * A forge-qualified resource: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo>` for one repository, all lowercase — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.
+ */
+export type Resource_GitNsV0_1 = string;
+/**
+ * A forge-qualified resource, all lowercase: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo-path>` for one repository — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. On a forge with nested groups (GitLab) the repository path holds the subgroups between the top-level owner and the project: `gitlab.com/acme/platform/tools/cli` is one repository of the namespace `gitlab.com/acme`, and a subgroup such as `gitlab.com/acme/platform` is not a resource. A repository path has 1 to 21 segments (GitLab: 20 levels of subgroup and the project); GitHub and Forgejo repository paths are always one. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.
+ */
+export type Resource_GitNsV0_6 = string;
 /**
  * Opaque, community-minted position in one caller's event stream. A console MUST NOT parse, construct or order it; it only hands the latest one back as `since` when it re-subscribes. A community binds it to the caller it was minted for and treats a token minted for anyone else as unknown.
  */
@@ -1770,7 +1786,11 @@ export type SecretKind_VaultV0_2 =
 /**
  * One lowercased owner or repository name. Forges compare these case-insensitively, so the wire form is always lowercase and a producer lowercases before sending. A leading `.` is refused, which rules out `.` and `..`.
  */
-export type Segment = string;
+export type Segment_GitNsV0_1 = string;
+/**
+ * One lowercased owner, group or repository name. Forges compare these case-insensitively, so the wire form is always lowercase and a producer lowercases before sending. A leading `.` is refused, which rules out `.` and `..`. Up to 255 characters, the longest name GitLab allows; GitHub and Forgejo names are shorter.
+ */
+export type Segment_GitNsV0_6 = string;
 /**
  * How carefully a value is shown TO ITS OWN HOLDER. `high` means a consumer masks it by default, reveals it one attribute at a time on a deliberate act, and — the half that is not cosmetic — omits it from a listing that did not ask for sensitive values.
  *
@@ -4961,13 +4981,13 @@ export interface AdminNote {
 /**
  * One right as the administrator's rights console shows it: a recorded `RightRecord` restated with the membership facts an administrator needs (`subjectMember`, `granterDeparted`), or a role-derived grant that carries no record. `git-ns/right/list` and `git-ns/right/issued-by-departed` are its only producers.
  */
-export interface AdminRightRow {
+export interface AdminRightRow_GitNsV0_5 {
   /**
    * Who holds the right.
    */
   subject: Did_GitNsV0_3;
   right: Right;
-  resource: Resource;
+  resource: Resource_GitNsV0_1;
   origin: RightOrigin;
   /**
    * Who caused the right (see `RightRecord.grantedBy`). Present exactly when `origin` is `recorded`; a role-derived grant is published by the hook relay from configuration, not by an actor.
@@ -4996,7 +5016,47 @@ export interface AdminRightRow {
   /**
    * Present exactly when `origin` is `recorded` and the record carries `breakGlass` — see `RightRecord.breakGlass`. Absent for a role-derived grant, which cannot be self-granted through break-glass.
    */
-  breakGlass?: BreakGlass;
+  breakGlass?: BreakGlass_GitNsV0_4;
+}
+/**
+ * One right as the administrator's rights console shows it: a recorded `RightRecord` restated with the membership facts an administrator needs (`subjectMember`, `granterDeparted`), or a role-derived grant that carries no record. `git-ns/right/list` and `git-ns/right/issued-by-departed` are its only producers.
+ */
+export interface AdminRightRow_GitNsV0_6 {
+  /**
+   * Who holds the right.
+   */
+  subject: Did_GitNsV0_3;
+  right: Right;
+  resource: Resource_GitNsV0_6;
+  origin: RightOrigin;
+  /**
+   * Who caused the right (see `RightRecord.grantedBy`). Present exactly when `origin` is `recorded`; a role-derived grant is published by the hook relay from configuration, not by an actor.
+   */
+  grantedBy?: Did_GitNsV0_3;
+  /**
+   * Present exactly when `origin` is `recorded`.
+   */
+  grantedAt?: string;
+  /**
+   * When the right lapses. Absent: no expiry, or `origin` is `roleDerived` (a role-derived grant never expires on its own — it is withdrawn by editing `[hooks.git-trust] grant_on_role`).
+   */
+  expiresAt?: string;
+  /**
+   * The granter's free-text reason, restated from the `RightRecord`. Absent when `origin` is `roleDerived`, or the record carries none.
+   */
+  reason?: string;
+  /**
+   * Whether `subject` is a current member of the community. `false` marks a right held by someone who has since left, or by an external signer the community never enrolled.
+   */
+  subjectMember: boolean;
+  /**
+   * Whether `grantedBy` was a member at the time of the grant and has since left. Always `false` when `origin` is `roleDerived`, or when the record's granter was never itself a member (the VTC's own DID, for a right it derives from configuration).
+   */
+  granterDeparted: boolean;
+  /**
+   * Present exactly when `origin` is `recorded` and the record carries `breakGlass` — see `RightRecord.breakGlass`. Absent for a role-derived grant, which cannot be self-granted through break-glass.
+   */
+  breakGlass?: BreakGlass_GitNsV0_6;
 }
 /**
  * A membership admitted directly, with the credentials issued for it — the success payload of vtc/members/admit and vtc/members/make-membership.
@@ -5851,7 +5911,7 @@ export interface Bootstrap {
 /**
  * How a self-granted right came to be, and whether another administrator has since ratified it. A record whose `breakGlass` has no `ratifiedBy` is **unratified**: it is live and published like any other right, it does not count toward the last-owner or last-admin invariants, and any community administrator or namespace admin of its namespace may revoke it. Ratification (git-ns/right/ratify) sets `ratifiedBy` and `ratifiedAt`; from then on the record is an ordinary grant, and `breakGlass` stays as its history. Never published to the Trust Registry.
  */
-export interface BreakGlass {
+export interface BreakGlass_GitNsV0_4 {
   /**
    * Who broke the glass: always the record's `subject`, restated so the flag reads on its own.
    */
@@ -5866,6 +5926,35 @@ export interface BreakGlass {
   justification: string;
   /**
    * When the right takes effect, where the community's policy imposed a delay. Absent: it took effect at `at`. Until this instant the record confers nothing and is not published, and any administrator who may revoke it may do so.
+   */
+  effectiveAt?: string;
+  /**
+   * The administrator who ratified the record — never its subject. Absent while unratified.
+   */
+  ratifiedBy?: Did_GitNsV0_3;
+  /**
+   * When it was ratified. Present exactly when `ratifiedBy` is.
+   */
+  ratifiedAt?: string;
+}
+/**
+ * How a self-granted right came to be, and whether another administrator has since ratified it. A record whose `breakGlass` has no `ratifiedBy` is **unratified**: it is live and published like any other right, it does not count toward the last-owner or last-admin invariants, and any community administrator or namespace admin of its namespace may revoke it. Ratification (git-ns/right/ratify) sets `ratifiedBy` and `ratifiedAt`; from then on the record is an ordinary grant, and `breakGlass` stays as its history. Never published to the Trust Registry.
+ */
+export interface BreakGlass_GitNsV0_6 {
+  /**
+   * Who broke the glass: always the record's `subject`, restated so the flag reads on its own.
+   */
+  by: Did_GitNsV0_3;
+  /**
+   * When the VTC recorded the break-glass.
+   */
+  recordedAt: string;
+  /**
+   * The actor's statement of why nobody else could grant this right. Shown to every community administrator, every namespace admin of the namespace and every owner of the resource; kept in the audit record; never published.
+   */
+  justification: string;
+  /**
+   * When the right takes effect, where the community's policy imposed a delay. Absent: it took effect at `recordedAt`. Until this instant the record confers nothing and is not published, and any administrator who may revoke it may do so.
    */
   effectiveAt?: string;
   /**
@@ -7567,7 +7656,7 @@ export interface DrainEntry_VtaV0_8 {
 /**
  * One difference between the forge's observed state and the VTC's projection of a repository.
  */
-export interface DriftItem {
+export interface DriftItem_GitNsV0_1 {
   /**
    * `roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.
    */
@@ -7578,11 +7667,39 @@ export interface DriftItem {
     | "requiredCheckMissing"
     | "protectionWeakened"
     | "bootstrapMissing";
-  resource: RepoResource;
+  resource: RepoResource_GitNsV0_1;
   /**
    * Whose role differs, for the three role types.
    */
-  account?: ForgeAccount;
+  account?: ForgeAccount_GitNsV0_1;
+  /**
+   * What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.
+   */
+  observed?: string;
+  /**
+   * What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing.
+   */
+  expected?: string;
+}
+/**
+ * One difference between the forge's observed state and the VTC's projection of a repository.
+ */
+export interface DriftItem_GitNsV0_6 {
+  /**
+   * `roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.
+   */
+  type:
+    | "roleAdded"
+    | "roleRemoved"
+    | "roleChanged"
+    | "requiredCheckMissing"
+    | "protectionWeakened"
+    | "bootstrapMissing";
+  resource: RepoResource_GitNsV0_6;
+  /**
+   * Whose role differs, for the three role types.
+   */
+  account?: ForgeAccount_GitNsV0_6;
   /**
    * What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.
    */
@@ -8303,9 +8420,20 @@ export interface FileManifest {
 /**
  * A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.
  */
-export interface ForgeAccount {
-  forge: ForgeHost;
-  id: ForgeId;
+export interface ForgeAccount_GitNsV0_1 {
+  forge: ForgeHost_GitNsV0_1;
+  id: ForgeId_GitNsV0_1;
+  /**
+   * The account's current login, as the forge reported it when last seen. Display only.
+   */
+  login: string;
+}
+/**
+ * A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.
+ */
+export interface ForgeAccount_GitNsV0_6 {
+  forge: ForgeHost_GitNsV0_6;
+  id: ForgeId_GitNsV0_6;
   /**
    * The account's current login, as the forge reported it when last seen. Display only.
    */
@@ -8322,15 +8450,38 @@ export interface GcsSettings {
 /**
  * The VTC's binding to one owner on one forge.
  */
-export interface GitNamespace {
+export interface GitNamespace_GitNsV0_1 {
   id: NamespaceId;
-  forge: ForgeHost;
+  forge: ForgeHost_GitNsV0_1;
   /**
    * The organisation or user on the forge, lowercased.
    */
-  owner: Segment;
+  owner: Segment_GitNsV0_1;
   /**
    * Whether the owner is an organisation or a personal account, as the forge reports it. Present once known: a bridge-mode namespace learns it when binding completes, and a manual-mode namespace MAY never learn it.
+   */
+  kind?: "organization" | "user";
+  /**
+   * `bridge` — a bridge service acts on the forge for this namespace (creates repositories, projects roles, reports drift). `manual` — no automation; people with forge access carry out the steps the VTC names, and the VTC governs the rights alone.
+   */
+  mode: "bridge" | "manual";
+  /**
+   * `pending` — binding has started and the forge-side proof has not arrived yet. `bound` — the VTC governs rights under this namespace.
+   */
+  state: "pending" | "bound";
+}
+/**
+ * The VTC's binding to one owner on one forge.
+ */
+export interface GitNamespace_GitNsV0_6 {
+  id: NamespaceId;
+  forge: ForgeHost_GitNsV0_6;
+  /**
+   * The organisation or user on the forge, lowercased.
+   */
+  owner: Segment_GitNsV0_6;
+  /**
+   * Whether the owner is an organisation or a personal account, as the forge reports it; a GitLab top-level group is an `organization`. Present once known: a bridge-mode namespace learns it when binding completes, and a manual-mode namespace MAY never learn it.
    */
   kind?: "organization" | "user";
   /**
@@ -10709,11 +10860,11 @@ export interface Renewal_VtcV0_4 {
  * One repository as the VTC records it.
  */
 export interface RepoSummary_GitNsV0_1 {
-  resource: RepoResource;
+  resource: RepoResource_GitNsV0_1;
   /**
    * The forge's repository id. Absent until the forge has confirmed the repository exists (a `pendingCreate` repository, or one adopted in bridge mode before the first inspection).
    */
-  forgeId?: ForgeId;
+  forgeId?: ForgeId_GitNsV0_1;
   visibility: RepoVisibility;
   /**
    * `pendingCreate` — the name is reserved and the repository is not yet confirmed on the forge. `active` — managed. `archived` — archived through git-ns/repo/archive; commit rights on it are revoked. `detached` — no longer governed: its namespace was unbound, or it moved outside the namespace. `orphaned` — its last owner left the community and ownership passed to the namespace admins, who have not yet named a new owner. `unmanaged` — it exists on the forge inside a bound namespace but was never created or adopted through the VTC.
@@ -10724,17 +10875,17 @@ export interface RepoSummary_GitNsV0_1 {
    */
   owners: Did_GitNsV0_1[];
   bootstrap: Bootstrap;
-  sync: Sync;
+  sync: Sync_GitNsV0_1;
 }
 /**
  * One repository as the VTC records it.
  */
 export interface RepoSummary_GitNsV0_3 {
-  resource: RepoResource;
+  resource: RepoResource_GitNsV0_1;
   /**
    * The forge's repository id. Absent until the forge has confirmed the repository exists (a `pendingCreate` repository, or one adopted in bridge mode before the first inspection).
    */
-  forgeId?: ForgeId;
+  forgeId?: ForgeId_GitNsV0_1;
   visibility: RepoVisibility;
   /**
    * `pendingCreate` — the name is reserved and the repository is not yet confirmed on the forge. `active` — managed. `archived` — archived through git-ns/repo/archive; commit rights on it are revoked. `detached` — no longer governed: its namespace was unbound, or it moved outside the namespace. `orphaned` — its last owner left the community and ownership passed to the namespace admins, who have not yet named a new owner. `unmanaged` — it exists on the forge inside a bound namespace but was never created or adopted through the VTC.
@@ -10745,7 +10896,28 @@ export interface RepoSummary_GitNsV0_3 {
    */
   owners: Did_GitNsV0_3[];
   bootstrap: Bootstrap;
-  sync: Sync;
+  sync: Sync_GitNsV0_1;
+}
+/**
+ * One repository as the VTC records it.
+ */
+export interface RepoSummary_GitNsV0_6 {
+  resource: RepoResource_GitNsV0_6;
+  /**
+   * The forge's repository id. Absent until the forge has confirmed the repository exists (a `pendingCreate` repository, or one adopted in bridge mode before the first inspection).
+   */
+  forgeId?: ForgeId_GitNsV0_6;
+  visibility: RepoVisibility;
+  /**
+   * `pendingCreate` — the name is reserved and the repository is not yet confirmed on the forge. `active` — managed. `archived` — archived through git-ns/repo/archive; commit rights on it are revoked. `detached` — no longer governed: its namespace was unbound, or it moved outside the namespace. `orphaned` — its last owner left the community and ownership passed to the namespace admins, who have not yet named a new owner. `unmanaged` — it exists on the forge inside a bound namespace but was never created or adopted through the VTC.
+   */
+  state: "pendingCreate" | "active" | "archived" | "detached" | "orphaned" | "unmanaged";
+  /**
+   * The DIDs holding `git.repo.own` on this repository by an explicit grant. Empty only for an `unmanaged` repository, and for an `orphaned` one whose ownership rests with the namespace admins by implication.
+   */
+  owners: Did_GitNsV0_3[];
+  bootstrap: Bootstrap;
+  sync: Sync_GitNsV0_6;
 }
 export interface RequestedAttribute {
   /**
@@ -10917,7 +11089,7 @@ export interface RightRecord_GitNsV0_1 {
    */
   subject: Did_GitNsV0_1;
   right: Right;
-  resource: Resource;
+  resource: Resource_GitNsV0_1;
   /**
    * The actor whose task caused the right: the granter, the creator of a repository (for its first `own`), the adopting admin, the transferring owner, or the binding admin (for the first `git.ns.admin`). The VTC's own DID for a right it derives from its configuration.
    */
@@ -10941,7 +11113,7 @@ export interface RightRecord_GitNsV0_3 {
    */
   subject: Did_GitNsV0_3;
   right: Right;
-  resource: Resource;
+  resource: Resource_GitNsV0_1;
   /**
    * The actor whose task caused the right: the granter, the creator of a repository (for its first `own`), the adopting admin, the transferring owner, or the binding admin (for the first `git.ns.admin`). The VTC's own DID for a right it derives from its configuration.
    */
@@ -10965,7 +11137,7 @@ export interface RightRecord_GitNsV0_4 {
    */
   subject: Did_GitNsV0_3;
   right: Right;
-  resource: Resource;
+  resource: Resource_GitNsV0_1;
   /**
    * The actor whose task caused the right: the granter, the creator of a repository (for its first `own`), the adopting admin, the transferring owner, or the binding admin (for the first `git.ns.admin`). The VTC's own DID for a right it derives from its configuration.
    */
@@ -10982,7 +11154,35 @@ export interface RightRecord_GitNsV0_4 {
   /**
    * Present exactly when the subject gave themselves this right through git-ns/right/break-glass. Absent for every other record.
    */
-  breakGlass?: BreakGlass;
+  breakGlass?: BreakGlass_GitNsV0_4;
+}
+/**
+ * One recorded right. Implied rights (§4.2 of the rights model: `own` implies `maintain` implies `commit.sign` on the same resource; `ns.admin` implies `repo.create` and `own` across its namespace) are not records and never appear as RightRecords. A record carrying `breakGlass` was given by its subject to themselves through git-ns/right/break-glass; it is a real right, published like any other, and is shown with that flag on every surface that shows the record.
+ */
+export interface RightRecord_GitNsV0_6 {
+  /**
+   * Who holds the right. For `git.commit.sign` this is the DID whose commit signatures the CI check accepts.
+   */
+  subject: Did_GitNsV0_3;
+  right: Right;
+  resource: Resource_GitNsV0_6;
+  /**
+   * The actor whose task caused the right: the granter, the creator of a repository (for its first `own`), the adopting admin, the transferring owner, or the binding admin (for the first `git.ns.admin`). The VTC's own DID for a right it derives from its configuration.
+   */
+  grantedBy: Did_GitNsV0_3;
+  grantedAt: string;
+  /**
+   * When the right lapses. Absent: no expiry.
+   */
+  expiresAt?: string;
+  /**
+   * The granter's free-text reason. Disclosed only to holders of `git.repo.own` on the resource and of `git.ns.admin` over it.
+   */
+  reason?: string;
+  /**
+   * Present exactly when the subject gave themselves this right through git-ns/right/break-glass. Absent for every other record.
+   */
+  breakGlass?: BreakGlass_GitNsV0_6;
 }
 /**
  * A grant set by reference: the capability ceiling of a defined role, conferred as resource grants exactly as a `grants` binding confers its list. It never assigns the role itself — an entry's administrative role and its community role stay direct assignments.
@@ -12370,23 +12570,6 @@ export interface Summary {
    */
   templateDigest: DigestMultibase;
 }
-/**
- * How the forge compares with the VTC's projection for one repository.
- */
-export interface Sync {
-  /**
-   * `inSync` — the last comparison found no drift. `drift` — it found some, listed in `drift`. `pending` — a change has been sent to the forge and not yet confirmed. `unchecked` — nothing compares this repository (a manual-mode namespace).
-   */
-  state: "inSync" | "drift" | "pending" | "unchecked";
-  /**
-   * When the forge was last compared. Absent if never.
-   */
-  checkedAt?: string;
-  /**
-   * Outstanding drift. Empty unless `state` is `drift`.
-   */
-  drift: DriftItem[];
-}
 export interface SyncUpdate {
   /**
    * The slot path on its hosting domain (e.g. `alice`, `people/alice`, or `.well-known` for a root DID).
@@ -12413,6 +12596,40 @@ export interface SyncUpdate {
    */
   disabled: boolean;
   ext?: Ext;
+}
+/**
+ * How the forge compares with the VTC's projection for one repository.
+ */
+export interface Sync_GitNsV0_1 {
+  /**
+   * `inSync` — the last comparison found no drift. `drift` — it found some, listed in `drift`. `pending` — a change has been sent to the forge and not yet confirmed. `unchecked` — nothing compares this repository (a manual-mode namespace).
+   */
+  state: "inSync" | "drift" | "pending" | "unchecked";
+  /**
+   * When the forge was last compared. Absent if never.
+   */
+  checkedAt?: string;
+  /**
+   * Outstanding drift. Empty unless `state` is `drift`.
+   */
+  drift: DriftItem_GitNsV0_1[];
+}
+/**
+ * How the forge compares with the VTC's projection for one repository.
+ */
+export interface Sync_GitNsV0_6 {
+  /**
+   * `inSync` — the last comparison found no drift. `drift` — it found some, listed in `drift`. `pending` — a change has been sent to the forge and not yet confirmed. `unchecked` — nothing compares this repository (a manual-mode namespace).
+   */
+  state: "inSync" | "drift" | "pending" | "unchecked";
+  /**
+   * When the forge was last compared. Absent if never.
+   */
+  checkedAt?: string;
+  /**
+   * Outstanding drift. Empty unless `state` is `drift`.
+   */
+  drift: DriftItem_GitNsV0_6[];
 }
 export interface Tier {
   /**

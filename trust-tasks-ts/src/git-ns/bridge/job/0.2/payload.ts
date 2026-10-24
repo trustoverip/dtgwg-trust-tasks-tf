@@ -3,7 +3,7 @@
  * Source: specs/git-ns/bridge/job/0.2/payload.schema.json
  */
 
-import type { Did_GitNsV0_1 as Did, Ext, ForgeAccount, ForgeHost, ForgeId, NamespaceId, RepoResource, RepoVisibility, Right, Segment } from "../../../../_shared/components.js";
+import type { Did_GitNsV0_1 as Did, Ext, ForgeAccount_GitNsV0_1 as ForgeAccount, ForgeHost_GitNsV0_1 as ForgeHost, ForgeId_GitNsV0_1 as ForgeId, NamespaceId, RepoResource_GitNsV0_1 as RepoResource, RepoVisibility, Right, Segment_GitNsV0_1 as Segment } from "../../../../_shared/components.js";
 
 
 /**

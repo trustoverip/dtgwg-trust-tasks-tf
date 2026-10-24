@@ -1,0 +1,136 @@
+[
+  {
+    "note": "`action` is `adopt` or `revert`; there is no action that ignores drift and leaves it outstanding silently.",
+    "payload": {
+      "resource": "github.com/acme/widgets",
+      "drift": {
+        "type": "roleAdded",
+        "account": {
+          "forge": "github.com",
+          "id": "5550123",
+          "login": "eve-dev"
+        }
+      },
+      "action": "ignore"
+    }
+  },
+  {
+    "note": "Drift is reported per repository; a namespace resource names no drift item.",
+    "payload": {
+      "resource": "github.com/acme",
+      "drift": {
+        "type": "requiredCheckMissing"
+      },
+      "action": "revert"
+    }
+  },
+  {
+    "note": "`drift.type` is one of the drift types git-ns/view and git-ns/bridge/event report.",
+    "payload": {
+      "resource": "github.com/acme/widgets",
+      "drift": {
+        "type": "collaboratorAdded"
+      },
+      "action": "revert"
+    }
+  },
+  {
+    "note": "The selector is required: a resolution names the item it decides about.",
+    "payload": {
+      "resource": "github.com/acme/widgets",
+      "action": "revert"
+    }
+  },
+  {
+    "note": "Drift items have no identifier to select by; a made-up one is refused rather than ignored.",
+    "payload": {
+      "resource": "github.com/acme/widgets",
+      "drift": {
+        "id": "drift_01",
+        "type": "roleAdded"
+      },
+      "action": "revert"
+    }
+  },
+  {
+    "note": "`account` is a forge account, not a DID: the account whose role differs often belongs to someone with no DID.",
+    "payload": {
+      "resource": "github.com/acme/widgets",
+      "drift": {
+        "type": "roleAdded",
+        "account": "did:webvh:QmBobScid2:acme-vtc.example:bob"
+      },
+      "action": "adopt"
+    }
+  },
+  {
+    "note": "An adoption records the right the observed role projects to; the caller cannot name a different one. Granting something else is git-ns/right/grant.",
+    "payload": {
+      "resource": "github.com/acme/widgets",
+      "drift": {
+        "type": "roleAdded",
+        "account": {
+          "forge": "github.com",
+          "id": "9120045",
+          "login": "bob-builds"
+        },
+        "observed": "maintain"
+      },
+      "action": "adopt",
+      "right": "git.repo.own"
+    }
+  },
+  {
+    "note": "`subject` names a party, never a key: a DID URL with a `#` fragment is refused.",
+    "payload": {
+      "resource": "github.com/acme/widgets",
+      "drift": {
+        "type": "roleAdded",
+        "account": {
+          "forge": "github.com",
+          "id": "9120045",
+          "login": "bob-builds"
+        },
+        "observed": "maintain"
+      },
+      "action": "adopt",
+      "subject": "did:webvh:QmBobScid2:acme-vtc.example:bob#key-1"
+    }
+  },
+  {
+    "note": "`subject` is a DID in the DID Core syntax; shell metacharacters are refused.",
+    "payload": {
+      "resource": "github.com/acme/widgets",
+      "drift": {
+        "type": "roleAdded",
+        "account": {
+          "forge": "github.com",
+          "id": "9120045",
+          "login": "bob-builds"
+        },
+        "observed": "maintain"
+      },
+      "action": "adopt",
+      "subject": "did:web:x.example$(id)"
+    }
+  },
+  {
+    "note": "`subject` is one DID, not a list: an adoption records one right for one member.",
+    "payload": {
+      "resource": "github.com/acme/widgets",
+      "drift": {
+        "type": "roleAdded",
+        "account": {
+          "forge": "github.com",
+          "id": "9120045",
+          "login": "bob-builds"
+        },
+        "observed": "maintain"
+      },
+      "action": "adopt",
+      "subject": [
+        "did:webvh:QmBobScid2:acme-vtc.example:bob"
+      ]
+    }
+  }
+]

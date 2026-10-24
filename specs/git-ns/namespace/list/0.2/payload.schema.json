@@ -1,0 +1,282 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/git-ns/namespace/list/0.2",
+  "title": "Git Namespaces — List Namespaces — payload",
+  "description": "An administrator lists the namespaces they administer — every one, for a holder of the community-administrator capability — with each one's admins, repository count, bridge and forge status.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [],
+  "properties": {
+    "namespace": {
+      "$ref": "../../../_shared/0.6/git-ns.schema.json#/$defs/NamespaceId",
+      "description": "Only this namespace. It must be one the caller administers; a namespace they do not administer, or one this VTC does not have, is refused with `notAdministrator` alike."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "MappedRole": {
+      "title": "MappedRole",
+      "type": "string",
+      "enum": [
+        "none",
+        "read",
+        "triage",
+        "write",
+        "maintain",
+        "admin"
+      ],
+      "description": "A level of the bridge's forge-neutral role ladder, lowest first: the vocabulary role drift's `observed` and `expected` are reported in. `none` is no direct role on the repository."
+    },
+    "RoleMap": {
+      "title": "RoleMap",
+      "description": "The forge role each repository right is given, as the forge applies it: after the forge's own ladder has rounded it down. `own` is the role `git.repo.own` projects to, `maintain` that of `git.repo.maintain`, `commit` that of `git.commit.sign` (`none` is fork-based contribution). There is no member for `git.ns.admin` or `git.repo.create`, which project to no forge role whatever a bridge is configured with. Ordered: `own` is at least `maintain`, which is at least `commit`, and `commit` is at most `write`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "own",
+        "maintain",
+        "commit"
+      ],
+      "properties": {
+        "own": {
+          "$ref": "#/$defs/MappedRole"
+        },
+        "maintain": {
+          "$ref": "#/$defs/MappedRole"
+        },
+        "commit": {
+          "$ref": "#/$defs/MappedRole"
+        }
+      }
+    },
+    "ForgeStatus": {
+      "title": "ForgeStatus",
+      "description": "What the bridge serving the namespace last reported about its standing on the forge owner — its app, its installation and what the owner's plan allows. Display only: it changes no decision the VTC takes. Every member but `missingPermissions` is absent until the bridge reports it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "missingPermissions"
+      ],
+      "properties": {
+        "installationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "The forge's identifier for its installation of the community's app (GitHub)."
+        },
+        "appName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "The app's display name."
+        },
+        "appSlug": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "The app's URL slug on the forge."
+        },
+        "appRegistration": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "description": "Where the app's manifest registration stands, in the bridge's words (`registered`, `pending`)."
+        },
+        "missingPermissions": {
+          "type": "array",
+          "maxItems": 256,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "description": "Permissions the app needs and the installation has not granted, in the forge's vocabulary. Empty when none are missing, or none were reported."
+        },
+        "permissionUpgradePending": {
+          "type": "boolean",
+          "description": "A new version of the app asks for permissions the forge owner has not approved yet."
+        },
+        "orgRulesets": {
+          "type": "boolean",
+          "description": "Organisation rulesets are available on the owner's plan."
+        },
+        "requiredWorkflow": {
+          "type": "boolean",
+          "description": "The organisation ruleset requiring the verify-trust workflow is in force."
+        },
+        "bridgePostedCheck": {
+          "type": "boolean",
+          "description": "The bridge can post the verify-trust check itself, the fallback where no required workflow is available."
+        },
+        "reportedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the VTC received the report."
+        }
+      }
+    },
+    "NamespaceStatus": {
+      "title": "NamespaceStatus",
+      "description": "One namespace as its administrators govern it: the binding, who administers it, how many repositories it holds, and what its bridge last reported.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "forge",
+        "owner",
+        "resource",
+        "mode",
+        "state",
+        "boundBy",
+        "requestedAt",
+        "admins",
+        "repoCount",
+        "headless",
+        "installationRemoved",
+        "roleDrift",
+        "cascadeOnDeparture",
+        "roleMapSource"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "../../../_shared/0.6/git-ns.schema.json#/$defs/NamespaceId"
+        },
+        "forge": {
+          "$ref": "../../../_shared/0.6/git-ns.schema.json#/$defs/ForgeHost"
+        },
+        "owner": {
+          "$ref": "../../../_shared/0.6/git-ns.schema.json#/$defs/Segment",
+          "description": "The organisation or user on the forge, lowercased."
+        },
+        "resource": {
+          "$ref": "../../../_shared/0.6/git-ns.schema.json#/$defs/Resource",
+          "description": "The namespace as a resource: `<forge>/<owner>`."
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "bridge",
+            "manual"
+          ],
+          "description": "As `GitNamespace.mode` in the shared schema."
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "bound"
+          ],
+          "description": "As `GitNamespace.state` in the shared schema."
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "organization",
+            "user"
+          ],
+          "description": "Whether the owner is an organisation or a personal account, once the forge has said."
+        },
+        "ownerId": {
+          "$ref": "../../../_shared/0.6/git-ns.schema.json#/$defs/ForgeId",
+          "description": "The forge's id for the owner, once the forge has said. Unlike `owner`, it survives a rename."
+        },
+        "bridgeDid": {
+          "$ref": "../../../_shared/0.6/git-ns.schema.json#/$defs/Did",
+          "description": "The bridge that serves the namespace. Absent in manual mode."
+        },
+        "boundBy": {
+          "$ref": "../../../_shared/0.6/git-ns.schema.json#/$defs/Did",
+          "description": "Who bound it."
+        },
+        "requestedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When binding was requested."
+        },
+        "boundAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When binding completed. Absent while `pending`."
+        },
+        "admins": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "../../../_shared/0.6/git-ns.schema.json#/$defs/Did"
+          },
+          "description": "Everyone holding a live, explicitly recorded `git.ns.admin` on the namespace. Each of them can grant anything in it."
+        },
+        "repoCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many repositories the VTC records in the namespace, in any state."
+        },
+        "headless": {
+          "type": "boolean",
+          "description": "Bound, with no live admin: its last admin left or lapsed. Nobody can grant in it until an administrator reseats one (`git-ns/namespace/reseat`)."
+        },
+        "installationRemoved": {
+          "type": "boolean",
+          "description": "The bridge reported losing its access to the forge owner, and has not reported access since."
+        },
+        "forgeStatus": {
+          "$ref": "#/$defs/ForgeStatus"
+        },
+        "roleDrift": {
+          "type": "string",
+          "enum": [
+            "report",
+            "enforce"
+          ],
+          "description": "What the community's policy does with a forge role nobody granted: `report` it as drift for an administrator to resolve, or `enforce` the projection by reverting it. Community-wide; repeated on every namespace so that each row stands alone."
+        },
+        "cascadeOnDeparture": {
+          "type": "boolean",
+          "description": "Whether the community's policy revokes the grants a member made when that member leaves. Community-wide, as `roleDrift`."
+        },
+        "roleMap": {
+          "$ref": "#/$defs/RoleMap",
+          "description": "The forge role each right projects to on a repository without a map of its own, as the serving bridge last reported it. Absent while `roleMapSource` is `unknown`: no map, the default included, is assumed."
+        },
+        "roleMapSource": {
+          "type": "string",
+          "enum": [
+            "reported",
+            "unknown"
+          ],
+          "description": "`reported` — the bridge serving the namespace reported its role map. `unknown` — it has not, since the namespace was bound or came to be served by it."
+        },
+        "roleMapReportedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The `issuedAt` of the role-map report held, on the bridge's clock."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "Git Namespaces — List Namespaces — response payload",
+      "description": "The namespaces the caller administers, or the one asked for.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "namespaces"
+      ],
+      "properties": {
+        "namespaces": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/NamespaceStatus"
+          },
+          "description": "Every administered namespace, `pending` ones included, ordered by `resource`. Empty only for a holder of the community-administrator capability on a VTC with no namespace."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

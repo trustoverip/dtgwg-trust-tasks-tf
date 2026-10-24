@@ -3,7 +3,7 @@
  * Source: specs/git-ns/bridge/job/list/0.2/payload.schema.json
  */
 
-import type { Did_GitNsV0_3 as Did, Ext, NamespaceId, RepoResource } from "../../../../../_shared/components.js";
+import type { Did_GitNsV0_3 as Did, Ext, NamespaceId, RepoResource_GitNsV0_1 as RepoResource } from "../../../../../_shared/components.js";
 
 
 /**
