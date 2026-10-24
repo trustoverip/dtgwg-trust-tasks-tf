@@ -318,9 +318,13 @@ follow it; a new spec or a new version follows it from the start.
   "date-time"`, the same encoding the framework uses for `issuedAt`,
   `expiresAt` and `retryAfter` — never Unix seconds. An instant that records
   when something happens is named `<event>At` (`recordedAt`, `sessionEndsAt`,
-  `decisionClosesAt`), not a bare `timestamp`. Range bounds and filters keep
+  `decisionClosesAt`), not a bare `timestamp` or `at`. Range bounds and filters keep
   their prepositions (`since`, `until`, `validFrom`, `validUntil`), and a name
   an external vocabulary defines (`created`, `notBefore`) is carried verbatim.
+  The lint reads a name as a bound when it is `since`, `until`, `from`, `to`
+  or `asOf`, or ends in `Until`, `Since`, `From`, `After`, `Before` or `To`;
+  an external name outside that shape goes in
+  `scripts/lib/wire-conventions-allowlist.json` with the vocabulary it comes from.
   A duration is not an instant: it stays an integer and names its unit,
   spelled out (`latencyMs`, `ttlSeconds`, `retentionDays`) — never `…Secs`, and
   never a bare `ttl` or `timeout`.

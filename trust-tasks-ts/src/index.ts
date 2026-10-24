@@ -159,6 +159,7 @@ export * as DeviceBindingShared_v0_2 from "./device/_shared/0.2/device-binding.j
 export * as DeviceDisable_v0_1 from "./device/disable/0.1/payload.js";
 export * as DeviceHeartbeat_v0_1 from "./device/heartbeat/0.1/payload.js";
 export * as DeviceHeartbeat_v0_2 from "./device/heartbeat/0.2/payload.js";
+export * as DeviceHeartbeat_v0_3 from "./device/heartbeat/0.3/payload.js";
 export * as DeviceList_v0_1 from "./device/list/0.1/payload.js";
 export * as DeviceList_v0_2 from "./device/list/0.2/payload.js";
 export * as DeviceList_v0_3 from "./device/list/0.3/payload.js";
@@ -396,6 +397,7 @@ export * as MessagingMonitorEvent_v0_2 from "./messaging/monitor/event/0.2/paylo
 export * as MessagingMonitorSubscribe_v0_1 from "./messaging/monitor/subscribe/0.1/payload.js";
 export * as MessagingMonitorUnsubscribe_v0_1 from "./messaging/monitor/unsubscribe/0.1/payload.js";
 export * as MessagingPing_v0_1 from "./messaging/ping/0.1/payload.js";
+export * as MessagingPing_v0_2 from "./messaging/ping/0.2/payload.js";
 export * as MessagingQueueList_v0_1 from "./messaging/queue/list/0.1/payload.js";
 export * as MessagingQueuePurge_v0_1 from "./messaging/queue/purge/0.1/payload.js";
 export * as MessagingQueueStatus_v0_1 from "./messaging/queue/status/0.1/payload.js";

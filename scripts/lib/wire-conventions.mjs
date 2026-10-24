@@ -25,7 +25,12 @@
  *   integer-instant   an integer/number member that is an instant: its
  *                     description says Unix/epoch seconds, or its name ends in
  *                     `At` or `Deadline`, or is `timestamp`/`notBefore`/`notAfter`.
- *   timestamp-name    a member named `timestamp`: name the event (`recordedAt`).
+ *   timestamp-name    a member named `timestamp` or a bare `at`: name the event
+ *                     (`recordedAt`, `occurredAt`).
+ *   instant-name      a `date-time` string that is neither `<event>At` nor a
+ *                     bound — `since`, `until`, `from`, `to`, `asOf`, or a name
+ *                     ending in `Until`/`Since`/`From`/`After`/`Before`/`To` —
+ *                     nor the Data Integrity `created`.
  *   page-size         `pageSize`, `pageToken`, `nextPageToken`,
  *                     `continuationToken`: use `cursor` + `limit`.
  *   offset-paging     `offset` beside `limit` or `cursor`: use `cursor`.
@@ -57,6 +62,7 @@ const PAGE_SIZE_NAMES = new Set(['pageSize', 'pageToken', 'nextPageToken', 'cont
 const EPOCH_DESCRIPTION = /unix|epoch[- ](milli)?seconds|seconds since the (unix )?epoch|integer utc/i;
 const INSTANT_NAME = /(At|Deadline)$|^(timestamp|notBefore|notAfter)$/;
 const UNITLESS_DURATION = /(Secs?|Mins|Msecs?)$|^(ttl|timeout|duration|interval|delay)$/;
+const BOUND_NAME = /^(since|until|from|to|asOf|created)$|(Until|Since|From|After|Before|To)$/;
 
 const typesOf = (node) => [].concat(node?.type ?? []);
 const isNumeric = (node) => typesOf(node).some((t) => t === 'integer' || t === 'number');
@@ -148,7 +154,11 @@ export function findingsFor(dir, specsDir) {
         if (isNumeric(member) && (EPOCH_DESCRIPTION.test(member.description ?? '') || INSTANT_NAME.test(name))) {
           push('integer-instant');
         }
-        if (name === 'timestamp') push('timestamp-name');
+        if (name === 'timestamp' || name === 'at') push('timestamp-name');
+        if (typesOf(member).includes('string') && member.format === 'date-time' && !/At$/.test(name) && !BOUND_NAME.test(name)
+            && name !== 'timestamp' && name !== 'at') {
+          push('instant-name');
+        }
         if (PAGE_SIZE_NAMES.has(name)) push('page-size');
         if (name === 'offset' && (has('limit') || has('cursor'))) push('offset-paging');
         if (name === 'nextCursor' && typesOf(member).includes('null')) push('nullable-cursor');
@@ -255,7 +265,8 @@ export function checkWireConventions({ specsDir, allowlistPath, fail, warn, log 
 
 const MESSAGES = {
   'integer-instant': 'an instant is an RFC 3339 string ("format": "date-time"), never Unix seconds.',
-  'timestamp-name': 'name the event the instant records (`recordedAt`), not a bare `timestamp`.',
+  'timestamp-name': 'name the event the instant records (`recordedAt`, `occurredAt`), not a bare `timestamp` or `at`.',
+  'instant-name': 'an instant is `<event>At` (`respondedAt`, `observedAt`); only a bound or filter keeps a preposition (`since`, `validUntil`, `purgeAfter`).',
   'page-size': 'pagination is `cursor` + `limit` in the request and `nextCursor` in the response.',
   'offset-paging': 'page with an opaque `cursor`, not an `offset`.',
   'nullable-cursor': '`nextCursor` is a plain string, absent on the last page — never `null`.',
