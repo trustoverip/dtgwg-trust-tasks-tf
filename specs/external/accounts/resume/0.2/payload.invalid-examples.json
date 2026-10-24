@@ -1,0 +1,74 @@
+[
+  {
+    "note": "A state member; the target state is the task.",
+    "payload": {
+      "context": "community",
+      "id": "eu-s3-primary",
+      "state": "active"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "An account whose `lastProbe` carries `0.1`'s `at` instead of `probedAt`; otherwise valid.",
+    "payload": {
+      "account": {
+        "id": "eu-s3-primary",
+        "label": "EU S3 — main account",
+        "context": "community",
+        "settings": {
+          "model": "aws-roles-anywhere",
+          "region": "eu-west-1",
+          "trustAnchorArn": "arn:aws:rolesanywhere:eu-west-1:123456789012:trust-anchor/0b2f7c9e-6a51-4d3e-9b1a-3c5d7e9f1a2b",
+          "profileArn": "arn:aws:rolesanywhere:eu-west-1:123456789012:profile/5e8a1c3d-2b4f-4a6e-8c0d-1f3a5b7c9e2d",
+          "roleArn": "arn:aws:iam::123456789012:role/community-rooms-storage",
+          "bucket": "community-rooms-eu"
+        },
+        "state": "active",
+        "publicMaterial": {
+          "algorithm": "ES256",
+          "keyFingerprint": "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR",
+          "certificatePem": "-----BEGIN CERTIFICATE-----\nMIIBszCCAVmgAwIBAgIUQ29tbXVuaXR5IENBIGV4YW1wbGUwCgYIKoZIzj0EAwIw\n-----END CERTIFICATE-----\n"
+        },
+        "bindings": [
+          {
+            "consumer": "did:example:community",
+            "scopeCeiling": {
+              "prefixes": [
+                "rooms/"
+              ],
+              "actions": [
+                "put",
+                "get",
+                "delete"
+              ]
+            },
+            "maxTtlSeconds": 900,
+            "ratePerMinute": 120,
+            "grantedAt": "2026-10-10T09:00:00Z"
+          }
+        ],
+        "egressHosts": [
+          "rolesanywhere.eu-west-1.amazonaws.com"
+        ],
+        "providerSetupRequired": false,
+        "createdAt": "2026-10-10T08:00:00Z",
+        "updatedAt": "2026-10-10T10:00:01Z",
+        "lastProbe": {
+          "at": "2026-10-10T10:00:03Z",
+          "ok": true,
+          "complete": true,
+          "steps": [
+            {
+              "step": "sign",
+              "ok": true
+            },
+            {
+              "step": "exchange",
+              "ok": true
+            }
+          ]
+        }
+      }
+    }
+  }
+]
