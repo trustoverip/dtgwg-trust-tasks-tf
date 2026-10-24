@@ -3,6 +3,9 @@
   "exceptions": {
     "messaging/queue/list": {
       "truncated-flag truncated": "Not a paging flag: it says the periodic queue survey stopped before covering every account. `nextCursor` already says whether more pages remain."
+    },
+    "auth/_shared": {
+      "duration-unit timeout": "WebAuthn's PublicKeyCredentialCreationOptions/RequestOptions `timeout` (milliseconds), carried verbatim as external vocabulary (SPEC §4.10 rule 5)."
     }
   }
 }

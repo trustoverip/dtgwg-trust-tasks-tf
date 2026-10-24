@@ -35,11 +35,16 @@
  *                     continuation token in a response is `nextCursor`.
  *   since-not-time    a `since` that is not a `date-time` string.
  *   created-boolean   a boolean `created`: the flag is `wasCreated`.
+ *   duration-unit     an integer duration whose name does not spell out its
+ *                     unit: `…Secs`/`…Sec`/`…Mins`/`…Msecs`, or a bare `ttl`,
+ *                     `timeout`, `duration`, `interval` or `delay`. A duration
+ *                     is `…Seconds`, `…Ms`, `…Minutes`, `…Days`.
  *
  * ── The allowlist (wire-conventions-allowlist.json) ─────────────────────────
  *
- * `exceptions`, keyed by slug, then by `<rule> <member>`, each mapped to the
- * reason the shape is deliberate (`vault/sync` keeps `truncated` because a feed
+ * `exceptions`, keyed by slug — or by a shared schema's family directory
+ * (`auth/_shared`), for a definition many specs reach — then by
+ * `<rule> <member>`, each mapped to the reason the shape is deliberate (`vault/sync` keeps `truncated` because a feed
  * that always returns its position has no cursor to omit). Keyed by slug, not
  * version, so a later version inherits the exception; an entry no longer found
  * is reported as stale. It is for shapes the conventions do not mean, never for
@@ -51,6 +56,7 @@ import path from 'node:path';
 const PAGE_SIZE_NAMES = new Set(['pageSize', 'pageToken', 'nextPageToken', 'continuationToken']);
 const EPOCH_DESCRIPTION = /unix|epoch[- ](milli)?seconds|seconds since the (unix )?epoch|integer utc/i;
 const INSTANT_NAME = /(At|Deadline)$|^(timestamp|notBefore|notAfter)$/;
+const UNITLESS_DURATION = /(Secs?|Mins|Msecs?)$|^(ttl|timeout|duration|interval|delay)$/;
 
 const typesOf = (node) => [].concat(node?.type ?? []);
 const isNumeric = (node) => typesOf(node).some((t) => t === 'integer' || t === 'number');
@@ -154,6 +160,7 @@ export function findingsFor(dir, specsDir) {
           push('since-not-time');
         }
         if (name === 'created' && typesOf(member).includes('boolean')) push('created-boolean');
+        if (isNumeric(member) && UNITLESS_DURATION.test(name)) push('duration-unit');
       }
     }
 
@@ -207,9 +214,18 @@ export function checkWireConventions({ specsDir, allowlistPath, fail, warn, log 
     }
     for (const { rule, member, where } of findings) {
       const key = `${rule} ${member}`;
-      if (exceptions[slug]?.[key]) {
+      // A finding in a shared file may be excepted for that file's family
+      // directory, with the version removed (`auth/_shared`).
+      const sharedDir = where
+        .split('#')[0]
+        .split('/')
+        .slice(0, -1)
+        .filter((segment) => !/^\d+\.\d+$/.test(segment))
+        .join('/');
+      const owner = exceptions[slug]?.[key] ? slug : sharedDir.includes('_shared') && exceptions[sharedDir]?.[key] ? sharedDir : null;
+      if (owner) {
         counts.excepted++;
-        used.add(`${slug}\u0000${key}`);
+        used.add(`${owner}\u0000${key}`);
         continue;
       }
       counts.offending++;
@@ -247,4 +263,5 @@ const MESSAGES = {
   'response-cursor': 'a response\'s continuation token is `nextCursor`.',
   'since-not-time': '`since` is an inclusive RFC 3339 lower bound; a cursor is `cursor`, a resume token `resumeToken`, a sync position `syncToken`.',
   'created-boolean': '`created` is a timestamp; the was-it-created response flag is `wasCreated`.',
+  'duration-unit': 'a duration names its unit, spelled out: `…Seconds`, `…Ms`, `…Minutes`, `…Days` — never `…Secs` or a bare `ttl`/`timeout`.',
 };

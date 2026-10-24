@@ -321,8 +321,9 @@ follow it; a new spec or a new version follows it from the start.
   `decisionClosesAt`), not a bare `timestamp`. Range bounds and filters keep
   their prepositions (`since`, `until`, `validFrom`, `validUntil`), and a name
   an external vocabulary defines (`created`, `notBefore`) is carried verbatim.
-  A duration is not an instant: it stays an integer and names its unit
-  (`latencyMs`, `retentionDays`).
+  A duration is not an instant: it stays an integer and names its unit,
+  spelled out (`latencyMs`, `ttlSeconds`, `retentionDays`) — never `…Secs`, and
+  never a bare `ttl` or `timeout`.
 - **Pagination is `cursor` + `limit` → `nextCursor`.** The request takes an
   optional opaque `cursor`, from a previous response's `nextCursor`, which a
   responder **MUST NOT** accept unless it issued it, and an optional `limit`,
