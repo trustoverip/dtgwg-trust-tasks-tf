@@ -3,7 +3,7 @@
  * Source: specs/git-ns/namespace/reseat/0.2/payload.schema.json
  */
 
-import type { Did_GitNsV0_3 as Did, Ext, NamespaceId, Resource, Right, RightRecord_GitNsV0_3 as RightRecord } from "../../../../_shared/components.js";
+import type { Did_GitNsV0_3 as Did, Ext, NamespaceId, Resource_GitNsV0_1 as Resource, Right, RightRecord_GitNsV0_3 as RightRecord } from "../../../../_shared/components.js";
 
 
 /**

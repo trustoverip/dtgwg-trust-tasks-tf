@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/git-ns/view/0.6",
+  "title": "Git Namespaces \u2014 View \u2014 payload",
+  "description": "A member reads the namespaces, repositories and rights they are entitled to see, optionally narrowed to one resource, together with the forge accounts linked to their own DID. An administrator may instead ask for everything in the namespaces they administer, and either may narrow the rights to break-glass records.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [],
+  "properties": {
+    "resource": {
+      "$ref": "../../_shared/0.6/git-ns.schema.json#/$defs/Resource",
+      "description": "Narrow the answer to this resource and everything inside it. Absent: everything the caller may see."
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "member",
+        "administrator"
+      ],
+      "description": "`member` (the default) \u2014 what the caller may see through their own git rights, exactly as in 0.4. `administrator` \u2014 everything in the namespaces the caller administers (every namespace, for a holder of the community-administrator capability; those they hold `git.ns.admin` on, for anyone else), reasons included. Refused with `git-ns/view:notAdministrator` when the caller administers no namespace within `resource`. Absent means `\"member\"`; this carries no schema-level default, so a producer that omits it is not normalised into sending it."
+    },
+    "breakGlass": {
+      "type": "boolean",
+      "description": "`true` narrows `rights` to the records carrying `breakGlass` \u2014 ratified ones included \u2014 and `namespaces` and `repos` to those that contain such a record. `false` or absent: no narrowing. Absent means `false`; this carries no schema-level default, so a producer that omits it is not normalised into sending it."
+    },
+    "ext": {
+      "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "LinkedAccount": {
+      "title": "LinkedAccount",
+      "description": "A forge account linked to the caller's DID with git-ns/account/link, and when the link completed.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "account",
+        "linkedAt"
+      ],
+      "properties": {
+        "account": {
+          "$ref": "../../_shared/0.6/git-ns.schema.json#/$defs/ForgeAccount",
+          "description": "The linked account. `id` is authoritative; `login` is as the forge last reported it."
+        },
+        "linkedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the link completed: when the VTC recorded the account against the caller's DID."
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "Git Namespaces \u2014 View \u2014 response payload",
+      "description": "What the caller may see \u2014 or, with `scope: administrator`, everything in the namespaces they administer \u2014 and the caller's own linked forge accounts.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "namespaces",
+        "repos",
+        "rights",
+        "accounts"
+      ],
+      "properties": {
+        "namespaces": {
+          "type": "array",
+          "items": {
+            "$ref": "../../_shared/0.6/git-ns.schema.json#/$defs/GitNamespace"
+          },
+          "description": "Namespaces bound to this VTC that contain, or are contained by, `resource`. With `scope: administrator`, only those the caller administers. With `breakGlass: true`, only those containing a returned record."
+        },
+        "repos": {
+          "type": "array",
+          "items": {
+            "$ref": "../../_shared/0.6/git-ns.schema.json#/$defs/RepoSummary"
+          },
+          "description": "Repositories within `resource`. `unmanaged` repositories are included only for callers holding `git.ns.admin` over them, or with `scope: administrator`. With `breakGlass: true`, only those carrying a returned record."
+        },
+        "rights": {
+          "type": "array",
+          "items": {
+            "$ref": "../../_shared/0.6/git-ns.schema.json#/$defs/RightRecord"
+          },
+          "description": "Rights within `resource` the caller may see: always the caller's own; every right on a resource the caller owns or administers; every unratified break-glass record in a namespace they administer or on a resource they own. With `scope: administrator`, every recorded right in the namespaces the caller administers. `reason` is omitted except on resources the caller owns or administers. With `breakGlass: true`, only records carrying `breakGlass`."
+        },
+        "accounts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/LinkedAccount"
+          },
+          "description": "The forge accounts linked to the caller's own DID \u2014 never another member's \u2014 at most one per forge. With `resource`, only the account on that resource's forge. Empty when the caller has linked none."
+        },
+        "ext": {
+          "$ref": "../../../_framework/0.2/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

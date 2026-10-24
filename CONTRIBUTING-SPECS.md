@@ -318,7 +318,7 @@ follow it; a new spec or a new version follows it from the start.
   "date-time"`, the same encoding the framework uses for `issuedAt`,
   `expiresAt` and `retryAfter` — never Unix seconds. An instant that records
   when something happens is named `<event>At` (`recordedAt`, `sessionEndsAt`,
-  `decisionClosesAt`), not a bare `timestamp`. Range bounds and filters keep
+  `decisionClosesAt`), not a bare `timestamp` or `at`. Range bounds and filters keep
   their prepositions (`since`, `until`, `validFrom`, `validUntil`), and a name
   an external vocabulary defines (`created`, `notBefore`) is carried verbatim.
   A duration is not an instant: it stays an integer and names its unit,

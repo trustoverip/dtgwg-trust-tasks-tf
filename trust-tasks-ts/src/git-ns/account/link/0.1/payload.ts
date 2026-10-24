@@ -3,7 +3,7 @@
  * Source: specs/git-ns/account/link/0.1/payload.schema.json
  */
 
-import type { Ext, ForgeHost } from "../../../../_shared/components.js";
+import type { Ext, ForgeHost_GitNsV0_1 as ForgeHost } from "../../../../_shared/components.js";
 
 
 /**

@@ -3,7 +3,7 @@
  * Source: specs/git-ns/bridge/result/0.1/payload.schema.json
  */
 
-import type { Ext, ForgeId, RepoResource } from "../../../../_shared/components.js";
+import type { Ext, ForgeId_GitNsV0_1 as ForgeId, RepoResource_GitNsV0_1 as RepoResource } from "../../../../_shared/components.js";
 
 
 /**

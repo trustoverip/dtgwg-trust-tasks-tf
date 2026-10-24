@@ -25,7 +25,8 @@
  *   integer-instant   an integer/number member that is an instant: its
  *                     description says Unix/epoch seconds, or its name ends in
  *                     `At` or `Deadline`, or is `timestamp`/`notBefore`/`notAfter`.
- *   timestamp-name    a member named `timestamp`: name the event (`recordedAt`).
+ *   timestamp-name    a member named `timestamp` or a bare `at`: name the event
+ *                     (`recordedAt`, `occurredAt`).
  *   page-size         `pageSize`, `pageToken`, `nextPageToken`,
  *                     `continuationToken`: use `cursor` + `limit`.
  *   offset-paging     `offset` beside `limit` or `cursor`: use `cursor`.
@@ -148,7 +149,7 @@ export function findingsFor(dir, specsDir) {
         if (isNumeric(member) && (EPOCH_DESCRIPTION.test(member.description ?? '') || INSTANT_NAME.test(name))) {
           push('integer-instant');
         }
-        if (name === 'timestamp') push('timestamp-name');
+        if (name === 'timestamp' || name === 'at') push('timestamp-name');
         if (PAGE_SIZE_NAMES.has(name)) push('page-size');
         if (name === 'offset' && (has('limit') || has('cursor'))) push('offset-paging');
         if (name === 'nextCursor' && typesOf(member).includes('null')) push('nullable-cursor');
@@ -255,7 +256,7 @@ export function checkWireConventions({ specsDir, allowlistPath, fail, warn, log 
 
 const MESSAGES = {
   'integer-instant': 'an instant is an RFC 3339 string ("format": "date-time"), never Unix seconds.',
-  'timestamp-name': 'name the event the instant records (`recordedAt`), not a bare `timestamp`.',
+  'timestamp-name': 'name the event the instant records (`recordedAt`, `occurredAt`), not a bare `timestamp` or `at`.',
   'page-size': 'pagination is `cursor` + `limit` in the request and `nextCursor` in the response.',
   'offset-paging': 'page with an opaque `cursor`, not an `offset`.',
   'nullable-cursor': '`nextCursor` is a plain string, absent on the last page — never `null`.',
