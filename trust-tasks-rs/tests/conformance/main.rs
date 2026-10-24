@@ -349,6 +349,7 @@ mod device {
     mod heartbeat {
         mod v0_1;
         mod v0_2;
+        mod v0_3;
     }
     mod list {
         mod v0_1;
@@ -956,6 +957,7 @@ mod messaging {
     }
     mod ping {
         mod v0_1;
+        mod v0_2;
     }
     mod queue {
         mod list {

@@ -715,6 +715,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         "https://trusttasks.org/spec/device/heartbeat/0.2#response" => <crate::specs::device::heartbeat::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "device")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/device/heartbeat/0.3" => <crate::specs::device::heartbeat::v0_3::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "device")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/device/heartbeat/0.3#response" => <crate::specs::device::heartbeat::v0_3::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "device")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/device/list/0.1" => <crate::specs::device::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "device")]
         #[cfg(not(test))]
@@ -2132,6 +2138,12 @@ pub fn schema_for(type_uri: &str) -> Option<&'static str> {
         #[cfg(feature = "messaging")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/messaging/ping/0.1#response" => <crate::specs::messaging::ping::v0_1::Response as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/ping/0.2" => <crate::specs::messaging::ping::v0_2::Payload as crate::Payload>::PAYLOAD_SCHEMA,
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/ping/0.2#response" => <crate::specs::messaging::ping::v0_2::Response as crate::Payload>::PAYLOAD_SCHEMA,
         #[cfg(feature = "messaging")]
         #[cfg(not(test))]
         "https://trusttasks.org/spec/messaging/queue/list/0.1" => <crate::specs::messaging::queue::list::v0_1::Payload as crate::Payload>::PAYLOAD_SCHEMA,
@@ -7242,6 +7254,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         >()),
         #[cfg(feature = "device")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/device/heartbeat/0.3" => Some(crate::SpecPolicy::of::<
+            crate::specs::device::heartbeat::v0_3::Payload,
+        >()),
+        #[cfg(feature = "device")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/device/list/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::device::list::v0_1::Payload,
         >()),
@@ -8650,6 +8667,11 @@ pub fn spec_policy_for(type_uri: &str) -> Option<crate::SpecPolicy> {
         #[cfg(not(test))]
         "https://trusttasks.org/spec/messaging/ping/0.1" => Some(crate::SpecPolicy::of::<
             crate::specs::messaging::ping::v0_1::Payload,
+        >()),
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/ping/0.2" => Some(crate::SpecPolicy::of::<
+            crate::specs::messaging::ping::v0_2::Payload,
         >()),
         #[cfg(feature = "messaging")]
         #[cfg(not(test))]
@@ -13567,6 +13589,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         }
         #[cfg(feature = "device")]
         #[cfg(not(test))]
+        "https://trusttasks.org/spec/device/heartbeat/0.3" => {
+            Some(crate::specs::device::heartbeat::v0_3::ERROR_CODES)
+        }
+        #[cfg(feature = "device")]
+        #[cfg(not(test))]
         "https://trusttasks.org/spec/device/list/0.1" => {
             Some(crate::specs::device::list::v0_1::ERROR_CODES)
         }
@@ -14759,6 +14786,11 @@ pub fn error_codes_for(type_uri: &str) -> Option<&'static [crate::DeclaredErrorC
         #[cfg(not(test))]
         "https://trusttasks.org/spec/messaging/ping/0.1" => {
             Some(crate::specs::messaging::ping::v0_1::ERROR_CODES)
+        }
+        #[cfg(feature = "messaging")]
+        #[cfg(not(test))]
+        "https://trusttasks.org/spec/messaging/ping/0.2" => {
+            Some(crate::specs::messaging::ping::v0_2::ERROR_CODES)
         }
         #[cfg(feature = "messaging")]
         #[cfg(not(test))]

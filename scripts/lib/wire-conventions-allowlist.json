@@ -6,6 +6,23 @@
     },
     "auth/_shared": {
       "duration-unit timeout": "WebAuthn's PublicKeyCredentialCreationOptions/RequestOptions `timeout` (milliseconds), carried verbatim as external vocabulary (SPEC §4.10 rule 5)."
+    },
+    "registry/_shared": {
+      "instant-name time": "ToIP Trust Registry Query Protocol (TRQP) vocabulary, carried verbatim (SPEC §4.10 rule 5): the query context's `time`, the instant to evaluate the query as of."
+    },
+    "registry/authorization": {
+      "instant-name time_evaluated": "ToIP Trust Registry Query Protocol (TRQP) vocabulary, carried verbatim (SPEC §4.10 rule 5).",
+      "instant-name time_requested": "ToIP Trust Registry Query Protocol (TRQP) vocabulary, carried verbatim (SPEC §4.10 rule 5)."
+    },
+    "registry/recognition": {
+      "instant-name time_evaluated": "ToIP Trust Registry Query Protocol (TRQP) vocabulary, carried verbatim (SPEC §4.10 rule 5).",
+      "instant-name time_requested": "ToIP Trust Registry Query Protocol (TRQP) vocabulary, carried verbatim (SPEC §4.10 rule 5)."
+    },
+    "did-management/did/log": {
+      "instant-name versionTime": "did:webvh's log-entry `versionTime`, carried verbatim as external vocabulary (SPEC §4.10 rule 5)."
+    },
+    "did-management/did/info": {
+      "instant-name latestVersionTime": "The latest log entry's did:webvh `versionTime`, named after it beside `latestVersionId` (did:webvh `versionId`)."
     }
   }
 }
