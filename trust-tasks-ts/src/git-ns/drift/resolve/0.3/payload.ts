@@ -3,7 +3,7 @@
  * Source: specs/git-ns/drift/resolve/0.3/payload.schema.json
  */
 
-import type { Did_GitNsV0_3 as Did, DriftItem, DriftType, Ext, ForgeAccount, ForgeHost, ForgeId, RepoResource, Resource, Right, RightRecord_GitNsV0_3 as RightRecord, Sync } from "../../../../_shared/components.js";
+import type { Did_GitNsV0_3 as Did, DriftItem_GitNsV0_1 as DriftItem, DriftType, Ext, ForgeAccount_GitNsV0_1 as ForgeAccount, ForgeHost_GitNsV0_1 as ForgeHost, ForgeId_GitNsV0_1 as ForgeId, RepoResource_GitNsV0_1 as RepoResource, Resource_GitNsV0_1 as Resource, Right, RightRecord_GitNsV0_3 as RightRecord, Sync_GitNsV0_1 as Sync } from "../../../../_shared/components.js";
 
 
 /**

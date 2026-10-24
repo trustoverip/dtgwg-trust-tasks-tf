@@ -3,7 +3,7 @@
  * Source: specs/git-ns/account/list/0.1/payload.schema.json
  */
 
-import type { Did_GitNsV0_3 as Did, Ext, ForgeAccount, ForgeHost, ForgeId } from "../../../../_shared/components.js";
+import type { Did_GitNsV0_3 as Did, Ext, ForgeAccount_GitNsV0_1 as ForgeAccount, ForgeHost_GitNsV0_1 as ForgeHost, ForgeId_GitNsV0_1 as ForgeId } from "../../../../_shared/components.js";
 
 
 /**

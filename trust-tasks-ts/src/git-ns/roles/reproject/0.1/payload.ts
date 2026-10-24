@@ -3,7 +3,7 @@
  * Source: specs/git-ns/roles/reproject/0.1/payload.schema.json
  */
 
-import type { Ext, RepoResource, Resource } from "../../../../_shared/components.js";
+import type { Ext, RepoResource_GitNsV0_1 as RepoResource, Resource_GitNsV0_1 as Resource } from "../../../../_shared/components.js";
 
 
 /**

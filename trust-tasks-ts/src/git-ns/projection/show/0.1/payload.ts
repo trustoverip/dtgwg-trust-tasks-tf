@@ -3,7 +3,7 @@
  * Source: specs/git-ns/projection/show/0.1/payload.schema.json
  */
 
-import type { Did_GitNsV0_3 as Did, Ext, Resource, Right } from "../../../../_shared/components.js";
+import type { Did_GitNsV0_3 as Did, Ext, Resource_GitNsV0_1 as Resource, Right } from "../../../../_shared/components.js";
 
 
 /**
