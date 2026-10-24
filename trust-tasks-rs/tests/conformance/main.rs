@@ -1201,6 +1201,7 @@ mod rooms {
             mod v0_5;
             mod v0_6;
             mod v0_7;
+            mod v0_8;
         }
         mod backfill {
             mod v0_1;
