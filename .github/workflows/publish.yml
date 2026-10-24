@@ -118,7 +118,9 @@ jobs:
   publish-npm:
     name: Publish ${{ matrix.name }} to npm
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # 30, not 20: the publish is followed by up to 8 minutes of waiting for the
+    # version to become public ("Confirm the version is public on npm").
+    timeout-minutes: 30
     permissions:
       # `contents: write` so the tag can be pushed after a successful publish —
       # `<prefix>-v<version>` is what the next Release PR measures from, the npm
@@ -186,10 +188,23 @@ jobs:
 
       # No NODE_AUTH_TOKEN: with trusted publishing npm mints a short-lived
       # token via OIDC and attaches build provenance automatically.
+      #
+      # A version npm is holding as STAGED (below) answers a second publish with
+      # an opaque 409; say what it means.
       - name: npm publish (trusted publishing)
         if: steps.decide.outputs.should_publish == 'true'
         working-directory: ${{ matrix.dir }}
-        run: npm publish --access public
+        env:
+          NAME: ${{ matrix.name }}
+          VERSION: ${{ steps.decide.outputs.version }}
+        run: |
+          set -uo pipefail
+          npm publish --access public 2>&1 | tee "$RUNNER_TEMP/npm-publish.log"
+          status=${PIPESTATUS[0]}
+          if [ "$status" -ne 0 ] && grep -q 'previously staged version' "$RUNNER_TEMP/npm-publish.log"; then
+            echo "::error::$NAME@$VERSION is already STAGED on npm, awaiting a maintainer. Approve it (npm stage list $NAME, then npm stage approve <stage-id>, with 2FA) or reject it (npm stage reject <stage-id>), then re-run this job."
+          fi
+          exit "$status"
 
       # The tag is the anchor for the NEXT Release PR: release-bump-ts.sh reads
       # commits since `trust-tasks-ts-v<version>` to decide the bump and to
@@ -212,6 +227,33 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git tag -a "$tag" -m "$NAME $VERSION"
           git push origin "$tag"
+
+      # `npm publish` succeeding does not mean the version is public. When the
+      # trusted publisher lacks "Allow npm publish" (stage-only, npm's default
+      # for configs created after 2026-09-03) or the package requires
+      # proof-of-presence, npm STAGES the upload instead: the job is green, the
+      # version is invisible, and nothing says so. 0.27.4 sat staged for 85
+      # minutes that way. So confirm it is installable, and fail loudly if not.
+      #
+      # After the tag, deliberately: a staged version already holds its version
+      # number, and the tag is what the next Release PR measures from. A re-run
+      # once it is approved sees the version on npm and skips every step.
+      - name: Confirm the version is public on npm
+        if: steps.decide.outputs.should_publish == 'true'
+        env:
+          NAME: ${{ matrix.name }}
+          VERSION: ${{ steps.decide.outputs.version }}
+        run: |
+          set -euo pipefail
+          for _ in $(seq 1 16); do
+            if [ "$(npm view "$NAME@$VERSION" version 2>/dev/null)" = "$VERSION" ]; then
+              echo "::notice::$NAME@$VERSION is public on npm."
+              exit 0
+            fi
+            sleep 30
+          done
+          echo "::error::$NAME@$VERSION was accepted by npm but is not public after 8 minutes, so npm has almost certainly STAGED it. A maintainer must approve it with 2FA (npm stage list $NAME, then npm stage approve <stage-id>) and then re-run this job. To stop CI publishes being staged, tick 'Allow npm publish' on the package's trusted publisher (npmjs.com, package Settings, Trusted publishing)."
+          exit 1
 
   # ── Go ───────────────────────────────────────────────────────────────────
   #

@@ -95,7 +95,10 @@ no hand-written entries.
 > 1. `cd <dir> && npm ci && npm run build && npm publish --access public` (scoped
 >    packages default to private; `--access public` is required).
 > 2. On npmjs.com, the package → **Settings → Trusted Publisher → GitHub Actions**,
->    repo `trustoverip/dtgwg-trust-tasks-tf`, workflow filename `publish.yml`.
+>    repo `trustoverip/dtgwg-trust-tasks-tf`, workflow filename `publish.yml`,
+>    and tick **Allow `npm publish`** under *Allowed actions*. npm leaves it
+>    unticked by default, and a trusted publisher without it *stages* every CI
+>    upload instead of publishing it — see the staged-publishing note below.
 > 3. Seed the release anchor tag once, at the published version:
 >    `git tag -a <prefix>-v<version> -m "<name> <version>" && git push origin <prefix>-v<version>`
 >    (e.g. `trust-tasks-ts-proof-v0.1.0`). `release-bump-ts.sh` measures the next
@@ -115,6 +118,18 @@ no hand-written entries.
 | `trust_tasks_proof` | pub.dev — Data Integrity proof verification for `trust_tasks`, published the same way from a `trust-tasks-dart-proof-vX.Y.Z` tag |
 | `trust_tasks_https` | pub.dev — the HTTPS transport binding, from a `trust-tasks-dart-https-vX.Y.Z` tag |
 | `trust_tasks_didcomm` | pub.dev — the DIDComm v2.1 transport binding, from a `trust-tasks-dart-didcomm-vX.Y.Z` tag |
+
+> ⚠️ **A green `npm publish` can still leave the version unpublished.** npm
+> *stages* a CI upload, holding it out of public view until a maintainer
+> approves it with 2FA, when the trusted publisher lacks **Allow `npm publish`**.
+> `@openvtc/trust-tasks@0.27.4` sat staged for 85 minutes that way while every
+> job reported success. `publish-npm` therefore ends with **Confirm the version
+> is public on npm**, which waits up to 8 minutes and then fails the job. When it
+> does: `npm login` (a 2FA session — a bypass-2FA token cannot run `npm stage`),
+> then `npm stage list <package>` and `npm stage approve <stage-id>` (or
+> `npm stage reject <stage-id>`), tick **Allow `npm publish`** so it does not
+> recur, and re-run the failed job. The re-run finds the version on npm and
+> skips every step; the release tag was already pushed before the check.
 
 Adding a crate to the published set means setting `publish` back to the default
 *and* checking everything it depends on is published; crates.io requires a
