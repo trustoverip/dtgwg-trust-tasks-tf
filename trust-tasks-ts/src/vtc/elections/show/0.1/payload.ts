@@ -3,7 +3,7 @@
  * Source: specs/vtc/elections/show/0.1/payload.schema.json
  */
 
-import type { BoardHead, BoardVisibility, ChoiceQuestion, DigestMultibase, Disclosure, ElectionId, ElectionKey, ElectionResult, Ext, GroupElement, Key_VotingV0_1 as Key, Manifest, Multibase_VotingV0_1 as Multibase, Question, QuestionOption, QuestionResult, RankingQuestion, Revote, RollRule, ScoreQuestion, SecrecyLevel, SignedRequest, TextQuestion, TrusteeCeremony, TrusteeIndex, Trustees, VotingParameters } from "../../../../_shared/components.js";
+import type { BoardHead, BoardVisibility, ChoiceQuestion, DigestMultibase, Disclosure, ElectionId, ElectionKey, ElectionResult, Ext, GroupElement, Key_VotingV0_1 as Key, Manifest_VotingV0_1 as Manifest, Multibase_VotingV0_1 as Multibase, Question, QuestionOption, QuestionResult, RankingQuestion, Revote, RollRule, ScoreQuestion, SecrecyLevel, SignedRequest, TextQuestion, TrusteeCeremony, TrusteeIndex, Trustees, VotingParameters } from "../../../../_shared/components.js";
 
 
 /**

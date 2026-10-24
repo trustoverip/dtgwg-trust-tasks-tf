@@ -3,7 +3,7 @@
  * Source: specs/vta/pcs/trustee/keys/0.1/payload.schema.json
  */
 
-import type { BoardVisibility, ChoiceQuestion, Dealing, ElectionId, ElectionKey, ElGamalCiphertext, Ext, GroupElement, GroupScalar, Key_VotingV0_1 as Key, Manifest, Question, QuestionOption, RankingQuestion, Revote, RollRule, ScoreQuestion, SealedPayload, SealedShare, SecrecyLevel, SigmaProof, TextQuestion, TrusteeIndex, Trustees } from "../../../../../_shared/components.js";
+import type { BoardVisibility, ChoiceQuestion, Dealing, ElectionId, ElectionKey, ElGamalCiphertext, Ext, GroupElement, GroupScalar, Key_VotingV0_1 as Key, Manifest_VotingV0_1 as Manifest, Question, QuestionOption, RankingQuestion, Revote, RollRule, ScoreQuestion, SealedPayload, SealedShare, SecrecyLevel, SigmaProof, TextQuestion, TrusteeIndex, Trustees } from "../../../../../_shared/components.js";
 
 
 /**

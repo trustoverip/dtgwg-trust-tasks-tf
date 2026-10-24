@@ -3,7 +3,7 @@
  * Source: specs/vta/services/rollback/1.1/payload.schema.json
  */
 
-import type { Ext, RollbackResult, ServiceKind } from "../../../../_shared/components.js";
+import type { Ext, RollbackResult_VtaV0_1 as RollbackResult, ServiceKind } from "../../../../_shared/components.js";
 
 
 /**

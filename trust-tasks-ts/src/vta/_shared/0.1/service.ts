@@ -14,4 +14,4 @@ export interface ServiceDefinitionsSharedAcrossTheVtaServicesSpecFamily {
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../_shared/components.js".
  */
-export type { DrainEntry, RollbackResult, ServiceKind, ServiceMutationResult, ServiceState } from "../../../_shared/components.js";
+export type { DrainEntry_VtaV0_1 as DrainEntry, RollbackResult_VtaV0_1 as RollbackResult, ServiceKind, ServiceMutationResult_VtaV0_1 as ServiceMutationResult, ServiceState_VtaV0_1 as ServiceState } from "../../../_shared/components.js";

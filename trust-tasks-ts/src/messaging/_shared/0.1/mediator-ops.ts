@@ -14,4 +14,4 @@ export interface MessagingOperationsSharedDefinitionsForMediatorQueueMessageStat
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../_shared/components.js".
  */
-export type { DeliveryState, MessageMeta, MonitorEvent, MonitorFilter, PeerDepth, Queue, QueueDepth, QueueSummary, TrafficChannel, TrafficDirection, TrafficOutcome, TrafficStage, WireProtocol } from "../../../_shared/components.js";
+export type { DeliveryState, MessageMeta, MonitorEvent_MessagingV0_1 as MonitorEvent, MonitorFilter, PeerDepth, Queue, QueueDepth, QueueSummary, TrafficChannel, TrafficDirection, TrafficOutcome, TrafficStage, WireProtocol } from "../../../_shared/components.js";

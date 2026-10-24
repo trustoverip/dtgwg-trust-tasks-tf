@@ -3,7 +3,7 @@
  * Source: specs/external/accounts/probe/0.1/payload.schema.json
  */
 
-import type { AccountContextId, AccountId, AccountProbeReport, AccountProbeStep, Ext } from "../../../../_shared/components.js";
+import type { AccountContextId, AccountId, AccountProbeReport_ExternalV0_1 as AccountProbeReport, AccountProbeStep, Ext } from "../../../../_shared/components.js";
 
 
 /**

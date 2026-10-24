@@ -3,7 +3,7 @@
  * Source: specs/rooms/records/prune/0.1/payload.schema.json
  */
 
-import type { AuthorityPresentation, Ext, RecordPrune, RecordRetention } from "../../../../_shared/components.js";
+import type { AuthorityPresentation, Ext, RecordPrune_RoomsV0_1 as RecordPrune, RecordRetention } from "../../../../_shared/components.js";
 
 
 /**

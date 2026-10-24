@@ -3,7 +3,7 @@
  * Source: specs/rooms/records/list/0.3/payload.schema.json
  */
 
-import type { AuthorityPresentation, BlobRef, DataCommitment, DigestMultibase, Ext, HeadVersion, RecordCount, RecordMetadataV2, RecordPrune } from "../../../../_shared/components.js";
+import type { AuthorityPresentation, BlobRef, DataCommitment, DigestMultibase, Ext, HeadVersion, RecordCount, RecordMetadataV2, RecordPrune_RoomsV0_1 as RecordPrune } from "../../../../_shared/components.js";
 
 
 export interface RoomsRecordsListPayload {

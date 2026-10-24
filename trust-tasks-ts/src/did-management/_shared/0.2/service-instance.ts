@@ -14,4 +14,4 @@ export interface ServiceInstanceSharedDefinitionForTheDidManagementRegistryReads
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../_shared/components.js".
  */
-export type { ServiceInstance_DidManagementV0_2 as ServiceInstance, TransportObservation } from "../../../_shared/components.js";
+export type { ServiceInstance_DidManagementV0_2 as ServiceInstance, TransportObservation_DidManagementV0_2 as TransportObservation } from "../../../_shared/components.js";

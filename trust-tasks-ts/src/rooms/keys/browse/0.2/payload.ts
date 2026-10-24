@@ -3,7 +3,7 @@
  * Source: specs/rooms/keys/browse/0.2/payload.schema.json
  */
 
-import type { DataCommitment, DigestMultibase, Ext, HeadVersion, ReadVerification, RecordCount, RecordMetadata, RecordPrune } from "../../../../_shared/components.js";
+import type { DataCommitment, DigestMultibase, Ext, HeadVersion, ReadVerification, RecordCount, RecordMetadata, RecordPrune_RoomsV0_1 as RecordPrune } from "../../../../_shared/components.js";
 
 
 /**

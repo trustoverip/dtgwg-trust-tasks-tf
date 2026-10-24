@@ -3,7 +3,7 @@
  * Source: specs/vta/services/update/1.0/payload.schema.json
  */
 
-import type { Ext, ServiceKind, ServiceMutationResult } from "../../../../_shared/components.js";
+import type { Ext, ServiceKind, ServiceMutationResult_VtaV0_1 as ServiceMutationResult } from "../../../../_shared/components.js";
 
 
 /**

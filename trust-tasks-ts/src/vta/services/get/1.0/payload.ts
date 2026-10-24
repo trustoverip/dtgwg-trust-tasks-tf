@@ -3,7 +3,7 @@
  * Source: specs/vta/services/get/1.0/payload.schema.json
  */
 
-import type { Ext, ServiceKind, ServiceState } from "../../../../_shared/components.js";
+import type { Ext, ServiceKind, ServiceState_VtaV0_1 as ServiceState } from "../../../../_shared/components.js";
 
 
 /**

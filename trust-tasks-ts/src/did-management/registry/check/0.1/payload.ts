@@ -3,7 +3,7 @@
  * Source: specs/did-management/registry/check/0.1/payload.schema.json
  */
 
-import type { Ext, ServiceInstance_DidManagementV0_2 as ServiceInstance, TransportObservation } from "../../../../_shared/components.js";
+import type { Ext, ServiceInstance_DidManagementV0_2 as ServiceInstance, TransportObservation_DidManagementV0_2 as TransportObservation } from "../../../../_shared/components.js";
 
 
 export interface RegistryCheckPayload {

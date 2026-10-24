@@ -3,7 +3,7 @@
  * Source: specs/external/accounts/keys/rotate/0.1/payload.schema.json
  */
 
-import type { AccountBinding, AccountContextId, AccountId, AccountProbeReport, AccountProbeStep, AccountPublicMaterial, AccountSecretInfo, AccountSettings, AccountSetupArtifacts, AccountState, AuthModel, AwsArn, AwsRegion, CredentialScopeCeiling, DigestMultibase, Ext, ExternalAccount, ProviderBucketName, ProviderHttpsUrl, ProviderObjectAction, ProviderObjectPrefix, SecretFingerprint, SuiMoveCall } from "../../../../../_shared/components.js";
+import type { AccountBinding, AccountContextId, AccountId, AccountProbeReport_ExternalV0_1 as AccountProbeReport, AccountProbeStep, AccountPublicMaterial, AccountSecretInfo, AccountSettings, AccountSetupArtifacts, AccountState, AuthModel, AwsArn, AwsRegion, CredentialScopeCeiling, DigestMultibase, Ext, ExternalAccount_ExternalV0_1 as ExternalAccount, ProviderBucketName, ProviderHttpsUrl, ProviderObjectAction, ProviderObjectPrefix, SecretFingerprint, SuiMoveCall } from "../../../../../_shared/components.js";
 
 
 /**

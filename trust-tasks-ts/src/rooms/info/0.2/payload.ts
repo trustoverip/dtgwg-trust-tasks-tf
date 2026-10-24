@@ -3,7 +3,7 @@
  * Source: specs/rooms/info/0.2/payload.schema.json
  */
 
-import type { AuthorityPresentation, Ext, RecordPrune, RecordRetention, RetentionPolicy, RoomLimits, ScopeLimits, Usage, Visibility } from "../../../_shared/components.js";
+import type { AuthorityPresentation, Ext, RecordPrune_RoomsV0_1 as RecordPrune, RecordRetention, RetentionPolicy, RoomLimits, ScopeLimits, Usage, Visibility } from "../../../_shared/components.js";
 
 
 /**

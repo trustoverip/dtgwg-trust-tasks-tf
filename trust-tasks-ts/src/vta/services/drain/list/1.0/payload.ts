@@ -3,7 +3,7 @@
  * Source: specs/vta/services/drain/list/1.0/payload.schema.json
  */
 
-import type { DrainEntry, Ext } from "../../../../../_shared/components.js";
+import type { DrainEntry_VtaV0_1 as DrainEntry, Ext } from "../../../../../_shared/components.js";
 
 
 /**

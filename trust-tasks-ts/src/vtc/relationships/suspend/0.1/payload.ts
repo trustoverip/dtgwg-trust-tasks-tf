@@ -3,7 +3,7 @@
  * Source: specs/vtc/relationships/suspend/0.1/payload.schema.json
  */
 
-import type { Ext, InForce, LifecycleReason } from "../../../../_shared/components.js";
+import type { Ext, InForce_VtcV0_1 as InForce, LifecycleReason } from "../../../../_shared/components.js";
 
 
 /**

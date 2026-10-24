@@ -7,7 +7,7 @@ import type { Ext } from "../../../../../_shared/components.js";
 
 
 /**
- * Request payload for vta/services/drain/cancel. Ends a drain early, dropping the mediator now instead of at `drainsUntil`. Messages still in flight through it are lost, which is the whole reason the drain window existed.
+ * Request payload for vta/services/drain/cancel. Ends a drain early, dropping the mediator now instead of at `drainEndsAt` (`drainsUntil` in a record pinned to `vta/_shared/0.1`). Messages still in flight through it are lost, which is the whole reason the drain window existed.
  */
 export interface VTAServicesDrainCancelPayload {
   /**
@@ -55,7 +55,7 @@ export const PAYLOAD_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vta/services/drain/cancel/1.0",
   "title": "VTA Services Drain — Cancel — payload",
-  "description": "Request payload for vta/services/drain/cancel. Ends a drain early, dropping the mediator now instead of at `drainsUntil`. Messages still in flight through it are lost, which is the whole reason the drain window existed.",
+  "description": "Request payload for vta/services/drain/cancel. Ends a drain early, dropping the mediator now instead of at `drainEndsAt` (`drainsUntil` in a record pinned to `vta/_shared/0.1`). Messages still in flight through it are lost, which is the whole reason the drain window existed.",
   "type": "object",
   "additionalProperties": false,
   "required": [

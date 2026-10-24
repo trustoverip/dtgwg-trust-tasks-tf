@@ -3,7 +3,7 @@
  * Source: specs/vta/pcs/trustee/deal/0.1/payload.schema.json
  */
 
-import type { BoardVisibility, ChoiceQuestion, ElectionId, Ext, GroupElement, GroupScalar, Key_VotingV0_1 as Key, Manifest, Question, QuestionOption, RankingQuestion, Revote, RollRule, ScoreQuestion, SecrecyLevel, SigmaProof, TextQuestion, TransportKey, TrusteeIndex, Trustees } from "../../../../../_shared/components.js";
+import type { BoardVisibility, ChoiceQuestion, ElectionId, Ext, GroupElement, GroupScalar, Key_VotingV0_1 as Key, Manifest_VotingV0_1 as Manifest, Question, QuestionOption, RankingQuestion, Revote, RollRule, ScoreQuestion, SecrecyLevel, SigmaProof, TextQuestion, TransportKey, TrusteeIndex, Trustees } from "../../../../../_shared/components.js";
 
 
 /**

@@ -3,7 +3,7 @@
  * Source: specs/vta/pcs/trustee/deal/0.2/payload.schema.json
  */
 
-import type { BoardVisibility, ChoiceQuestion, ElectionId, Ext, Key_VotingV0_1 as Key, Manifest, Question, QuestionOption, RankingQuestion, Revote, RollRule, ScoreQuestion, SecrecyLevel, SignedRequest, TextQuestion, TrusteeCeremony, Trustees } from "../../../../../_shared/components.js";
+import type { BoardVisibility, ChoiceQuestion, ElectionId, Ext, Key_VotingV0_1 as Key, Manifest_VotingV0_1 as Manifest, Question, QuestionOption, RankingQuestion, Revote, RollRule, ScoreQuestion, SecrecyLevel, SignedRequest, TextQuestion, TrusteeCeremony, Trustees } from "../../../../../_shared/components.js";
 
 
 /**

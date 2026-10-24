@@ -3,7 +3,7 @@
  * Source: specs/vtc/rooms/offers/list/0.3/payload.schema.json
  */
 
-import type { Ext, MemberAction, MemberActions, OfferCredentials, OfferV2, Renewal, RenewalCredentials, RoomDescription, RoomLabel, Visibility } from "../../../../../_shared/components.js";
+import type { Ext, MemberAction, MemberActions, OfferCredentials, OfferV2, Renewal_VtcV0_1 as Renewal, RenewalCredentials, RoomDescription, RoomLabel, Visibility } from "../../../../../_shared/components.js";
 
 
 export interface VTCRoomsOffersListPayload {

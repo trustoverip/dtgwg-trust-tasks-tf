@@ -3,7 +3,7 @@
  * Source: specs/vta/pcs/vote-encrypted/0.1/payload.schema.json
  */
 
-import type { Answer, Ballot, BoardVisibility, ChoiceQuestion, DigestMultibase, ElectionId, ElectionKey, Ext, GroupElement, Key_VotingV0_1 as Key, Manifest, Multibase_VotingV0_1 as Multibase, Question, QuestionOption, RankingQuestion, Revote, RollRule, ScoreQuestion, SecrecyLevel, TextQuestion, TrusteeIndex, Trustees, VotingParameters } from "../../../../_shared/components.js";
+import type { Answer, Ballot, BoardVisibility, ChoiceQuestion, DigestMultibase, ElectionId, ElectionKey, Ext, GroupElement, Key_VotingV0_1 as Key, Manifest_VotingV0_1 as Manifest, Multibase_VotingV0_1 as Multibase, Question, QuestionOption, RankingQuestion, Revote, RollRule, ScoreQuestion, SecrecyLevel, TextQuestion, TrusteeIndex, Trustees, VotingParameters } from "../../../../_shared/components.js";
 
 
 /**

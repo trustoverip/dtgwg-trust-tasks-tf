@@ -3,7 +3,7 @@
  * Source: specs/messaging/monitor/event/0.1/payload.schema.json
  */
 
-import type { Ext, MonitorEvent, TrafficChannel, TrafficDirection, TrafficOutcome, TrafficStage, Vid, WireProtocol } from "../../../../_shared/components.js";
+import type { Ext, MonitorEvent_MessagingV0_1 as MonitorEvent, TrafficChannel, TrafficDirection, TrafficOutcome, TrafficStage, Vid, WireProtocol } from "../../../../_shared/components.js";
 
 
 export interface MessagingTrafficMonitorEventPayload {

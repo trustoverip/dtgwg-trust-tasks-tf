@@ -3,7 +3,7 @@
  * Source: specs/voting/election/show/0.1/payload.schema.json
  */
 
-import type { BoardHead, BoardVisibility, ChoiceQuestion, DigestMultibase, ElectionId, ElectionState, ElectionSummary, Ext, Key_VotingV0_1 as Key, Manifest, Question, QuestionOption, RankingQuestion, Revote, RollRule, ScoreQuestion, SecrecyLevel, TextQuestion, Trustees } from "../../../../_shared/components.js";
+import type { BoardHead, BoardVisibility, ChoiceQuestion, DigestMultibase, ElectionId, ElectionState, ElectionSummary, Ext, Key_VotingV0_1 as Key, Manifest_VotingV0_1 as Manifest, Question, QuestionOption, RankingQuestion, Revote, RollRule, ScoreQuestion, SecrecyLevel, TextQuestion, Trustees } from "../../../../_shared/components.js";
 
 
 /**

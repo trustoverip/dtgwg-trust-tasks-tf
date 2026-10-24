@@ -7,7 +7,7 @@ import type { BoardHead, DigestMultibase, ElectionId, ElectionState, ElectionSum
 
 
 /**
- * The community closes voting in one of its elections before `votingCloses`, where the manifest allows it.
+ * The community closes voting in one of its elections before `votingClosesAt` (`votingCloses` in a manifest pinned to `voting/_shared/0.1`), where the manifest allows it.
  */
 export interface VotingElectionClosePayload {
   /**
@@ -54,7 +54,7 @@ export const PAYLOAD_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/voting/election/close/0.1",
   "title": "Voting — Election Close — payload",
-  "description": "The community closes voting in one of its elections before `votingCloses`, where the manifest allows it.",
+  "description": "The community closes voting in one of its elections before `votingClosesAt` (`votingCloses` in a manifest pinned to `voting/_shared/0.1`), where the manifest allows it.",
   "type": "object",
   "additionalProperties": false,
   "required": [
