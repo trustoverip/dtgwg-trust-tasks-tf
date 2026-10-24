@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/voting/election/register/0.2",
+  "title": "Voting — Election Register — payload",
+  "description": "A community registers an election it signed with the ballot box the election's manifest names. The ballot box answers with its view of the election.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "community",
+    "manifest",
+    "manifestDigest",
+    "parameters"
+  ],
+  "properties": {
+    "community": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "The community's DID. Equal to the proven signer and to `manifest.community`."
+    },
+    "manifest": {
+      "$ref": "../../../_shared/0.2/voting.schema.json#/$defs/Manifest"
+    },
+    "manifestDigest": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/DigestMultibase",
+      "description": "The SHA-256 multihash of the RFC 8785 (JCS) canonicalization of `manifest`, as the community computed it."
+    },
+    "parameters": {
+      "$ref": "../../../_shared/0.2/voting.schema.json#/$defs/VotingParameters",
+      "description": "The community's voting parameters: the key the election's tickets are issued under, which every cast's attestation is checked against."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Voting — Election Register — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "election"
+      ],
+      "properties": {
+        "election": {
+          "$ref": "../../../_shared/0.2/voting.schema.json#/$defs/ElectionSummary"
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

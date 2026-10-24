@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/vtc/elections/show/0.2",
+  "title": "VTC Elections — Show — payload",
+  "description": "A member or an administrator reads one election of the community whole: its manifest, state, voting parameters, disclosure, the board checkpoints the community kept and, once certified, the certified result. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "electionId"
+  ],
+  "properties": {
+    "electionId": {
+      "$ref": "../../../../voting/_shared/0.2/voting.schema.json#/$defs/ElectionId"
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "RegistrarState": {
+      "title": "RegistrarState",
+      "description": "An election's state as its registrar holds it: the ballot box's `ElectionState` once the ballot box has registered the election, or, before that, `pendingRegistration` (the community is still delivering the registration) or `registrationRefused` (the ballot box refused it on a later delivery, and only a cancellation clears it). The first six values are the ballot box's `ElectionState` (voting/_shared/0.1).",
+      "type": "string",
+      "enum": [
+        "registered",
+        "registration",
+        "voting",
+        "closed",
+        "tallied",
+        "cancelled",
+        "pendingRegistration",
+        "registrationRefused"
+      ]
+    },
+    "Checkpoint": {
+      "title": "Checkpoint",
+      "description": "A board head the community read from the ballot box and kept, with the ballot box's signed document that carried it. Certification proves the board's final head consistent with every checkpoint, so a ballot box that rewrote its board after a checkpoint is caught.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "head",
+        "document"
+      ],
+      "properties": {
+        "head": {
+          "$ref": "../../../../voting/_shared/0.2/voting.schema.json#/$defs/BoardHead"
+        },
+        "document": {
+          "type": "object",
+          "description": "The ballot box's signed voting/board/head `#response` document whose payload carries `head`, kept whole and exactly as received — proof included — so anyone can verify it against the ballot box's DID without trusting the community."
+        }
+      }
+    },
+    "Certification": {
+      "title": "Certification",
+      "description": "The community's certification of the election's result, as vtc/elections/certify recorded it.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "result",
+        "certifiedAt",
+        "auditAttestations"
+      ],
+      "properties": {
+        "result": {
+          "$ref": "../../../../voting/_shared/0.2/voting.schema.json#/$defs/ElectionResult"
+        },
+        "certifiedAt": {
+          "type": "string",
+          "format": "date-time",
+          "maxLength": 64
+        },
+        "auditAttestations": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "type": "object",
+            "description": "A verifiable credential from an auditor the manifest names, as received."
+          }
+        }
+      }
+    },
+    "Response": {
+      "$anchor": "response",
+      "title": "VTC Elections — Show — response payload",
+      "description": "Success response to vtc/elections/show/0.1: one election, whole.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "manifest",
+        "manifestDigest",
+        "state",
+        "parameters",
+        "disclosure",
+        "checkpoints"
+      ],
+      "properties": {
+        "manifest": {
+          "$ref": "../../../../voting/_shared/0.2/voting.schema.json#/$defs/Manifest"
+        },
+        "manifestDigest": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/DigestMultibase",
+          "description": "The SHA-256 multihash of the RFC 8785 (JCS) canonicalization of `manifest`. A ticket request names it, and every cast is bound to it."
+        },
+        "state": {
+          "$ref": "#/$defs/RegistrarState"
+        },
+        "parameters": {
+          "$ref": "../../../../voting/_shared/0.2/voting.schema.json#/$defs/VotingParameters",
+          "description": "The community's voting parameters the election's tickets are issued under (VTI-VOT-020)."
+        },
+        "disclosure": {
+          "$ref": "../../../../voting/_shared/0.2/voting.schema.json#/$defs/Disclosure",
+          "description": "How the election is run, generated from the manifest and the community's configuration (VTI-VOT-090). Always present: a member reads it before requesting a ticket."
+        },
+        "checkpoints": {
+          "type": "array",
+          "maxItems": 256,
+          "items": {
+            "$ref": "#/$defs/Checkpoint"
+          },
+          "description": "The board heads the community has kept, oldest first. Empty until the community has read a head."
+        },
+        "ticketsIssued": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many tickets the community has issued for the election. Present only to a caller holding vtc.elections.manage."
+        },
+        "electionKey": {
+          "$ref": "../../../../voting/_shared/0.2/voting.schema.json#/$defs/ElectionKey",
+          "description": "The key a sealed or tallied-encrypted election's ballots are encrypted under, once its trustees have formed it (CONVENTIONS §9.6)."
+        },
+        "certified": {
+          "$ref": "#/$defs/Certification",
+          "description": "Present once the community has certified the result."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        },
+        "ceremony": {
+          "$ref": "../../../../voting/_shared/0.2/voting.schema.json#/$defs/TrusteeCeremony",
+          "description": "With electionKey: the trustees' signed steps it forms from, through the board's electionKey entry, each exactly as received. A voter's VTA forms the key itself from these (vta/pcs/vote-encrypted/0.3)."
+        }
+      }
+    }
+  }
+}

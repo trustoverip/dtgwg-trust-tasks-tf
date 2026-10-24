@@ -69,7 +69,7 @@ related:
 
 ## Abstract
 
-The **Voting — Election Close** Trust Task lets a community end voting before the manifest's `votingCloses`, where its manifest says it may (`allowEarlyClose`). The ballot box appends a `closedEarly` entry to the board, admits no further cast, and tallies the election from the board as it then stands. The community's VTC sends it from inside [`vtc/elections/close`](../../../../vtc/elections/close/0.1/spec.md). The family's shared rules are in [`CONVENTIONS.md`](../../../_shared/0.1/CONVENTIONS.md).
+The **Voting — Election Close** Trust Task lets a community end voting before the manifest's `votingClosesAt` (`votingCloses` in a manifest pinned to `voting/_shared/0.1`), where its manifest says it may (`allowEarlyClose`). The ballot box appends a `closedEarly` entry to the board, admits no further cast, and tallies the election from the board as it then stands. The community's VTC sends it from inside [`vtc/elections/close`](../../../../vtc/elections/close/0.1/spec.md). The family's shared rules are in [`CONVENTIONS.md`](../../../_shared/0.1/CONVENTIONS.md).
 
 ## Status of this Document
 

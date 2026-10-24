@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/voting/board/read/0.2",
+  "title": "Voting — Board Read — payload",
+  "description": "Reads a range of an election board's entries, against the current head or against an earlier tree size.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "community",
+    "electionId",
+    "from",
+    "limit"
+  ],
+  "properties": {
+    "community": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "description": "The community's DID."
+    },
+    "electionId": {
+      "$ref": "../../../_shared/0.2/voting.schema.json#/$defs/ElectionId"
+    },
+    "from": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "The index of the first entry to return."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "description": "The most entries to return."
+    },
+    "treeSize": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Read against the board as it stood at this size — the size of a head the reader holds. At most the current size. Absent: the current size."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Voting — Board Read — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "treeSize",
+        "entries"
+      ],
+      "properties": {
+        "treeSize": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The tree size the page was read against. No entry at or beyond it is returned."
+        },
+        "entries": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "index",
+              "entry"
+            ],
+            "properties": {
+              "index": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "entry": {
+                "$ref": "../../../_shared/0.2/voting.schema.json#/$defs/BoardEntry"
+              }
+            }
+          },
+          "description": "Consecutive entries from `from`, in board order."
+        },
+        "next": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "The `from` of the next page. Absent when the page reaches `treeSize`."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,1502 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/voting/_shared/0.2/voting.schema.json",
+  "title": "Community voting — shared definitions",
+  "description": "Reusable $defs for the voting/*, vtc/elections/* and vta/pcs/voter/* task families. Not itself a Trust Task specification. The conventions these shapes serve are in ../0.1/CONVENTIONS.md, which describes these definitions by their 0.2 member names and notes the 0.1 names; the normative requirements are VTI-VOT-001 – 100 of the VTI specification.",
+  "$defs": {
+    "Multibase": {
+      "title": "Multibase",
+      "description": "A binary value, multibase base58btc over the suite's canonical (compressed) encoding.",
+      "type": "string",
+      "maxLength": 16384,
+      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
+    },
+    "ElectionId": {
+      "title": "ElectionId",
+      "description": "An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,128}$"
+    },
+    "Key": {
+      "title": "Key",
+      "description": "A question or option key, unique within its manifest or question.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,64}$"
+    },
+    "SecrecyLevel": {
+      "title": "SecrecyLevel",
+      "description": "`open`: ballots are recorded on the board as cast. `sealed`: ballots are encrypted to a jointly generated election key and decrypted after voting closes. `talliedEncrypted`: ballots are encrypted and only the totals are ever decrypted (VTI-VOT-060). The encrypted levels are cast with `voting/ballot/cast-encrypted/0.1`, under an election key the trustees generate with `voting/trustees/*` (CONVENTIONS §9).",
+      "type": "string",
+      "enum": [
+        "open",
+        "sealed",
+        "talliedEncrypted"
+      ]
+    },
+    "RollRule": {
+      "title": "RollRule",
+      "description": "Who may be issued a ticket (VTI-VOT-021): the community's active members, its active members and the parties `listed` names, or only the parties `listed` names.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rule"
+      ],
+      "properties": {
+        "rule": {
+          "type": "string",
+          "enum": [
+            "members",
+            "membersAndListed",
+            "listed"
+          ]
+        },
+        "listed": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048,
+            "description": "A DID enfranchised by name."
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "Revote": {
+      "title": "Revote",
+      "description": "What a later, different ballot under one ticket does: `replace` the earlier one, or be refused (`refuse`) (VTI-VOT-041).",
+      "type": "string",
+      "enum": [
+        "replace",
+        "refuse"
+      ]
+    },
+    "BoardVisibility": {
+      "title": "BoardVisibility",
+      "description": "`public`: anyone reads the board. `private`: the community, the auditors the manifest names and, for one cast's inclusion, the holder of its receipt (VTI-VOT-052).",
+      "type": "string",
+      "enum": [
+        "public",
+        "private"
+      ]
+    },
+    "QuestionOption": {
+      "title": "QuestionOption",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key"
+      ],
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/Key"
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 512,
+          "description": "Display text. Absent from a manifest registered with a ballot box that holds no question text (VTI-VOT-014)."
+        }
+      }
+    },
+    "Question": {
+      "title": "Question",
+      "description": "One question. Tagged union over `type`.",
+      "oneOf": [
+        {
+          "title": "ChoiceQuestion",
+          "description": "Select between `minSelections` and `maxSelections` of `options`. A yes/no/abstain motion is a choice of exactly one of three.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "key",
+            "type",
+            "options",
+            "minSelections",
+            "maxSelections",
+            "optional"
+          ],
+          "properties": {
+            "key": {
+              "$ref": "#/$defs/Key"
+            },
+            "type": {
+              "const": "choice"
+            },
+            "text": {
+              "type": "string",
+              "maxLength": 2048
+            },
+            "options": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 256,
+              "items": {
+                "$ref": "#/$defs/QuestionOption"
+              }
+            },
+            "minSelections": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "maxSelections": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "optional": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "title": "RankingQuestion",
+          "description": "Order `options`; a ballot ranks every option or, when `partial` is true, a prefix of them.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "key",
+            "type",
+            "options",
+            "partial",
+            "optional"
+          ],
+          "properties": {
+            "key": {
+              "$ref": "#/$defs/Key"
+            },
+            "type": {
+              "const": "ranking"
+            },
+            "text": {
+              "type": "string",
+              "maxLength": 2048
+            },
+            "options": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 64,
+              "items": {
+                "$ref": "#/$defs/QuestionOption"
+              }
+            },
+            "partial": {
+              "type": "boolean"
+            },
+            "optional": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "title": "ScoreQuestion",
+          "description": "Give each option an integer score within [min, max].",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "key",
+            "type",
+            "options",
+            "min",
+            "max",
+            "optional"
+          ],
+          "properties": {
+            "key": {
+              "$ref": "#/$defs/Key"
+            },
+            "type": {
+              "const": "score"
+            },
+            "text": {
+              "type": "string",
+              "maxLength": 2048
+            },
+            "options": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 256,
+              "items": {
+                "$ref": "#/$defs/QuestionOption"
+              }
+            },
+            "min": {
+              "type": "integer"
+            },
+            "max": {
+              "type": "integer"
+            },
+            "optional": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "title": "TextQuestion",
+          "description": "Free text of at most `maxLength` characters.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "key",
+            "type",
+            "maxLength",
+            "optional"
+          ],
+          "properties": {
+            "key": {
+              "$ref": "#/$defs/Key"
+            },
+            "type": {
+              "const": "text"
+            },
+            "text": {
+              "type": "string",
+              "maxLength": 2048
+            },
+            "maxLength": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 4096
+            },
+            "optional": {
+              "type": "boolean"
+            }
+          }
+        }
+      ]
+    },
+    "Trustees": {
+      "title": "Trustees",
+      "description": "The trustees of a sealed or tallied-encrypted election and the number of them decryption needs (VTI-VOT-062). Neither the community nor the ballot box may be one.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dids",
+        "threshold"
+      ],
+      "properties": {
+        "dids": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "uniqueItems": true
+        },
+        "threshold": {
+          "type": "integer",
+          "minimum": 2
+        }
+      }
+    },
+    "Manifest": {
+      "title": "Manifest",
+      "description": "What an election asks and how it is decided (VTI-VOT-010). Its digest (`manifestDigest`) is the SHA-256 multihash of its RFC 8785 (JCS) canonicalization, and every cast is bound to it (VTI-VOT-011).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "electionId",
+        "community",
+        "questions",
+        "secrecy",
+        "roll",
+        "registrationOpensAt",
+        "votingOpensAt",
+        "votingClosesAt",
+        "revote",
+        "board",
+        "ballotBox",
+        "binding",
+        "allowEarlyClose",
+        "resultsBeforeClose",
+        "textReleaseThreshold"
+      ],
+      "properties": {
+        "electionId": {
+          "$ref": "#/$defs/ElectionId"
+        },
+        "community": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The community's DID."
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 8192
+        },
+        "questions": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 128,
+          "items": {
+            "$ref": "#/$defs/Question"
+          }
+        },
+        "secrecy": {
+          "$ref": "#/$defs/SecrecyLevel"
+        },
+        "roll": {
+          "$ref": "#/$defs/RollRule"
+        },
+        "registrationOpensAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "votingOpensAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "votingClosesAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "revote": {
+          "$ref": "#/$defs/Revote"
+        },
+        "board": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "visibility",
+            "auditors"
+          ],
+          "properties": {
+            "visibility": {
+              "$ref": "#/$defs/BoardVisibility"
+            },
+            "auditors": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2048
+              },
+              "uniqueItems": true
+            }
+          }
+        },
+        "ballotBox": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The DID of the voting service that holds the board."
+        },
+        "trustees": {
+          "$ref": "#/$defs/Trustees"
+        },
+        "binding": {
+          "type": "boolean",
+          "description": "Whether the community treats the result as deciding something; creating a binding election takes another administrator's consent (VTI-VOT-081)."
+        },
+        "allowEarlyClose": {
+          "type": "boolean"
+        },
+        "resultsBeforeClose": {
+          "type": "boolean",
+          "description": "Open elections only: whether running totals may be read while voting is open (VTI-VOT-061)."
+        },
+        "textReleaseThreshold": {
+          "type": "integer",
+          "minimum": 10,
+          "description": "Counted ballots required before any text answer is disclosed (VTI-VOT-065)."
+        }
+      }
+    },
+    "VotingParameters": {
+      "title": "VotingParameters",
+      "description": "The community's published voting parameters: the PCS suite and the voting verification key tickets are issued under (VTI-VOT-020). Distinct from its hidden-vetting helper key.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "suite",
+        "votingKey"
+      ],
+      "properties": {
+        "suite": {
+          "type": "string",
+          "const": "ps-ddh-bls12381"
+        },
+        "votingKey": {
+          "$ref": "#/$defs/Multibase"
+        }
+      }
+    },
+    "Answer": {
+      "title": "Answer",
+      "description": "The answer to one question. Exactly one member besides `question` is present, matching the question's type, or `abstain` for an optional question left unanswered.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question"
+      ],
+      "minProperties": 2,
+      "maxProperties": 2,
+      "properties": {
+        "question": {
+          "$ref": "#/$defs/Key"
+        },
+        "choice": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Key"
+          },
+          "uniqueItems": true
+        },
+        "ranking": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Key"
+          },
+          "uniqueItems": true
+        },
+        "scores": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/Key"
+          },
+          "additionalProperties": {
+            "type": "integer"
+          }
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "abstain": {
+          "const": true
+        }
+      }
+    },
+    "Ballot": {
+      "title": "Ballot",
+      "description": "An open ballot: one answer per question of the manifest, in any order. The bytes a cast's proof binds are the RFC 8785 (JCS) canonicalization of this object as received.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "electionId",
+        "manifestDigest",
+        "answers"
+      ],
+      "properties": {
+        "electionId": {
+          "$ref": "#/$defs/ElectionId"
+        },
+        "manifestDigest": {
+          "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/DigestMultibase"
+        },
+        "answers": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 128,
+          "items": {
+            "$ref": "#/$defs/Answer"
+          }
+        }
+      }
+    },
+    "Cast": {
+      "title": "Cast",
+      "description": "A ballot and the PCS attestation that admits it (VTI-VOT-030). `attestation` is the suite's canonical encoding of the attestation made for the election point with the ballot context bound in (CONVENTIONS §3); `tag` repeats its tag so a ballot box can refuse a duplicate before the pairing check.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ballot",
+        "tag",
+        "attestation"
+      ],
+      "properties": {
+        "ballot": {
+          "$ref": "#/$defs/Ballot"
+        },
+        "tag": {
+          "$ref": "#/$defs/Multibase"
+        },
+        "attestation": {
+          "$ref": "#/$defs/Multibase"
+        }
+      }
+    },
+    "BoardHead": {
+      "title": "BoardHead",
+      "description": "A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "electionId",
+        "treeSize",
+        "rootHash",
+        "issuedAt"
+      ],
+      "properties": {
+        "electionId": {
+          "$ref": "#/$defs/ElectionId"
+        },
+        "treeSize": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rootHash": {
+          "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/DigestMultibase",
+          "description": "The RFC 9162 Merkle tree hash (SHA-256) of the first `treeSize` entries, as a multihash."
+        },
+        "issuedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "MerklePath": {
+      "title": "MerklePath",
+      "description": "An RFC 9162 audit or consistency path: the node hashes, in the order §2.1.3 / §2.1.4 define.",
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/DigestMultibase"
+      }
+    },
+    "BoardEntry": {
+      "title": "BoardEntry",
+      "description": "One leaf of a board. A leaf's hash is the RFC 9162 leaf hash of the JCS canonicalization of this object. Entries carry no time of arrival: the order is the board's, and a timestamp would hand anyone who reads the board the timing the registrar's log would need to pair a ticket with its cast.",
+      "oneOf": [
+        {
+          "title": "CastEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "cast"
+          ],
+          "properties": {
+            "kind": {
+              "const": "cast"
+            },
+            "cast": {
+              "$ref": "#/$defs/Cast"
+            }
+          }
+        },
+        {
+          "title": "ReplacementEntry",
+          "description": "The cast at `replaces` is no longer counted: a later cast under the same tag is.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "tag",
+            "replaces",
+            "by"
+          ],
+          "properties": {
+            "kind": {
+              "const": "replaced"
+            },
+            "tag": {
+              "$ref": "#/$defs/Multibase"
+            },
+            "replaces": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "by": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        {
+          "title": "LifecycleEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "occurredAt"
+          ],
+          "properties": {
+            "kind": {
+              "enum": [
+                "opened",
+                "closed",
+                "closedEarly",
+                "cancelled"
+              ]
+            },
+            "occurredAt": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        },
+        {
+          "title": "ResultEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "result"
+          ],
+          "properties": {
+            "kind": {
+              "const": "result"
+            },
+            "result": {
+              "$ref": "#/$defs/ElectionResult"
+            }
+          }
+        },
+        {
+          "title": "EncryptedCastEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "cast"
+          ],
+          "properties": {
+            "kind": {
+              "const": "encryptedCast"
+            },
+            "cast": {
+              "$ref": "#/$defs/EncryptedCast"
+            }
+          }
+        },
+        {
+          "title": "TransportKeyEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "transportKey"
+          ],
+          "properties": {
+            "kind": {
+              "const": "transportKey"
+            },
+            "transportKey": {
+              "$ref": "#/$defs/TransportKey"
+            }
+          },
+          "description": "Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind."
+        },
+        {
+          "title": "DealingEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "dealing"
+          ],
+          "properties": {
+            "kind": {
+              "const": "dealing"
+            },
+            "dealing": {
+              "$ref": "#/$defs/Dealing"
+            }
+          },
+          "description": "Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind."
+        },
+        {
+          "title": "ConfirmationEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "trustee",
+            "complaints"
+          ],
+          "properties": {
+            "kind": {
+              "const": "confirmation"
+            },
+            "trustee": {
+              "$ref": "#/$defs/TrusteeIndex"
+            },
+            "complaints": {
+              "type": "array",
+              "maxItems": 64,
+              "items": {
+                "$ref": "#/$defs/TrusteeIndex"
+              }
+            }
+          },
+          "description": "Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind."
+        },
+        {
+          "title": "JustificationEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "dealer",
+            "recipient",
+            "share"
+          ],
+          "properties": {
+            "kind": {
+              "const": "justification"
+            },
+            "dealer": {
+              "$ref": "#/$defs/TrusteeIndex"
+            },
+            "recipient": {
+              "$ref": "#/$defs/TrusteeIndex"
+            },
+            "share": {
+              "$ref": "#/$defs/GroupScalar"
+            }
+          },
+          "description": "Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind."
+        },
+        {
+          "title": "ElectionKeyEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "electionKey"
+          ],
+          "properties": {
+            "kind": {
+              "const": "electionKey"
+            },
+            "electionKey": {
+              "$ref": "#/$defs/ElectionKey"
+            }
+          }
+        },
+        {
+          "title": "PartialDecryptionsEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "trustee",
+            "partials"
+          ],
+          "properties": {
+            "kind": {
+              "const": "partials"
+            },
+            "trustee": {
+              "$ref": "#/$defs/TrusteeIndex"
+            },
+            "partials": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 100000,
+              "items": {
+                "$ref": "#/$defs/PartialDecryption"
+              }
+            }
+          }
+        },
+        {
+          "title": "UnsealedEntry",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "leafIndex",
+            "ballot"
+          ],
+          "properties": {
+            "kind": {
+              "const": "unsealed"
+            },
+            "leafIndex": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "ballot": {
+              "$ref": "#/$defs/Ballot"
+            }
+          }
+        },
+        {
+          "title": "SpoiledEntry",
+          "description": "A sealed cast that did not open, or opened to no valid ballot: not counted (CONVENTIONS §9.7).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "leafIndex"
+          ],
+          "properties": {
+            "kind": {
+              "const": "spoiled"
+            },
+            "leafIndex": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        {
+          "title": "TrusteeStepEntry",
+          "description": "One step of the trustees' ceremony — an enrolment, a dealing, a confirmation or a justification — as the trustee's own signed request, so that anyone reading the board can tell who took it (CONVENTIONS §9.6).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "request"
+          ],
+          "properties": {
+            "kind": {
+              "const": "trusteeStep"
+            },
+            "request": {
+              "$ref": "#/$defs/SignedRequest"
+            }
+          }
+        },
+        {
+          "title": "DecryptionAuthorizedEntry",
+          "description": "The community's voting/trustees/authorize request, exactly as the ballot box received it: the decryption targets of a closed election, pinned by digest to a head of the board (CONVENTIONS §9.7).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "request"
+          ],
+          "properties": {
+            "kind": {
+              "const": "decryptionAuthorized"
+            },
+            "request": {
+              "$ref": "#/$defs/SignedRequest"
+            }
+          }
+        }
+      ]
+    },
+    "QuestionResult": {
+      "title": "QuestionResult",
+      "description": "One question's totals. `choice`: selections per option. `ranking`: per option, how many ballots placed it at each position (index 0 = first). `score`: per option, the sum and the number of ballots that scored it. `text`: the answers, in board order, withheld (`withheld: true`) below the manifest's `textReleaseThreshold`. `abstained` counts ballots that left the question unanswered.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question",
+        "abstained"
+      ],
+      "properties": {
+        "question": {
+          "$ref": "#/$defs/Key"
+        },
+        "abstained": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "choice": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/Key"
+          },
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "ranking": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/Key"
+          },
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "score": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/Key"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "sum",
+              "count"
+            ],
+            "properties": {
+              "sum": {
+                "type": "integer"
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "text": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 4096
+          }
+        },
+        "withheld": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ElectionResult": {
+      "title": "ElectionResult",
+      "description": "An election's result, computable by anyone who can read its board from the board and the registration alone (VTI-VOT-070).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "electionId",
+        "manifestDigest",
+        "ballotsCounted",
+        "questions",
+        "head"
+      ],
+      "properties": {
+        "electionId": {
+          "$ref": "#/$defs/ElectionId"
+        },
+        "manifestDigest": {
+          "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/DigestMultibase"
+        },
+        "ballotsCounted": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "questions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/QuestionResult"
+          }
+        },
+        "head": {
+          "$ref": "#/$defs/BoardHead",
+          "description": "The head of the board as it stood at close: the result counts exactly its entries."
+        }
+      }
+    },
+    "ElectionState": {
+      "title": "ElectionState",
+      "type": "string",
+      "enum": [
+        "registered",
+        "registration",
+        "voting",
+        "closed",
+        "tallied",
+        "cancelled"
+      ]
+    },
+    "ElectionSummary": {
+      "title": "ElectionSummary",
+      "description": "A ballot box's view of one election.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "electionId",
+        "community",
+        "manifestDigest",
+        "state",
+        "ballotsAdmitted",
+        "head"
+      ],
+      "properties": {
+        "electionId": {
+          "$ref": "#/$defs/ElectionId"
+        },
+        "community": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "manifestDigest": {
+          "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/DigestMultibase"
+        },
+        "state": {
+          "$ref": "#/$defs/ElectionState"
+        },
+        "ballotsAdmitted": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Distinct tags with a counted ballot."
+        },
+        "head": {
+          "$ref": "#/$defs/BoardHead"
+        }
+      }
+    },
+    "Disclosure": {
+      "title": "Disclosure",
+      "description": "The statement a community publishes, and shows a member before they request a ticket, about how one election is run (VTI-VOT-090). Generated from the election's manifest and the community's configuration, never written by hand.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ballotBox",
+        "ballotBoxOperator",
+        "sameOperator",
+        "boardVisibility",
+        "auditors",
+        "revote",
+        "coercionResistance"
+      ],
+      "properties": {
+        "ballotBox": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "description": "The ballot box's DID."
+        },
+        "ballotBoxOperator": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "description": "Who operates the ballot box, as the community names them."
+        },
+        "sameOperator": {
+          "type": "boolean",
+          "description": "Whether the party operating the community's VTC also operates the ballot box."
+        },
+        "trustees": {
+          "$ref": "#/$defs/Trustees"
+        },
+        "boardVisibility": {
+          "$ref": "#/$defs/BoardVisibility"
+        },
+        "auditors": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "uniqueItems": true
+        },
+        "revote": {
+          "$ref": "#/$defs/Revote"
+        },
+        "coercionResistance": {
+          "const": false,
+          "description": "Always false: a voter can prove how they voted, so the community cannot protect a member against being made to vote a certain way."
+        }
+      }
+    },
+    "GroupElement": {
+      "title": "GroupElement",
+      "description": "A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).",
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 64,
+      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
+    },
+    "GroupScalar": {
+      "title": "GroupScalar",
+      "description": "A scalar mod the Ristretto group order: 32 canonical little-endian bytes, multibase base58btc (CONVENTIONS §9.1).",
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 64,
+      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
+    },
+    "ElGamalCiphertext": {
+      "title": "ElGamalCiphertext",
+      "description": "`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "a",
+        "b"
+      ],
+      "properties": {
+        "a": {
+          "$ref": "#/$defs/GroupElement"
+        },
+        "b": {
+          "$ref": "#/$defs/GroupElement"
+        }
+      }
+    },
+    "SigmaProof": {
+      "title": "SigmaProof",
+      "description": "A non-interactive sigma proof as its challenge and response `(c, z)` (Schnorr or Chaum–Pedersen; CONVENTIONS §9.3).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "c",
+        "z"
+      ],
+      "properties": {
+        "c": {
+          "$ref": "#/$defs/GroupScalar"
+        },
+        "z": {
+          "$ref": "#/$defs/GroupScalar"
+        }
+      }
+    },
+    "DisjunctiveProof": {
+      "title": "DisjunctiveProof",
+      "description": "A disjunctive proof that a ciphertext encrypts one value of a public list: one `(c, z)` per value, in the list's order (CONVENTIONS §9.3).",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 65,
+      "items": {
+        "$ref": "#/$defs/SigmaProof"
+      }
+    },
+    "SealedPayload": {
+      "title": "SealedPayload",
+      "description": "Bytes sealed to a key: a random group element encrypted as `kem`, and the bytes under ChaCha20-Poly1305 with a key derived from it, multibase base58btc (CONVENTIONS §9.4).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kem",
+        "body"
+      ],
+      "properties": {
+        "kem": {
+          "$ref": "#/$defs/ElGamalCiphertext"
+        },
+        "body": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 131072,
+          "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
+        }
+      }
+    },
+    "EncryptedOption": {
+      "title": "EncryptedOption",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ciphertext",
+        "proof"
+      ],
+      "properties": {
+        "ciphertext": {
+          "$ref": "#/$defs/ElGamalCiphertext"
+        },
+        "proof": {
+          "$ref": "#/$defs/DisjunctiveProof"
+        }
+      }
+    },
+    "EncryptedQuestion": {
+      "title": "EncryptedQuestion",
+      "description": "One choice question of a tallied-encrypted ballot: per option, in the manifest's order, an encryption of 0 or 1 with its proof; and a proof that the selections sum to a count the question admits (CONVENTIONS §9.5).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question",
+        "options",
+        "sumProof"
+      ],
+      "properties": {
+        "question": {
+          "$ref": "#/$defs/Key"
+        },
+        "options": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/EncryptedOption"
+          }
+        },
+        "sumProof": {
+          "$ref": "#/$defs/DisjunctiveProof"
+        }
+      }
+    },
+    "EncryptedBallot": {
+      "title": "EncryptedBallot",
+      "description": "A tallied-encrypted ballot: one EncryptedQuestion per manifest question, in the manifest's order. Never decrypted (VTI-VOT-064).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "electionId",
+        "manifestDigest",
+        "questions"
+      ],
+      "properties": {
+        "electionId": {
+          "$ref": "#/$defs/ElectionId"
+        },
+        "manifestDigest": {
+          "$ref": "../../../_framework/0.4/framework.schema.json#/$defs/DigestMultibase"
+        },
+        "questions": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/EncryptedQuestion"
+          }
+        }
+      }
+    },
+    "EncryptedCast": {
+      "title": "EncryptedCast",
+      "description": "A cast of a sealed or tallied-encrypted election: exactly one of `sealed` (the Ballot's JCS bytes sealed to the election key) or `encrypted`, with the tag and the attestation over the JCS bytes of whichever is present (CONVENTIONS §3.6, §9.5).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tag",
+        "attestation"
+      ],
+      "properties": {
+        "sealed": {
+          "$ref": "#/$defs/SealedPayload"
+        },
+        "encrypted": {
+          "$ref": "#/$defs/EncryptedBallot"
+        },
+        "tag": {
+          "$ref": "#/$defs/Multibase"
+        },
+        "attestation": {
+          "$ref": "#/$defs/Multibase"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "sealed"
+          ]
+        },
+        {
+          "required": [
+            "encrypted"
+          ]
+        }
+      ]
+    },
+    "TrusteeIndex": {
+      "title": "TrusteeIndex",
+      "description": "A trustee's index: its position in the manifest's `trustees.dids`, counting from 1.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 64
+    },
+    "TransportKey": {
+      "title": "TransportKey",
+      "description": "The group element a trustee's shares are sealed to, with a Schnorr proof of knowledge of its discrete log (CONVENTIONS §9.6).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trustee",
+        "key",
+        "pok"
+      ],
+      "properties": {
+        "trustee": {
+          "$ref": "#/$defs/TrusteeIndex"
+        },
+        "key": {
+          "$ref": "#/$defs/GroupElement"
+        },
+        "pok": {
+          "$ref": "#/$defs/SigmaProof"
+        }
+      }
+    },
+    "SealedShare": {
+      "title": "SealedShare",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "recipient",
+        "share"
+      ],
+      "properties": {
+        "recipient": {
+          "$ref": "#/$defs/TrusteeIndex"
+        },
+        "share": {
+          "$ref": "#/$defs/SealedPayload"
+        }
+      }
+    },
+    "Dealing": {
+      "title": "Dealing",
+      "description": "A trustee's contribution to the election key: Feldman commitments to its polynomial, a proof of knowledge of the constant term, and one share per trustee sealed to that trustee's transport key (CONVENTIONS §9.6).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dealer",
+        "commitments",
+        "pok",
+        "shares"
+      ],
+      "properties": {
+        "dealer": {
+          "$ref": "#/$defs/TrusteeIndex"
+        },
+        "commitments": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/GroupElement"
+          }
+        },
+        "pok": {
+          "$ref": "#/$defs/SigmaProof"
+        },
+        "shares": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/SealedShare"
+          }
+        }
+      }
+    },
+    "ElectionKey": {
+      "title": "ElectionKey",
+      "description": "The election key and each trustee's public verification key, computed from the qualified dealings (CONVENTIONS §9.6). Anyone can recompute it from the board.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "qualified",
+        "verification"
+      ],
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/GroupElement"
+        },
+        "qualified": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/TrusteeIndex"
+          },
+          "description": "The dealers whose dealings the key is formed from."
+        },
+        "verification": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 64,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "trustee",
+              "key"
+            ],
+            "properties": {
+              "trustee": {
+                "$ref": "#/$defs/TrusteeIndex"
+              },
+              "key": {
+                "$ref": "#/$defs/GroupElement"
+              }
+            }
+          }
+        }
+      }
+    },
+    "DecryptionTarget": {
+      "title": "DecryptionTarget",
+      "description": "What a partial decryption decrypts: the sealed cast at a board leaf, or the total of one option of one question.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ciphertext"
+      ],
+      "properties": {
+        "leafIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "A sealed cast's board leaf."
+        },
+        "question": {
+          "$ref": "#/$defs/Key"
+        },
+        "option": {
+          "$ref": "#/$defs/Key"
+        },
+        "ciphertext": {
+          "$ref": "#/$defs/ElGamalCiphertext"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "leafIndex"
+          ]
+        },
+        {
+          "required": [
+            "question",
+            "option"
+          ]
+        }
+      ]
+    },
+    "PartialDecryption": {
+      "title": "PartialDecryption",
+      "description": "Trustee `trustee`'s share of one decryption, `d = x_j·a`, with a Chaum–Pedersen proof against its verification key (CONVENTIONS §9.7).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target",
+        "d",
+        "proof"
+      ],
+      "properties": {
+        "target": {
+          "$ref": "#/$defs/DecryptionTarget"
+        },
+        "d": {
+          "$ref": "#/$defs/GroupElement"
+        },
+        "proof": {
+          "$ref": "#/$defs/SigmaProof"
+        }
+      }
+    },
+    "TrusteePhase": {
+      "title": "TrusteePhase",
+      "description": "`enrolling`: transport keys are being published. `dealing`: dealings are. `confirming`: each trustee confirms or complains. `keyed`: the election key is formed. `decrypting`: voting has closed and partial decryptions are being published. `done`: every target is decrypted. `failed`: the key could not be formed in time.",
+      "type": "string",
+      "enum": [
+        "enrolling",
+        "dealing",
+        "confirming",
+        "keyed",
+        "decrypting",
+        "done",
+        "failed"
+      ]
+    },
+    "SignedRequest": {
+      "title": "SignedRequest",
+      "description": "A whole Trust Task request document — `id`, `type`, `issuer`, `payload` and every other member, `proof` included — exactly as the ballot box received it, never re-serialised: its proof is taken over its members, and a re-serialised copy does not reliably reproduce them. Typed as an open object so every member survives; CONVENTIONS §9.6 gives the checks that make it a trustee's step.",
+      "type": "object",
+      "minProperties": 1
+    },
+    "TrusteeCeremony": {
+      "title": "TrusteeCeremony",
+      "description": "The trustees' ceremony as the board holds it: the `request` of every `trusteeStep` entry, in board order, each exactly as the ballot box received it (CONVENTIONS §9.6). Whoever acts on it verifies each step as its trustee's before taking it; nothing in it is believed for having been passed along.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 4224,
+      "items": {
+        "$ref": "#/$defs/SignedRequest"
+      }
+    }
+  }
+}

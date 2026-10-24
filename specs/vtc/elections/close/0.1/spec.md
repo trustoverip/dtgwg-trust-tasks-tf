@@ -35,10 +35,10 @@ issuedAtRequirement:
 sideEffects:
   level: destructive
   rationale: >-
-    Ends voting before `votingCloses`. Irreversible: the ballot box admits no cast after it, and the board's final head is
+    Ends voting before `votingClosesAt` (`votingCloses` in a manifest pinned to `voting/_shared/0.1`). Irreversible: the ballot box admits no cast after it, and the board's final head is
     fixed.
 consequences:
-  - "No member may vote in the election after this, whatever its manifest's `votingCloses`."
+  - "No member may vote in the election after this, whatever its manifest's `votingClosesAt`."
   - "The board's final head is fixed, and the result is computed from it."
 exposure:
   discloses: metadata
@@ -99,7 +99,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 A conforming **community** (`recipient`):
 
 1. **MUST** answer `electionUnknown` for an election it does not hold or the caller may not see, as [`vtc/elections/show`](../../show/0.1/spec.md) does, and **MUST** refuse a requester without `vtc.elections.manage` (VTI-VOT-080), read from the signer's live access-control entry at execution time, with `permissionDenied`.
-2. **MUST** refuse with `notOpen` an election whose voting is not open: not yet at `votingOpens`, already closed or tallied, or cancelled.
+2. **MUST** refuse with `notOpen` an election whose voting is not open: not yet at `votingOpensAt` (`votingOpens` in a manifest pinned to `voting/_shared/0.1`), already closed or tallied, or cancelled.
 3. **MUST** refuse with `earlyCloseNotAllowed` an election whose manifest sets `allowEarlyClose` to false. The manifest is what members were told when they took their tickets; an administrator does not override it.
 4. **MUST NOT** issue a ticket for the election while the close is in flight (it resumes only if the close fails), and **MUST** send [`voting/election/close`](../../../../voting/election/close/0.1/spec.md) to the ballot box, signed as itself. **Remote first:** it **MUST** record the election as closed only after the ballot box answered with success, and then answers with the state the ballot box reported. When the ballot box does not answer it **MUST** answer `ballotBoxUnavailable` and leave its record of the election unchanged — the requester retries, and the ballot box treats a repeated close as the first. When the ballot box refuses it answers `ballotBoxRefused`.
 5. **SHOULD** read and keep the ballot box's head as a checkpoint once the close is answered ([`vtc/elections/show`](../../show/0.1/spec.md) Conformance item 5), so that certification can hold the final board to it.
