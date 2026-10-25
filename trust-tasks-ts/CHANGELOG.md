@@ -11,6 +11,73 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.27.5 — 2026-10-24
+
+
+### Added
+
+- **rooms**: Rooms/keys/act 0.8 — records prune and retention set (#910)
+
+rooms/keys/act's table is closed, so a key holder conforming to 0.7
+  refuses rooms/records/prune (0.1, 0.2) and rooms/records/retention/set/0.1
+  with typeNotActable. A member's own client therefore cannot make either
+  request as the member: it falls back to rooms/keys/present and signs with
+  its own key, and the host records the client key, not the member, as the
+  administrator who changed the room's retention or pruned it.
+
+  0.8 adds both to the table with action admin and a presentation inserted,
+  as their own specifications require. Both name a room, so the member is
+  resolved by Recipient item 2; the private-room same-subject binding and
+  the producer's REQUIRED reason are already covered by Recipient items 4
+  and 6. No error code is added and the schemas are 0.7's.
+
+  rooms/epoch/prune stays absent. The table section now states why a
+  records prune may ride act and an epoch prune may not: a records prune
+  removes only what the room's record retention (stated in advance,
+  readable by every member, set only by admin via retention/set) already
+  made eligible, leaves the room's keys and its ability to read its past
+  intact, carries a reason and is recorded; an epoch prune destroys key
+  history to an epoch the request names, against no rule stated in
+  advance.
+
+  A MINOR increment per SPEC §5.2; 0.7 remains published. Bindings
+  regenerated for Rust, TypeScript, Go and Dart.
+
+- **build**: Lint that every instant is named <event>At, and rename serverTime to respondedAt (#911)
+
+The wire-conventions lint gains an `instant-name` rule: a `date-time`
+  string is named `<event>At`, unless it is a bound or filter (`since`,
+  `until`, `from`, `to`, `asOf`, or a name ending in Until/Since/From/After/
+  Before/To) or the Data Integrity `created`. `timestamp-name` also refuses
+  a bare `at`.
+
+  Two specs had their own non-At instant, renamed in new versions:
+
+  - device/heartbeat 0.3: serverTime -> respondedAt
+  - messaging/ping 0.2: serverTime -> respondedAt (and its Security &
+    Privacy section now carries the four sub-headings)
+
+  External vocabularies are allowlisted with their source: TRQP's `time`,
+  `time_evaluated` and `time_requested` (registry/*), and did:webvh's
+  `versionTime` (did/log) and `latestVersionTime` (did/info).
+
+  Depends on #760, which renames the git-ns bare `at` members this rule
+  also catches.
+
+- **specs**: Naming consistency — event instants, one spelling per concept, durations name their unit, in 69 new spec versions (#907)
+
+* feat(build): the wire-conventions lint requires an integer duration to name its unit
+
+
+
+### Specifications
+
+- **git-ns**: Nested repository paths for forges with subgroups (#760)
+
+* spec(git-ns): copy each affected version to its next version, unchanged
+
+  Mechanical copy so the next commit shows only what the new versions change.
+
 ## 0.27.4 — 2026-10-23
 
 
