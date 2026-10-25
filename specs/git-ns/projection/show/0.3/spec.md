@@ -142,7 +142,7 @@ One right is published directly and implies a second; one record is a v0.1 role-
         "action": "git.repo.own",
         "resource": "github.com/acme/widgets",
         "context": {
-          "framework": "https://trusttasks.org/spec/git-ns/right/grant/0.3",
+          "framework": "https://trusttasks.org/spec/git-ns/right/grant/0.4",
           "activeFrom": "2026-09-23T09:50:00Z"
         },
         "publishedAt": "2026-09-23T09:50:05Z"
@@ -152,7 +152,7 @@ One right is published directly and implies a second; one record is a v0.1 role-
         "action": "git.commit.sign",
         "resource": "github.com/acme/widgets",
         "context": {
-          "framework": "https://trusttasks.org/spec/git-ns/right/grant/0.3",
+          "framework": "https://trusttasks.org/spec/git-ns/right/grant/0.4",
           "activeFrom": "2026-09-23T09:50:00Z",
           "impliedBy": "git.repo.own"
         },

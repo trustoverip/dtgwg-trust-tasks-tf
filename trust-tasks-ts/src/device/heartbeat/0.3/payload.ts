@@ -41,7 +41,7 @@ export interface QueuedOperation {
    */
   kind: "wipe" | "policyReload" | "configUpdate";
   /**
-   * The full Trust Task document the consumer would have received if it had been online (e.g. a device/wipe/0.1 document). Consumer verifies and executes as if it had been received normally.
+   * The full Trust Task document the consumer would have received if it had been online (e.g. a device/wipe/0.2 document). Consumer verifies and executes as if it had been received normally.
    */
   task: {
     [k: string]: unknown | undefined;
@@ -148,7 +148,7 @@ export const PAYLOAD_SCHEMA = {
           "description": "Discriminator. The framework currently supports wipe; future versions may add others."
         },
         "task": {
-          "description": "The full Trust Task document the consumer would have received if it had been online (e.g. a device/wipe/0.1 document). Consumer verifies and executes as if it had been received normally."
+          "description": "The full Trust Task document the consumer would have received if it had been online (e.g. a device/wipe/0.2 document). Consumer verifies and executes as if it had been received normally."
         }
       }
     },
@@ -224,7 +224,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "description": "Discriminator. The framework currently supports wipe; future versions may add others."
         },
         "task": {
-          "description": "The full Trust Task document the consumer would have received if it had been online (e.g. a device/wipe/0.1 document). Consumer verifies and executes as if it had been received normally."
+          "description": "The full Trust Task document the consumer would have received if it had been online (e.g. a device/wipe/0.2 document). Consumer verifies and executes as if it had been received normally."
         }
       }
     },

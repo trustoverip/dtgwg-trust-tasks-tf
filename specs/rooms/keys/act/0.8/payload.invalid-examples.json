@@ -4,7 +4,7 @@
     "payload": {
       "document": {
         "id": "urn:uuid:00000000-0000-4000-8000-0000000000a1",
-        "type": "https://trusttasks.org/spec/rooms/records/put/0.2#request",
+        "type": "https://trusttasks.org/spec/rooms/records/put/0.3#request",
         "recipient": "did:webvh:example.com:northwind-community",
         "issuedAt": "2026-01-01T00:00:00Z",
         "payload": {
@@ -23,7 +23,7 @@
     "payload": {
       "document": {
         "id": "urn:uuid:00000000-0000-4000-8000-0000000000a1",
-        "type": "https://trusttasks.org/spec/rooms/records/put/0.2#request",
+        "type": "https://trusttasks.org/spec/rooms/records/put/0.3#request",
         "issuedAt": "2026-01-01T00:00:00Z",
         "payload": {
           "roomId": "did:webvh:example.com:rooms:northwind",
@@ -37,7 +37,7 @@
     "payload": {
       "document": {
         "id": "urn:uuid:00000000-0000-4000-8000-0000000000a1",
-        "type": "https://trusttasks.org/spec/acl/grant/0.1#request",
+        "type": "https://trusttasks.org/spec/acl/grant/0.2#request",
         "recipient": "did:webvh:example.com:northwind-community",
         "issuedAt": "2026-01-01T00:00:00Z",
         "payload": {
@@ -73,7 +73,7 @@
     "payload": {
       "document": {
         "id": "urn:uuid:00000000-0000-4000-8000-0000000000a1",
-        "type": "https://trusttasks.org/spec/rooms/records/put/0.2#request",
+        "type": "https://trusttasks.org/spec/rooms/records/put/0.3#request",
         "recipient": "did:webvh:example.com:northwind-community",
         "payload": {
           "roomId": "did:webvh:example.com:rooms:northwind",
@@ -87,7 +87,7 @@
     "payload": {
       "document": {
         "id": "urn:uuid:00000000-0000-4000-8000-0000000000a1",
-        "type": "https://trusttasks.org/spec/rooms/records/put/0.2#request",
+        "type": "https://trusttasks.org/spec/rooms/records/put/0.3#request",
         "recipient": "did:webvh:example.com:northwind-community",
         "issuedAt": "2026-01-01T00:00:00Z",
         "payload": {
@@ -98,7 +98,7 @@
       "documents": [
         {
           "id": "urn:uuid:00000000-0000-4000-8000-0000000000a1",
-          "type": "https://trusttasks.org/spec/rooms/records/put/0.2#request",
+          "type": "https://trusttasks.org/spec/rooms/records/put/0.3#request",
           "recipient": "did:webvh:example.com:northwind-community",
           "issuedAt": "2026-01-01T00:00:00Z",
           "payload": {
@@ -131,7 +131,7 @@
     "payload": {
       "document": {
         "id": "urn:uuid:00000000-0000-4000-8000-0000000000a1",
-        "type": "https://trusttasks.org/spec/rooms/records/put/0.2#request",
+        "type": "https://trusttasks.org/spec/rooms/records/put/0.3#request",
         "recipient": "did:webvh:example.com:northwind-community",
         "issuedAt": "2026-01-01T00:00:00Z",
         "payload": {
@@ -152,7 +152,7 @@
       "principal": "did:webvh:example.com:people:alice",
       "document": {
         "id": "urn:uuid:00000000-0000-4000-8000-0000000000a1",
-        "type": "https://trusttasks.org/spec/rooms/records/put/0.2#request",
+        "type": "https://trusttasks.org/spec/rooms/records/put/0.3#request",
         "recipient": "did:webvh:example.com:northwind-community",
         "issuedAt": "2026-01-01T00:00:00Z",
         "payload": {

@@ -22,7 +22,7 @@
       "steps": [
         {
           "step": "apply",
-          "typeUri": "https://trusttasks.org/spec/vtc/join-requests/submit/0.1",
+          "typeUri": "https://trusttasks.org/spec/vtc/join-requests/submit/0.3",
           "issuer": "did:web:applicant.example",
           "id": "urn:uuid:1d0a7c31-9b52-4e08-8a6d-3f5c1b9e2074",
           "digestMultibase": "zQmW4nR8xKdWqR7fT4sYbGhJ3mLcE8aZuVtHnQrXyB5wCdF"
@@ -40,7 +40,7 @@
       "steps": [
         {
           "step": "apply",
-          "typeUri": "https://trusttasks.org/spec/vtc/join-requests/submit/0.1",
+          "typeUri": "https://trusttasks.org/spec/vtc/join-requests/submit/0.3",
           "issuer": "did:web:applicant.example",
           "id": "urn:uuid:1d0a7c31-9b52-4e08-8a6d-3f5c1b9e2074",
           "digestMultibase": "zQmW4nR8xKdWqR7fT4sYbGhJ3mLcE8aZuVtHnQrXyB5wCdF"
@@ -58,7 +58,7 @@
       "steps": [
         {
           "step": "apply",
-          "typeUri": "https://trusttasks.org/spec/vtc/join-requests/submit/0.1",
+          "typeUri": "https://trusttasks.org/spec/vtc/join-requests/submit/0.3",
           "issuer": "did:web:applicant.example",
           "id": "urn:uuid:1d0a7c31-9b52-4e08-8a6d-3f5c1b9e2074"
         }
@@ -75,7 +75,7 @@
       "steps": [
         {
           "step": "apply",
-          "typeUri": "https://trusttasks.org/spec/vtc/join-requests/submit/0.1",
+          "typeUri": "https://trusttasks.org/spec/vtc/join-requests/submit/0.3",
           "issuer": "did:web:applicant.example",
           "digestMultibase": "zQmW4nR8xKdWqR7fT4sYbGhJ3mLcE8aZuVtHnQrXyB5wCdF"
         }
@@ -111,7 +111,7 @@
       "steps": [
         {
           "step": "apply",
-          "typeUri": "https://trusttasks.org/spec/vtc/join-requests/submit/0.1",
+          "typeUri": "https://trusttasks.org/spec/vtc/join-requests/submit/0.3",
           "issuer": "did:web:applicant.example",
           "id": "urn:uuid:1d0a7c31-9b52-4e08-8a6d-3f5c1b9e2074",
           "digestMultibase": "zQmW4nR8xKdWqR7fT4sYbGhJ3mLcE8aZuVtHnQrXyB5wCdF",
@@ -131,7 +131,7 @@
       "steps": [
         {
           "step": "apply",
-          "typeUri": "https://trusttasks.org/spec/vtc/join-requests/submit/0.1",
+          "typeUri": "https://trusttasks.org/spec/vtc/join-requests/submit/0.3",
           "issuer": "did:web:applicant.example",
           "id": "urn:uuid:1d0a7c31-9b52-4e08-8a6d-3f5c1b9e2074",
           "digestMultibase": "zQmW4nR8xKdWqR7fT4sYbGhJ3mLcE8aZuVtHnQrXyB5wCdF"
@@ -149,7 +149,7 @@
       "steps": [
         {
           "step": "apply",
-          "typeUri": "https://trusttasks.org/spec/vtc/join-requests/submit/0.1",
+          "typeUri": "https://trusttasks.org/spec/vtc/join-requests/submit/0.3",
           "issuer": "did:web:applicant.example",
           "id": "urn:uuid:1d0a7c31-9b52-4e08-8a6d-3f5c1b9e2074",
           "digestMultibase": "zQmW4nR8xKdWqR7fT4sYbGhJ3mLcE8aZuVtHnQrXyB5wCdF"
@@ -167,7 +167,7 @@
       "steps": [
         {
           "step": "apply",
-          "typeUri": "https://trusttasks.org/spec/vtc/join-requests/submit/0.1",
+          "typeUri": "https://trusttasks.org/spec/vtc/join-requests/submit/0.3",
           "issuer": "did:web:applicant.example",
           "id": "urn:uuid:1d0a7c31-9b52-4e08-8a6d-3f5c1b9e2074",
           "digestMultibase": "zQmW4nR8xKdWqR7fT4sYbGhJ3mLcE8aZuVtHnQrXyB5wCdF"
@@ -186,7 +186,7 @@
       "steps": [
         {
           "step": "apply",
-          "typeUri": "https://trusttasks.org/spec/vtc/join-requests/submit/0.1",
+          "typeUri": "https://trusttasks.org/spec/vtc/join-requests/submit/0.3",
           "issuer": "did:web:applicant.example",
           "id": "urn:uuid:1d0a7c31-9b52-4e08-8a6d-3f5c1b9e2074",
           "digestMultibase": "zQmW4nR8xKdWqR7fT4sYbGhJ3mLcE8aZuVtHnQrXyB5wCdF"

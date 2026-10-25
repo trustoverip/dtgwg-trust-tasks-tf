@@ -76,7 +76,7 @@ fn rejects_invalid_response_examples() {
     use trust_tasks_rs::validate::ValidatedPayload;
     let fixtures: &[(&str, &str)] = &[
         (
-            "Response variant: `kind` is not one of the eight job kinds git-ns/bridge/job/0.5 defines.",
+            "Response variant: `kind` is not one of the eight job kinds git-ns/bridge/job/0.6 defines.",
             "{\n  \"jobs\": [\n    {\n      \"attempts\": 0,\n      \"bridgeDid\": \"did:webvh:QmBridgeScid9:bridge.acme.example\",\n      \"createdAt\": \"2026-09-26T08:30:00Z\",\n      \"jobId\": \"job_01J8Z8C3D4\",\n      \"kind\": \"deleteRepo\",\n      \"namespace\": \"ns_01J8Z6Q4M2\",\n      \"state\": \"pending\"\n    }\n  ]\n}",
         ),
         (

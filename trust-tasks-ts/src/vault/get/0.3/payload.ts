@@ -7,7 +7,7 @@ import type { AndroidApp_VaultV0_2 as AndroidApp, AttachmentRef_VaultV0_3 as Att
 
 
 /**
- * Fetch the metadata view of a single vault entry by id. Returns the same VaultEntry shape vault/list does, but for one specific entry. Secret material is NEVER returned by this task; use vault/release/0.1 to obtain secret bytes.
+ * Fetch the metadata view of a single vault entry by id. Returns the same VaultEntry shape vault/list does, but for one specific entry. Secret material is NEVER returned by this task; use vault/release/0.2 to obtain secret bytes.
  */
 export interface VaultGetPayload {
   /**
@@ -50,7 +50,7 @@ export const PAYLOAD_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vault/get/0.3",
   "title": "Vault Get — payload",
-  "description": "Fetch the metadata view of a single vault entry by id. Returns the same VaultEntry shape vault/list does, but for one specific entry. Secret material is NEVER returned by this task; use vault/release/0.1 to obtain secret bytes.",
+  "description": "Fetch the metadata view of a single vault entry by id. Returns the same VaultEntry shape vault/list does, but for one specific entry. Secret material is NEVER returned by this task; use vault/release/0.2 to obtain secret bytes.",
   "type": "object",
   "additionalProperties": false,
   "required": [

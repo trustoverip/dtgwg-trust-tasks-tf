@@ -118,6 +118,7 @@ export * as AuthStepUpApproverRevoke_v0_1 from "./auth/step-up/approver/revoke/0
 export * as AuthStepUpPolicy_v0_1 from "./auth/step-up/policy/0.1/payload.js";
 export * as AuthStepUpPolicy_v0_2 from "./auth/step-up/policy/0.2/payload.js";
 export * as AuthStepUpStart_v0_1 from "./auth/step-up/start/0.1/payload.js";
+export * as AuthStepUpStart_v0_2 from "./auth/step-up/start/0.2/payload.js";
 export * as AuthWhoami_v0_1 from "./auth/whoami/0.1/payload.js";
 export * as BackupAbort_v0_1 from "./backup/abort/0.1/payload.js";
 export * as BackupCompleteExport_v0_1 from "./backup/complete-export/0.1/payload.js";

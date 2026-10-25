@@ -33,7 +33,7 @@
       "type": "string",
       "minLength": 1,
       "maxLength": 128,
-      "description": "The VTC's identifier for the job, unique across the VTC's jobs. The same identifier git-ns/bridge/job (0.4 and 0.5) assigns and git-ns/bridge/result/0.1 reports against."
+      "description": "The VTC's identifier for the job, unique across the VTC's jobs. The same identifier git-ns/bridge/job (0.4 to 0.6) assigns and git-ns/bridge/result (0.1 and 0.2) reports against."
     },
     "JobKind": {
       "title": "JobKind",
@@ -48,7 +48,7 @@
         "beginAccountLink",
         "closePullRequest"
       ],
-      "description": "What the job asks the bridge to do — the same eight kinds git-ns/bridge/job/0.5 defines. Kept as its own enum here, rather than a cross-file $ref, because job/0.5 declares its `kind` inline rather than as a named $def; the two lists change together."
+      "description": "What the job asks the bridge to do — the same eight kinds git-ns/bridge/job/0.6 defines. Kept as its own enum here, rather than a cross-file $ref, because job/0.6 declares its `kind` inline rather than as a named $def; the two lists change together."
     },
     "JobState": {
       "title": "JobState",
