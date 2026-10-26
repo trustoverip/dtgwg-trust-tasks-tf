@@ -387,6 +387,7 @@ typedef Ext = Map<String, dynamic>;
 /// The success response to a messaging/account/change-type request. Carried in a Trust
 /// Task document whose type is
 /// https://trusttasks.org/spec/messaging/account/change-type/0.1#response.
+@Deprecated('retired; use messaging/account/update/0.2')
 class Response {
   const Response({
     required this.account,
@@ -413,6 +414,7 @@ class Response {
 }
 
 /// Messaging Change Account Type — payload
+@Deprecated('retired; use messaging/account/update/0.2')
 class Payload {
   const Payload({
     required this.did,
@@ -444,6 +446,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'retired; use messaging/account/update/0.2';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri =

@@ -132,6 +132,7 @@ class CredentialState {
 typedef Ext = Map<String, dynamic>;
 
 /// VTC Storage — Credentials — Set — response payload
+@Deprecated('superseded by vtc/storage/credentials/set/0.3')
 class Response {
   const Response({
     required this.configId,
@@ -168,6 +169,7 @@ class Response {
 /// Store a `sealed` storage config's long-lived credential, sealed end to end to the
 /// community. Write-only: no task returns it. The outer document members are owned by
 /// the framework — SPEC §6.3.
+@Deprecated('superseded by vtc/storage/credentials/set/0.3')
 class Payload {
   const Payload({
     required this.configId,
@@ -214,6 +216,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'superseded by vtc/storage/credentials/set/0.3';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri =

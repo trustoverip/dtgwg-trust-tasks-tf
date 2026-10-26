@@ -9,6 +9,7 @@ typedef Ext = Map<String, dynamic>;
 
 /// Success response to rooms/keys/file-key. Type
 /// https://trusttasks.org/spec/rooms/keys/file-key/0.1#response.
+@Deprecated('superseded by rooms/keys/file-key/0.2')
 class Response {
   const Response({
     required this.key,
@@ -59,6 +60,7 @@ extension type const PayloadPurpose(String value) {
 /// A caller asks the party holding its principal's room keys for the key of ONE file
 /// in a room: derived from the room's storage key for an epoch, bound to the room, the
 /// epoch and the file's identifier, and opening that file and nothing else.
+@Deprecated('superseded by rooms/keys/file-key/0.2')
 class Payload {
   const Payload({
     required this.roomId,
@@ -112,6 +114,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'superseded by rooms/keys/file-key/0.2';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/rooms/keys/file-key/0.1';

@@ -358,6 +358,7 @@ class RepoSummary {
 typedef Ext = Map<String, dynamic>;
 
 /// The archived repository.
+@Deprecated('superseded by git-ns/repo/archive/0.3')
 class Response {
   const Response({
     required this.repo,
@@ -391,6 +392,7 @@ class Response {
 /// An owner archives a repository. The forge makes it read-only, and every
 /// `git.commit.sign` right recorded on it is revoked and withdrawn from the Trust
 /// Registry.
+@Deprecated('superseded by git-ns/repo/archive/0.3')
 class Payload {
   const Payload({
     required this.resource,
@@ -413,6 +415,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'superseded by git-ns/repo/archive/0.3';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/git-ns/repo/archive/0.2';

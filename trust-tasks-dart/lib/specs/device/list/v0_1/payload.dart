@@ -257,6 +257,7 @@ class DeviceBinding {
 }
 
 /// Device List — response payload
+@Deprecated('superseded by device/list/0.3')
 class Response {
   const Response({
     required this.devices,
@@ -349,6 +350,7 @@ extension type const PayloadServiceKindFilter(String value) {
 
 /// List DeviceBindings known to the maintainer, optionally filtered by consumer kind,
 /// capability, status, and last-seen time.
+@Deprecated('superseded by device/list/0.3')
 class Payload {
   const Payload({
     this.consumerKindFilter,
@@ -416,6 +418,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'superseded by device/list/0.3';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/device/list/0.1';

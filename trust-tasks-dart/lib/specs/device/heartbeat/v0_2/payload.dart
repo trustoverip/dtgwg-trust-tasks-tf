@@ -78,6 +78,7 @@ extension type const ResponseSyncHint(String value) {
 }
 
 /// Device Heartbeat — response payload
+@Deprecated('superseded by device/heartbeat/0.3')
 class Response {
   const Response({
     required this.serverTime,
@@ -124,6 +125,7 @@ class Response {
 /// Periodic check-in from a Companion or Service. Refreshes `lastSeenAt`, carries
 /// optional state digests, and gives the maintainer a chance to deliver queued
 /// operations (notably queued wipes for targets that were offline at issuance).
+@Deprecated('superseded by device/heartbeat/0.3')
 class Payload {
   const Payload({
     this.platform,
@@ -154,6 +156,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'superseded by device/heartbeat/0.3';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/device/heartbeat/0.2';

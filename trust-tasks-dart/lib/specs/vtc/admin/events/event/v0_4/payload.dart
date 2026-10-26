@@ -52,6 +52,7 @@ extension type const Topic(String value) {
 /// that changed. Fire-and-forget: there is no response. The outer document members
 /// (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the
 /// framework — SPEC §6.3.
+@Deprecated('superseded by vtc/admin/events/event/0.5')
 class Payload {
   const Payload({
     required this.topic,
@@ -97,6 +98,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'superseded by vtc/admin/events/event/0.5';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/vtc/admin/events/event/0.4';

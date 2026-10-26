@@ -107,6 +107,7 @@ class DidRecord {
 }
 
 /// DID Management Set Agent Name — response payload
+@Deprecated('retired; use did-management/agent-name/update/0.1')
 class Response {
   const Response({
     required this.record,
@@ -130,6 +131,7 @@ class Response {
 }
 
 /// DID Management Set Agent Name — payload
+@Deprecated('retired; use did-management/agent-name/update/0.1')
 class Payload {
   const Payload({
     required this.mnemonic,
@@ -174,6 +176,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'retired; use did-management/agent-name/update/0.1';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri =

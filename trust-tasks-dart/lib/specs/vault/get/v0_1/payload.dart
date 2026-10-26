@@ -371,6 +371,7 @@ class VaultEntry {
 }
 
 /// Vault Get — response payload
+@Deprecated('superseded by vault/get/0.3')
 class Response {
   const Response({
     required this.entry,
@@ -404,6 +405,7 @@ class Response {
 /// Fetch the metadata view of a single vault entry by id. Returns the same VaultEntry
 /// shape vault/list does, but for one specific entry. Secret material is NEVER
 /// returned by this task; use vault/release/0.1 to obtain secret bytes.
+@Deprecated('superseded by vault/get/0.3')
 class Payload {
   const Payload({
     required this.id,
@@ -426,6 +428,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'superseded by vault/get/0.3';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/vault/get/0.1';

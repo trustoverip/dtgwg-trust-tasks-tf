@@ -124,6 +124,7 @@ typedef ForgeEvent = Map<String, dynamic>;
 typedef Ext = Map<String, dynamic>;
 
 /// The VTC has recorded the event. Nothing else is returned.
+@Deprecated('superseded by git-ns/bridge/event/0.5')
 class Response {
   const Response({
     this.ext,
@@ -233,6 +234,7 @@ typedef NamespaceId = String;
 /// The bridge tells the VTC something happened on the forge — translated from the
 /// forge's webhook or found by an inspection sweep — together with any drift it now
 /// sees; or reports the role map it projects with.
+@Deprecated('superseded by git-ns/bridge/event/0.5')
 class Payload {
   const Payload({
     required this.namespace,
@@ -271,6 +273,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'superseded by git-ns/bridge/event/0.5';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/git-ns/bridge/event/0.3';

@@ -201,6 +201,7 @@ extension type const ResponseMode(String value) {
 /// rather than the failure. An `atomic` batch that does not apply is a
 /// trust-task-error carrying vta/app-state/put-many:atomicBatchRejected, whose details
 /// carry the same per-record outcomes.
+@Deprecated('superseded by vta/app-state/put-many/1.1')
 class Response {
   const Response({
     required this.mode,
@@ -272,6 +273,7 @@ extension type const PayloadMode(String value) {
 /// optimistic-concurrency precondition. The batch `mode` decides what a single failure
 /// costs: `independent` (the default) applies each write on its own merits, `atomic`
 /// applies all or none.
+@Deprecated('superseded by vta/app-state/put-many/1.1')
 class Payload {
   const Payload({
     required this.contextId,
@@ -322,6 +324,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'superseded by vta/app-state/put-many/1.1';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/vta/app-state/put-many/1.0';

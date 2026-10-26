@@ -373,6 +373,7 @@ typedef Ext = Map<String, dynamic>;
 
 /// The outcome. `preview` and `pendingApproval` carry the plan; `applied` carries the
 /// published entry.
+@Deprecated('superseded by vta/webvh/dids/update/2.1')
 class Response {
   const Response({
     required this.did,
@@ -454,6 +455,7 @@ class Response {
 /// Ask a Verifiable Trust Agent to publish a new entry in a did:webvh log it holds the
 /// update key for, changing anything but the DID's keys. Keys change only through the
 /// key-role tasks (vta/_shared/0.3/CONVENTIONS.md).
+@Deprecated('superseded by vta/webvh/dids/update/2.1')
 class Payload {
   const Payload({
     required this.did,
@@ -550,6 +552,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'superseded by vta/webvh/dids/update/2.1';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/vta/webvh/dids/update/2.0';

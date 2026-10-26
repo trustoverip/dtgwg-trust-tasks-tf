@@ -26,6 +26,7 @@ extension type const ResponseStatus(String value) {
 }
 
 /// Push Wake — response payload
+@Deprecated('retired; use push/wake/0.2')
 class Response {
   const Response({
     required this.status,
@@ -71,6 +72,7 @@ extension type const PayloadUrgency(String value) {
 /// fields — never Trust Task content. The gateway authorizes against the handle's
 /// allowlist, then fires the doorbell. See the push wake-up binding
 /// (https://trusttasks.org/binding/push/0.1).
+@Deprecated('retired; use push/wake/0.2')
 class Payload {
   const Payload({
     required this.handle,
@@ -120,6 +122,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'retired; use push/wake/0.2';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/push/wake/0.1';
