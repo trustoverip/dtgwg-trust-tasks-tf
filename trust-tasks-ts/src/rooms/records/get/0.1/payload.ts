@@ -6,6 +6,7 @@
 import type { AuthorityPresentation, DataCommitment, DigestMultibase, Ext, HeadVersion, RecordCount, RecordTrace, SealedRecord } from "../../../../_shared/components.js";
 
 
+/** @deprecated superseded by rooms/records/get/0.2 */
 export interface RoomsRecordsGetPayload {
   /**
    * The room's identifier.
@@ -26,6 +27,8 @@ export interface RoomsRecordsGetPayload {
 }
 /**
  * Success response to rooms/records/get. Type https://trusttasks.org/spec/rooms/records/get/0.1#response.
+ *
+ * @deprecated superseded by rooms/records/get/0.2
  */
 export interface RoomsRecordsGetResponsePayload {
   key: string;
@@ -87,13 +90,29 @@ export type { AuthorityPresentation, DataCommitment, DigestMultibase, Ext, HeadV
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/rooms/records/get/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by rooms/records/get/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by rooms/records/get/0.2
+ */
 export type Payload = RoomsRecordsGetPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/records/get/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by rooms/records/get/0.2
+ */
 export type Response = RoomsRecordsGetResponsePayload;
 
 /**

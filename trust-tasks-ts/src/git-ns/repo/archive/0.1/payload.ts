@@ -8,6 +8,8 @@ import type { Bootstrap, Did_GitNsV0_1 as Did, DriftItem_GitNsV0_1 as DriftItem,
 
 /**
  * An owner archives a repository. The forge makes it read-only, and every `git.commit.sign` right recorded on it is revoked and withdrawn from the Trust Registry.
+ *
+ * @deprecated superseded by git-ns/repo/archive/0.3
  */
 export interface GitNamespacesArchiveRepositoryPayload {
   /**
@@ -18,6 +20,8 @@ export interface GitNamespacesArchiveRepositoryPayload {
 }
 /**
  * The archived repository.
+ *
+ * @deprecated superseded by git-ns/repo/archive/0.3
  */
 export interface GitNamespacesArchiveRepositoryResponsePayload {
   /**
@@ -37,13 +41,29 @@ export type { Bootstrap, Did, DriftItem, Ext, ForgeAccount, ForgeHost, ForgeId, 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/git-ns/repo/archive/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by git-ns/repo/archive/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by git-ns/repo/archive/0.3
+ */
 export type Payload = GitNamespacesArchiveRepositoryPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/git-ns/repo/archive/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by git-ns/repo/archive/0.3
+ */
 export type Response = GitNamespacesArchiveRepositoryResponsePayload;
 
 /**

@@ -32,6 +32,8 @@ export type PullRequestAction = "opened" | "reopened";
 
 /**
  * The bridge tells the VTC something happened on the forge — translated from the forge's webhook or found by an inspection sweep — together with any drift it now sees; or reports the role map it projects with, or a pull request opened or reopened on a governed repository.
+ *
+ * @deprecated superseded by git-ns/bridge/event/0.5
  */
 export interface GitNamespacesBridgeEventPayload {
   /**
@@ -182,6 +184,8 @@ export interface PullRequestOpened {
 }
 /**
  * The VTC has recorded the event. Nothing else is returned.
+ *
+ * @deprecated superseded by git-ns/bridge/event/0.5
  */
 export interface GitNamespacesBridgeEventResponsePayload {
   ext?: Ext;
@@ -193,13 +197,29 @@ export type { DriftItem, Ext, ForgeAccount, ForgeHost, ForgeId, NamespaceId, Rep
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/git-ns/bridge/event/0.4" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by git-ns/bridge/event/0.5";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by git-ns/bridge/event/0.5
+ */
 export type Payload = GitNamespacesBridgeEventPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/git-ns/bridge/event/0.4#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by git-ns/bridge/event/0.5
+ */
 export type Response = GitNamespacesBridgeEventResponsePayload;
 
 /**

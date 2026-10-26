@@ -8,6 +8,8 @@ import type { AuthenticatorAssertionResponseLogin, Ext } from "../../../../../_s
 
 /**
  * Submit the user-verification assertion that completes a passkey revocation. On success the auth service unbinds the credential named at start. The payload carries no target — the revocationId is bound to it server-side.
+ *
+ * @deprecated superseded by auth/passkey/revoke/finish/0.2
  */
 export interface AuthPasskeyRevokeFinish {
   /**
@@ -25,6 +27,8 @@ export interface AuthPasskeyRevokeFinish {
 }
 /**
  * Acknowledgement of the removed credential. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/revoke/finish/0.1#response.
+ *
+ * @deprecated superseded by auth/passkey/revoke/finish/0.2
  */
 export interface AuthPasskeyRevokeFinishResponsePayload {
   /**
@@ -51,13 +55,29 @@ export type { AuthenticatorAssertionResponseLogin, Ext };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/passkey/revoke/finish/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by auth/passkey/revoke/finish/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by auth/passkey/revoke/finish/0.2
+ */
 export type Payload = AuthPasskeyRevokeFinish;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/passkey/revoke/finish/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by auth/passkey/revoke/finish/0.2
+ */
 export type Response = AuthPasskeyRevokeFinishResponsePayload;
 
 /**

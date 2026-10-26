@@ -8,6 +8,8 @@ import type { Ext } from "../../../../_shared/components.js";
 
 /**
  * A member asks another member to issue them a Verifiable Relationship Credential. Everything here is a hint: the issuing member decides, and declines with a trust-task-error carrying `vtc/relationships/request:declined` rather than a bespoke rejection message.
+ *
+ * @deprecated superseded by vtc/relationships/request/0.2
  */
 export interface VTCRelationshipsRequestPayload {
   /**
@@ -18,6 +20,8 @@ export interface VTCRelationshipsRequestPayload {
 }
 /**
  * The issued credential. Returned only where the issuing member agreed; a decline is a trust-task-error, not a response with an empty field.
+ *
+ * @deprecated superseded by vtc/relationships/request/0.2
  */
 export interface VTCRelationshipsRequestResponsePayload {
   /**
@@ -37,13 +41,29 @@ export type { Ext };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/relationships/request/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vtc/relationships/request/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/relationships/request/0.2
+ */
 export type Payload = VTCRelationshipsRequestPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/relationships/request/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/relationships/request/0.2
+ */
 export type Response = VTCRelationshipsRequestResponsePayload;
 
 /**

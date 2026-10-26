@@ -8,6 +8,8 @@ import type { ExpectedVersion_PersonaV0_1 as ExpectedVersion, Ext, Ulid, Version
 
 /**
  * Create or replace one world: a named part of the holder's life, and the faces and attributes that belong to it. Omit `worldId` to create; supply it to replace. `expectedVersion` makes the write conditional.
+ *
+ * @deprecated superseded by persona/world/put/1.1
  */
 export interface PersonaWorldPutPayload {
   /**
@@ -43,6 +45,8 @@ export interface PersonaWorldPutPayload {
 }
 /**
  * Success response to persona/world/put. Type https://trusttasks.org/spec/persona/world/put/1.0#response. A failed precondition is not a success: it is a trust-task-error carrying persona/world/put:versionConflict.
+ *
+ * @deprecated superseded by persona/world/put/1.1
  */
 export interface PersonaWorldPutResponsePayload {
   worldId: Ulid;
@@ -62,13 +66,29 @@ export type { ExpectedVersion, Ext, Ulid, Version, WorldColour };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/persona/world/put/1.0" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by persona/world/put/1.1";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by persona/world/put/1.1
+ */
 export type Payload = PersonaWorldPutPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/persona/world/put/1.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by persona/world/put/1.1
+ */
 export type Response = PersonaWorldPutResponsePayload;
 
 /**

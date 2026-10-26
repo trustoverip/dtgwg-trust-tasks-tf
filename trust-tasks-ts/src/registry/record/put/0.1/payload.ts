@@ -8,6 +8,8 @@ import type { Ext, RecordType, TrustRecord } from "../../../../_shared/component
 
 /**
  * An administrator asks a trust registry to create or replace the trust record at its four-part key (entity+authority+action+resource). Create-or-update in one task, following the vault/upsert precedent; the optional `expectedExisting` assertion recovers the strict create-only / update-only semantics of the superseded registry/record/create and registry/record/update tasks.
+ *
+ * @deprecated superseded by registry/record/put/0.2
  */
 export interface RegistryRecordPutPayload {
   record: TrustRecord;
@@ -17,6 +19,7 @@ export interface RegistryRecordPutPayload {
   expectedExisting?: boolean;
   ext?: Ext;
 }
+/** @deprecated superseded by registry/record/put/0.2 */
 export interface RegistryRecordPutResponsePayload {
   /**
    * Whether the record was stored.
@@ -39,13 +42,29 @@ export type { Ext, RecordType, TrustRecord };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/registry/record/put/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by registry/record/put/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by registry/record/put/0.2
+ */
 export type Payload = RegistryRecordPutPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/registry/record/put/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by registry/record/put/0.2
+ */
 export type Response = RegistryRecordPutResponsePayload;
 
 /**

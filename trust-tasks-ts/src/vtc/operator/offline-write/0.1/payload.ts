@@ -8,6 +8,8 @@ import type { Ext } from "../../../../_shared/components.js";
 
 /**
  * A RECORD TYPE, not a request. It describes one change to a Verifiable Trust Community's access control made by an operator with access to the community's host, through an offline command run against the community's store (`vtc admin emergency-bootstrap` and its siblings) rather than through any Trust Task. No party sends a document of this type to another and no consumer executes one: its Type URI exists so that an `acknowledge` action (vtc/admin/actions/_shared/0.2) can name what happened in `typeUri`, and so that the community's audit trail can reference it. When an action names it, the action's `payload` is this record. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by vtc/operator/offline-write/0.2
  */
 export interface VTCOperatorOfflineWriteRecord {
   /**
@@ -38,7 +40,19 @@ export type { Ext };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/operator/offline-write/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vtc/operator/offline-write/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/operator/offline-write/0.2
+ */
 export type Payload = VTCOperatorOfflineWriteRecord;
 
 /**

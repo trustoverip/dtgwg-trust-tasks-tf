@@ -8,6 +8,8 @@ import type { Bootstrap, Did_GitNsV0_3 as Did, DriftItem_GitNsV0_1 as DriftItem,
 
 /**
  * Brings a repository that already exists on the forge under the VTC's governance and names its owners. Used for repositories created outside the VTC, and to complete a repository reserved by git-ns/repo/create in a namespace where a person had to create it.
+ *
+ * @deprecated superseded by git-ns/repo/adopt/0.3
  */
 export interface GitNamespacesAdoptRepositoryPayload {
   /**
@@ -25,6 +27,8 @@ export interface GitNamespacesAdoptRepositoryPayload {
 }
 /**
  * The adopted repository.
+ *
+ * @deprecated superseded by git-ns/repo/adopt/0.3
  */
 export interface GitNamespacesAdoptRepositoryResponsePayload {
   /**
@@ -40,13 +44,29 @@ export type { Bootstrap, Did, DriftItem, Ext, ForgeAccount, ForgeHost, ForgeId, 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/git-ns/repo/adopt/0.2" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by git-ns/repo/adopt/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by git-ns/repo/adopt/0.3
+ */
 export type Payload = GitNamespacesAdoptRepositoryPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/git-ns/repo/adopt/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by git-ns/repo/adopt/0.3
+ */
 export type Response = GitNamespacesAdoptRepositoryResponsePayload;
 
 /**

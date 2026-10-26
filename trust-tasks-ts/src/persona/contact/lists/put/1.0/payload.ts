@@ -8,6 +8,8 @@ import type { ContactList, Ext, ListColour, ListId, ListName, ListOrder } from "
 
 /**
  * Create one of the holder's contact lists, or rename, recolour or reorder an existing one. Without `listId`: create, and `name` is required. With `listId`: update; each detail given replaces the stored one, `removeColour` removes the colour, and each detail absent is unchanged. Membership is not changed here — a contact's lists are set with persona/contact/put 1.1. The outer document members are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by persona/contact/lists/put/1.1
  */
 export type PersonaContactListsPutPayload = {
   contextId: string;
@@ -38,6 +40,8 @@ export type PersonaContactListsPutPayload = {
 
 /**
  * Success response to persona/contact/lists/put. Type https://trusttasks.org/spec/persona/contact/lists/put/1.0#response. The list as it now stands.
+ *
+ * @deprecated superseded by persona/contact/lists/put/1.1
  */
 export interface PersonaContactListsPutResponsePayload {
   list: ContactList;
@@ -58,13 +62,29 @@ export type { ContactList, Ext, ListColour, ListId, ListName, ListOrder };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/persona/contact/lists/put/1.0" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by persona/contact/lists/put/1.1";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by persona/contact/lists/put/1.1
+ */
 export type Payload = PersonaContactListsPutPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/persona/contact/lists/put/1.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by persona/contact/lists/put/1.1
+ */
 export type Response = PersonaContactListsPutResponsePayload;
 
 /**

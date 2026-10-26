@@ -8,6 +8,8 @@ import type { Ext } from "../../../_shared/components.js";
 
 /**
  * A trigger (the device's mediator or its VTA) asks the push gateway to deliver a contentless wake to a handle. Carries ONLY the push binding's contentless hint fields — never Trust Task content. The gateway authorizes against the handle's allowlist, then fires the doorbell. See the push wake-up binding (https://trusttasks.org/binding/push/0.1).
+ *
+ * @deprecated retired; use push/wake/0.2
  */
 export interface PushWakePayload {
   /**
@@ -32,6 +34,7 @@ export interface PushWakePayload {
   urgency?: "interactive" | "background";
   ext?: Ext;
 }
+/** @deprecated retired; use push/wake/0.2 */
 export interface PushWakeResponsePayload {
   /**
    * Outcome of the wake: `delivered` (push service accepted) or `token-unregistered` (dead token; handle dropped — see push/wake:token_unregistered).
@@ -46,13 +49,29 @@ export type { Ext };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/push/wake/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "retired; use push/wake/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated retired; use push/wake/0.2
+ */
 export type Payload = PushWakePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/push/wake/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated retired; use push/wake/0.2
+ */
 export type Response = PushWakeResponsePayload;
 
 /**

@@ -8,6 +8,8 @@ import type { ActionId, BoardVisibility, ChoiceQuestion, DigestMultibase, Electi
 
 /**
  * An administrator creates an election of the community: the community checks the manifest, records the election and registers it with the ballot box the manifest names. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by vtc/elections/create/0.3
  */
 export interface VTCElectionsCreatePayload {
   /**
@@ -18,6 +20,8 @@ export interface VTCElectionsCreatePayload {
 }
 /**
  * Success response to vtc/elections/create/0.1: the election as recorded. Type https://trusttasks.org/spec/vtc/elections/create/0.2#response — carried directly, or on the request's threadId when a parked creation executes after its approval.
+ *
+ * @deprecated superseded by vtc/elections/create/0.3
  */
 export interface VTCElectionsCreateResponsePayload {
   electionId: ElectionId;
@@ -42,13 +46,29 @@ export type { ActionId, BoardVisibility, ChoiceQuestion, DigestMultibase, Electi
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/elections/create/0.2" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vtc/elections/create/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/elections/create/0.3
+ */
 export type Payload = VTCElectionsCreatePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/elections/create/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/elections/create/0.3
+ */
 export type Response = VTCElectionsCreateResponsePayload;
 
 /**

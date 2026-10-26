@@ -8,6 +8,8 @@ import type { ConsumerContext, Ext, StepUpProof_VaultV0_1 as StepUpProof } from 
 
 /**
  * Consumer asks the maintainer to attach a Data Integrity proof (eddsa-jcs-2022) to a Trust Task envelope, signing as the principal DID of a `did-self-issued` or `didcomm-peer` vault entry. The long-term signing key never leaves the maintainer. This is the per-envelope signing complement to `vault/proxy-login/0.1`'s session-credential minting: proxy-login mints a session at session-start; sign-trust-task signs individual follow-up tasks during the session.
+ *
+ * @deprecated superseded by vault/sign-trust-task/0.2
  */
 export interface VaultSignTrustTaskPayload {
   /**
@@ -65,6 +67,7 @@ export interface UnsignedTrustTaskEnvelope {
   };
   ext?: Ext;
 }
+/** @deprecated superseded by vault/sign-trust-task/0.2 */
 export interface VaultSignTrustTaskResponsePayload {
   /**
    * The supplied `unsignedEnvelope` with a Data Integrity `proof` attached. `proof.verificationMethod` is `<principalDid>#<signingKeyId>`; `proof.proofPurpose` is `assertionMethod` only when the envelope's `type` is a `https://trusttasks.org` request of `auth/step-up/approve-response`, `task-consent/decision` or `confirm/response` (the closed list of attestations), and `authentication` for every other, operational, document — decided by the maintainer from `type`, never by the consumer; `proof.cryptosuite` is `eddsa-jcs-2022`. All other members of the envelope (`id`, `type`, `issuer`, `recipient`, `issuedAt`, `expiresAt`, `payload`, `ext`) are unchanged from the request.
@@ -79,13 +82,29 @@ export type { ConsumerContext, Ext, StepUpProof };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vault/sign-trust-task/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vault/sign-trust-task/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vault/sign-trust-task/0.2
+ */
 export type Payload = VaultSignTrustTaskPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vault/sign-trust-task/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vault/sign-trust-task/0.2
+ */
 export type Response = VaultSignTrustTaskResponsePayload;
 
 /**

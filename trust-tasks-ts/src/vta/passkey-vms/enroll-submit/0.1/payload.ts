@@ -8,6 +8,8 @@ import type { Ext, PasskeyVerificationMethod } from "../../../../_shared/compone
 
 /**
  * Finalise passkey enrolment by submitting the WebAuthn registration result for a ceremony opened by vta/passkey-vms/enroll-challenge. The VTA re-derives the Multikey from attestationObject.authData and rejects on mismatch with the browser-claimed publicKeyMultibase — the browser's value is NOT trusted as authoritative. On success the VTA appends the verificationMethod to the DID document via a WebVH log entry. All byte-valued fields are base64url-encoded (no padding).
+ *
+ * @deprecated superseded by vta/passkey-vms/enroll-submit/0.2
  */
 export interface VTAPasskeyVMEnrollSubmitPayload {
   /**
@@ -57,6 +59,8 @@ export interface VTAPasskeyVMEnrollSubmitPayload {
 }
 /**
  * Successful enrolment. The verificationMethod has already been appended to the DID document via a WebVH log entry at the returned version.
+ *
+ * @deprecated superseded by vta/passkey-vms/enroll-submit/0.2
  */
 export interface VTAPasskeyVMEnrollSubmitResponsePayload {
   /**
@@ -79,13 +83,29 @@ export type { Ext, PasskeyVerificationMethod };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/passkey-vms/enroll-submit/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vta/passkey-vms/enroll-submit/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vta/passkey-vms/enroll-submit/0.2
+ */
 export type Payload = VTAPasskeyVMEnrollSubmitPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/passkey-vms/enroll-submit/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vta/passkey-vms/enroll-submit/0.2
+ */
 export type Response = VTAPasskeyVMEnrollSubmitResponsePayload;
 
 /**

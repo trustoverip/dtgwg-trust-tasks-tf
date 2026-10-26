@@ -28,6 +28,8 @@ export type JobKind =
 
 /**
  * A namespace's administrators list the bridge jobs queued or run for it — every namespace, for a community administrator — with each job's kind, state and last error. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by git-ns/bridge/job/list/0.4
  */
 export interface GitNamespacesListBridgeJobsPayload {
   /**
@@ -47,6 +49,8 @@ export interface GitNamespacesListBridgeJobsPayload {
 }
 /**
  * The matching jobs, newest first.
+ *
+ * @deprecated superseded by git-ns/bridge/job/list/0.4
  */
 export interface GitNamespacesListBridgeJobsResponsePayload {
   /**
@@ -99,13 +103,29 @@ export type { Did, Ext, NamespaceId, RepoResource };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/git-ns/bridge/job/list/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by git-ns/bridge/job/list/0.4";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by git-ns/bridge/job/list/0.4
+ */
 export type Payload = GitNamespacesListBridgeJobsPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/git-ns/bridge/job/list/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by git-ns/bridge/job/list/0.4
+ */
 export type Response = GitNamespacesListBridgeJobsResponsePayload;
 
 /**

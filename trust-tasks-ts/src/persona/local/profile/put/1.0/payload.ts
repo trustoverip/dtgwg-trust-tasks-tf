@@ -8,6 +8,8 @@ import type { ClaimType, ExpectedVersion_PersonaV0_1 as ExpectedVersion, Ext, Sl
 
 /**
  * Compose a throwaway profile inside a context, from values supplied here rather than drawn from the holder's pool. Inline entries only: a reference is refused, and that refusal is what keeps the local surface pool-free.
+ *
+ * @deprecated superseded by persona/local/profile/put/1.1
  */
 export interface PersonaLocalProfilePutPayload {
   contextId: string;
@@ -39,6 +41,8 @@ export interface PersonaLocalProfilePutPayload {
 }
 /**
  * Success response to persona/local/profile/put. Type https://trusttasks.org/spec/persona/local/profile/put/1.0#response.
+ *
+ * @deprecated superseded by persona/local/profile/put/1.1
  */
 export interface PersonaLocalProfilePutResponsePayload {
   profileId: Ulid;
@@ -63,13 +67,29 @@ export type { ClaimType, ExpectedVersion, Ext, Slot, Ulid, ValueType, Version };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/persona/local/profile/put/1.0" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by persona/local/profile/put/1.1";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by persona/local/profile/put/1.1
+ */
 export type Payload = PersonaLocalProfilePutPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/persona/local/profile/put/1.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by persona/local/profile/put/1.1
+ */
 export type Response = PersonaLocalProfilePutResponsePayload;
 
 /**

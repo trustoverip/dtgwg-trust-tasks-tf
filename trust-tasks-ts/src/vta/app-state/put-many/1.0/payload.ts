@@ -19,6 +19,8 @@ export type Write =
 
 /**
  * Write up to 64 application-state records in one round trip, each carrying its own optimistic-concurrency precondition. The batch `mode` decides what a single failure costs: `independent` (the default) applies each write on its own merits, `atomic` applies all or none.
+ *
+ * @deprecated superseded by vta/app-state/put-many/1.1
  */
 export interface VTAApplicationStatePutManyPayload {
   /**
@@ -47,6 +49,8 @@ export interface VTAApplicationStatePutManyPayload {
 }
 /**
  * Success response to vta/app-state/put-many in `independent` mode. Type https://trusttasks.org/spec/vta/app-state/put-many/1.0#response. A response is returned even when some writes conflicted, because the task did what it promised — applied each write on its own merits — and the per-record outcomes are the answer rather than the failure. An `atomic` batch that does not apply is a trust-task-error carrying vta/app-state/put-many:atomicBatchRejected, whose details carry the same per-record outcomes.
+ *
+ * @deprecated superseded by vta/app-state/put-many/1.1
  */
 export interface VTAApplicationStatePutManyResponsePayload {
   /**
@@ -76,13 +80,29 @@ export type { Ext, Key, Namespace, Version, WriteResult };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/app-state/put-many/1.0" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vta/app-state/put-many/1.1";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vta/app-state/put-many/1.1
+ */
 export type Payload = VTAApplicationStatePutManyPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/app-state/put-many/1.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vta/app-state/put-many/1.1
+ */
 export type Response = VTAApplicationStatePutManyResponsePayload;
 
 /**

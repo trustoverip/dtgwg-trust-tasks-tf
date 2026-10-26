@@ -6,6 +6,7 @@
 import type { Ext } from "../../../../_shared/components.js";
 
 
+/** @deprecated superseded by vtc/auth/recognise/0.3 */
 export interface VTCAuthRecognisePayload {
   /**
    * A holder-signed W3C Verifiable Presentation embedding the foreign membership credential (`MembershipCredential`) and role credential (a Verifiable Authority Credential, `AuthorityCredential`, conferring `role:<name>` at the foreign community's DID) in `verifiableCredential`.
@@ -15,6 +16,7 @@ export interface VTCAuthRecognisePayload {
   presentation: {};
   ext?: Ext;
 }
+/** @deprecated superseded by vtc/auth/recognise/0.3 */
 export interface VTCAuthRecogniseResponsePayload {
   /**
    * A cross-community session id (xc-<uuid>), distinguishing it from local-member sessions.
@@ -41,13 +43,29 @@ export type { Ext };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/auth/recognise/0.2" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vtc/auth/recognise/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/auth/recognise/0.3
+ */
 export type Payload = VTCAuthRecognisePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/auth/recognise/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/auth/recognise/0.3
+ */
 export type Response = VTCAuthRecogniseResponsePayload;
 
 /**

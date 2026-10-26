@@ -8,6 +8,8 @@ import type { DeviceLabel, Ext, SigningKey, SigningKeyDid, SigningKeyScope } fro
 
 /**
  * A freshly generated key asks to be enrolled as a signing-key delegation of an identity: documents it signs will be authorized by that identity's standing. The document is issued and proved by the key being enrolled, which is the proof that the enrolling party holds it; the identity it will act for is named in the payload and is established by the authority evidence the consumer requires, never by the key's own signature. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by auth/signing-key/enroll/0.2
  */
 export interface AuthSigningKeyEnrollPayload {
   signingKeyDid: SigningKeyDid;
@@ -25,6 +27,8 @@ export interface AuthSigningKeyEnrollPayload {
 }
 /**
  * The delegation as stored. From this point a document the key signs is authorized by the identity's standing, read at execution time.
+ *
+ * @deprecated superseded by auth/signing-key/enroll/0.2
  */
 export interface AuthSigningKeyEnrollResponsePayload {
   signingKey: SigningKey;
@@ -37,13 +41,29 @@ export type { DeviceLabel, Ext, SigningKey, SigningKeyDid, SigningKeyScope };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/signing-key/enroll/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by auth/signing-key/enroll/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by auth/signing-key/enroll/0.2
+ */
 export type Payload = AuthSigningKeyEnrollPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/signing-key/enroll/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by auth/signing-key/enroll/0.2
+ */
 export type Response = AuthSigningKeyEnrollResponsePayload;
 
 /**

@@ -6,6 +6,7 @@
 import type { CommunityRoom, Ext, HostedRoom_VtcV0_1 as HostedRoom, RetentionPolicy, RoomLabel, StorageConfigId, Visibility } from "../../../../../_shared/components.js";
 
 
+/** @deprecated superseded by vtc/rooms/community/get/0.3 */
 export interface VTCRoomsCommunityGetPayload {
   /**
    * The room's identifier: its DID.
@@ -15,6 +16,8 @@ export interface VTCRoomsCommunityGetPayload {
 }
 /**
  * Success response to vtc/rooms/community/get. Type https://trusttasks.org/spec/vtc/rooms/community/get/0.1#response. One room the community owns, with its counts. Its members are vtc/rooms/community/members/list's.
+ *
+ * @deprecated superseded by vtc/rooms/community/get/0.3
  */
 export interface VTCRoomsCommunityGetResponsePayload {
   room: CommunityRoom;
@@ -27,13 +30,29 @@ export type { CommunityRoom, Ext, HostedRoom, RetentionPolicy, RoomLabel, Storag
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/rooms/community/get/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vtc/rooms/community/get/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/rooms/community/get/0.3
+ */
 export type Payload = VTCRoomsCommunityGetPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/rooms/community/get/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/rooms/community/get/0.3
+ */
 export type Response = VTCRoomsCommunityGetResponsePayload;
 
 /**

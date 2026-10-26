@@ -8,6 +8,8 @@ import type { Did_GitNsV0_1 as Did, DriftItem_GitNsV0_1 as DriftItem, DriftType,
 
 /**
  * An owner of a repository, or a namespace admin over it, resolves one reported drift item: `adopt` records the forge-side role as a VTC right, under the same rules as git-ns/right/grant; `revert` has the bridge undo the forge-side change.
+ *
+ * @deprecated superseded by git-ns/drift/resolve/0.4
  */
 export interface GitNamespacesResolveDriftPayload {
   /**
@@ -41,6 +43,8 @@ export interface DriftSelector {
 }
 /**
  * What the resolution did, and where the repository's sync now stands.
+ *
+ * @deprecated superseded by git-ns/drift/resolve/0.4
  */
 export interface GitNamespacesResolveDriftResponsePayload {
   /**
@@ -64,13 +68,29 @@ export type { Did, DriftItem, DriftType, Ext, ForgeAccount, ForgeHost, ForgeId, 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/git-ns/drift/resolve/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by git-ns/drift/resolve/0.4";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by git-ns/drift/resolve/0.4
+ */
 export type Payload = GitNamespacesResolveDriftPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/git-ns/drift/resolve/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by git-ns/drift/resolve/0.4
+ */
 export type Response = GitNamespacesResolveDriftResponsePayload;
 
 /**

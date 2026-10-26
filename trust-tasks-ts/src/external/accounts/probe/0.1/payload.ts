@@ -8,12 +8,15 @@ import type { AccountContextId, AccountId, AccountProbeReport_ExternalV0_1 as Ac
 
 /**
  * Prove an external account works end to end. The outer document members are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by external/accounts/probe/0.2
  */
 export interface ExternalAccountsProbePayload {
   context: AccountContextId;
   id: AccountId;
   ext?: Ext;
 }
+/** @deprecated superseded by external/accounts/probe/0.2 */
 export interface ExternalAccountsProbeResponsePayload {
   report: AccountProbeReport;
   ext?: Ext;
@@ -25,13 +28,29 @@ export type { AccountContextId, AccountId, AccountProbeReport, AccountProbeStep,
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/external/accounts/probe/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by external/accounts/probe/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by external/accounts/probe/0.2
+ */
 export type Payload = ExternalAccountsProbePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/external/accounts/probe/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by external/accounts/probe/0.2
+ */
 export type Response = ExternalAccountsProbeResponsePayload;
 
 /**

@@ -8,6 +8,8 @@ import type { Ext } from "../../../../_shared/components.js";
 
 /**
  * Asks an agent for its per-mediator inbound counts and each sender's last-seen mediator over a time window. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by vta/services/report/0.2
  */
 export interface VTAServicesReportPayload {
   /**
@@ -23,6 +25,7 @@ export interface VTAServicesReportPayload {
    */
   ext?: Ext;
 }
+/** @deprecated superseded by vta/services/report/0.2 */
 export interface VTAServicesReportResponsePayload {
   /**
    * The lower bound applied, when the request gave one.
@@ -92,13 +95,29 @@ export type { Ext };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/services/report/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vta/services/report/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vta/services/report/0.2
+ */
 export type Payload = VTAServicesReportPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/services/report/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vta/services/report/0.2
+ */
 export type Response = VTAServicesReportResponsePayload;
 
 /**
