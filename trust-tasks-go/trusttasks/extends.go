@@ -71,55 +71,62 @@ const UnsupportedVersionWireMessage = "this consumer does not implement the docu
 // when it names a different specification from the one implemented.
 const UnsupportedTypeWireMessage = "document type is not the specification this consumer implements"
 
-// typeParts splits a Type URI into slug, version and variant ("" for a request,
-// "response" for a response; "#request" is the request, per SPEC §4.4.1).
-func typeParts(typeURI string) (slug, version, variant string, err error) {
-	slug, err = SlugFromTypeURI(typeURI)
+// routingKey reads a Type URI for routing: its routing variant collapses
+// #request into no fragment (SPEC §4.4.1).
+func routingKey(typeURI string) (TypeURI, error) {
+	parsed, err := ParseTypeURI(typeURI)
 	if err != nil {
-		return "", "", "", err
+		return TypeURI{}, err
 	}
-	bare := bareTypeURI(typeURI)
-	version = bare[strings.LastIndexByte(bare, '/')+1:]
-	if len(bare) < len(typeURI) {
-		variant = typeURI[len(bare)+1:]
+	if parsed.Variant() == VariantRequest {
+		parsed = parsed.WithVariant(VariantNone)
 	}
-	if variant == "request" {
-		variant = ""
-	}
-	return slug, version, variant, nil
+	return parsed, nil
+}
+
+// sameRoute reports whether two routing keys name the same specification (same
+// authority, form and slug — §6.1) and the same variant.
+func sameRoute(a, b TypeURI) bool {
+	return a.SameSpecification(b) && a.Variant() == b.Variant()
 }
 
 // ExtendsChainReaches reports whether the specification version named by
 // receivedTypeURI is the one named by implementedTypeURI, or declares — directly
 // or along a chain of declarations, per lookup — that it extends it.
 //
-// Both must name the same slug and the same variant. A nil lookup means
-// [RegistryExtends].
+// Both may be in any SPEC §6.1 form, and must name the same specification — the
+// same authority, form and slug, since the same slug under two authorities is
+// two specifications — and the same variant. Each link of the chain is looked up
+// under the received URI's own authority and form, so a chain never crosses to
+// another authority. A nil lookup means [RegistryExtends].
 func ExtendsChainReaches(receivedTypeURI, implementedTypeURI string, lookup ExtendsLookup) bool {
-	rSlug, rVersion, rVariant, err := typeParts(receivedTypeURI)
+	received, err := routingKey(receivedTypeURI)
 	if err != nil {
 		return false
 	}
-	iSlug, iVersion, iVariant, err := typeParts(implementedTypeURI)
-	if err != nil || rSlug != iSlug || rVariant != iVariant {
+	implemented, err := routingKey(implementedTypeURI)
+	if err != nil || !sameRoute(received, implemented) {
 		return false
 	}
-	return chainReaches(rSlug, rVersion, iVersion, lookup)
+	return chainReaches(received, implemented, lookup)
 }
 
-func chainReaches(slug, from, to string, lookup ExtendsLookup) bool {
+// chainReaches walks from's declared-extension chain, looking each link up as a
+// bare sibling of from (only the version changed), until it reaches to's version.
+func chainReaches(from, to TypeURI, lookup ExtendsLookup) bool {
 	if lookup == nil {
 		lookup = RegistryExtends
 	}
-	version := from
+	at := from.Bare()
 	for i := 0; i <= maxExtendsChain; i++ {
-		if version == to {
+		if at.Major() == to.Major() && at.Minor() == to.Minor() {
 			return true
 		}
-		version = lookup(typeURIPrefix + slug + "/" + version)
-		if version == "" {
-			return false
+		major, minor, ok := parseVersion(lookup(at.String()))
+		if !ok {
+			return false // no declaration, or not a MAJOR.MINOR
 		}
+		at = at.WithVersion(major, minor)
 	}
 	return false
 }
@@ -145,8 +152,11 @@ func ReadForSpec(received json.RawMessage, spec SpecPolicy) (json.RawMessage, *R
 //     the response is typed as the received version.
 //   - a refusal: unsupportedVersion when the received version's chain does not
 //     reach spec's (an undeclared later MINOR, an earlier version, another
-//     MAJOR); unsupportedType when the document names another specification or
-//     variant. Route it with [Reject] over the document as received.
+//     MAJOR); unsupportedType when the document names another specification —
+//     another slug, or the same slug under another authority or form (§6.1) —
+//     or another variant. Route it with [Reject] over the document as received.
+//     Every §6.1 form is read, so a third-party (§6.5) specification routes
+//     along its own chain, never to a registry specification sharing its slug.
 //   - an error, when received is not a JSON object with a string type, or spec's
 //     TypeURI is not a Trust Task Type URI — there is no document to answer.
 //
@@ -180,18 +190,18 @@ func ReadForSpecWith(
 	if err := json.Unmarshal(members["type"], &typeURI); err != nil || typeURI == "" {
 		return nil, nil, fmt.Errorf("trusttasks: received document carries no string type")
 	}
-	iSlug, iVersion, iVariant, err := typeParts(spec.TypeURI)
+	implemented, err := routingKey(spec.TypeURI)
 	if err != nil {
 		return nil, nil, fmt.Errorf("trusttasks: spec.TypeURI: %w", err)
 	}
-	rSlug, rVersion, rVariant, err := typeParts(typeURI)
-	if err != nil || rSlug != iSlug || rVariant != iVariant {
+	receivedType, err := routingKey(typeURI)
+	if err != nil || !sameRoute(receivedType, implemented) {
 		return nil, &RejectReason{Code: CodeUnsupportedType, Message: UnsupportedTypeWireMessage}, nil
 	}
-	if rVersion == iVersion {
+	if receivedType.Major() == implemented.Major() && receivedType.Minor() == implemented.Minor() {
 		return received, nil, nil
 	}
-	if !chainReaches(rSlug, rVersion, iVersion, lookup) {
+	if !chainReaches(receivedType, implemented, lookup) {
 		return nil, &RejectReason{Code: CodeUnsupportedVersion, Message: UnsupportedVersionWireMessage}, nil
 	}
 
