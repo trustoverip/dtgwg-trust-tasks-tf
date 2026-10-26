@@ -50,6 +50,7 @@ case "$PKG" in
     # generated from it, and `scripts/build-dart-bindings.mjs` because it is the
     # generator.
     WATCH=("specs" "$PKG_DIR" "scripts/build-dart-bindings.mjs")
+    SCOPES="dart dart-bindings"
     ;;
   trust_tasks_proof)
     PKG_DIR="trust-tasks-dart-proof"
@@ -58,22 +59,26 @@ case "$PKG" in
     # reaches consumers through the core's release, not this one — the same
     # separation as between trust-tasks-rs and trust-tasks-proof.
     WATCH=("$PKG_DIR")
+    SCOPES="dart-proof"
     ;;
   trust_tasks_https)
     PKG_DIR="trust-tasks-dart-https"
     VERSION_FILE=""
     # Only its own tree, for the same reason as trust_tasks_proof.
     WATCH=("$PKG_DIR")
+    SCOPES="dart-https"
     ;;
   trust_tasks_didcomm)
     PKG_DIR="trust-tasks-dart-didcomm"
     VERSION_FILE=""
     WATCH=("$PKG_DIR")
+    SCOPES="dart-didcomm"
     ;;
   trust_tasks_capability_client)
     PKG_DIR="trust-tasks-dart-capability-client"
     VERSION_FILE=""
     WATCH=("$PKG_DIR")
+    SCOPES="dart-capability-client"
     ;;
   *)
     echo "::error::unknown Dart package '$PKG'"
@@ -114,16 +119,37 @@ if git diff --quiet "$tag" HEAD -- "${WATCH[@]}"; then
 fi
 
 # ── What size of bump? ───────────────────────────────────────────────────────
-# Conventional commits, the same signal release-plz reads for the crates. As on
-# the npm and Go sides there is no cargo-semver-checks equivalent to catch an
-# unannounced break, so this is only as accurate as the commit subjects.
+# Conventional commits, the same signal release-plz reads for the crates. An
+# unannounced break is caught earlier, on the pull request, by the `Dart API
+# compatibility` job (scripts/check-dart-api.mjs), which applies this same
+# scoped rule to decide whether a break was declared.
 range="$tag..HEAD"
 # The log is captured first, NOT piped into `grep -q`: grep exits on its first
 # match, git log then dies of SIGPIPE, and under `pipefail` the pipeline reports
 # failure — so a breaking change was silently scored as a patch whenever the log
 # was long enough to still be writing. It happened to #610 (`feat(persona)!`).
 log=$(git log --format='%s%n%b' "$range" -- "${WATCH[@]}")
-if grep -qE '^[a-z]+(\([^)]*\))?!:|^BREAKING[ -]CHANGE' <<<"$log"; then
+# A `!` counts only when it is scoped to THIS package (SCOPES, above) or carries
+# no scope at all, or the body has a `BREAKING CHANGE:` trailer. commit-lint
+# refuses a `!` scoped to anything but a package, but history predates that:
+# `feat(vault)!:` (#919) and `fix(codegen)!:` (#917, the Rust generator) would
+# otherwise make this package a breaking release with no API change in it.
+breaking_here() {
+  local line scopes s
+  grep -qE '^BREAKING[ -]CHANGE' <<<"$log" && return 0
+  while IFS= read -r line; do
+    [[ $line =~ ^[a-z]+(\(([^\)]*)\))?!: ]] || continue
+    scopes=${BASH_REMATCH[2]}
+    [ -z "$scopes" ] && return 0
+    IFS=',' read -ra parts <<<"$scopes"
+    for s in "${parts[@]}"; do
+      s=${s// /}
+      [[ " $SCOPES " == *" $s "* ]] && return 0
+    done
+  done <<<"$log"
+  return 1
+}
+if breaking_here; then
   level=breaking
 else
   level=patch

@@ -26,9 +26,11 @@
     "build": "tsc -p tsconfig.json",
     "clean": "rm -rf dist .test-build",
     "test": "tsc -p tsconfig.test.json && node --test .test-build/test/*.test.js",
-    "smoke": "npm run build && node scripts/smoke.mjs"
+    "smoke": "npm run build && node scripts/smoke.mjs",
+    "api-compat": "node scripts/api-compat.mjs"
   },
   "devDependencies": {
+    "@microsoft/api-extractor": "7.59.4",
     "@types/node": "^26.2.0",
     "typescript": "^6.0.0"
   },

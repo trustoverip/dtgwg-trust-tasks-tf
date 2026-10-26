@@ -149,6 +149,56 @@ jobs:
         working-directory: ${{ matrix.package }}
         run: npm test
 
+  # Rust has cargo-semver-checks (release-plz runs it); this is the
+  # TypeScript counterpart, on the PR so an undeclared break is caught when
+  # it is made instead of shipping as a patch. It compares the PR's public
+  # declarations — every .d.ts, since `exports` has `./*` — with the last
+  # npm release, via api-extractor doc models. Removed or changed API fails
+  # unless the PR title's `!` is scoped to `ts`; additions (a new spec
+  # version, an optional member, a value appended to a string-literal union)
+  # pass. Policy and method: trust-tasks-ts/scripts/api-compat.mjs.
+  # About a minute; api-extractor peaks near 5 GB per side, run one at a time.
+  api-compat:
+    name: ts API compatibility
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # History and tags: a break already declared since the published
+          # release (trust-tasks-ts-v*) lets this PR's break through.
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "npm"
+      - name: Install trust-tasks-ts dev dependencies
+        working-directory: trust-tasks-ts
+        run: npm ci --no-audit --no-fund
+      - name: Test the compatibility policy
+        working-directory: trust-tasks-ts
+        run: node --test scripts/api-compat.test.mjs
+      - name: Compare the public API with the last npm release
+        working-directory: trust-tasks-ts
+        # The title is read LIVE, not from the event payload: this workflow
+        # does not run on `edited`, and "Re-run job" replays the original
+        # payload — so after retitling a PR to `feat(ts)!:`, re-running this
+        # job must see the new title. It reaches the script only through the
+        # environment, never interpolated into `run:` (see commit-lint.yml).
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_REF: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          PR_TITLE=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq .title)
+          export PR_TITLE
+          npm run api-compat
+
   # The drift job above proves the generators were re-run. It compares each
   # generator's output to itself, so an output that is consistently wrong is
   # consistently clean — which is how the response-type drop (#174) and the
