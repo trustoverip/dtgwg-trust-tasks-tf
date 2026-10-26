@@ -143,6 +143,9 @@ jobs:
           - name: "@openvtc/trust-tasks-capability-client"
             dir: trust-tasks-ts-capability-client
             prefix: trust-tasks-ts-capability-client-v
+          - name: "@openvtc/trust-tasks-gen"
+            dir: trust-tasks-ts-gen
+            prefix: trust-tasks-ts-gen-v
     concurrency:
       # Two pushes landing close together would both see the version as absent
       # from npm and both try to publish it; the loser fails on a duplicate.
