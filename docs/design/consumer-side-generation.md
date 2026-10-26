@@ -363,6 +363,18 @@ the runtime only".
   imports `trust-task-discovery`, a framework specification the runtime always
   carries. Nothing to change.
 
+## Milestone 5 — when
+
+Decided 2026-10-27: the prebuilt modules are deprecated **after one release
+cycle** of the generators in use. Milestone 3 shipped in the 2026-10-26
+releases (`@openvtc/trust-tasks` 0.27.8 with `./runtime`,
+`@openvtc/trust-tasks-gen` 0.1.0, `trust-tasks-cli` 0.1.2, the Go and Dart
+generators in their modules); milestone 4's TypeScript change (#947) ships in
+the release after.
+The withdrawal batch that removes them — one declared break per library — is
+chosen after deprecation, once the generators' use is known; the earliest is
+the first quarterly batch at least 90 days after the deprecation ships.
+
 ## Third-party sources
 
 SPEC §6.1 and §6.5 already allow specifications outside the official registry:
