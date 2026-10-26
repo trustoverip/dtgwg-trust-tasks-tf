@@ -198,6 +198,105 @@ void main() {
     });
   });
 
+  group('a third-party (§6.5) authority', () {
+    // A chain declared under each non-registry form must be walked under that
+    // form and authority — and never reach the registry's spec of the same
+    // slug, which is a different specification (§6.1).
+    const path = 'https://acme.example/tasks/spec/auth/authenticate/';
+    const did = 'did:web:acme.example/spec/auth/authenticate/';
+    const urn = 'urn:example:acme:spec:auth:authenticate:';
+
+    for (final prefix in const [path, did, urn]) {
+      group(prefix, () {
+        final own = <String, String>{
+          '${prefix}0.4': '0.3',
+          '${prefix}0.5': '0.4',
+        };
+        final both = <String, String>{...own, ...chained};
+        final ownSpec = SpecPolicy(typeUri: '${prefix}0.3');
+        Map<String, dynamic> doc(String type) => <String, dynamic>{
+              'id': 'req-1',
+              'type': type,
+              'issuer': peer,
+              'payload': <String, dynamic>{'challenge': 'c-1'},
+            };
+        Object? identity(Object? p) => p;
+        RejectReason refusedRead(VersionRead<Object?> read) {
+          expect(read, isA<VersionRefused<Object?>>());
+          return (read as VersionRefused<Object?>).reason;
+        }
+
+        test('splits the version and walks the chain', () {
+          expect(extensionChain('${prefix}0.5', index: own), ['0.4', '0.3']);
+          expect(extensionChain('${prefix}0.5#response', index: own),
+              ['0.4', '0.3']);
+          expect(extendsTo('${prefix}0.5', '${prefix}0.3', index: own), isTrue);
+          expect(extendsTo('${prefix}0.5#request', '${prefix}0.4', index: own),
+              isTrue);
+          expect(
+              extendsTo('${prefix}0.3', '${prefix}0.5', index: own), isFalse);
+        });
+
+        test('never crosses to the registry', () {
+          // Its chain reaches 0.3 — under its own authority, not the
+          // registry's.
+          expect(extendsTo('${prefix}0.5', '${base}0.3', index: both), isFalse);
+          // And the registry's chain does not reach it either.
+          expect(extendsTo('${base}0.5', '${prefix}0.3', index: both), isFalse);
+          // An index entry keyed under the registry is not this chain's link.
+          expect(extensionChain('${prefix}0.5', index: chained), isEmpty);
+        });
+
+        test('readForVersion routes it to its own version only', () {
+          final read = readForVersion(doc('${prefix}0.5'), ownSpec, identity,
+              index: both);
+          expect(read, isA<VersionAccepted<Object?>>());
+          final accepted = read as VersionAccepted<Object?>;
+          expect(accepted.forward, isTrue);
+          expect(accepted.doc.type, '${prefix}0.5');
+
+          // The same slug in the registry is another specification entirely,
+          // in either direction.
+          expect(
+              refusedRead(readForVersion(
+                      doc('${prefix}0.5'), auth03.spec, identity,
+                      index: both))
+                  .code,
+              StandardCode.unsupportedType);
+          expect(
+              refusedRead(readForVersion(doc('${base}0.5'), ownSpec, identity,
+                      index: both))
+                  .code,
+              StandardCode.unsupportedType);
+
+          // Its own later version whose chain does not reach:
+          // unsupportedVersion.
+          expect(
+              refusedRead(readForVersion(doc('${prefix}0.5'), ownSpec, identity,
+                  index: const <String, String>{})).code,
+              StandardCode.unsupportedVersion);
+        });
+      });
+    }
+
+    test('a URN chain is not confused with a path chain of the same slug', () {
+      const index = <String, String>{
+        '${urn}0.4': '0.3',
+        '${path}0.4': '0.3',
+      };
+      expect(extendsTo('${urn}0.4', '${path}0.3', index: index), isFalse);
+      expect(extendsTo('${path}0.4', '${urn}0.3', index: index), isFalse);
+      expect(extendsTo('${urn}0.4', '${urn}0.3', index: index), isTrue);
+    });
+
+    test('a URN-form version is split on ":", not "/"', () {
+      // The defect this replaces: splitting on the last "/" found no version
+      // in a URN, so a URN-form document was never routed forward.
+      expect(extensionChain('${urn}0.4', index: const {'${urn}0.4': '0.3'}),
+          ['0.3']);
+    });
+  });
+
   group('readForVersion', () {
     test('the implemented version is read unchanged', () async {
       final json = sign(authDoc('0.3'));

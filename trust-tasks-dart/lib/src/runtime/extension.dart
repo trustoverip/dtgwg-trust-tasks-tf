@@ -38,35 +38,48 @@ import 'package:trust_tasks/specs/extends_index.dart' as generated;
 import 'canonical.dart';
 import 'codes.dart';
 import 'document.dart';
+import 'type_uri.dart';
 
 /// The versions [typeUri]'s declared `extends` chain reaches, nearest first,
 /// excluding the version itself.
 ///
-/// [typeUri] may carry a fragment; it is ignored. [index] defaults to the
-/// generated one and is a parameter so a chain can be constructed in a test.
-/// A cycle — which the build refuses, since `extends` must name an earlier
-/// version — ends the walk rather than looping.
+/// [typeUri] may be in any SPEC §6.1 form and may carry a fragment, which is
+/// ignored; anything that is not a Type URI has an empty chain. Each link is
+/// looked up under the *same* authority, form and slug with only the version
+/// changed ([TypeUri.withVersion]), so a chain never leaves the authority it
+/// started under — a third-party specification's chain can never reach a
+/// registry version of the same slug.
+///
+/// [index] defaults to the generated one, which covers the public registry; a
+/// consumer of third-party (§6.5) specifications passes its own, keyed the
+/// same way, by bare request Type URI. A cycle — which the build refuses,
+/// since `extends` must name an earlier version — ends the walk rather than
+/// looping, as does a link that is not a `MAJOR.MINOR`.
 List<String> extensionChain(
   String typeUri, {
   Map<String, String> index = generated.extendsIndex,
 }) {
-  final split = _splitVersion(bareTypeUri(typeUri));
-  if (split == null) return const <String>[];
+  final parsed = TypeUri.tryParse(typeUri);
+  if (parsed == null) return const <String>[];
   final chain = <String>[];
-  final seen = <String>{split.version};
-  var current = split.version;
+  final seen = <String>{parsed.version};
+  var current = parsed.bare;
   while (true) {
-    final next = index['${split.prefix}$current'];
-    if (next == null || !seen.add(next)) break;
-    chain.add(next);
-    current = next;
+    final next = index[current.toString()];
+    if (next == null) break;
+    final version = parseTypeUriVersion(next);
+    if (version == null) break;
+    current = current.withVersion(version.$1, version.$2);
+    if (!seen.add(current.version)) break;
+    chain.add(current.version);
   }
   return chain;
 }
 
 /// Whether a document typed [receivedTypeUri] may be read as the version
 /// [implementedTypeUri] names, because the former's declared `extends` chain
-/// reaches the latter. Same slug only; fragments are ignored.
+/// reaches the latter. Same specification only — the same authority, form and
+/// slug ([TypeUri.isSameSpecification]); fragments are ignored.
 ///
 /// False for the same version — that is not an extension, it is the version.
 bool extendsTo(
@@ -74,10 +87,10 @@ bool extendsTo(
   String implementedTypeUri, {
   Map<String, String> index = generated.extendsIndex,
 }) {
-  final received = _splitVersion(bareTypeUri(receivedTypeUri));
-  final implemented = _splitVersion(bareTypeUri(implementedTypeUri));
+  final received = TypeUri.tryParse(receivedTypeUri);
+  final implemented = TypeUri.tryParse(implementedTypeUri);
   if (received == null || implemented == null) return false;
-  if (received.prefix != implemented.prefix) return false;
+  if (!received.isSameSpecification(implemented)) return false;
   return extensionChain(receivedTypeUri, index: index)
       .contains(implemented.version);
 }
@@ -127,9 +140,11 @@ final class VersionRefused<P> extends VersionRead<P> {
   /// the §8.1-routed error response with [reject].
   final TrustTaskDocument<Object?> document;
 
-  /// `unsupportedVersion` when the slug matches and the received version's
-  /// `extends` chain does not reach the implemented one; `unsupportedType` when
-  /// the document is not of the implemented specification at all.
+  /// `unsupportedVersion` when the specification — authority, form and slug —
+  /// matches and the received version's `extends` chain does not reach the
+  /// implemented one; `unsupportedType` when the document is not of the
+  /// implemented specification at all, including the same slug under another
+  /// authority.
   final RejectReason reason;
 }
 
@@ -138,10 +153,11 @@ final class VersionRefused<P> extends VersionRead<P> {
 ///
 /// * Same version (bare Type URI and variant equal): read as-is, unchanged from
 ///   calling `TrustTaskDocument.fromJson` yourself.
-/// * A later version of the same slug whose `extends` chain — per [index],
-///   which defaults to the generated one — reaches [spec]'s: the payload is
-///   pruned with [prunePayload] against `spec.payloadSchema`, then read with
-///   [payloadFromJson]. The document keeps the received `type`.
+/// * A later version of the same specification — authority, form and slug —
+///   whose `extends` chain, per [index] (which defaults to the generated one;
+///   pass your own for third-party specifications), reaches [spec]'s: the
+///   payload is pruned with [prunePayload] against `spec.payloadSchema`, then
+///   read with [payloadFromJson]. The document keeps the received `type`.
 /// * Anything else: [VersionRefused].
 ///
 /// [received] is never modified, and [VersionAccepted.received] is that same
@@ -188,9 +204,9 @@ VersionRead<P> readForVersion<P>(
         reason: RejectReason(code: code, message: message),
       );
 
-  final r = _splitVersion(receivedBare);
-  final i = _splitVersion(implementedBare);
-  if (!sameVariant || r == null || i == null || r.prefix != i.prefix) {
+  final r = TypeUri.tryParse(receivedBare);
+  final i = TypeUri.tryParse(implementedBare);
+  if (!sameVariant || r == null || i == null || !r.isSameSpecification(i)) {
     return refuse(
       StandardCode.unsupportedType,
       'this consumer does not implement $type',
@@ -250,17 +266,6 @@ Object? prunePayload(Object? payload, String schemaJson) {
 }
 
 /* ── internals ──────────────────────────────────────────────────────────── */
-
-typedef _Split = ({String prefix, String version});
-
-/// `https://…/<slug>/<M.K>` → (`https://…/<slug>/`, `M.K`).
-_Split? _splitVersion(String bare) {
-  final slash = bare.lastIndexOf('/');
-  if (slash < 0) return null;
-  final version = bare.substring(slash + 1);
-  if (!RegExp(r'^\d+\.\d+$').hasMatch(version)) return null;
-  return (prefix: bare.substring(0, slash + 1), version: version);
-}
 
 /// `#request` is the request variant spelled out; both read as the request.
 String _variantOf(String typeUri) {
