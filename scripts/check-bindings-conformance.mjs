@@ -977,6 +977,36 @@ for (const spec of specs) {
   }
 }
 
+/* ── `extends`: every module names the version it declares it extends ───── */
+
+// SPEC §5.2 "Declared extension". The runtimes route a document of an extending
+// version to a handler for the version it extends, so the constant each module
+// carries has to be the front matter's, in all four languages — a wrong one
+// routes documents to a handler that cannot read them.
+{
+  const langs = [
+    ["Rust", rsByUri, (src) => { const m = /pub const EXTENDS: Option<&(?:'static )?str> =\s*(?:None|Some\(\s*"([^"]*)",?\s*\));/.exec(src); return m ? m[1] ?? null : undefined; }],
+    ["TypeScript", tsByUri, (src) => { const m = /export const EXTENDS: string \| null =\s*(?:null|"([^"]*)");/.exec(src); return m ? m[1] ?? null : undefined; }],
+    ["Go", goByUri, (src) => { const m = /const Extends = "([^"]*)"/.exec(src); return m ? m[1] || null : undefined; }],
+    ["Dart", dartByUri, (src) => { const m = /const String\? extendsVersion =\s*(?:null|'([^']*)');/.exec(src); return m ? m[1] ?? null : undefined; }],
+  ];
+  for (const spec of specs) {
+    const raw = fs.readFileSync(path.join(spec.dir, "spec.md"), "utf8");
+    const end = raw.indexOf("\n---", 3);
+    const meta = raw.startsWith("---") && end > 0 ? YAML.parse(raw.slice(3, end)) : {};
+    if (meta.status === "withdrawn") continue;
+    const expected = meta.extends ? String(meta.extends) : null;
+    const uri = `https://trusttasks.org/spec/${spec.slug}/${spec.version}`;
+    for (const [lang, byUri, read] of langs) {
+      const mod = byUri.get(uri);
+      if (!mod) continue;
+      const got = read(mod.src);
+      if (got === undefined) fail(`${spec.slug}/${spec.version}`, `the ${lang} module declares no extends constant`);
+      else if (got !== expected) fail(`${spec.slug}/${spec.version}`, `${lang} says it extends ${JSON.stringify(got)}, the front matter ${JSON.stringify(expected)}`);
+    }
+  }
+}
+
 /* Orphans: a generated module for a spec that no longer exists is a stale
    artifact a consumer can still import and build against. */
 for (const [uri, mod] of tsByUri) {
