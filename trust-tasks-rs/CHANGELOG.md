@@ -31,6 +31,17 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.35.3](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.35.2...trust-tasks-rs-v0.35.3) — 2026-10-26
+
+
+### Documentation
+
+- How a Rust application generates only the tasks it uses ([#936](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/936))
+
+GETTING-STARTED.md gains the client-side path: trust-tasks-cli to pin, trust-tasks-rs without default features plus trust-tasks-build in build.rs, and the facade variant (`runtime_path("::trust_tasks")`). trust-tasks-rs's README points at it from its feature section. Both verified as an outside client would use them: the crates.io CLI pinning from trusttasks.org, then a build against crates.io trust-tasks-build 0.1.0 and trust-tasks-rs / trust-tasks 0.35.1.
+
+
+
 ## [0.35.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.35.1...trust-tasks-rs-v0.35.2) — 2026-10-26
 
 

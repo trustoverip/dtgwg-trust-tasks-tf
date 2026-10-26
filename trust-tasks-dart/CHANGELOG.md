@@ -11,6 +11,29 @@ Publishing is triggered by the `trust-tasks-dart-v<version>` tag, because
 pub.dev only accepts an automated publish from a tag-triggered workflow. See
 `RELEASING.md`.
 
+## 0.9.8 — 2026-10-26
+
+
+### Added
+
+- **dart**: Dart run trust_tasks:generate generates only the tasks an application pins (#942)
+
+* feat(dart): generate only the tasks an application pins, with dart run trust_tasks:generate
+
+  `trust-tasks-dart/bin/generate.dart` reads a trust-tasks.lock and the bundles
+  vendored beside it, checks each bundle's SHA-256 against the lock, and writes
+  one library per pinned version to <out>/<slug>/v<M>_<N>/payload.dart plus an
+  extends_index.dart — the same API as the prebuilt lib/specs/ libraries,
+  importing the runtime as package:trust_tasks. An independent port of
+  scripts/build-dart-bindings.mjs with bundles as input; no new dependencies
+  (SHA-256 and the lockfile reader are in-package).
+
+  scripts/check-dart-consumer-generation.mjs runs it over every bundle in the
+  registry and compares with the prebuilt tree: 458 libraries identical, 662
+  identical declaration for declaration in a different top-level order (the
+  bundle does not carry $defs order), every embedded schema JSON-equal.
+  examples/consumer-app-dart pins the same three tasks as examples/consumer-app.
+
 ## 0.9.7 — 2026-10-26
 
 ## 0.9.6 — 2026-10-26
