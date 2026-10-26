@@ -149,9 +149,10 @@ fi
 # ── What size of bump? ───────────────────────────────────────────────────────
 # Conventional commits, the same signal release-plz reads for the crates: a `!`
 # after the type/scope or a `BREAKING CHANGE:` trailer means the compatibility
-# field moves; anything else is a patch. As on the npm side there is no
-# cargo-semver-checks equivalent to catch an unannounced break, so this is only
-# as accurate as the commit subjects. See RELEASING.md.
+# field moves; anything else is a patch. An unannounced break is caught earlier,
+# on the pull request, by the `go API compatibility` job
+# (scripts/check-go-api-compat.sh), which applies this same scoped rule. See
+# RELEASING.md.
 range="$tag..HEAD"
 # The log is captured first, NOT piped into `grep -q`: grep exits on its first
 # match, git log then dies of SIGPIPE, and under `pipefail` the pipeline reports

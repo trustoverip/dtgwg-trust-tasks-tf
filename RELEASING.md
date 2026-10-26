@@ -214,11 +214,51 @@ kernel killed the job (exit 143, with no error in the log). `publish.yml`
 therefore wraps the binary in `flock` so they run one at a time; the Release PR
 job takes about 40 minutes as a result, and its timeout is 90.
 
-> ⚠️ **Only the crates have a `cargo-semver-checks` equivalent.** The npm, Go and
-> Dart bumps are only as accurate as the commit subjects: if a change breaks one
-> of those APIs and nobody wrote `!` in the PR title, the package ships a patch.
-> Check the diff before merging. This is the one place the four parts of a
-> release differ in rigour.
+**Every library's API is checked on the pull request.** The crates have
+`cargo-semver-checks`, run by release-plz; the core npm, Go and Dart packages
+each have an API compatibility job that compares the PR with the last published
+release and refuses an undeclared break. All three apply one rule: a break passes
+when the PR title carries a `!` whose scope list names the package (`feat(ts)!:`,
+`feat(go)!:`, `feat(dart)!:`; the withdrawal batch's `feat(rs, ts, go, dart)!:`
+names all three), or when a change merged since that release already makes the
+next one breaking. Each reads the PR title live, so after retitling a PR, re-run
+the job. The bump scripts (`release-bump-{ts,go,dart}.sh`) count a `!` the same
+scoped way, so a spec-scoped `!` from before commit-lint enforced package scopes
+no longer makes them breaking.
+
+- **TypeScript** — `ts API compatibility` (`ts.yml`, `trust-tasks-ts/scripts/api-compat.mjs`)
+  compares every `.d.ts` of `@openvtc/trust-tasks` (the package exports `./*`)
+  with the last npm release, using `@microsoft/api-extractor` (pinned in
+  `trust-tasks-ts`). A removed or renamed export, namespace or member, a changed
+  signature, or a required member added to an existing interface is breaking. A
+  new spec version, export or optional member passes, and so does a value
+  appended to a string-literal union or to `STANDARD_CODES` — deliberate policy,
+  the counterpart of Rust's `#[non_exhaustive]`, so a spec enum gaining a value
+  stays a patch (the unions stay closed so that a misspelled value is still a
+  compile error). Embedded JSON Schema constants are not compared;
+  `check-published-schemas` judges those. Locally:
+  `cd trust-tasks-ts && PR_TITLE='…' npm run api-compat` (about a minute, ~5 GB).
+- **Go** — `go API compatibility` (`go.yml`, `scripts/check-go-api-compat.sh`)
+  compares every package of the core module with the last `trust-tasks-go/v*`
+  tag using `golang.org/x/exp/cmd/apidiff`. A removed package or export, or a
+  changed signature or field type, is breaking. Value changes to the generated
+  `PayloadSchemaJSON`, `ResponsePayloadSchemaJSON`, `Deprecation` and `Extends`
+  constants and to `trusttasks.Version` move by design and are not counted. It
+  cannot see a behavioural break that changes no API (a spec that starts
+  requiring a proof) — declare those yourself. A Go tag can never be retracted,
+  which is why this runs before merge rather than at release.
+- **Dart** — `Dart API compatibility` (`dart.yml`, `scripts/check-dart-api.mjs`)
+  compares `trust_tasks` — the runtime and every generated library under
+  `lib/specs` — with the latest version on pub.dev, using `dart_apitool` (pinned
+  in the workflow with the SDK it runs on; move them together). A removed
+  library, class, member or value constant, a changed type, or a new required
+  parameter is breaking; a new spec version, optional member or closed value
+  passes. Locally: `dart pub global activate dart_apitool <pinned version>` and
+  `PR_TITLE='…' node scripts/check-dart-api.mjs`.
+
+The hand-written sibling packages (`-proof`, `-tsp`, `-https`, `-didcomm`,
+`-capability-client`) are not yet checked; each check's header says what
+extending it would take.
 
 > ⚠️ **A Go release cannot be unpublished.** `proxy.golang.org` caches a tag
 > permanently and by design, so a tag pushed over a tree that does not build is

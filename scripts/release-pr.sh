@@ -181,9 +181,9 @@ version is not published yet"):
 - **pub.dev** — \`tag-dart\` verifies against the *published* core and pushes the
   tag; \`publish-dart.yml\` publishes from it.
 
-The npm, Go and Dart bumps are only as accurate as the commit subjects — nothing
-checks their APIs the way \`cargo-semver-checks\` checks the crates. Look for a
-missing \`!\` before merging.
+The npm, Go and Dart bumps follow the commit subjects; an undeclared API break in
+any of them is refused on its pull request by that language's API compatibility
+check, as \`cargo-semver-checks\` refuses one in the crates here.
 
 This branch is regenerated from \`main\` on every push, so do not commit to it —
 edits are force-pushed away. See RELEASING.md.

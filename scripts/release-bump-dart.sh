@@ -119,9 +119,10 @@ if git diff --quiet "$tag" HEAD -- "${WATCH[@]}"; then
 fi
 
 # ── What size of bump? ───────────────────────────────────────────────────────
-# Conventional commits, the same signal release-plz reads for the crates. As on
-# the npm and Go sides there is no cargo-semver-checks equivalent to catch an
-# unannounced break, so this is only as accurate as the commit subjects.
+# Conventional commits, the same signal release-plz reads for the crates. An
+# unannounced break is caught earlier, on the pull request, by the `Dart API
+# compatibility` job (scripts/check-dart-api.mjs), which applies this same
+# scoped rule to decide whether a break was declared.
 range="$tag..HEAD"
 # The log is captured first, NOT piped into `grep -q`: grep exits on its first
 # match, git log then dies of SIGPIPE, and under `pipefail` the pipeline reports
