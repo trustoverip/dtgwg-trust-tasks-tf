@@ -9,6 +9,8 @@ import (
 )
 
 // Response VTC Auth Recognise Challenge — response payload
+//
+// Deprecated: superseded by vtc/auth/recognise/challenge/0.2
 type Response struct {
 	// Single-use, unpredictable value to bind into the presentation. Consumed on first use
 	// regardless of verdict.
@@ -24,12 +26,20 @@ type Response struct {
 type Ext = map[string]json.RawMessage
 
 // Payload VTC Auth Recognise Challenge — payload
+//
+// Deprecated: superseded by vtc/auth/recognise/challenge/0.2
 type Payload struct {
 	Ext *Ext `json:"ext,omitempty"`
 }
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/vtc/auth/recognise/challenge/0.1"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vtc/auth/recognise/challenge/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/auth/recognise/challenge/0.1#response"

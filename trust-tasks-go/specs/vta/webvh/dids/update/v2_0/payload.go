@@ -10,6 +10,8 @@ import (
 
 // Response The outcome. `preview` and `pendingApproval` carry the plan; `applied` carries
 // the published entry.
+//
+// Deprecated: superseded by vta/webvh/dids/update/2.1
 type Response struct {
 	DID       string                `json:"did"`
 	Outcome   KeyRoleChangeOutcome  `json:"outcome"`
@@ -225,6 +227,8 @@ const (
 // Payload Ask a Verifiable Trust Agent to publish a new entry in a did:webvh log it holds
 // the update key for, changing anything but the DID's keys. Keys change only through the
 // key-role tasks (vta/_shared/0.3/CONVENTIONS.md).
+//
+// Deprecated: superseded by vta/webvh/dids/update/2.1
 type Payload struct {
 	// The did:webvh being updated. The agent MUST verify it speaks for this subject.
 	DID string `json:"did"`
@@ -275,6 +279,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/vta/webvh/dids/update/2.0"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vta/webvh/dids/update/2.1"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/webvh/dids/update/2.0#response"

@@ -9,6 +9,8 @@ import (
 )
 
 // Response The rendered DID document.
+//
+// Deprecated: retired; use vta/did-templates/render/2.0
 type Response struct {
 	// The rendered DID document with all placeholders substituted.
 	Document map[string]json.RawMessage `json:"document"`
@@ -25,6 +27,8 @@ type Ext = map[string]json.RawMessage
 // variables; the VTA injects ambient variables (VTA_DID, VTA_URL, NOW) server-side,
 // merges the caller's on top, substitutes every placeholder, and returns the rendered
 // document.
+//
+// Deprecated: retired; use vta/did-templates/render/2.0
 type Payload struct {
 	// Resource id — the name of the global template to render.
 	Name string `json:"name"`
@@ -39,6 +43,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/vta/did-templates/render/1.0"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "retired; use vta/did-templates/render/2.0"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/did-templates/render/1.0#response"

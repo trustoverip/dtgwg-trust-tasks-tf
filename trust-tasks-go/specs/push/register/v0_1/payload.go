@@ -9,6 +9,8 @@ import (
 )
 
 // Response Push Register — response payload
+//
+// Deprecated: retired; use push/register/0.2
 type Response struct {
 	// The opaque gateway-issued handle (gateway address + handle). Conveyed onward; reveals
 	// no token.
@@ -53,6 +55,8 @@ type PushRegistration = json.RawMessage
 // gateway and names the controller VTA permitted to provision its trigger allowlist. The
 // gateway returns an opaque WakeHandle; the raw token is held by the gateway only. See
 // the push wake-up binding (https://trusttasks.org/binding/push/0.1).
+//
+// Deprecated: retired; use push/register/0.2
 type Payload struct {
 	// The platform push channel (token). Held by the gateway only — never disclosed to any
 	// other party.
@@ -67,6 +71,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/push/register/0.1"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "retired; use push/register/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/push/register/0.1#response"

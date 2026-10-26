@@ -45,6 +45,8 @@ const (
 // failure. An `atomic` batch that does not apply is a trust-task-error carrying
 // vta/app-state/put-many:atomicBatchRejected, whose details carry the same per-record
 // outcomes.
+//
+// Deprecated: superseded by vta/app-state/put-many/1.1
 type Response struct {
 	// The mode the maintainer applied, echoed so a caller relying on the default sees what it
 	// got.
@@ -170,6 +172,8 @@ const (
 // own optimistic-concurrency precondition. The batch `mode` decides what a single failure
 // costs: `independent` (the default) applies each write on its own merits, `atomic`
 // applies all or none.
+//
+// Deprecated: superseded by vta/app-state/put-many/1.1
 type Payload struct {
 	// The VTA context the records are scoped to; the isolation boundary.
 	ContextID string `json:"contextId"`
@@ -195,6 +199,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/vta/app-state/put-many/1.0"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vta/app-state/put-many/1.1"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/app-state/put-many/1.0#response"

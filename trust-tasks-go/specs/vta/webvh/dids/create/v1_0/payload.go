@@ -15,6 +15,8 @@ type WebvhPathMode = json.RawMessage
 
 // Response Success response to vta/webvh/dids/create. Type
 // https://trusttasks.org/spec/vta/webvh/dids/create/1.0#response.
+//
+// Deprecated: superseded by vta/webvh/dids/create/1.2
 type Response struct {
 	DID       string  `json:"did"`
 	ContextID string  `json:"contextId"`
@@ -48,6 +50,8 @@ type Ext = map[string]json.RawMessage
 
 // Payload Mint a did:webvh: the VTA generates the keys, writes the log's first entry, and
 // either hands it to a hosting server or returns it for the caller to serve.
+//
+// Deprecated: superseded by vta/webvh/dids/create/1.2
 type Payload struct {
 	// Context the DID belongs to. Its keys are minted here, and deleting the context destroys
 	// the DID.
@@ -122,6 +126,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/vta/webvh/dids/create/1.0"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vta/webvh/dids/create/1.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/webvh/dids/create/1.0#response"

@@ -10,6 +10,8 @@ import (
 
 // Response Success response to rooms/keys/present. Type
 // https://trusttasks.org/spec/rooms/keys/present/0.1#response.
+//
+// Deprecated: retired; use rooms/keys/present/0.2
 type Response struct {
 	// The presentation to send to the host: a membership credential, an authority chain, and
 	// — where the room withholds the subject — a same-subject binding.
@@ -42,6 +44,8 @@ const (
 // Payload An agent asks the party holding its principal's room credentials to produce a
 // presentation for one room operation. The credentials never cross to the agent; only the
 // presentation does, and it is bound to the operation it was asked for.
+//
+// Deprecated: retired; use rooms/keys/present/0.2
 type Payload struct {
 	// The room to present for.
 	RoomID string `json:"roomId"`
@@ -65,6 +69,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/rooms/keys/present/0.1"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "retired; use rooms/keys/present/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/rooms/keys/present/0.1#response"

@@ -38,6 +38,8 @@ type DIDTemplateRecord struct {
 type Scope = map[string]json.RawMessage
 
 // Response The templates scoped to the context.
+//
+// Deprecated: retired; use vta/did-templates/list/2.0
 type Response struct {
 	// Templates scoped to the context, sorted by name; empty when none exist.
 	Templates []DIDTemplateRecord `json:"templates"`
@@ -52,6 +54,8 @@ type Ext = map[string]json.RawMessage
 
 // Payload List the DID templates scoped to a context on a VTA. Gated on context access.
 // The success response is the set of persisted DidTemplateRecords for the context.
+//
+// Deprecated: retired; use vta/did-templates/list/2.0
 type Payload struct {
 	// The context the templates are scoped to.
 	ContextID string `json:"contextId"`
@@ -62,6 +66,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/vta/contexts/did-templates/list/1.0"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "retired; use vta/did-templates/list/2.0"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/contexts/did-templates/list/1.0#response"

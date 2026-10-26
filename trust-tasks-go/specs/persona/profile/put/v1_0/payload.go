@@ -33,6 +33,8 @@ type ResponseCorrelation struct {
 
 // Response Success response to persona/profile/put. Type
 // https://trusttasks.org/spec/persona/profile/put/1.0#response.
+//
+// Deprecated: superseded by persona/profile/put/1.1
 type Response struct {
 	ProfileID Ulid    `json:"profileId"`
 	Version   Version `json:"version"`
@@ -182,6 +184,8 @@ type ClaimType = string
 // Payload Create or replace one profile: a named, ordered projection over the holder's
 // attribute pool. Entries reference pool attributes rather than copying them, so a fact
 // edited once is edited everywhere it appears.
+//
+// Deprecated: superseded by persona/profile/put/1.1
 type Payload struct {
 	// Omit to create; supply to replace. A producer that means to create and wants the write
 	// to be safe under retry SHOULD supply a generated id together with `expectedVersion: 0`.
@@ -215,6 +219,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/persona/profile/put/1.0"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by persona/profile/put/1.1"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/persona/profile/put/1.0#response"

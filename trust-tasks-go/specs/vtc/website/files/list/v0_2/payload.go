@@ -25,6 +25,8 @@ type ResponseItemsItem struct {
 }
 
 // Response VTC Website Files List — response payload
+//
+// Deprecated: superseded by vtc/website/files/list/0.3
 type Response struct {
 	// Files under the site root, excluding hidden files and blocklisted extensions.
 	Items []ResponseItemsItem `json:"items"`
@@ -40,6 +42,8 @@ type Response struct {
 type Ext = map[string]json.RawMessage
 
 // Payload VTC Website Files List — payload
+//
+// Deprecated: superseded by vtc/website/files/list/0.3
 type Payload struct {
 	// An opaque continuation token from a previous response's `nextCursor`; a responder MUST
 	// NOT accept a cursor it did not issue.
@@ -53,6 +57,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/vtc/website/files/list/0.2"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vtc/website/files/list/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/website/files/list/0.2#response"

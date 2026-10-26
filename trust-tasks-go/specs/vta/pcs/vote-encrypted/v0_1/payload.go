@@ -30,6 +30,8 @@ type ResponseCastDocument struct {
 }
 
 // Response VTA PCS — Vote Encrypted — response payload
+//
+// Deprecated: retired; use vta/pcs/vote-encrypted/0.2
 type Response struct {
 	// The voting/ballot/cast-encrypted request, signed by a key made for this cast alone
 	// (VTI-VOT-003).
@@ -244,6 +246,8 @@ type VotingParameters struct {
 // Payload The voter's VTA checks a ballot against the manifest, encrypts it to the
 // election key as the election's level requires, and returns the cast signed by a key
 // made for it alone.
+//
+// Deprecated: retired; use vta/pcs/vote-encrypted/0.2
 type Payload struct {
 	// The context the voter belongs to.
 	ContextID string `json:"contextId"`
@@ -259,6 +263,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/vta/pcs/vote-encrypted/0.1"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "retired; use vta/pcs/vote-encrypted/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/pcs/vote-encrypted/0.1#response"

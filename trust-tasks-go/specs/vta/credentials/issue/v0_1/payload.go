@@ -46,6 +46,8 @@ type GovernancePolicyClaims struct {
 // definition because that definition sets `additionalProperties: false`, which under
 // `allOf` would reject the two extra members. The shared CredentialId is still
 // referenced. Keep the two in step by hand if either changes.
+//
+// Deprecated: superseded by vta/credentials/issue/0.2
 type Response struct {
 	CredentialID CredentialID `json:"credentialId"`
 
@@ -76,6 +78,8 @@ type Ext = map[string]json.RawMessage
 type CredentialID = string
 
 // Payload VTA Credentials Issue — payload
+//
+// Deprecated: superseded by vta/credentials/issue/0.2
 type Payload struct {
 	// DID of the credential's subject/holder (becomes credentialSubject.id).
 	Holder string `json:"holder"`
@@ -100,6 +104,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/vta/credentials/issue/0.1"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vta/credentials/issue/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/credentials/issue/0.1#response"
