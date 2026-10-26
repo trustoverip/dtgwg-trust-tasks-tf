@@ -93,9 +93,10 @@ fi
 # ── What size of bump? ───────────────────────────────────────────────────────
 # Conventional commits, same signal release-plz reads for the crates: a `!`
 # after the type/scope or a `BREAKING CHANGE:` trailer means the compatibility
-# field moves; anything else is a patch. Note that unlike the crate side there
-# is no cargo-semver-checks equivalent here to catch an unannounced break, so
-# this is only as accurate as the commit subjects. See RELEASING.md.
+# field moves; anything else is a patch. There is no release-time
+# cargo-semver-checks here; the per-PR `ts API compatibility` job
+# (trust-tasks-ts/scripts/api-compat.mjs) is what keeps the subjects honest,
+# by failing an undeclared break before it merges. See RELEASING.md.
 range="$tag..HEAD"
 # The log is captured first, NOT piped into `grep -q`: grep exits on its first
 # match, git log then dies of SIGPIPE, and under `pipefail` the pipeline reports
