@@ -128,6 +128,66 @@ jobs:
         working-directory: trust-tasks-dart
         run: dart test
 
+  # `dart run trust_tasks:generate` — the consumer-side generator, which reads a
+  # trust-tasks.lock and its vendored bundles — run over EVERY bundle in the
+  # registry and compared with the prebuilt tree under lib/specs/ (generated
+  # from specs/ by scripts/build-dart-bindings.mjs). Two independent
+  # generators from two inputs; this is what keeps them equivalent. The script
+  # names the two differences the bundle format makes unavoidable (embedded
+  # schema key order, compared as JSON; top-level declaration order, compared
+  # declaration by declaration) and fails on anything else.
+  consumer-generation:
+    name: consumer generation matches the prebuilt tree
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+      - name: Build every bundle
+        run: cargo run -q --release -p trust-tasks-codegen -- --bundles "$RUNNER_TEMP/bundles"
+      - name: Install dependencies
+        working-directory: trust-tasks-dart
+        run: dart pub get
+      - name: Compare
+        run: node scripts/check-dart-consumer-generation.mjs "$RUNNER_TEMP/bundles"
+
+  # An application that pins three tasks (the same three as
+  # examples/consumer-app), generates their libraries, analyzes them with
+  # --fatal-infos, and runs a round trip through the runtime. On the 3.3 floor
+  # as well, where `dart format` has no --language-version.
+  consumer-app:
+    name: example application (${{ matrix.sdk }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sdk: ["3.3", "stable"]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: ${{ matrix.sdk }}
+      - name: Install dependencies
+        working-directory: examples/consumer-app-dart
+        run: dart pub get
+      - name: Generate
+        working-directory: examples/consumer-app-dart
+        run: dart run trust_tasks:generate --lock trust-tasks.lock --out lib/trust_tasks
+      - name: Analyze
+        working-directory: examples/consumer-app-dart
+        run: dart analyze --fatal-infos
+      - name: Run
+        working-directory: examples/consumer-app-dart
+        run: dart run bin/main.dart
+
   # The release is sized by the PR title: `feat(dart)!:` makes trust_tasks a
   # breaking release, anything else a patch. Nothing else stopped an accidental
   # break shipping as a patch — Rust has cargo-semver-checks, Dart had nothing.

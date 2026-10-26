@@ -1,0 +1,14 @@
+name: trust_tasks_example_consumer_app
+description: >-
+  An application that speaks three Trust Tasks and generates only those, with
+  dart run trust_tasks:generate.
+publish_to: none
+
+environment:
+  sdk: ^3.3.0
+
+# The runtime only. The three tasks' libraries are generated into
+# lib/trust_tasks/ from trust-tasks.lock and the bundles vendored beside it.
+dependencies:
+  trust_tasks:
+    path: ../../trust-tasks-dart
