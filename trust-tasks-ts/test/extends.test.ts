@@ -5,10 +5,13 @@
  * No published specification declares `extends` yet, so the generated
  * `EXTENDS_BY_TYPE_URI` is empty and these tests pass their own index — the
  * `index` option of `readForSpec` exists for this and for routing on knowledge
- * a library release does not carry. The schemas are the real generated
- * `auth/authenticate` 0.1 / 0.3 ones, which are genuinely additive (0.2 adds
- * `sessionKey`, 0.3 adds `principal` + `delegationEvidence`), so the stub
- * chain 0.3 → 0.2 → 0.1 is one the registry build would accept.
+ * a library release does not carry. The 0.3 module is the real generated
+ * `auth/authenticate/0.3`; the 0.1 one is a hand-written specimen of the
+ * superseded `auth/authenticate/0.1` (`./specimens/authenticate-0.1.ts`), so
+ * these tests survive that version's withdrawal. The two are genuinely
+ * additive (0.2 adds `sessionKey`, 0.3 adds `principal` +
+ * `delegationEvidence`), so the stub chain 0.3 → 0.2 → 0.1 is one the registry
+ * build would accept.
  */
 
 import assert from "node:assert/strict";
@@ -32,7 +35,7 @@ import {
   type ProofVerifier,
   type TrustTaskDocument,
 } from "../src/_runtime/index.js";
-import * as V01 from "../src/auth/authenticate/0.1/payload.js";
+import * as V01 from "./specimens/authenticate-0.1.js";
 import * as V03 from "../src/auth/authenticate/0.3/payload.js";
 
 const ME = "did:web:auth.example";
@@ -148,10 +151,16 @@ describe("extends chain lookup", () => {
     assert.deepEqual(extendsChain(`${BASE}/1.1`, { [`${BASE}/1.1`]: "0.9" }), []);
   });
 
-  it("agrees with the generated modules' EXTENDS, and is the default index", () => {
-    // Holds whether or not the front matter declares anything.
+  it("agrees with the generated modules' EXTENDS, and is the default index", async () => {
+    // Holds whether or not the front matter declares anything, for every
+    // generated module rather than one pinned version.
+    const modules = Object.values(await import("../src/index.js")).filter(
+      (m): m is { TYPE_URI: string; EXTENDS: string | null } =>
+        typeof m === "object" && m !== null && "TYPE_URI" in m && "EXTENDS" in m,
+    );
+    assert.ok(modules.length > 100, "the root export lists the generated modules");
+    for (const m of modules) assert.equal(EXTENDS_BY_TYPE_URI[m.TYPE_URI] ?? null, m.EXTENDS, m.TYPE_URI);
     assert.equal(EXTENDS_BY_TYPE_URI[V03.TYPE_URI] ?? null, V03.EXTENDS);
-    assert.equal(EXTENDS_BY_TYPE_URI[V01.TYPE_URI] ?? null, V01.EXTENDS);
     const expected = extendsChain(V03.TYPE_URI).includes("0.1") ? "accepted" : "refused";
     assert.equal(readForSpec(doc03(), V01.SPEC).kind, expected);
     // A slug the registry does not have declares nothing.
