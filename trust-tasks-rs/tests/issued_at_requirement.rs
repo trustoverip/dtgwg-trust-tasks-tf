@@ -11,6 +11,8 @@
 //! spec by spec), so the generated types cannot exercise the `true` case. The
 //! hand-rolled impls below stand in for what a declaring spec will generate,
 //! exactly as `audience_binding.rs` does for `IS_BEARER`.
+// Pinned to fixed spec versions on purpose; that they are superseded is beside the point.
+#![allow(deprecated)]
 
 use chrono::Utc;
 use serde::{Deserialize, Serialize};

@@ -707,6 +707,7 @@ fn proof_error_to_reject(err: VerificationError) -> RejectReason {
 }
 
 #[cfg(all(test, feature = "acl"))] // its specimens are acl payloads
+#[allow(deprecated)] // the specimens are fixed versions; that they are superseded is beside the point
 mod tests {
     use super::*;
     use crate::handlers::NoopHandler;

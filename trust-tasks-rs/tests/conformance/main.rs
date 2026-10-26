@@ -5,6 +5,10 @@
 //! they link the ordinary library build instead of a second, unit-test
 //! compilation of the whole generated tree.
 
+// A deprecated specification version is still tested until it is
+// withdrawn, and testing it means naming its deprecated types.
+#![allow(deprecated)]
+
 #[cfg(feature = "acl")]
 mod acl {
     mod change_role {
