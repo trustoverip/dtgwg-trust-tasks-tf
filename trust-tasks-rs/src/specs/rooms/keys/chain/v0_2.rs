@@ -267,18 +267,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///  "$id": "https://trusttasks.org/spec/rooms/keys/chain/0.2",
 ///  "title": "Payload",
 ///  "type": "object",
-///  "anyOf": [
-///    {
-///      "required": [
-///        "links"
-///      ]
-///    },
-///    {
-///      "required": [
-///        "epochFloor"
-///      ]
-///    }
-///  ],
 ///  "required": [
 ///    "roomId"
 ///  ],
@@ -309,30 +297,30 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// ```
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(untagged, deny_unknown_fields)]
+#[serde(deny_unknown_fields)]
 #[non_exhaustive]
-pub enum Payload {
-    Variant0 {
-        ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-        ext: ::std::option::Option<Ext>,
-        ///The rungs, in any order. A recipient stores those numbered above the room's epoch floor — the higher of the one it holds and `epochFloor` — and reports how far back it can now reach; see the response's `earliestReadableEpoch`. Absent when the request only relays a floor.
-        links: ::std::vec::Vec<EpochLink>,
-        ///The room whose chain these rungs belong to. The recipient MUST hold group state for it, and MUST NOT create any on the strength of this request: rungs are inert without an epoch key, so accepting them for a room one is not in would retain key material for nothing.
-        #[serde(rename = "roomId")]
-        room_id: ::std::string::String,
-    },
-    Variant1 {
-        ///The room's epoch floor, exactly as the host served it in the `rooms/epoch/chain` 0.2 response the rungs came from. A member relaying rungs MUST relay it when the host served one, and MAY send it alone, with no `links`, to pass on a floor it has just learnt. The recipient applies it as `EpochFloor` requires.
-        #[serde(rename = "epochFloor")]
-        epoch_floor: EpochFloor,
-        ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-        ext: ::std::option::Option<Ext>,
-        ///The room whose chain these rungs belong to. The recipient MUST hold group state for it, and MUST NOT create any on the strength of this request: rungs are inert without an epoch key, so accepting them for a room one is not in would retain key material for nothing.
-        #[serde(rename = "roomId")]
-        room_id: ::std::string::String,
-    },
+pub struct Payload {
+    ///The room's epoch floor, exactly as the host served it in the `rooms/epoch/chain` 0.2 response the rungs came from. A member relaying rungs MUST relay it when the host served one, and MAY send it alone, with no `links`, to pass on a floor it has just learnt. The recipient applies it as `EpochFloor` requires.
+    #[serde(
+        rename = "epochFloor",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub epoch_floor: ::std::option::Option<EpochFloor>,
+    ///Ecosystem-defined extension members per SPEC.md §4.5.1.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub ext: ::std::option::Option<Ext>,
+    ///The rungs, in any order. A recipient stores those numbered above the room's epoch floor — the higher of the one it holds and `epochFloor` — and reports how far back it can now reach; see the response's `earliestReadableEpoch`. Absent when the request only relays a floor.
+    #[serde(default, skip_serializing_if = "::std::vec::Vec::is_empty")]
+    pub links: ::std::vec::Vec<EpochLink>,
+    ///The room whose chain these rungs belong to. The recipient MUST hold group state for it, and MUST NOT create any on the strength of this request: rungs are inert without an epoch key, so accepting them for a room one is not in would retain key material for nothing.
+    #[serde(rename = "roomId")]
+    pub room_id: ::std::string::String,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///Success response to rooms/keys/chain. Type https://trusttasks.org/spec/rooms/keys/chain/0.2#response.
 ///
@@ -468,6 +456,87 @@ pub mod builder {
                 epoch: Ok(value.epoch),
                 nonce: Ok(value.nonce),
                 wrapped: Ok(value.wrapped),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        epoch_floor:
+            ::std::result::Result<::std::option::Option<super::EpochFloor>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        links: ::std::result::Result<::std::vec::Vec<super::EpochLink>, ::std::string::String>,
+        room_id: ::std::result::Result<::std::string::String, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                epoch_floor: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                links: Ok(Default::default()),
+                room_id: Err("no value supplied for room_id".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn epoch_floor<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::EpochFloor>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.epoch_floor = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for epoch_floor: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn links<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::vec::Vec<super::EpochLink>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.links = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for links: {e}"));
+            self
+        }
+        pub fn room_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.room_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for room_id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                epoch_floor: value.epoch_floor?,
+                ext: value.ext?,
+                links: value.links?,
+                room_id: value.room_id?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                epoch_floor: Ok(value.epoch_floor),
+                ext: Ok(value.ext),
+                links: Ok(value.links),
+                room_id: Ok(value.room_id),
             }
         }
     }

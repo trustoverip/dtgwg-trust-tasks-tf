@@ -1145,6 +1145,10 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<GeneratedSpec> {
     // Only reshapes a `oneOf` that would otherwise defeat typify (a branch
     // with a compound `not`); a plain discriminated `oneOf` is untouched.
     desugar_oneof_with_compound_not(&mut schema);
+    // Only removes an `anyOf` of bare `required` clauses ("at least one of
+    // these members"), which typify would otherwise turn into an untagged
+    // enum that cannot hold two of the members at once.
+    drop_anyof_of_required_members(&mut schema);
 
     // Round-trip the normalized schema into the schemars representation
     // typify works with.
@@ -2627,6 +2631,104 @@ fn has_compound_not(branch: &Value) -> bool {
     !matches!(obj.get("required"), Some(Value::Array(arr)) if arr.len() == 1)
 }
 
+/// Drop an `anyOf` from the schema typify sees when it sits on an object
+/// schema and every one of its branches is exactly `{"required": [...]}`,
+/// naming members that object declares in `properties`.
+///
+/// ## Why this exists
+///
+/// That shape is JSON Schema's idiom for "at least one of these members" —
+/// `rooms/keys/chain/0.2`'s `links` / `epochFloor`, `rooms/records/curate/0.1`'s
+/// `status` / `pinned`. A document carrying *several* of the members is
+/// valid; for `rooms/keys/chain/0.2` it is the normal case (a member relays
+/// the rungs together with the floor they came with). typify (0.6) renders
+/// the `anyOf` as an untagged enum with one struct variant per branch, and
+/// each variant carries only the members its own branch requires, under the
+/// object's `deny_unknown_fields`. A document holding two of the members
+/// then matches no variant — every variant rejects the other member as
+/// unknown — so the Rust type cannot deserialize a payload the schema
+/// declares valid. The defect is silent at generation time and shows only
+/// when a real peer sends both members.
+///
+/// typify offers no setting that models `anyOf` as "struct plus a
+/// constraint", and an `anyOf` cannot be rewritten into a `oneOf` it handles
+/// without enumerating every non-empty subset of the members (2ⁿ − 1
+/// branches, each still an enum variant), which turns one optional member
+/// into a match over combinations and does not scale to a four- or
+/// nine-member clause.
+///
+/// So, as in [`desugar_oneof_with_compound_not`], the combinator is removed
+/// with **no** replacement, from only the copy of the schema handed to
+/// typify. `generate_one` captures the wire schema (`SCHEMA_JSON`, which
+/// `ValidatedPayload::validate_value` and every other language's binding
+/// validate against — SPEC.md §7.2 item 2) *before* this pass runs, so "at
+/// least one of" is still enforced at runtime. What the Rust type loses is
+/// only the compile-time statement of that constraint: the members become
+/// ordinary optional fields of one struct, so a value built in Rust with
+/// none of them compiles and is refused by validation instead — the same
+/// shape the TypeScript, Go and Dart bindings already give these schemas.
+///
+/// ## When it declines
+///
+/// Only that exact shape is touched. A branch carrying any other keyword
+/// (`properties`, `not`, `type`, …), a `required` naming a member the object
+/// does not declare, an `anyOf` on a schema with no `properties` (a
+/// `dependentSchemas` entry, a bare `oneOf` branch), and anything beneath a
+/// `not` — where dropping a clause would invert what it says — are all left
+/// exactly as they were.
+fn drop_anyof_of_required_members(schema: &mut Value) {
+    drop_anyof_node(schema);
+}
+
+fn drop_anyof_node(node: &mut Value) {
+    match node {
+        Value::Object(map) => {
+            if is_anyof_of_required_members(map) {
+                map.remove("anyOf");
+            }
+            for (k, v) in map.iter_mut() {
+                if k != "not" {
+                    drop_anyof_node(v);
+                }
+            }
+        }
+        Value::Array(items) => {
+            for v in items.iter_mut() {
+                drop_anyof_node(v);
+            }
+        }
+        _ => {}
+    }
+}
+
+/// True when `map` is an object schema whose `anyOf` says only "at least one
+/// of these declared members": every branch is exactly `{"required": [..]}`
+/// with a non-empty list of member names, each declared in `properties`.
+fn is_anyof_of_required_members(map: &serde_json::Map<String, Value>) -> bool {
+    let Some(Value::Object(properties)) = map.get("properties") else {
+        return false;
+    };
+    let Some(Value::Array(branches)) = map.get("anyOf") else {
+        return false;
+    };
+    !branches.is_empty()
+        && branches.iter().all(|branch| {
+            let Some(obj) = branch.as_object() else {
+                return false;
+            };
+            if obj.len() != 1 {
+                return false;
+            }
+            matches!(
+                obj.get("required"),
+                Some(Value::Array(names)) if !names.is_empty()
+                    && names
+                        .iter()
+                        .all(|n| n.as_str().is_some_and(|n| properties.contains_key(n)))
+            )
+        })
+}
+
 #[cfg(test)]
 mod flatten_tests {
     use super::*;
@@ -2845,6 +2947,119 @@ mod desugar_oneof_tests {
         });
         let out = desugared(input);
         assert!(out["definitions"]["Nested"].get("oneOf").is_none());
+    }
+}
+
+#[cfg(test)]
+mod drop_anyof_tests {
+    use super::*;
+    use serde_json::json;
+
+    fn dropped(mut schema: Value) -> Value {
+        drop_anyof_of_required_members(&mut schema);
+        schema
+    }
+
+    /// The defect's own shape (`rooms/keys/chain/0.2`): "at least one of
+    /// `links` / `epochFloor`" on a closed object. The `anyOf` goes; the
+    /// members, `required` and closure stay, so typify emits one struct with
+    /// both members optional.
+    #[test]
+    fn drops_an_anyof_of_required_members() {
+        let out = dropped(json!({
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["roomId"],
+            "properties": {
+                "roomId": { "type": "string" },
+                "links": { "type": "array" },
+                "epochFloor": { "type": "integer" }
+            },
+            "anyOf": [{ "required": ["links"] }, { "required": ["epochFloor"] }]
+        }));
+        assert!(out.get("anyOf").is_none());
+        assert_eq!(out["required"], json!(["roomId"]));
+        assert_eq!(out["additionalProperties"], json!(false));
+        assert!(out["properties"].get("links").is_some());
+        assert!(out["properties"].get("epochFloor").is_some());
+    }
+
+    /// The pass reaches nested object schemas — a `definitions` entry such as
+    /// a response — not only the payload root.
+    #[test]
+    fn recurses_into_definitions() {
+        let out = dropped(json!({
+            "definitions": {
+                "Response": {
+                    "type": "object",
+                    "properties": { "a": {}, "b": {} },
+                    "anyOf": [{ "required": ["a"] }, { "required": ["b"] }]
+                }
+            }
+        }));
+        assert!(out["definitions"]["Response"].get("anyOf").is_none());
+    }
+
+    /// A branch carrying anything beside `required` constrains more than
+    /// presence, so the `anyOf` is not this idiom and is left for typify.
+    #[test]
+    fn leaves_an_anyof_with_a_richer_branch_alone() {
+        let input = json!({
+            "type": "object",
+            "properties": { "a": {}, "b": {} },
+            "anyOf": [
+                { "required": ["a"], "properties": { "a": { "const": 1 } } },
+                { "required": ["b"] }
+            ]
+        });
+        assert_eq!(dropped(input.clone()), input);
+    }
+
+    /// A branch requiring a member the object does not declare is not "at
+    /// least one of these members" — declining keeps the pass to the shape it
+    /// was written for.
+    #[test]
+    fn leaves_an_anyof_naming_an_undeclared_member_alone() {
+        let input = json!({
+            "type": "object",
+            "properties": { "a": {} },
+            "anyOf": [{ "required": ["a"] }, { "required": ["elsewhere"] }]
+        });
+        assert_eq!(dropped(input.clone()), input);
+    }
+
+    /// No `properties` means no object schema to make the members optional
+    /// on — `acl/list`'s `dependentSchemas` entry, or a bare `oneOf` branch
+    /// (`persona/contact/lists/put`). Untouched.
+    #[test]
+    fn leaves_an_anyof_without_properties_alone() {
+        let input = json!({
+            "type": "object",
+            "properties": { "direction": {}, "context": {}, "resource": {} },
+            "dependentSchemas": {
+                "direction": { "anyOf": [{ "required": ["context"] }, { "required": ["resource"] }] }
+            },
+            "oneOf": [
+                { "required": ["direction"] },
+                { "anyOf": [{ "required": ["context"] }, { "required": ["resource"] }] }
+            ]
+        });
+        assert_eq!(dropped(input.clone()), input);
+    }
+
+    /// Beneath a `not`, the same clause means "none of these", and removing
+    /// it would make the `not` reject everything. Never touched.
+    #[test]
+    fn never_reaches_beneath_a_not() {
+        let input = json!({
+            "type": "object",
+            "properties": { "a": {}, "b": {}, "c": {} },
+            "not": {
+                "properties": { "b": {}, "c": {} },
+                "anyOf": [{ "required": ["b"] }, { "required": ["c"] }]
+            }
+        });
+        assert_eq!(dropped(input.clone()), input);
     }
 }
 

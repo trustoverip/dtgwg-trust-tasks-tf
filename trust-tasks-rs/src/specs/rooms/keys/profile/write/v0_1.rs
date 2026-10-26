@@ -147,18 +147,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///  "title": "Payload",
 ///  "description": "A member holding `curate` or `admin` in a room asks their own key holder to set what the room is called and what it is for — or to clear it. The key holder signs the profile as the member, with the member's authority chain inside it, seals it under the room's current epoch, and stores it at the host at the location only members can compute. Exactly one of `profile` and `clear`. The outer document members are owned by the framework — SPEC §6.3.",
 ///  "type": "object",
-///  "anyOf": [
-///    {
-///      "required": [
-///        "profile"
-///      ]
-///    },
-///    {
-///      "required": [
-///        "clear"
-///      ]
-///    }
-///  ],
 ///  "required": [
 ///    "host",
 ///    "roomId"
@@ -205,33 +193,28 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// ```
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(untagged, deny_unknown_fields)]
+#[serde(deny_unknown_fields)]
 #[non_exhaustive]
-pub enum Payload {
-    Variant0 {
-        ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-        ext: ::std::option::Option<Ext>,
-        ///The host to write to, as a DID. Named by the caller for the reason `rooms/keys/read` gives. A room registered with more than one host is written at the one that takes its writes.
-        host: PayloadVariant0Host,
-        ///The room's new profile, replacing the whole of the current one: a member absent here is absent from the room's profile afterwards. Mutually exclusive with `clear`.
-        profile: RoomProfile,
-        ///The room whose profile to set. The recipient MUST hold its principal's membership of it.
-        #[serde(rename = "roomId")]
-        room_id: PayloadVariant0RoomId,
-    },
-    Variant1 {
-        ///Remove the room's profile: retract the record at the current epoch's profile location, so that readers find `cleared` there and stop. Only `true` is meaningful, so only `true` is accepted. Takes `curate`, which the host enforces on a retraction. Mutually exclusive with `profile`.
-        clear: bool,
-        ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-        ext: ::std::option::Option<Ext>,
-        ///The host to write to, as a DID. Named by the caller for the reason `rooms/keys/read` gives. A room registered with more than one host is written at the one that takes its writes.
-        host: PayloadVariant1Host,
-        ///The room whose profile to set. The recipient MUST hold its principal's membership of it.
-        #[serde(rename = "roomId")]
-        room_id: PayloadVariant1RoomId,
-    },
+pub struct Payload {
+    ///Remove the room's profile: retract the record at the current epoch's profile location, so that readers find `cleared` there and stop. Only `true` is meaningful, so only `true` is accepted. Takes `curate`, which the host enforces on a retraction. Mutually exclusive with `profile`.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub clear: ::std::option::Option<bool>,
+    ///Ecosystem-defined extension members per SPEC.md §4.5.1.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub ext: ::std::option::Option<Ext>,
+    ///The host to write to, as a DID. Named by the caller for the reason `rooms/keys/read` gives. A room registered with more than one host is written at the one that takes its writes.
+    pub host: PayloadHost,
+    ///The room's new profile, replacing the whole of the current one: a member absent here is absent from the room's profile afterwards. Mutually exclusive with `clear`.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub profile: ::std::option::Option<RoomProfile>,
+    ///The room whose profile to set. The recipient MUST hold its principal's membership of it.
+    #[serde(rename = "roomId")]
+    pub room_id: PayloadRoomId,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///The host to write to, as a DID. Named by the caller for the reason `rooms/keys/read` gives. A room registered with more than one host is written at the one that takes its writes.
 ///
@@ -249,19 +232,19 @@ pub enum Payload {
 /// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
-pub struct PayloadVariant0Host(::std::string::String);
-impl ::std::ops::Deref for PayloadVariant0Host {
+pub struct PayloadHost(::std::string::String);
+impl ::std::ops::Deref for PayloadHost {
     type Target = ::std::string::String;
     fn deref(&self) -> &::std::string::String {
         &self.0
     }
 }
-impl ::std::convert::From<PayloadVariant0Host> for ::std::string::String {
-    fn from(value: PayloadVariant0Host) -> Self {
+impl ::std::convert::From<PayloadHost> for ::std::string::String {
+    fn from(value: PayloadHost) -> Self {
         value.0
     }
 }
-impl ::std::str::FromStr for PayloadVariant0Host {
+impl ::std::str::FromStr for PayloadHost {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() > 2048usize {
@@ -278,13 +261,13 @@ impl ::std::str::FromStr for PayloadVariant0Host {
         Ok(Self(value.to_string()))
     }
 }
-impl ::std::convert::TryFrom<&str> for PayloadVariant0Host {
+impl ::std::convert::TryFrom<&str> for PayloadHost {
     type Error = self::error::ConversionError;
     fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant0Host {
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadHost {
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -292,7 +275,7 @@ impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant0Host {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant0Host {
+impl ::std::convert::TryFrom<::std::string::String> for PayloadHost {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -300,7 +283,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant0Host {
         value.parse()
     }
 }
-impl<'de> ::serde::Deserialize<'de> for PayloadVariant0Host {
+impl<'de> ::serde::Deserialize<'de> for PayloadHost {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -327,19 +310,19 @@ impl<'de> ::serde::Deserialize<'de> for PayloadVariant0Host {
 /// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
-pub struct PayloadVariant0RoomId(::std::string::String);
-impl ::std::ops::Deref for PayloadVariant0RoomId {
+pub struct PayloadRoomId(::std::string::String);
+impl ::std::ops::Deref for PayloadRoomId {
     type Target = ::std::string::String;
     fn deref(&self) -> &::std::string::String {
         &self.0
     }
 }
-impl ::std::convert::From<PayloadVariant0RoomId> for ::std::string::String {
-    fn from(value: PayloadVariant0RoomId) -> Self {
+impl ::std::convert::From<PayloadRoomId> for ::std::string::String {
+    fn from(value: PayloadRoomId) -> Self {
         value.0
     }
 }
-impl ::std::str::FromStr for PayloadVariant0RoomId {
+impl ::std::str::FromStr for PayloadRoomId {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() > 512usize {
@@ -351,13 +334,13 @@ impl ::std::str::FromStr for PayloadVariant0RoomId {
         Ok(Self(value.to_string()))
     }
 }
-impl ::std::convert::TryFrom<&str> for PayloadVariant0RoomId {
+impl ::std::convert::TryFrom<&str> for PayloadRoomId {
     type Error = self::error::ConversionError;
     fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant0RoomId {
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadRoomId {
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -365,7 +348,7 @@ impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant0RoomId {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant0RoomId {
+impl ::std::convert::TryFrom<::std::string::String> for PayloadRoomId {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -373,159 +356,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant0RoomId {
         value.parse()
     }
 }
-impl<'de> ::serde::Deserialize<'de> for PayloadVariant0RoomId {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///The host to write to, as a DID. Named by the caller for the reason `rooms/keys/read` gives. A room registered with more than one host is written at the one that takes its writes.
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The host to write to, as a DID. Named by the caller for the reason `rooms/keys/read` gives. A room registered with more than one host is written at the one that takes its writes.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct PayloadVariant1Host(::std::string::String);
-impl ::std::ops::Deref for PayloadVariant1Host {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<PayloadVariant1Host> for ::std::string::String {
-    fn from(value: PayloadVariant1Host) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for PayloadVariant1Host {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 2048usize {
-            return Err("longer than 2048 characters".into());
-        }
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
-        }
-        static PATTERN: ::std::sync::LazyLock<::regress::Regex> =
-            ::std::sync::LazyLock::new(|| ::regress::Regex::new("^did:").unwrap());
-        if PATTERN.find(value).is_none() {
-            return Err("doesn't match pattern \"^did:\"".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for PayloadVariant1Host {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant1Host {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant1Host {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for PayloadVariant1Host {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///The room whose profile to set. The recipient MUST hold its principal's membership of it.
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The room whose profile to set. The recipient MUST hold its principal's membership of it.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct PayloadVariant1RoomId(::std::string::String);
-impl ::std::ops::Deref for PayloadVariant1RoomId {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<PayloadVariant1RoomId> for ::std::string::String {
-    fn from(value: PayloadVariant1RoomId) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for PayloadVariant1RoomId {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 512usize {
-            return Err("longer than 512 characters".into());
-        }
-        if value.chars().count() < 1usize {
-            return Err("shorter than 1 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for PayloadVariant1RoomId {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant1RoomId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant1RoomId {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for PayloadVariant1RoomId {
+impl<'de> ::serde::Deserialize<'de> for PayloadRoomId {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -1217,6 +1048,101 @@ impl<'de> ::serde::Deserialize<'de> for RoomProfileTagsItem {
 }
 /// Types for composing complex structures.
 pub mod builder {
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        clear: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        host: ::std::result::Result<super::PayloadHost, ::std::string::String>,
+        profile:
+            ::std::result::Result<::std::option::Option<super::RoomProfile>, ::std::string::String>,
+        room_id: ::std::result::Result<super::PayloadRoomId, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                clear: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                host: Err("no value supplied for host".to_string()),
+                profile: Ok(Default::default()),
+                room_id: Err("no value supplied for room_id".to_string()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn clear<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.clear = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for clear: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn host<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadHost>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.host = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for host: {e}"));
+            self
+        }
+        pub fn profile<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::RoomProfile>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.profile = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for profile: {e}"));
+            self
+        }
+        pub fn room_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadRoomId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.room_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for room_id: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                clear: value.clear?,
+                ext: value.ext?,
+                host: value.host?,
+                profile: value.profile?,
+                room_id: value.room_id?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                clear: Ok(value.clear),
+                ext: Ok(value.ext),
+                host: Ok(value.host),
+                profile: Ok(value.profile),
+                room_id: Ok(value.room_id),
+            }
+        }
+    }
     #[derive(Clone, Debug)]
     pub struct Response {
         epoch: ::std::result::Result<

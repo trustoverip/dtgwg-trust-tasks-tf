@@ -535,18 +535,6 @@ impl<'de> ::serde::Deserialize<'de> for NoteText {
 ///  "title": "Payload",
 ///  "description": "An administrator adds a note about a member to the community's administrative notes, or redacts an earlier note with a later one. Notes are never edited. The outer document members are owned by the framework — SPEC §6.3.",
 ///  "type": "object",
-///  "anyOf": [
-///    {
-///      "required": [
-///        "text"
-///      ]
-///    },
-///    {
-///      "required": [
-///        "redacts"
-///      ]
-///    }
-///  ],
 ///  "required": [
 ///    "entryId"
 ///  ],
@@ -573,35 +561,28 @@ impl<'de> ::serde::Deserialize<'de> for NoteText {
 /// ```
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(untagged, deny_unknown_fields)]
+#[serde(deny_unknown_fields)]
 #[non_exhaustive]
-pub enum Payload {
-    Variant0 {
-        #[serde(rename = "entryId")]
-        entry_id: EntryId,
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-        ext: ::std::option::Option<Ext>,
-        #[serde(
-            rename = "followUp",
-            default,
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
-        follow_up: ::std::option::Option<::chrono::naive::NaiveDate>,
-        text: NoteText,
-    },
-    Variant1 {
-        #[serde(rename = "entryId")]
-        entry_id: EntryId,
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-        ext: ::std::option::Option<Ext>,
-        #[serde(
-            rename = "followUp",
-            default,
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
-        follow_up: ::std::option::Option<::chrono::naive::NaiveDate>,
-        redacts: NoteId,
-    },
+pub struct Payload {
+    #[serde(rename = "entryId")]
+    pub entry_id: EntryId,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub ext: ::std::option::Option<Ext>,
+    #[serde(
+        rename = "followUp",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub follow_up: ::std::option::Option<::chrono::naive::NaiveDate>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub redacts: ::std::option::Option<NoteId>,
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub text: ::std::option::Option<NoteText>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///The success response to a vtc/directory/notes/append/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/notes/append/0.1#response.
 ///
@@ -781,6 +762,103 @@ pub mod builder {
                 follow_up: Ok(value.follow_up),
                 note_id: Ok(value.note_id),
                 redacted_by: Ok(value.redacted_by),
+                redacts: Ok(value.redacts),
+                text: Ok(value.text),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        entry_id: ::std::result::Result<super::EntryId, ::std::string::String>,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        follow_up: ::std::result::Result<
+            ::std::option::Option<::chrono::naive::NaiveDate>,
+            ::std::string::String,
+        >,
+        redacts: ::std::result::Result<::std::option::Option<super::NoteId>, ::std::string::String>,
+        text: ::std::result::Result<::std::option::Option<super::NoteText>, ::std::string::String>,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                entry_id: Err("no value supplied for entry_id".to_string()),
+                ext: Ok(Default::default()),
+                follow_up: Ok(Default::default()),
+                redacts: Ok(Default::default()),
+                text: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn entry_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::EntryId>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.entry_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for entry_id: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn follow_up<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::chrono::naive::NaiveDate>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.follow_up = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for follow_up: {e}"));
+            self
+        }
+        pub fn redacts<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::NoteId>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.redacts = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for redacts: {e}"));
+            self
+        }
+        pub fn text<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::NoteText>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.text = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for text: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                entry_id: value.entry_id?,
+                ext: value.ext?,
+                follow_up: value.follow_up?,
+                redacts: value.redacts?,
+                text: value.text?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                entry_id: Ok(value.entry_id),
+                ext: Ok(value.ext),
+                follow_up: Ok(value.follow_up),
                 redacts: Ok(value.redacts),
                 text: Ok(value.text),
             }

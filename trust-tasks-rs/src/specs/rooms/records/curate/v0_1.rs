@@ -209,18 +209,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 ///  "title": "Payload",
 ///  "description": "A member curates a record: demotes it, retracts it, restores it from demotion, or pins it. Distinct from `rooms/records/put`, which replaces content — curation changes a record's standing in the room without a member having to rewrite it, and `curate` is a separate authority action so a community can grant one without the other.",
 ///  "type": "object",
-///  "anyOf": [
-///    {
-///      "required": [
-///        "status"
-///      ]
-///    },
-///    {
-///      "required": [
-///        "pinned"
-///      ]
-///    }
-///  ],
 ///  "required": [
 ///    "key",
 ///    "presentation",
@@ -273,57 +261,40 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 /// ```
 /// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
-#[serde(untagged, deny_unknown_fields)]
+#[serde(deny_unknown_fields)]
 #[non_exhaustive]
-pub enum Payload {
-    Variant0 {
-        ///Optional precondition: the record's current version. Curation assigns a new version — a demotion other members must converge on is a change like any other — so a caller that read a record before deciding to curate it can require that nothing has replaced it since.
-        #[serde(
-            rename = "expectedVersion",
-            default,
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
-        expected_version: ::std::option::Option<::std::num::NonZeroU64>,
-        ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-        ext: ::std::option::Option<Ext>,
-        ///The record to curate.
-        key: PayloadVariant0Key,
-        ///Must confer the `curate` action at this room's scope. Deliberately not implied by `write`: curation is judgement over what a room's shared knowledge is worth, which is a different grant from the ability to add to it.
-        presentation: AuthorityPresentation,
-        ///Why, for the room's audit trail. A retraction without a reason is the one a member cannot interpret later.
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-        reason: ::std::option::Option<PayloadVariant0Reason>,
-        ///The room's identifier. A host verifies the presentation against credentials issued by this identifier, never against a member list of its own.
-        #[serde(rename = "roomId")]
-        room_id: ::std::string::String,
-        ///The standing to move the record to. `deprecated` demotes it — the body is retained and a recalling agent MUST treat it as demoted rather than hidden. `retracted` is a tombstone: the body is dropped and the key, version and epoch remain so incremental sync converges. `active` restores a `deprecated` record; it MUST NOT be accepted for a `retracted` one, whose body is already gone and cannot be restored by a status change.
-        status: PayloadVariant0Status,
-    },
-    Variant1 {
-        ///Optional precondition: the record's current version. Curation assigns a new version — a demotion other members must converge on is a change like any other — so a caller that read a record before deciding to curate it can require that nothing has replaced it since.
-        #[serde(
-            rename = "expectedVersion",
-            default,
-            skip_serializing_if = "::std::option::Option::is_none"
-        )]
-        expected_version: ::std::option::Option<::std::num::NonZeroU64>,
-        ///Ecosystem-defined extension members per SPEC.md §4.5.1.
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-        ext: ::std::option::Option<Ext>,
-        ///The record to curate.
-        key: PayloadVariant1Key,
-        ///Whether the record is pinned. Orthogonal to `status` — a pinned record is still active, deprecated or retracted — because pinning answers 'what matters here' and status answers 'is this still current'. Omit to leave unchanged.
-        pinned: bool,
-        ///Must confer the `curate` action at this room's scope. Deliberately not implied by `write`: curation is judgement over what a room's shared knowledge is worth, which is a different grant from the ability to add to it.
-        presentation: AuthorityPresentation,
-        ///Why, for the room's audit trail. A retraction without a reason is the one a member cannot interpret later.
-        #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
-        reason: ::std::option::Option<PayloadVariant1Reason>,
-        ///The room's identifier. A host verifies the presentation against credentials issued by this identifier, never against a member list of its own.
-        #[serde(rename = "roomId")]
-        room_id: ::std::string::String,
-    },
+pub struct Payload {
+    ///Optional precondition: the record's current version. Curation assigns a new version — a demotion other members must converge on is a change like any other — so a caller that read a record before deciding to curate it can require that nothing has replaced it since.
+    #[serde(
+        rename = "expectedVersion",
+        default,
+        skip_serializing_if = "::std::option::Option::is_none"
+    )]
+    pub expected_version: ::std::option::Option<::std::num::NonZeroU64>,
+    ///Ecosystem-defined extension members per SPEC.md §4.5.1.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub ext: ::std::option::Option<Ext>,
+    ///The record to curate.
+    pub key: PayloadKey,
+    ///Whether the record is pinned. Orthogonal to `status` — a pinned record is still active, deprecated or retracted — because pinning answers 'what matters here' and status answers 'is this still current'. Omit to leave unchanged.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub pinned: ::std::option::Option<bool>,
+    ///Must confer the `curate` action at this room's scope. Deliberately not implied by `write`: curation is judgement over what a room's shared knowledge is worth, which is a different grant from the ability to add to it.
+    pub presentation: AuthorityPresentation,
+    ///Why, for the room's audit trail. A retraction without a reason is the one a member cannot interpret later.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub reason: ::std::option::Option<PayloadReason>,
+    ///The room's identifier. A host verifies the presentation against credentials issued by this identifier, never against a member list of its own.
+    #[serde(rename = "roomId")]
+    pub room_id: ::std::string::String,
+    ///The standing to move the record to. `deprecated` demotes it — the body is retained and a recalling agent MUST treat it as demoted rather than hidden. `retracted` is a tombstone: the body is dropped and the key, version and epoch remain so incremental sync converges. `active` restores a `deprecated` record; it MUST NOT be accepted for a `retracted` one, whose body is already gone and cannot be restored by a status change.
+    #[serde(default, skip_serializing_if = "::std::option::Option::is_none")]
+    pub status: ::std::option::Option<PayloadStatus>,
+}
+impl Payload {
+    pub fn builder() -> builder::Payload {
+        Default::default()
+    }
 }
 ///The record to curate.
 ///
@@ -339,19 +310,19 @@ pub enum Payload {
 /// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
-pub struct PayloadVariant0Key(::std::string::String);
-impl ::std::ops::Deref for PayloadVariant0Key {
+pub struct PayloadKey(::std::string::String);
+impl ::std::ops::Deref for PayloadKey {
     type Target = ::std::string::String;
     fn deref(&self) -> &::std::string::String {
         &self.0
     }
 }
-impl ::std::convert::From<PayloadVariant0Key> for ::std::string::String {
-    fn from(value: PayloadVariant0Key) -> Self {
+impl ::std::convert::From<PayloadKey> for ::std::string::String {
+    fn from(value: PayloadKey) -> Self {
         value.0
     }
 }
-impl ::std::str::FromStr for PayloadVariant0Key {
+impl ::std::str::FromStr for PayloadKey {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() > 512usize {
@@ -360,13 +331,13 @@ impl ::std::str::FromStr for PayloadVariant0Key {
         Ok(Self(value.to_string()))
     }
 }
-impl ::std::convert::TryFrom<&str> for PayloadVariant0Key {
+impl ::std::convert::TryFrom<&str> for PayloadKey {
     type Error = self::error::ConversionError;
     fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant0Key {
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadKey {
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -374,7 +345,7 @@ impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant0Key {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant0Key {
+impl ::std::convert::TryFrom<::std::string::String> for PayloadKey {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -382,7 +353,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant0Key {
         value.parse()
     }
 }
-impl<'de> ::serde::Deserialize<'de> for PayloadVariant0Key {
+impl<'de> ::serde::Deserialize<'de> for PayloadKey {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -408,19 +379,19 @@ impl<'de> ::serde::Deserialize<'de> for PayloadVariant0Key {
 /// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
-pub struct PayloadVariant0Reason(::std::string::String);
-impl ::std::ops::Deref for PayloadVariant0Reason {
+pub struct PayloadReason(::std::string::String);
+impl ::std::ops::Deref for PayloadReason {
     type Target = ::std::string::String;
     fn deref(&self) -> &::std::string::String {
         &self.0
     }
 }
-impl ::std::convert::From<PayloadVariant0Reason> for ::std::string::String {
-    fn from(value: PayloadVariant0Reason) -> Self {
+impl ::std::convert::From<PayloadReason> for ::std::string::String {
+    fn from(value: PayloadReason) -> Self {
         value.0
     }
 }
-impl ::std::str::FromStr for PayloadVariant0Reason {
+impl ::std::str::FromStr for PayloadReason {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         if value.chars().count() > 512usize {
@@ -429,13 +400,13 @@ impl ::std::str::FromStr for PayloadVariant0Reason {
         Ok(Self(value.to_string()))
     }
 }
-impl ::std::convert::TryFrom<&str> for PayloadVariant0Reason {
+impl ::std::convert::TryFrom<&str> for PayloadReason {
     type Error = self::error::ConversionError;
     fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant0Reason {
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadReason {
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -443,7 +414,7 @@ impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant0Reason {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant0Reason {
+impl ::std::convert::TryFrom<::std::string::String> for PayloadReason {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
@@ -451,7 +422,7 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant0Reason {
         value.parse()
     }
 }
-impl<'de> ::serde::Deserialize<'de> for PayloadVariant0Reason {
+impl<'de> ::serde::Deserialize<'de> for PayloadReason {
     fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
     where
         D: ::serde::Deserializer<'de>,
@@ -492,7 +463,7 @@ impl<'de> ::serde::Deserialize<'de> for PayloadVariant0Reason {
     PartialOrd,
 )]
 #[non_exhaustive]
-pub enum PayloadVariant0Status {
+pub enum PayloadStatus {
     #[serde(rename = "active")]
     Active,
     #[serde(rename = "deprecated")]
@@ -500,7 +471,7 @@ pub enum PayloadVariant0Status {
     #[serde(rename = "retracted")]
     Retracted,
 }
-impl ::std::fmt::Display for PayloadVariant0Status {
+impl ::std::fmt::Display for PayloadStatus {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         match *self {
             Self::Active => f.write_str("active"),
@@ -509,7 +480,7 @@ impl ::std::fmt::Display for PayloadVariant0Status {
         }
     }
 }
-impl ::std::str::FromStr for PayloadVariant0Status {
+impl ::std::str::FromStr for PayloadStatus {
     type Err = self::error::ConversionError;
     fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         match value {
@@ -520,13 +491,13 @@ impl ::std::str::FromStr for PayloadVariant0Status {
         }
     }
 }
-impl ::std::convert::TryFrom<&str> for PayloadVariant0Status {
+impl ::std::convert::TryFrom<&str> for PayloadStatus {
     type Error = self::error::ConversionError;
     fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant0Status {
+impl ::std::convert::TryFrom<&::std::string::String> for PayloadStatus {
     type Error = self::error::ConversionError;
     fn try_from(
         value: &::std::string::String,
@@ -534,150 +505,12 @@ impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant0Status {
         value.parse()
     }
 }
-impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant0Status {
+impl ::std::convert::TryFrom<::std::string::String> for PayloadStatus {
     type Error = self::error::ConversionError;
     fn try_from(
         value: ::std::string::String,
     ) -> ::std::result::Result<Self, self::error::ConversionError> {
         value.parse()
-    }
-}
-///The record to curate.
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The record to curate.",
-///  "type": "string",
-///  "maxLength": 512
-///}
-/// ```
-/// </details>
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct PayloadVariant1Key(::std::string::String);
-impl ::std::ops::Deref for PayloadVariant1Key {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<PayloadVariant1Key> for ::std::string::String {
-    fn from(value: PayloadVariant1Key) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for PayloadVariant1Key {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 512usize {
-            return Err("longer than 512 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for PayloadVariant1Key {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant1Key {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant1Key {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for PayloadVariant1Key {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
-    }
-}
-///Why, for the room's audit trail. A retraction without a reason is the one a member cannot interpret later.
-///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Why, for the room's audit trail. A retraction without a reason is the one a member cannot interpret later.",
-///  "type": "string",
-///  "maxLength": 512
-///}
-/// ```
-/// </details>
-#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[serde(transparent)]
-pub struct PayloadVariant1Reason(::std::string::String);
-impl ::std::ops::Deref for PayloadVariant1Reason {
-    type Target = ::std::string::String;
-    fn deref(&self) -> &::std::string::String {
-        &self.0
-    }
-}
-impl ::std::convert::From<PayloadVariant1Reason> for ::std::string::String {
-    fn from(value: PayloadVariant1Reason) -> Self {
-        value.0
-    }
-}
-impl ::std::str::FromStr for PayloadVariant1Reason {
-    type Err = self::error::ConversionError;
-    fn from_str(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        if value.chars().count() > 512usize {
-            return Err("longer than 512 characters".into());
-        }
-        Ok(Self(value.to_string()))
-    }
-}
-impl ::std::convert::TryFrom<&str> for PayloadVariant1Reason {
-    type Error = self::error::ConversionError;
-    fn try_from(value: &str) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<&::std::string::String> for PayloadVariant1Reason {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: &::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl ::std::convert::TryFrom<::std::string::String> for PayloadVariant1Reason {
-    type Error = self::error::ConversionError;
-    fn try_from(
-        value: ::std::string::String,
-    ) -> ::std::result::Result<Self, self::error::ConversionError> {
-        value.parse()
-    }
-}
-impl<'de> ::serde::Deserialize<'de> for PayloadVariant1Reason {
-    fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-    where
-        D: ::serde::Deserializer<'de>,
-    {
-        ::std::string::String::deserialize(deserializer)?
-            .parse()
-            .map_err(|e: self::error::ConversionError| {
-                <D::Error as ::serde::de::Error>::custom(e.to_string())
-            })
     }
 }
 ///Success response to rooms/records/curate. Type https://trusttasks.org/spec/rooms/records/curate/0.1#response.
@@ -897,6 +730,151 @@ pub mod builder {
                 authority: Ok(value.authority),
                 membership: Ok(value.membership),
                 subject_binding: Ok(value.subject_binding),
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct Payload {
+        expected_version: ::std::result::Result<
+            ::std::option::Option<::std::num::NonZeroU64>,
+            ::std::string::String,
+        >,
+        ext: ::std::result::Result<::std::option::Option<super::Ext>, ::std::string::String>,
+        key: ::std::result::Result<super::PayloadKey, ::std::string::String>,
+        pinned: ::std::result::Result<::std::option::Option<bool>, ::std::string::String>,
+        presentation: ::std::result::Result<super::AuthorityPresentation, ::std::string::String>,
+        reason: ::std::result::Result<
+            ::std::option::Option<super::PayloadReason>,
+            ::std::string::String,
+        >,
+        room_id: ::std::result::Result<::std::string::String, ::std::string::String>,
+        status: ::std::result::Result<
+            ::std::option::Option<super::PayloadStatus>,
+            ::std::string::String,
+        >,
+    }
+    impl ::std::default::Default for Payload {
+        fn default() -> Self {
+            Self {
+                expected_version: Ok(Default::default()),
+                ext: Ok(Default::default()),
+                key: Err("no value supplied for key".to_string()),
+                pinned: Ok(Default::default()),
+                presentation: Err("no value supplied for presentation".to_string()),
+                reason: Ok(Default::default()),
+                room_id: Err("no value supplied for room_id".to_string()),
+                status: Ok(Default::default()),
+            }
+        }
+    }
+    impl Payload {
+        pub fn expected_version<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<::std::num::NonZeroU64>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.expected_version = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for expected_version: {e}"));
+            self
+        }
+        pub fn ext<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::Ext>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.ext = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for ext: {e}"));
+            self
+        }
+        pub fn key<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::PayloadKey>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.key = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for key: {e}"));
+            self
+        }
+        pub fn pinned<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<bool>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.pinned = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for pinned: {e}"));
+            self
+        }
+        pub fn presentation<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<super::AuthorityPresentation>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.presentation = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for presentation: {e}"));
+            self
+        }
+        pub fn reason<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadReason>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.reason = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for reason: {e}"));
+            self
+        }
+        pub fn room_id<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::string::String>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.room_id = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for room_id: {e}"));
+            self
+        }
+        pub fn status<T>(mut self, value: T) -> Self
+        where
+            T: ::std::convert::TryInto<::std::option::Option<super::PayloadStatus>>,
+            T::Error: ::std::fmt::Display,
+        {
+            self.status = value
+                .try_into()
+                .map_err(|e| format!("error converting supplied value for status: {e}"));
+            self
+        }
+    }
+    impl ::std::convert::TryFrom<Payload> for super::Payload {
+        type Error = super::error::ConversionError;
+        fn try_from(value: Payload) -> ::std::result::Result<Self, super::error::ConversionError> {
+            Ok(Self {
+                expected_version: value.expected_version?,
+                ext: value.ext?,
+                key: value.key?,
+                pinned: value.pinned?,
+                presentation: value.presentation?,
+                reason: value.reason?,
+                room_id: value.room_id?,
+                status: value.status?,
+            })
+        }
+    }
+    impl ::std::convert::From<super::Payload> for Payload {
+        fn from(value: super::Payload) -> Self {
+            Self {
+                expected_version: Ok(value.expected_version),
+                ext: Ok(value.ext),
+                key: Ok(value.key),
+                pinned: Ok(value.pinned),
+                presentation: Ok(value.presentation),
+                reason: Ok(value.reason),
+                room_id: Ok(value.room_id),
+                status: Ok(value.status),
             }
         }
     }
