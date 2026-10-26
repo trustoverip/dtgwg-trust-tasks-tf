@@ -11,6 +11,144 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.27.6 — 2026-10-26
+
+
+### Added
+
+- **specs**: A version may declare it extends an earlier one, and every library reads the newer version as the older (#922)
+
+* feat(specs): an extends declaration the build checks, and that keeps references along its chain current
+
+- **codegen**: Superseded and retired spec versions are deprecated in every library, and withdrawn ones leave them in a quarterly batch (#921)
+
+* feat(go): mark superseded and retired spec versions deprecated, and omit withdrawn ones
+
+  Every generated request package now exports `const Deprecation` (empty for a
+  current version, otherwise "superseded by <slug>/<M.N>", "retired; use
+  <slug>/<M.N>" or "retired"), and a deprecated version's Payload and Response
+  types carry a `// Deprecated:` paragraph. A version with `status: withdrawn`
+  gets no package at all. The rule is derived independently from front matter,
+  per SPEC "Superseded and Withdrawn Versions".
+
+- **vault**: Vault/credentials/get 0.2 returns an SD-JWT or an mdoc, not only a JSON object (#919)
+
+get/0.1 answered with `credential`, a JSON object, so a maintainer holding an
+  SD-JWT (a compact string) or an mdoc (CBOR) had no conforming answer: it could
+  neither return the body nor turn it into an object without destroying the
+  proof the body carries.
+
+  0.2 returns the body the way receive/0.1 accepts it: `credential` for a JSON
+  object, `credentialBase64` for anything else, exactly one of the two, plus a
+  required `format` (an OpenID4VC format identifier: ldp_vc, dc+sd-jwt,
+  mso_mdoc, jwt_vc_json) so a consumer never sniffs the body. The request is
+  unchanged. 0.1 is retired, superseded by 0.2; references to it now name 0.2.
+
+- **build**: Fail the build on a reference to a superseded spec version, and bring every current spec up to date (#918)
+
+A new check, scripts/lib/stale-references.mjs, run by the registry build:
+  no latest, non-retired spec may name another spec at a version that spec
+  has since superseded — in a schema, a description, a prose link or
+  mention, or an example. `npm run fix-stale-references` rewrites the text
+  references (links, mentions, descriptions; a lone version in a moved
+  link's label moves with it; a link whose #anchor the new version lacks is
+  left for a person) and lists what it will not touch: wire pins and
+  normative values (they take a new version) and examples (their payloads
+  must be checked against the new version). History is exempt — Changes
+  from / "What 0.4 changed" sections, version runs ending at the latest,
+  "since"/"added in", "or later" — and anything else deliberate goes in
+  stale-references-allowlist.json with its reason.
+
+  Run once over the registry, in place in draft specs:
+
+  - 728 text references across about 280 files, mostly prose links.
+  - Examples moved after checking their payloads against the new version:
+    trust-task-discovery's supportedTypes, trust-task-error's inResponseTo,
+    auth/oob/grant's directory listing, keys/derive-and-sign-document's
+    authenticate document.
+  - git-ns/bridge/event 0.5 says what it meant: a bridge that lists
+    git-ns/bridge/job 0.5 or later (the closePullRequest kind).
+  - Two allowlisted: rooms/records/get and list say a record written by
+    rooms/records/put/0.1 has no blobs.
+
+  New versions, because the reference is a value an implementation emits —
+  the `expects` entry of a deferred operation's next-step named
+  vtc/admin/actions/show/0.2, which #907 superseded:
+
+  - vtc/elections/create 0.3, vtc/rooms/storage/assign 0.2,
+    vtc/rooms/storage/migrate 0.3, vtc/storage/configs/create 0.3,
+    retire 0.3 and update 0.3, vtc/storage/credentials/set 0.3.
+
+- **vtc/storage**: Vtc/storage/configs/retire 0.2 — refuse while a migration targets the config (#912)
+
+* feat(vtc/storage): vtc/storage/configs/retire 0.2 — refuse while a migration targets the config
+
+  retire 0.1 refused only while rooms were assigned to the config or it was
+  the default. vtc/rooms/storage/migrate 0.2 fixes a migration's toConfig at
+  approval and keeps it across a reassignment, and a migration can wait
+  queued or paused. So: start moving room R onto config X, reassign R to Y,
+  retire X (no rooms assigned) — X leaves `active` and the move into it can
+  never finish; it pauses with cause `destination` and retries forever.
+
+  0.2 adds vtc/storage/configs/retire:migrationsInbound (retryable: false,
+  details.migrations ≥ 1): the community MUST refuse while any migration
+  whose toConfig is the config is queued, running or paused, MUST make the
+  check again when a parked retirement executes, and MUST make the check and
+  the state change as one step with respect to a migration starting.
+  Migrations off the config are unaffected. The converse order is already
+  closed by migrate 0.2's configNotActive and assign's refusal of a
+  non-active config. A community serving 0.1 beside 0.2 SHOULD apply the
+  same refusal to a 0.1 request, reporting it with the same slug-namespaced
+  code (SPEC §8.5); a 0.1 producer falls back to taskFailed.
+
+  Request and response schemas are unchanged from 0.1.
+
+- **specs**: Re-pin auth/step-up/start to approve-request 0.5, and point stale version references at current versions (#913)
+
+A sweep of the latest non-retired version of every spec for references
+  to another spec at an older version than that spec's latest.
+
+  The one wire pin, in a new version:
+
+  - auth/step-up/start 0.2: approveRequest.type is now the const
+    auth/step-up/approve-request/0.5 (was 0.3, two versions behind: 0.4
+    made `accepts` required, 0.5 renamed `ttl` to `ttlSeconds`).
+
+  Editorial, in place, in draft specs — schema descriptions that named a
+  superseded version of another spec:
+
+  - device/heartbeat 0.3 (device/wipe), git-ns/bridge/job/list 0.4
+    (bridge/job, bridge/result), persona/contact/get and list 1.1
+    (contact/put), rooms/records/get 0.2 (records/put), sync/event 0.2
+    (vault/sync), task-consent/decision 0.2 (vtc/admin/actions/list,
+    approve-response), vault/get 0.3 (vault/release), vault/sign-trust-task
+    0.2 (acl/grant, proxy-login), vault/sync 0.3 (sync/event — its "same
+    shape as sync/event/0.1" was wrong: 0.1 uses sync/_shared/0.1, vault/sync
+    0.3 uses 0.2), vtc/join-requests/submit 0.3 and wallet-session/start
+    0.1 (manifest).
+
+  Examples that carried an old Type URI as sample content, in invalid
+  examples and the matching spec.md examples: git-ns/projection/show,
+  rooms/keys/act, trust-ceremony-receipt, trust-task-discovery, and the
+  four vtc/admin/actions specs — whose embedded acl/grant payloads also
+  gain the `act`, `keys` and `capabilities` acl/grant 0.2 requires.
+
+
+
+### Build & CI
+
+- **release**: The npm, Go and Dart APIs are checked on every pull request, and a spec-scoped ! no longer makes them breaking (#923)
+
+* ci(go): fail a pull request that breaks the Go module's API without declaring it
+
+  Compares the PR's trust-tasks-go API with the last trust-tasks-go/v* tag
+  using golang.org/x/exp/cmd/apidiff (pinned), over every package of the core
+  module. An incompatible change passes only when the PR title carries `go`
+  in a `!` scope, or when a commit already merged since the tag makes the next
+  Go release breaking by release-bump-go.sh's rule. Changed values of the
+  generated schema-text, Deprecation and Extends constants, and of
+  trusttasks.Version, are not counted: they move by design and break no build.
+
 ## 0.27.5 — 2026-10-24
 
 
