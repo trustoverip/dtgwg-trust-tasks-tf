@@ -20,6 +20,7 @@
     "validate-ceremonies": "node scripts/validate-ceremonies.mjs",
     "test-ceremonies": "node scripts/validate-ceremonies.mjs --test",
     "check-dart-packages": "node scripts/check-dart-packages.mjs",
+    "check-sibling-core-ranges": "node scripts/check-sibling-core-ranges.mjs",
     "check-bindings": "node scripts/check-bindings-conformance.mjs",
     "check-published-schemas": "node scripts/check-published-schemas.mjs",
     "fix-stale-references": "node scripts/fix-stale-references.mjs",

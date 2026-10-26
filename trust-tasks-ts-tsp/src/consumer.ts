@@ -11,7 +11,7 @@ import {
   CONSEQUENTIAL_FRESHNESS,
   InMemoryReplayGuard,
   consumeInbound,
-} from "@openvtc/trust-tasks";
+} from "@openvtc/trust-tasks/runtime";
 import {
   packTrustTask,
   unpackTrustTask,
