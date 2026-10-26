@@ -17,6 +17,9 @@ import (
 	"time"
 
 	aclgrantv0_1 "github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/specs/acl/grant/v0_1"
+	authauthenticatev0_1 "github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/specs/auth/authenticate/v0_1"
+	authauthenticatev0_2 "github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/specs/auth/authenticate/v0_2"
+	authauthenticatev0_3 "github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/specs/auth/authenticate/v0_3"
 	tt "github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/trusttasks"
 )
 
@@ -172,5 +175,74 @@ func TestOptionalArraysDistinguishAbsentFromEmpty(t *testing.T) {
 	})
 	if !strings.Contains(empty, `"allowedKeys":[]`) {
 		t.Errorf("present-but-empty collapsed into absent: %s", empty)
+	}
+}
+
+// TestExtendingVersionIsReadForTheImplementedOne drives ReadForSpec against a
+// real generated package — auth/authenticate/0.1's schema and Payload — with a
+// document of 0.3, which adds `principal`, `delegationEvidence` and `sessionKey`.
+//
+// No specification declares `extends` yet, so the chain 0.3 -> 0.2 -> 0.1 is
+// supplied by a stub lookup; RegistryExtends is the same function type over the
+// generated index, and the generated constants say what each version declares.
+func TestExtendingVersionIsReadForTheImplementedOne(t *testing.T) {
+	if authauthenticatev0_3.Extends != tt.RegistryExtends(authauthenticatev0_3.TypeURI) {
+		t.Fatalf("generated constant %q disagrees with the generated index %q",
+			authauthenticatev0_3.Extends, tt.RegistryExtends(authauthenticatev0_3.TypeURI))
+	}
+	chain := map[string]string{
+		authauthenticatev0_3.TypeURI: "0.2",
+		authauthenticatev0_2.TypeURI: "0.1",
+	}
+	lookup := func(typeURI string) string { return chain[typeURI] }
+
+	received := json.RawMessage(`{
+	  "id": "req-1",
+	  "type": "` + authauthenticatev0_3.TypeURI + `",
+	  "issuer": "` + peer + `",
+	  "recipient": "` + me + `",
+	  "payload": {
+	    "challenge": "0123456789abcdef0123",
+	    "sessionId": "s-1",
+	    "scope": ["read"],
+	    "principal": "` + peer + `",
+	    "sessionKey": "z6MkexampleSessionKey"
+	  }
+	}`)
+	reading, refusal, err := tt.ReadForSpecWith(received, authauthenticatev0_1.Spec, lookup)
+	if err != nil || refusal != nil {
+		t.Fatalf("refused: %v %+v", err, refusal)
+	}
+	var doc struct {
+		Type    string                     `json:"type"`
+		Payload map[string]json.RawMessage `json:"payload"`
+	}
+	if err := json.Unmarshal(reading, &doc); err != nil {
+		t.Fatal(err)
+	}
+	if doc.Type != authauthenticatev0_3.TypeURI {
+		t.Errorf("type rewritten to %q", doc.Type)
+	}
+	for name := range doc.Payload {
+		switch name {
+		case "challenge", "sessionId", "scope", "ext":
+		default:
+			t.Errorf("0.1's schema does not know %q, and it survived the prune", name)
+		}
+	}
+	var typed tt.Document[authauthenticatev0_1.Payload]
+	if err := json.Unmarshal(reading, &typed); err != nil || typed.Payload.SessionID != "s-1" {
+		t.Fatalf("typed decode: %v %+v", err, typed.Payload)
+	}
+
+	// Through the generated index: refused while nothing declares the chain,
+	// read exactly as above once 0.3 and 0.2 do.
+	viaIndex, refusal, _ := tt.ReadForSpec(received, authauthenticatev0_1.Spec)
+	if authauthenticatev0_3.Extends == "" {
+		if refusal == nil || refusal.Code != tt.CodeUnsupportedVersion {
+			t.Fatalf("undeclared extension accepted: %+v", refusal)
+		}
+	} else if string(viaIndex) != string(reading) {
+		t.Fatalf("the generated index reads differently from the declared chain: %s", viaIndex)
 	}
 }
