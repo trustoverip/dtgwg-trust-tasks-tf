@@ -338,6 +338,34 @@ Measured on the `validate` build: 63s → 23s, peak memory 9.0 GB → 4.3 GB.
 integration test file that uses a family opens with `#![cfg(feature = "…")]`
 for each one it names.
 
+## ⚠️ `extends`: routing a newer version to the version a consumer implements
+
+A spec version may declare `extends: "<M.K>"` (SPEC §5.2 "Declared extension"): it
+only adds to `M.K`. The build checks the promise (`scripts/lib/schema-compat.mjs`),
+the stale-references check treats a reference along the chain as current, and all
+four libraries act on it:
+
+- **Every generated module carries the direct declaration** — `EXTENDS` (Rust, TS),
+  `Extends` (Go), `extendsVersion` (Dart) — and each library generates an index
+  from bare Type URI to it (`extends_index.rs`, `_extends.ts`, `specs/extends.go`,
+  `extends_index.dart`). `check-bindings` compares the constant with the front matter.
+- **The runtime reads a later version as the one implemented** when the chain
+  reaches it: Rust's `Dispatcher`/`AsyncDispatcher` route a miss to the highest
+  registered version the chain reaches (and `extension::read_as`); TS
+  `readForSpec`, Go `ReadForSpec`, Dart `readForVersion` do it for a caller that
+  passes a `Spec`. The payload is **pruned** to the members the implemented schema
+  knows; the document keeps its received `type`, so the answer is
+  `<received type>#response`.
+- **Proofs are verified over the document as received, never the pruned copy.**
+  Rust's `ProofPolicy::VerifyReceived`, Go's and Dart's `received` option, and TS's
+  internal pairing of the pruned copy with the received object all exist for this;
+  item 11's digest is over the received document too, so two documents differing
+  only in an extension member are an `idConflict`. Do not "simplify" any of these
+  to verify the typed document.
+
+`npm run extends-candidates` lists version pairs whose schemas already qualify;
+only an author can declare one, because the promise also covers meaning.
+
 ## Declared error codes are generated — Rust only, so far
 
 A spec's `errorCodes` front matter (SPEC §7.3 item 9) reaches `trust-tasks-rs`:
