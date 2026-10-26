@@ -111,8 +111,8 @@ no hand-written entries.
 | `trust-tasks-proof` | crates.io — proof verification backend |
 | `trust-tasks-ceremony` | crates.io — Trust Ceremony helpers |
 | `trust-tasks-capability-client` | crates.io |
-| `trust-tasks-build` | crates.io — build-time generator: an application's `build.rs` turns the versions pinned in `trust-tasks.lock` into Rust types. Not in the `core` version group (it does not depend on `trust-tasks-rs`). **Not yet released**: `release = false` in `release-plz.toml` until its manual first publish (`cargo publish -p trust-tasks-build`, register its Trusted Publisher against `publish.yml`, then delete the line) — the same steps as `trust-tasks-cli` below |
-| `trust-tasks-cli` | crates.io — the `trust-tasks` command (pins tasks, vendors bundles by digest). **Not yet released**: `release = false` in `release-plz.toml` until its manual first publish — see below |
+| `trust-tasks-build` | crates.io — build-time generator: an application's `build.rs` turns the versions pinned in `trust-tasks.lock` into Rust types; its `publish` feature builds registry bundles. Not in the `core` version group (it does not depend on `trust-tasks-rs`), so it versions on its own. |
+| `trust-tasks-cli` | crates.io — the `trust-tasks` command (pins tasks, vendors bundles by digest). A binary with no library API, so `rs API compatibility` does not check it. Versions on its own. |
 | `@openvtc/trust-tasks` | npm — the TypeScript bindings |
 | `@openvtc/trust-tasks-proof` | npm — Data Integrity proof verification/signing for `@openvtc/trust-tasks`, on @noble |
 | `@openvtc/trust-tasks-tsp` | npm — the TSP transport binding, on `@openvtc/vti-tsp-js` |
@@ -169,12 +169,18 @@ published crate's whole dependency closure to be published too.
 > npm's: trusted publishing cannot create a crate that does not exist. Left to
 > release-plz, the new crate would fail mid-release with the crates before it
 > already uploaded. So a new crate lands with `release = false` in its
-> `release-plz.toml` `[[package]]` entry (as `trust-tasks-cli` does), and then:
+> `release-plz.toml` `[[package]]` entry (as `trust-tasks-cli` and
+> `trust-tasks-build` did), and then:
 > 1. `cargo publish -p <crate>` from `main`, with a crates.io token of your own.
 > 2. On crates.io, the crate → **Settings → Trusted Publishing → GitHub**, repo
 >    `trustoverip/dtgwg-trust-tasks-tf`, workflow filename `publish.yml`.
-> 3. Delete the `release = false` line. The next Release PR bumps it from the
->    published version like any other crate.
+> 3. Seed its changelog anchor at the commit you published from:
+>    `git tag -a <crate>-v0.1.0 -m "<crate> 0.1.0" <commit> && git push origin <crate>-v0.1.0`.
+>    release-plz writes the changelog from the commits since that tag, and
+>    `rs API compatibility` compares against it.
+> 4. Delete the `release = false` line, and add the crate to `CRATES` in
+>    `scripts/check-rs-api-compat.sh` if it has a library API. The next Release
+>    PR bumps it from the published version like any other crate.
 
 ---
 
@@ -252,12 +258,13 @@ no longer makes them breaking.
   crate. `trust-tasks-rs` is compared with only the runtime, `validate` and the
   `acl` family: the other families are the same generator's output, and a schema
   change is judged by `check-published-schemas`. That keeps it near a minute and
-  ~200 MB, against ~12.6 GB for every family. The facade and
-  `trust-tasks-ceremony` are always checked; a binding crate (which compiles every
+  ~200 MB, against ~12.6 GB for every family. The facade,
+  `trust-tasks-ceremony` and `trust-tasks-build` are always checked; a binding crate (which compiles every
   family through its dependency, ~13 GB, ~5 minutes) only when the PR changes
   it. The core crates release as one version group, so a `!` scoped to any of
   them (`rs`, `codegen`, `https`, `didcomm`, `didcomm-v1`, `tsp`, `proof`,
-  `capability-client`) declares a break for all; `ceremony` versions alone.
+  `capability-client`) declares a break for all; `ceremony` and `build` version
+  alone. `trust-tasks-cli` is a binary with no library API and is not checked.
   Crates with no release tag yet are skipped. Locally:
   `PR_TITLE='fix: x' BASE_REF=origin/main scripts/check-rs-api-compat.sh`.
 - **TypeScript** — `ts API compatibility` (`ts.yml`, `trust-tasks-ts/scripts/api-compat.mjs`)
