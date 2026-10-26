@@ -8,6 +8,7 @@ import 'package:trust_tasks/trust_tasks.dart';
 typedef Ext = Map<String, dynamic>;
 
 /// Vault Credentials Get — response payload
+@Deprecated('retired; use vault/credentials/get/0.2')
 class Response {
   const Response({
     required this.credential,
@@ -35,6 +36,7 @@ class Response {
 }
 
 /// Fetch one stored credential's full body by id.
+@Deprecated('retired; use vault/credentials/get/0.2')
 class Payload {
   const Payload({
     required this.id,
@@ -67,7 +69,8 @@ class Payload {
 /// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
-const String? deprecation = null;
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'retired; use vault/credentials/get/0.2';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/vault/credentials/get/0.1';
