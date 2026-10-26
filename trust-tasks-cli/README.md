@@ -33,6 +33,7 @@ Commit all three. Edits to `trust-tasks.toml` keep your comments.
 | `trust-tasks check` | **Offline**, for CI: every lock entry has its vendored bundle and `sha256(file)` is the locked digest; the bundle is the version it is filed as; no stray `*.bundle.json`; the manifest and the lock agree; the lock was resolved against the registry in use. Exits 1 on any problem. |
 | `trust-tasks fetch` | Restores missing or altered vendored bundles by the digest the lock pins, from the registry's by-digest store. Never moves a pin. |
 | `trust-tasks list [--remote]` | The pinned versions with their status and deprecation, from the vendored bundles. `--remote` adds the latest live version in the registry, and whether moving to it is an extension or a break. |
+| `trust-tasks generate --lang <rs\|ts\|go\|dart> --out <dir> [-- <args>]` | Runs `check`, then that language's generator over the lock, from the project directory: `npx --no-install trust-tasks-gen-ts` (`npm i -D @openvtc/trust-tasks-gen`), `go run …/trust-tasks-go/cmd/trust-tasks-gen` (from a module requiring `trust-tasks-go`) or `dart run trust_tasks:generate` (from a package depending on `trust_tasks`), with `--lock` and `--out` filled in and anything after `--` passed on. It installs nothing. Refuses a lock that does not verify. `--lang rs` only checks: Rust generates in `build.rs` with `trust-tasks-build`. |
 
 Global options: `--registry <url>` (or `TRUST_TASKS_REGISTRY`) and
 `-C, --dir <dir>` (the directory holding `trust-tasks.toml`; by default the
@@ -137,12 +138,6 @@ ok: 3 pinned task version(s) match trust-tasks.lock
 
 Output is sorted by slug, then version, so two runs over the same state print
 the same thing.
-
-## Not yet
-
-`generate --lang <rs|ts|go|dart>` — generation from the vendored bundles is
-`trust-tasks-build` (Rust, from `build.rs`) for now; the CLI subcommand follows
-with milestone 3.
 
 ## License
 

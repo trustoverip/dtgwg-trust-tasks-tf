@@ -847,3 +847,100 @@ fn full_registry_round_trip() {
     app.run(&["remove", "acl/grant"]).ok();
     app.run(&["check"]).ok();
 }
+
+/// `generate` verifies the lock, then runs the language's generator from the
+/// project directory with absolute `--lock` / `--out` and the arguments after
+/// `--`. A stand-in `npx` on PATH records what it was given.
+#[cfg(unix)]
+#[test]
+fn generate_runs_the_generator_after_check() {
+    use std::os::unix::fs::PermissionsExt;
+
+    let mut reg = TestRegistry::new();
+    reg.publish_real();
+    let app = App::new(&reg);
+    app.run(&["add", "vault/upsert/0.4"]).ok();
+
+    let bin = TempDir::new().unwrap();
+    let record = bin.path().join("called");
+    let npx = bin.path().join("npx");
+    std::fs::write(
+        &npx,
+        format!(
+            "#!/bin/sh\npwd > '{0}'\nprintf '%s\\n' \"$@\" >> '{0}'\n",
+            record.display()
+        ),
+    )
+    .unwrap();
+    std::fs::set_permissions(&npx, std::fs::Permissions::from_mode(0o755)).unwrap();
+    let generate = |args: &[&str], path: &std::ffi::OsStr| {
+        let out = Command::new(env!("CARGO_BIN_EXE_trust-tasks"))
+            .arg("-C")
+            .arg(app.dir.path())
+            .args(args)
+            .env("TRUST_TASKS_REGISTRY", &app.registry)
+            .env("PATH", path)
+            .output()
+            .unwrap();
+        Run {
+            code: out.status.code().unwrap_or(-1),
+            stdout: String::from_utf8(out.stdout).unwrap(),
+            stderr: String::from_utf8(out.stderr).unwrap(),
+        }
+    };
+
+    generate(
+        &[
+            "generate", "--lang", "ts", "--out", "/abs/out", "--", "--extra",
+        ],
+        bin.path().as_os_str(),
+    )
+    .ok();
+    let called = std::fs::read_to_string(&record).unwrap();
+    let lines: Vec<&str> = called.lines().collect();
+    let root = app.dir.path().canonicalize().unwrap();
+    assert_eq!(Path::new(lines[0]).canonicalize().unwrap(), root);
+    assert_eq!(lines[1..3], ["--no-install", "trust-tasks-gen-ts"]);
+    assert_eq!(lines[3], "--lock");
+    assert_eq!(
+        Path::new(lines[4]).canonicalize().unwrap(),
+        root.join("trust-tasks.lock")
+    );
+    assert_eq!(lines[5..], ["--out", "/abs/out", "--extra"]);
+
+    // --out is required; a missing tool says what to install.
+    let r = generate(&["generate", "--lang", "ts"], bin.path().as_os_str()).fails();
+    assert!(r.stderr.contains("--out <dir> is required"), "{}", r.stderr);
+    let empty = TempDir::new().unwrap();
+    let r = generate(
+        &["generate", "--lang", "ts", "--out", "x"],
+        empty.path().as_os_str(),
+    )
+    .fails();
+    assert!(
+        r.stderr.contains("npm i -D @openvtc/trust-tasks-gen"),
+        "{}",
+        r.stderr
+    );
+
+    // Rust generates in build.rs; the command says so after checking.
+    let r = generate(&["generate", "--lang", "rs"], empty.path().as_os_str()).ok();
+    assert!(
+        r.stdout.contains("trust_tasks_build::Config"),
+        "{}",
+        r.stdout
+    );
+
+    // A lock that does not verify generates nothing.
+    std::fs::remove_file(&record).unwrap();
+    std::fs::write(app.path("trust-tasks/vault/upsert/0.4.bundle.json"), b"{}").unwrap();
+    generate(
+        &["generate", "--lang", "ts", "--out", "/abs/out"],
+        bin.path().as_os_str(),
+    )
+    .fails();
+    assert!(
+        !record.exists(),
+        "the generator ran on a lock that does not verify"
+    );
+}

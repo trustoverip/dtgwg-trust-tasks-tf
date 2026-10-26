@@ -14,6 +14,7 @@ use std::process::ExitCode;
 
 use clap::{Parser, Subcommand};
 
+mod generate;
 mod lock;
 mod manifest;
 mod names;
@@ -88,6 +89,22 @@ enum Command {
         #[arg(long)]
         remote: bool,
     },
+    /// Verify the lock offline, then run a language's generator over it:
+    /// `npx trust-tasks-gen-ts`, `go run …/cmd/trust-tasks-gen` or
+    /// `dart run trust_tasks:generate`, from the project directory, with
+    /// `--lock` and `--out` filled in. Arguments after `--` go to the
+    /// generator. Rust generates in build.rs instead.
+    Generate {
+        /// The language.
+        #[arg(long, value_enum)]
+        lang: generate::Lang,
+        /// The directory to generate into (owned by the generator).
+        #[arg(long, value_name = "DIR")]
+        out: Option<PathBuf>,
+        /// Passed to the generator unchanged (e.g. `-- --package tasks`).
+        #[arg(last = true)]
+        args: Vec<String>,
+    },
     /// Publish a registry of your own: the served layout a `[sources.<name>]`
     /// reads.
     Registry {
@@ -135,6 +152,9 @@ fn main() -> ExitCode {
         Command::Check => ops::check(&ctx),
         Command::Fetch => ops::fetch_locked(&ctx).map(|()| true),
         Command::List { remote } => ops::list(&ctx, *remote).map(|()| true),
+        Command::Generate { lang, out, args } => {
+            generate::generate(&ctx, *lang, out.as_deref(), args)
+        }
         Command::Registry {
             command:
                 RegistryCommand::Build {

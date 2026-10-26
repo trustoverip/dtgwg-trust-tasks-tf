@@ -1,6 +1,13 @@
 registry = "https://trusttasks.org"
 
+# A third-party source (SPEC §6.5). Its one bundle here,
+# trust-tasks/@example/payments/settle/1.0.bundle.json, is a test fixture; the
+# lock and vendored bundles are what generation reads, so nothing is fetched.
+[sources.example]
+path = "../third-party-registry"
+
 [tasks]
 "acl/grant" = "0.2"
+"example:payments/settle" = "1.0"
 "keys/list" = "latest"
 "vault/get" = "0.3"
