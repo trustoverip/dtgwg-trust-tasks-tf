@@ -55,6 +55,7 @@ type bundle struct {
 		RecipientRequired variantBool `json:"recipientRequired"`
 	} `json:"policy"`
 	PropertyOrder  map[string][]string `json:"propertyOrder"`
+	DefsOrder      map[string][]string `json:"defsOrder"` // absent before it was added: see applyDefsOrder
 	Schema         json.RawMessage     `json:"schema"`
 	ResponseSchema json.RawMessage     `json:"responseSchema"`
 }
@@ -236,6 +237,9 @@ func generatePackage(b *bundle, source, digest string) (generated, error) {
 	if err := applyPropertyOrder(schema, b.PropertyOrder); err != nil {
 		return generated{}, err
 	}
+	if err := applyDefsOrder(schema, b.DefsOrder); err != nil {
+		return generated{}, err
+	}
 
 	defs, _ := schema.val("$defs").(*object)
 	_, hasResponse := defs.get("Response")
@@ -364,6 +368,38 @@ func applyPropertyOrder(schema *object, order map[string][]string) error {
 			return fmt.Errorf("propertyOrder %s points at no object in the schema", ptr)
 		}
 	}
+	return nil
+}
+
+// applyDefsOrder restores the order of the request schema's root `$defs` from
+// the bundle's defsOrder — the order the prebuilt packages declare their types
+// in — and refuses an entry that names a different set of definitions. A
+// bundle without one (built before the member existed) keeps the key-sorted
+// order. Only `/schema` matters here: the response type is declared from the
+// request schema's `$defs.Response`.
+func applyDefsOrder(schema *object, order map[string][]string) error {
+	names, ok := order["/schema"]
+	if !ok {
+		return nil
+	}
+	defs, _ := schema.val("$defs").(*object)
+	if defs == nil {
+		if len(names) == 0 {
+			return nil
+		}
+		return fmt.Errorf("defsOrder /schema names %d definitions, the schema has no $defs", len(names))
+	}
+	if len(names) != len(defs.keys) {
+		return fmt.Errorf("defsOrder /schema names %d definitions, the schema has %d", len(names), len(defs.keys))
+	}
+	seen := map[string]bool{}
+	for _, n := range names {
+		if _, ok := defs.vals[n]; !ok || seen[n] {
+			return fmt.Errorf("defsOrder /schema names %q, which the schema's $defs lacks or it repeats", n)
+		}
+		seen[n] = true
+	}
+	defs.keys = append([]string(nil), names...)
 	return nil
 }
 

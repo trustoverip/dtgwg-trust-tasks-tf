@@ -486,11 +486,11 @@ func (em *emitter) emitNamed(node any, target string, defNames map[string]string
 // `Payload`. Names are reserved before any body is emitted, so a `$def` that
 // names a sibling resolves whatever order they come in.
 //
-// The order the `$defs` come in is the one thing a bundle cannot reproduce: its
-// schema is key-sorted, and `propertyOrder` restores the order of `properties`
-// only. So the declarations here follow `$defs` in sorted order, where the
-// prebuilt packages follow the authored order — the same declarations, in a
-// different sequence (see equivalence_test.go).
+// The declarations follow `$defs` in Object.keys order, as the prebuilt
+// packages' generator does. A bundle's schema is key-sorted; its `defsOrder`
+// has already restored the order that generator declares them in (see
+// applyDefsOrder). An older bundle without `defsOrder` declares them in sorted
+// order: the same declarations, in a different sequence.
 func (em *emitter) emitDeclarations(schema *object, rootHint string) (map[string]string, string) {
 	defs, _ := schema.val("$defs").(*object)
 	defNames := map[string]string{}

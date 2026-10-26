@@ -349,8 +349,8 @@ jobs:
   # registry (built here by the Rust codegen, as deploy.yml builds them) and
   # compares the result with the committed prebuilt tree under
   # trust-tasks-go/specs. The test's header lists the differences it permits —
-  # the generated-by header, the key-sorted embedded schema (JSON-equal), and
-  # the order of `$defs` declarations, which a bundle does not record — and
+  # the generated-by header and the key-sorted embedded schema (JSON-equal);
+  # the bundle's `defsOrder` restores the `$defs` declaration order — and
   # every other difference fails it.
   consumer-generation-equivalence:
     name: trust-tasks-gen ≡ build-go-bindings (whole registry)

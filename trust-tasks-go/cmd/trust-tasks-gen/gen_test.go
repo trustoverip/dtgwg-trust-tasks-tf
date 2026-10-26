@@ -393,3 +393,60 @@ path = "../acme"`, 1)
 		expect(t, lock, "an official task's Type URI https://tasks.example.com/spec/vault/get/0.3 is not under https://trusttasks.org/")
 	})
 }
+
+// typeOrder lists a generated package's top-level type names in file order.
+func typeOrder(t *testing.T, path string) []string {
+	t.Helper()
+	src, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var names []string
+	for _, line := range strings.Split(string(src), "\n") {
+		if rest, ok := strings.CutPrefix(line, "type "); ok {
+			names = append(names, strings.Fields(rest)[0])
+		}
+	}
+	return names
+}
+
+// The bundle's defsOrder decides the order `$defs` types are declared in; a
+// bundle built before the member existed (testdata/app's are) falls back to
+// the schema's key-sorted order.
+func TestDefsOrder(t *testing.T) {
+	gen := func(app string) []string {
+		out := filepath.Join(app, "gen")
+		if err := run(options{Lock: filepath.Join(app, "trust-tasks.lock"), Out: out}); err != nil {
+			t.Fatal(err)
+		}
+		return typeOrder(t, filepath.Join(out, "vault", "get", "v0_3", "payload.go"))
+	}
+	withOrder := func(order string) string {
+		app := copyApp(t)
+		rewriteBundle(t, app, "vault/get", "0.3", func(b []byte) []byte {
+			return bytes.Replace(b, []byte("{"), []byte(`{"defsOrder":{"/schema":`+order+`,"/responseSchema":[]},"defOrigins":{},`), 1)
+		})
+		return app
+	}
+
+	sorted := "AttachmentRef DigestMultibase Ext Response SecretKind SiteTarget VaultEntry Payload"
+	if got := strings.Join(gen(copyApp(t)), " "); got != sorted {
+		t.Errorf("without defsOrder: %s, want %s", got, sorted)
+	}
+	authored := "Response Ext VaultEntry AttachmentRef DigestMultibase SecretKind SiteTarget Payload"
+	if got := strings.Join(gen(withOrder(`["Response","Ext","VaultEntry","AttachmentRef","DigestMultibase","SecretKind","SiteTarget"]`)), " "); got != authored {
+		t.Errorf("with defsOrder: %s, want %s", got, authored)
+	}
+
+	for order, want := range map[string]string{
+		`["Response","Ext"]`: "names 2 definitions, the schema has 7",
+		`["Response","Ext","VaultEntry","AttachmentRef","DigestMultibase","SecretKind","Nope"]`:       `names "Nope"`,
+		`["Response","Ext","VaultEntry","AttachmentRef","DigestMultibase","SecretKind","SecretKind"]`: `names "SecretKind"`,
+	} {
+		app := withOrder(order)
+		err := run(options{Lock: filepath.Join(app, "trust-tasks.lock"), Out: filepath.Join(app, "gen")})
+		if err == nil || !strings.Contains(err.Error(), want) {
+			t.Errorf("defsOrder %s: got %v, want an error containing %q", order, err, want)
+		}
+	}
+}

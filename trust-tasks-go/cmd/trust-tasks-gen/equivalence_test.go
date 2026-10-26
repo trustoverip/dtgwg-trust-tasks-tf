@@ -18,8 +18,11 @@ package main
 //   - Every top-level declaration is byte-identical — doc comment, type, every
 //     field in order — except PayloadSchemaJSON / ResponsePayloadSchemaJSON,
 //     whose doc comments are byte-identical and whose values are JSON-equal.
-//   - The declarations come in the same order, except where the order of the
-//     schema's `$defs` decides it (reported, not failed; see below).
+//   - The declarations come in the same order: the bundle's `defsOrder`
+//     restores the order the prebuilt generator declares `$defs` types in.
+//   - The whole file is byte-identical once the two header lines and the
+//     embedded schema literals are masked — nothing between declarations
+//     differs either.
 //   - The extends index holds the same entries as specs/extends.go.
 //
 // The differences it permits, and why:
@@ -29,14 +32,7 @@ package main
 //  2. The embedded schema text is key-sorted. A bundle's schema is JCS, and
 //     propertyOrder restores the authored order of `properties` only, so the
 //     JSON text cannot be byte-identical; it is JSON-equal.
-//  3. Declaration order. The prebuilt packages declare `$defs` types in the
-//     order the schema author wrote `$defs` (then the order cross-file refs
-//     were spliced in); a bundle's `$defs` are key-sorted and it records no
-//     other order, so a generated package declares them in sorted order. The
-//     declarations themselves are identical; only their sequence in the file
-//     moves. Restoring it needs one more bundle member (the `$defs` order), a
-//     bundle-format change — reported, not made.
-//  4. Shared-schema packages (specs/<x>/shared/…, specs/framework/…) have no
+//  3. Shared-schema packages (specs/<x>/shared/…, specs/framework/…) have no
 //     counterpart: a bundle inlines what its payload reaches, and so does each
 //     prebuilt payload package, so nothing imports them.
 
@@ -180,16 +176,14 @@ func TestEquivalenceWithPrebuiltTree(t *testing.T) {
 	}
 	sort.Strings(rels)
 
-	var identicalBody, orderOnly, schemaTextDiffers int
+	var identical, schemaTextDiffers int
 	for _, rel := range rels {
 		d := compareFiles(prebuiltByRel[rel], generatedByRel[rel])
 		for _, f := range d.failures {
 			fail("%s: %s", rel, f)
 		}
-		if d.orderDiffers {
-			orderOnly++
-		} else if len(d.failures) == 0 {
-			identicalBody++
+		if len(d.failures) == 0 {
+			identical++
 		}
 		schemaTextDiffers += d.schemaTextDiffers
 	}
@@ -221,8 +215,7 @@ func TestEquivalenceWithPrebuiltTree(t *testing.T) {
 
 	t.Logf("%d bundles; %d payload packages compared (%d prebuilt trust-task-error packages have no bundle)",
 		len(index.Specs), len(rels), skippedExcluded)
-	t.Logf("identical apart from the header and the schema text: %d", identicalBody)
-	t.Logf("identical declarations in a different order ($defs order, permitted difference 3): %d", orderOnly)
+	t.Logf("byte-identical apart from the header and the schema text: %d", identical)
 	t.Logf("schema constants JSON-equal but not byte-identical (permitted difference 2): %d", schemaTextDiffers)
 	t.Logf("extends index: %d entries, equal", len(want))
 	if len(failures) > 0 {
@@ -239,7 +232,6 @@ func TestEquivalenceWithPrebuiltTree(t *testing.T) {
 
 type fileDiff struct {
 	failures          []string
-	orderDiffers      bool
 	schemaTextDiffers int
 }
 
@@ -264,6 +256,7 @@ func compareFiles(want, got []byte) fileDiff {
 	if wh != gh {
 		d.failures = append(d.failures, fmt.Sprintf("package clause or imports differ:\n%s\n---\n%s", wh, gh))
 	}
+	reportedOrder := false
 	byKey := map[string]decl{}
 	for _, x := range gd {
 		byKey[x.key] = x
@@ -277,8 +270,9 @@ func compareFiles(want, got []byte) fileDiff {
 			d.failures = append(d.failures, "missing declaration "+w.key)
 			continue
 		}
-		if i < len(gd) && gd[i].key != w.key {
-			d.orderDiffers = true
+		if i < len(gd) && gd[i].key != w.key && !reportedOrder {
+			reportedOrder = true
+			d.failures = append(d.failures, fmt.Sprintf("declaration %d is %s prebuilt, %s generated", i, w.key, gd[i].key))
 		}
 		if w.key == "const PayloadSchemaJSON" || w.key == "const ResponsePayloadSchemaJSON" {
 			if w.text == g.text {
@@ -294,7 +288,27 @@ func compareFiles(want, got []byte) fileDiff {
 			d.failures = append(d.failures, fmt.Sprintf("%s differs:\n--- prebuilt\n%s\n--- generated\n%s", w.key, w.text, g.text))
 		}
 	}
+	// Whatever the declarations do not cover — blank lines, stray comments
+	// between them — must match too.
+	if len(d.failures) == 0 && !bytes.Equal(maskFile(want), maskFile(got)) {
+		d.failures = append(d.failures, "the files differ outside their declarations")
+	}
 	return d
+}
+
+// schemaLiteral is an embedded schema constant's value, on one line.
+var schemaLiteral = regexp.MustCompile(`(?m)^(const (?:Response)?PayloadSchemaJSON = )".*"$`)
+
+// maskFile drops the two header lines (permitted difference 1) and replaces
+// the embedded schema literals (permitted difference 2, compared as JSON
+// above) with a placeholder.
+func maskFile(src []byte) []byte {
+	for i := 0; i < 2; i++ {
+		if nl := bytes.IndexByte(src, '\n'); nl >= 0 {
+			src = src[nl+1:]
+		}
+	}
+	return schemaLiteral.ReplaceAll(src, []byte(`${1}"…"`))
 }
 
 // compareSchemaConst: the doc comments byte-identical, the JSON values equal.
