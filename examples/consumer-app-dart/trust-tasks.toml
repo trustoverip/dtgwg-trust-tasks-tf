@@ -1,0 +1,6 @@
+registry = "https://trusttasks.org"
+
+[tasks]
+"acl/grant" = "0.2"
+"keys/list" = "latest"
+"vault/get" = "0.3"
