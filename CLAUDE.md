@@ -438,7 +438,8 @@ the same reason). TypeScript hoists because structural typing makes it free.
    into "absent" — which `acl`'s `allowedKeys` documents at length as a
    privilege-escalation defect ("PRESENT-BUT-EMPTY means authorized on NO keys —
    the opposite of absent"). `*[]string` is ugly and it is the only spelling that
-   can say it. `trust-tasks-go/smoke` pins this.
+   can say it. `trust-tasks-go/smoke` pins this, on `vta/contexts/update/1.0`'s
+   `signableKeys` ("absent: every key; present-but-empty: no keys").
 
 4. **Go from v2 onward needs the major in the module path.** `trust-tasks-go/v2`
    in `go.mod`, in every import, and in `MODULE_PATH` in the generator.
