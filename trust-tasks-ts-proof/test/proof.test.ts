@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { createPrivateKey, createPublicKey, sign as nodeSign, verify as nodeVerify } from "node:crypto";
 import { p256, p384 } from "@noble/curves/nist.js";
 import { sha256, sha384 } from "@noble/hashes/sha2.js";
-import type { TrustTaskDocument } from "@openvtc/trust-tasks";
+import type { TrustTaskDocument } from "@openvtc/trust-tasks/runtime";
 import {
   DataIntegrityProofVerifier,
   canonicalBytes,

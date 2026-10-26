@@ -1,4 +1,4 @@
-import type { TrustTaskDocument } from "@openvtc/trust-tasks";
+import type { TrustTaskDocument } from "@openvtc/trust-tasks/runtime";
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { p256, p384 } from "@noble/curves/nist.js";
 import { sha256, sha384 } from "@noble/hashes/sha2.js";

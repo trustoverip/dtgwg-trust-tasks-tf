@@ -223,6 +223,11 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Check bindings against specs
         run: npm run check-bindings
+      # Every TypeScript and Dart sibling's core range admits the core in this
+      # checkout, and no TypeScript sibling installs a core of its own. Both
+      # drifted unnoticed (scripts/check-sibling-core-ranges.mjs).
+      - name: Sibling packages admit the current core
+        run: npm run check-sibling-core-ranges
 
   # Consumer-side generation (docs/design/consumer-side-generation.md,
   # milestone 3): trust-tasks-gen-ts generates modules from registry bundles.

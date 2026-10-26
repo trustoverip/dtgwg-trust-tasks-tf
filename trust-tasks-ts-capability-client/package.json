@@ -15,10 +15,11 @@
     "typecheck:test": "tsc -p tsconfig.test.json --noEmit",
     "test": "tsc -p tsconfig.test.json && node --test .test-build/test/*.test.js"
   },
-  "dependencies": {
-    "@openvtc/trust-tasks": "^0.19.0"
+  "peerDependencies": {
+    "@openvtc/trust-tasks": "^0.27.8"
   },
   "devDependencies": {
+    "@openvtc/trust-tasks": "^0.27.8",
     "@types/node": "^22.0.0",
     "typescript": "^5.6.0"
   }

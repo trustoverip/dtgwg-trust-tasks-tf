@@ -342,6 +342,27 @@ Until the store has every digest a lockfile can name, the CLI falls back to
 `specs/<slug>/<M.N>/bundle.json` when the store lacks one, verifies it against
 the same digest, and says so.
 
+## Milestone 4 — the hand-written packages
+
+Surveyed 2026-10-26: no hand-written package needs a generated specification
+module outside its own tests, so "generate what they use" reduces to "depend on
+the runtime only".
+
+- **Rust** (#939): every transport crate depends on `trust-tasks-rs` with
+  `default-features = false`, enabling a family only as a dev-dependency feature
+  for its tests. Cargo unifies features, so before this any transport switched
+  every family back on for the application.
+- **TypeScript**: the three siblings import `@openvtc/trust-tasks/runtime`, not
+  the package root (which loads every prebuilt module), and take the core as a
+  peer dependency. They had declared `^0.19.0` as a regular dependency, which
+  installed a second core, 0.19.x, beside the application's 0.27.
+  `check-sibling-core-ranges` now guards both.
+- **Go**: the nested modules import only the `trusttasks` runtime package, and
+  Go compiles only what is imported. Nothing to change.
+- **Dart**: the siblings import the runtime barrel; `trust_tasks_https` also
+  imports `trust-task-discovery`, a framework specification the runtime always
+  carries. Nothing to change.
+
 ## Third-party sources
 
 SPEC §6.1 and §6.5 already allow specifications outside the official registry:

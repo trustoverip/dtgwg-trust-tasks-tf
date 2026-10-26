@@ -122,6 +122,7 @@ defects three times.
 | `npm run smoke`, `go test ./smoke`, `dart test test/smoke_test.dart` | the built npm package imports as a consumer imports it; the Go and Dart packages drive a *generated* module through the real pipeline | |
 | `test:infra` | the CloudFront negotiation function's routing decisions | whether the deployed site actually serves them |
 | `checkCategoryTaxonomy`, `checkBindingRegistry` | hand-maintained lists match the tree | other hand-maintained lists nobody has guarded yet |
+| `npm run check-sibling-core-ranges` (in `bindings match specs`) | every `trust-tasks-ts-*` sibling takes `@openvtc/trust-tasks` as a peer dependency, and every TS and Dart sibling's caret range admits the core version in the checkout | whether the sibling actually works with that core — its own CI job builds and tests against the newest core its range admits |
 | `npm run check-dart-packages` | the five files naming the Dart packages (`publish.yml`'s `tag-dart` matrix, `release-pr.sh`'s `DART_PACKAGES`, `publish-dart.yml`, `release-bump-dart.sh`, `dart.yml`) name the same packages with the same dirs and tag prefixes | whether a package's first manual publish and trusted-publishing setup happened |
 | `checkBindingFrameworkTarget`, `checkBindingErrorSpecPin` | a binding's prose agrees with its own front matter, and pins no `trust-task-error` version | prose that is stale in a way no other file contradicts |
 | the member/value casing lint (`scripts/lib/member-casing.mjs`) | every schema's member names and enumerated values are lowerCamelCase (SPEC §4.10), or named in `member-casing-allowlist.json` — `external` with the vocabulary that owns it, or `frozen` for its own family's pre-lint deviations | whether an `external` entry's attribution is true |
@@ -650,6 +651,13 @@ package to the core `@openvtc/trust-tasks`. Notes:
   ML-DSA (PQC) lands later. eddsa-jcs-2022 + ecdsa-jcs-2019; did:key only.
 - **Tests compile to `.test-build/` and import from `../src`** (the core's
   convention), run with `node --test`. The npm package ships `dist/` only.
+- **The core is a peer dependency, imported as `@openvtc/trust-tasks/runtime`.**
+  A regular dependency installs a second core — every prebuilt module in it —
+  beside the application's, and the package root loads all of them. Until this
+  changed every sibling declared `^0.19.0`, which npm reads as `<0.20.0`, while
+  the core reached 0.27. When the core crosses a `0.x` minor, raise the
+  siblings' `peerDependencies` floor in the same release cycle;
+  `check-sibling-core-ranges` fails the Release PR until you do.
 - **Release wiring is per package.** Each npm package has a `publish-npm`
   matrix leg and a `TS_PACKAGES` entry in `scripts/release-pr.sh`; its first
   npm publish is manual (RELEASING.md).
@@ -725,7 +733,8 @@ are not obvious:
   excluded the core it was developed against: consumers got core 0.1.19, and an
   app on core 0.9 could not add a sibling at all. `tag-dart` cannot see this —
   it verifies against the newest core the constraint admits — so when the core
-  crosses a `0.x` minor, raise the siblings' floor in the same release cycle.
+  crosses a `0.x` minor, raise the siblings' floor in the same release cycle;
+  `npm run check-sibling-core-ranges` fails until you do.
 - **`ssi: ">=3.9.6 <5.0.0"` spans two majors on purpose.** `package:didcomm`
   pins ssi 3, so requiring ssi 4 would make this package impossible to use
   beside a DIDComm transport. The `packages` job in `dart.yml` tests with ssi

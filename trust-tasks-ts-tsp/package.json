@@ -16,10 +16,13 @@
     "test": "tsc -p tsconfig.test.json && node --test .test-build/test/*.test.js"
   },
   "dependencies": {
-    "@openvtc/trust-tasks": "^0.19.0",
     "@openvtc/vti-tsp-js": "^0.2.0"
   },
+  "peerDependencies": {
+    "@openvtc/trust-tasks": "^0.27.8"
+  },
   "devDependencies": {
+    "@openvtc/trust-tasks": "^0.27.8",
     "@noble/curves": "^2.0.0",
     "@noble/hashes": "^2.0.0",
     "@types/node": "^22.0.0",

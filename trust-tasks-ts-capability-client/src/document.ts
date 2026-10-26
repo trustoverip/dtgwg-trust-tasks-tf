@@ -1,4 +1,4 @@
-import type { TrustTaskDocument } from "@openvtc/trust-tasks";
+import type { TrustTaskDocument } from "@openvtc/trust-tasks/runtime";
 import {
   CAPABILITY_DISABLE_TYPE,
   CAPABILITY_ENABLE_TYPE,
