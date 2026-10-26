@@ -44,4 +44,5 @@ export 'src/runtime/extension.dart';
 export 'src/runtime/freshness.dart';
 export 'src/runtime/replay.dart';
 export 'src/runtime/transport.dart';
+export 'src/runtime/type_uri.dart' hide parseTypeUriVersion;
 export 'src/runtime/version.dart';
