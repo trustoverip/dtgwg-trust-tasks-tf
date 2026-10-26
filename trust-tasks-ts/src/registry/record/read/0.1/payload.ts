@@ -9,7 +9,7 @@ import type { Ext, RecordType } from "../../../../_shared/components.js";
 /**
  * An administrator reads the full trust record identified by the four TRQP identifiers (both the recognized and authorized facets, unlike the filtered TRQP query responses).
  *
- * @deprecated retired; use registry/record/query/0.2
+ * @deprecated retired; use registry/record/query/0.3
  */
 export interface RegistryRecordReadPayload {
   entity_id: string;
@@ -18,7 +18,7 @@ export interface RegistryRecordReadPayload {
   resource: string;
   ext?: Ext;
 }
-/** @deprecated retired; use registry/record/query/0.2 */
+/** @deprecated retired; use registry/record/query/0.3 */
 export interface RegistryRecordReadResponsePayloadATrustRecord {
   entity_id: string;
   authority_id: string;
@@ -52,12 +52,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "retired; use registry/record/query/0.2";
+export const DEPRECATION: string | null = "retired; use registry/record/query/0.3";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated retired; use registry/record/query/0.2
+ * @deprecated retired; use registry/record/query/0.3
  */
 export type Payload = RegistryRecordReadPayload;
 
@@ -67,7 +67,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/registry/record/re
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated retired; use registry/record/query/0.2
+ * @deprecated retired; use registry/record/query/0.3
  */
 export type Response = RegistryRecordReadResponsePayloadATrustRecord;
 

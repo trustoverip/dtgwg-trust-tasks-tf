@@ -8,6 +8,8 @@ import type { Ext } from "../../../../_shared/components.js";
 
 /**
  * An administrator asks a trust registry to rotate the keys of the registry's own agent-managed did:webvh in place, preserving the DID while refreshing its key material. Field names are snake_case, frozen from the pre-existing deployed wire form this specification documents (matching the registry/* family convention).
+ *
+ * @deprecated superseded by registry/did/rotate/0.2
  */
 export interface RegistryDIDRotatePayload {
   /**
@@ -20,6 +22,7 @@ export interface RegistryDIDRotatePayload {
   label?: string;
   ext?: Ext;
 }
+/** @deprecated superseded by registry/did/rotate/0.2 */
 export interface RegistryDIDRotateResponsePayload {
   /**
    * The DID whose keys were rotated.
@@ -56,15 +59,23 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = null;
+export const DEPRECATION: string | null = "superseded by registry/did/rotate/0.2";
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by registry/did/rotate/0.2
+ */
 export type Payload = RegistryDIDRotatePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/registry/did/rotate/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by registry/did/rotate/0.2
+ */
 export type Response = RegistryDIDRotateResponsePayload;
 
 /**

@@ -48,7 +48,7 @@ The **Git Trust — Revoke** Trust Task withdraws a member's commit-signing
 grant. The *community governance host* marks the grant's TRQP tuple
 `authorized: false` rather than deleting it, so the revocation is itself
 auditable; a CI verifier's next
-[`registry/authorization`](../../../registry/authorization/0.1/spec.md)
+[`registry/authorization`](../../../registry/authorization/0.2/spec.md)
 query for that tuple answers `authorized: false`.
 
 Note the scope semantics: verifiers configured with an org fallback treat a

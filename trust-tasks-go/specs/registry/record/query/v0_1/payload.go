@@ -10,7 +10,7 @@ import (
 
 // Response Registry Record Query — response payload
 //
-// Deprecated: superseded by registry/record/query/0.2
+// Deprecated: superseded by registry/record/query/0.3
 type Response struct {
 	// The matching trust records. Exactly one entry on a fully keyed fetch; zero or more per
 	// page on an enumeration.
@@ -59,7 +59,7 @@ const (
 // gap the superseded registry/record/list conceded. Key field names are verbatim TRQP
 // (snake_case), matching the registry/* family.
 //
-// Deprecated: superseded by registry/record/query/0.2
+// Deprecated: superseded by registry/record/query/0.3
 type Payload struct {
 	// Filter to records for this entity.
 	EntityID *string `json:"entity_id,omitempty"`
@@ -97,7 +97,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = "superseded by registry/record/query/0.2"
+const Deprecation = "superseded by registry/record/query/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/registry/record/query/0.1#response"

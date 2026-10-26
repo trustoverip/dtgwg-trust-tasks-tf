@@ -1108,14 +1108,17 @@ mod push {
 mod registry {
     mod authorization {
         mod v0_1;
+        mod v0_2;
     }
     mod did {
         mod rotate {
             mod v0_1;
+            mod v0_2;
         }
     }
     mod recognition {
         mod v0_1;
+        mod v0_2;
     }
     mod record {
         mod create {
@@ -1123,6 +1126,7 @@ mod registry {
         }
         mod delete {
             mod v0_1;
+            mod v0_2;
         }
         mod list {
             mod v0_1;
@@ -1130,10 +1134,12 @@ mod registry {
         mod put {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
         mod query {
             mod v0_1;
             mod v0_2;
+            mod v0_3;
         }
         mod read {
             mod v0_1;
