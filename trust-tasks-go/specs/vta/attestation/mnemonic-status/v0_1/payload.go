@@ -10,6 +10,8 @@ import (
 
 // Response The mnemonic export guard's current state. Carried in a Trust Task document
 // whose type is https://trusttasks.org/spec/vta/attestation/mnemonic-status/0.1#response.
+//
+// Deprecated: superseded by vta/attestation/mnemonic-status/0.2
 type Response struct {
 	// Whether the export window is currently open.
 	WindowActive bool `json:"windowActive"`
@@ -33,12 +35,20 @@ type Ext = map[string]json.RawMessage
 
 // Payload An empty request. The outer document members are owned by the framework — SPEC
 // §6.3.
+//
+// Deprecated: superseded by vta/attestation/mnemonic-status/0.2
 type Payload struct {
 	Ext *Ext `json:"ext,omitempty"`
 }
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/vta/attestation/mnemonic-status/0.1"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vta/attestation/mnemonic-status/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/attestation/mnemonic-status/0.1#response"

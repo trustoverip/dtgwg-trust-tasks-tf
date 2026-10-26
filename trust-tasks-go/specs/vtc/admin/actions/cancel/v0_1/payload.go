@@ -10,6 +10,8 @@ import (
 
 // Response The action as it now stands — `status: cancelled`, `closedReason:
 // cancelledByRequester`. Failures use trust-task-error, not this shape.
+//
+// Deprecated: superseded by vtc/admin/actions/cancel/0.3
 type Response struct {
 	Action Action `json:"action"`
 	Ext    *Ext   `json:"ext,omitempty"`
@@ -281,6 +283,8 @@ type ActionID = string
 // operation never executes and the action leaves every administrator's list. The outer
 // document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by
 // the framework — SPEC §6.3.
+//
+// Deprecated: superseded by vtc/admin/actions/cancel/0.3
 type Payload struct {
 	// The open action to withdraw.
 	ActionID ActionID `json:"actionId"`
@@ -293,6 +297,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/vtc/admin/actions/cancel/0.1"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vtc/admin/actions/cancel/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/admin/actions/cancel/0.1#response"

@@ -26,6 +26,8 @@ type PayloadRefsItem struct {
 // belongs in that task's own #response, not here. Every member is optional: an empty
 // payload is the ordinary case, and means exactly 'received and performed'. This
 // specification declares no response anchor. An acknowledgement is not answered.
+//
+// Deprecated: retired
 type Payload struct {
 	// Human-readable confirmation, for operator UI and logs. Non-normative. A producer MUST
 	// NOT parse this for any value it needs, and MUST NOT condition behaviour on its presence
@@ -48,6 +50,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/trust-task-ok/0.1"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "retired"
 
 // PayloadSchemaJSON is this specification's payload schema, as JSON text.
 //

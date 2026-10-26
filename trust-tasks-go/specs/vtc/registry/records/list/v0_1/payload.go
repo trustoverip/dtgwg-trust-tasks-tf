@@ -47,6 +47,8 @@ type Record struct {
 }
 
 // Response VTC Registry Records List — response payload
+//
+// Deprecated: superseded by vtc/registry/records/list/0.2
 type Response struct {
 	// The matching records, in the maintainer's stable enumeration order.
 	Items []Record `json:"items"`
@@ -65,6 +67,8 @@ type Response struct {
 type Ext = map[string]json.RawMessage
 
 // Payload VTC Registry Records List — payload
+//
+// Deprecated: superseded by vtc/registry/records/list/0.2
 type Payload struct {
 	// Filter to records about this entity.
 	EntityID *string `json:"entityId,omitempty"`
@@ -91,6 +95,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/vtc/registry/records/list/0.1"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vtc/registry/records/list/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/registry/records/list/0.1#response"

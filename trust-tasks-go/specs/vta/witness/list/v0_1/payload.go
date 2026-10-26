@@ -10,6 +10,8 @@ import (
 
 // Response One entry per stored VWC that matched and that the caller may read. Empty when
 // nothing matched, which is a successful answer, not an error.
+//
+// Deprecated: superseded by vta/witness/list/0.2
 type Response struct {
 	// The matching stored VWCs, each with its evidence.
 	Witnessings []StoredWitnessing `json:"witnessings"`
@@ -105,6 +107,8 @@ type DigestMultibase = string
 // Payload A client reads back from its VTA the Verifiable Witness Credentials
 // vta/witness/accept stored for its principal, each with the outcome evidence stored
 // beside it. Every filter is optional and those present are AND-combined.
+//
+// Deprecated: superseded by vta/witness/list/0.2
 type Payload struct {
 	// Only VWCs whose credentialSubject.id is this relationship DID.
 	RelationshipDID *string `json:"relationshipDid,omitempty"`
@@ -122,6 +126,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/vta/witness/list/0.1"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vta/witness/list/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/witness/list/0.1#response"

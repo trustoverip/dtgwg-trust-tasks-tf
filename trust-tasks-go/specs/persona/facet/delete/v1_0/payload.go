@@ -10,6 +10,8 @@ import (
 
 // Response Success response to persona/facet/delete. Type
 // https://trusttasks.org/spec/persona/facet/delete/1.0#response.
+//
+// Deprecated: retired; use persona/world/delete/1.0
 type Response struct {
 	// False when there was nothing to delete. A successful no-op rather than an error: a
 	// producer retrying after a lost response must be able to reach the state it wanted
@@ -43,6 +45,8 @@ type Ulid = string
 
 // Payload Delete one facet. The faces and attributes that belonged to it are untouched —
 // a facet is a way of arranging what the holder keeps, never a container for it.
+//
+// Deprecated: retired; use persona/world/delete/1.0
 type Payload struct {
 	FacetID Ulid `json:"facetId"`
 
@@ -54,6 +58,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/persona/facet/delete/1.0"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "retired; use persona/world/delete/1.0"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/persona/facet/delete/1.0#response"

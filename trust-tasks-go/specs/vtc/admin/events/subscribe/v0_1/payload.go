@@ -10,6 +10,8 @@ import (
 
 // Response The subscription as granted, sent as the first document on the stream.
 // Failures use trust-task-error and open no stream.
+//
+// Deprecated: superseded by vtc/admin/events/subscribe/0.6
 type Response struct {
 	// The effective topics: those requested that the caller may read. The community sends
 	// events for these and no others. A requested topic missing here is one the caller may
@@ -63,6 +65,8 @@ const (
 // documents; over HTTPS that stream is the streamed response of bindings/https/0.3 §2.1.
 // The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof)
 // are owned by the framework — SPEC §6.3.
+//
+// Deprecated: superseded by vtc/admin/events/subscribe/0.6
 type Payload struct {
 	// The topics the console renders. The community narrows this to the topics the caller may
 	// read and reports the result as the response's `topics`.
@@ -77,6 +81,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/vtc/admin/events/subscribe/0.1"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vtc/admin/events/subscribe/0.6"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/admin/events/subscribe/0.1#response"

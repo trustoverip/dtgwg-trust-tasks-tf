@@ -9,6 +9,8 @@ import (
 )
 
 // Response Vault Release — response payload
+//
+// Deprecated: superseded by vault/release/0.2
 type Response struct {
 	// Pluggable cipher envelope. Cleartext is a
 	// `vault/_shared/0.1/vault-secret#/$defs/VaultSecret`. Consumers reject envelope kinds
@@ -177,6 +179,8 @@ type SiteTarget = json.RawMessage
 // proxy-login is not viable (`vault/proxy-login:notProxyable`) or when the consumer needs
 // the raw secret for a flow the maintainer cannot perform (e.g. autofill into a desktop
 // app, copy-to-clipboard for offline use).
+//
+// Deprecated: superseded by vault/release/0.2
 type Payload struct {
 	EntryID string `json:"entryId"`
 
@@ -199,6 +203,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/vault/release/0.1"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vault/release/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vault/release/0.1#response"

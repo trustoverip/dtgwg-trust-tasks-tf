@@ -30,6 +30,8 @@ const (
 // Response Acknowledgement the relying party returns after processing the approval.
 // Carried in a Trust Task document whose type is
 // https://trusttasks.org/spec/auth/step-up/approve-response/0.5#response.
+//
+// Deprecated: superseded by auth/step-up/approve-response/0.6
 type Response struct {
 	// `elevated` — the approval was applied and the session's assurance level was raised.
 	// `recorded` — the approval was applied to the single operation it was bound to, and NO
@@ -123,6 +125,8 @@ const (
 // sessionId, when the request carried one) are echoed inside a gated document so the
 // relying party can elevate the session, or apply the approval to the one operation it
 // was bound to.
+//
+// Deprecated: superseded by auth/step-up/approve-response/0.6
 type Payload struct {
 	// Echoed from the matching approve-request. The relying party verifies it equals the
 	// subject bound to the pending step-up — the session's subject, or for a bound step-up
@@ -161,6 +165,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/auth/step-up/approve-response/0.5"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by auth/step-up/approve-response/0.6"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/auth/step-up/approve-response/0.5#response"

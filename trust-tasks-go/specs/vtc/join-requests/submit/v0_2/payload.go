@@ -9,6 +9,8 @@ import (
 )
 
 // Response VTC Join-Requests Submit — response payload
+//
+// Deprecated: superseded by vtc/join-requests/submit/0.3
 type Response struct {
 	// Id of the created join request (a UUID).
 	RequestID string `json:"requestId"`
@@ -99,6 +101,8 @@ type PayloadAttributesItem struct {
 }
 
 // Payload VTC Join-Requests Submit — payload
+//
+// Deprecated: superseded by vtc/join-requests/submit/0.3
 type Payload struct {
 	// The applicant's W3C Verifiable Presentation (opaque here), satisfying the community's
 	// join policy. The applicant DID is the document proof's signer — not a payload field.
@@ -121,6 +125,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/vtc/join-requests/submit/0.2"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vtc/join-requests/submit/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/join-requests/submit/0.2#response"

@@ -9,6 +9,8 @@ import (
 )
 
 // Response Policy List — response payload
+//
+// Deprecated: superseded by policy/list/0.3
 type Response struct {
 	Policies  []PolicyModule `json:"policies"`
 	Truncated bool           `json:"truncated"`
@@ -47,6 +49,8 @@ type PolicyModule struct {
 }
 
 // Payload Policy List — payload
+//
+// Deprecated: superseded by policy/list/0.3
 type Payload struct {
 	ContextID   *string `json:"contextId,omitempty"`
 	EnabledOnly *bool   `json:"enabledOnly,omitempty"`
@@ -57,6 +61,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/policy/list/0.1"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by policy/list/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/policy/list/0.1#response"

@@ -12,6 +12,8 @@ import (
 // https://trusttasks.org/spec/vta/app-state/put/1.0#response. A failed precondition is
 // not a success: it is a trust-task-error carrying vta/app-state/put:versionConflict,
 // whose details carry the maintainer's current version and value.
+//
+// Deprecated: superseded by vta/app-state/put/1.1
 type Response struct {
 	// Echoed from the request.
 	ContextID string    `json:"contextId"`
@@ -75,6 +77,8 @@ type ExpectedVersion = int64
 // partial update) is supplied. `expectedVersion` makes the write conditional: a positive
 // value requires the record to be at exactly that version, and zero requires that no live
 // record exists.
+//
+// Deprecated: superseded by vta/app-state/put/1.1
 type Payload struct {
 	// The VTA context the record is scoped to; the isolation boundary.
 	ContextID string    `json:"contextId"`
@@ -105,6 +109,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/vta/app-state/put/1.0"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vta/app-state/put/1.1"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/app-state/put/1.0#response"

@@ -10,6 +10,8 @@ import (
 
 // Response Server-issued WebAuthn request options. Carried in a Trust Task document whose
 // type is https://trusttasks.org/spec/auth/passkey/login/start/0.1#response.
+//
+// Deprecated: superseded by auth/passkey/login/start/0.2
 type Response struct {
 	// Opaque server handle correlating this start with the matching finish.
 	AuthID string `json:"authId"`
@@ -69,6 +71,8 @@ const (
 
 // Payload Ask the auth service to begin a WebAuthn authentication ceremony. The response
 // carries PublicKeyCredentialRequestOptions for `navigator.credentials.get`.
+//
+// Deprecated: superseded by auth/passkey/login/start/0.2
 type Payload struct {
 	// The VID the producer intends to authenticate as. Optional — omit for usernameless /
 	// discoverable-credential flows where any registered passkey may answer.
@@ -84,6 +88,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/auth/passkey/login/start/0.1"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by auth/passkey/login/start/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/auth/passkey/login/start/0.1#response"

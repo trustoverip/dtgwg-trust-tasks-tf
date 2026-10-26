@@ -10,6 +10,8 @@ import (
 
 // Response Success response to rooms/records/prune. Type
 // https://trusttasks.org/spec/rooms/records/prune/0.1#response.
+//
+// Deprecated: superseded by rooms/records/prune/0.2
 type Response struct {
 	RoomID string `json:"roomId"`
 
@@ -174,6 +176,8 @@ const (
 // Payload A holder of `admin` asks a room's host to remove the records the room's record
 // retention makes eligible — retracted tombstones, records older than it allows, or both
 // — leaving a mark that records were removed and never what they said.
+//
+// Deprecated: superseded by rooms/records/prune/0.2
 type Payload struct {
 	// The room whose records to prune. A host verifies the presentation against credentials
 	// issued by this identifier, never against a member list of its own.
@@ -210,6 +214,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/rooms/records/prune/0.1"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by rooms/records/prune/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/rooms/records/prune/0.1#response"

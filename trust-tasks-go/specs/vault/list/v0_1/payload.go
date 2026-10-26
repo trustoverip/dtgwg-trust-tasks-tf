@@ -10,6 +10,8 @@ import (
 
 // Response The success response to a vault/list request. Carried in a Trust Task document
 // whose type is https://trusttasks.org/spec/vault/list/0.1#response.
+//
+// Deprecated: superseded by vault/list/0.4
 type Response struct {
 	// Matching VaultEntry items in metadata-only view, in maintainer-defined order
 	// (RECOMMENDED: most-recently-used first when no other order is implied by the filters).
@@ -260,6 +262,8 @@ const (
 // within the caller's bound and its own ceiling. Secret material is NEVER returned by
 // this task — even when the requesting consumer has VaultRead capability for the entry,
 // the secret is only released via vault/release/0.1.
+//
+// Deprecated: superseded by vault/list/0.4
 type Payload struct {
 	// Optional filter — only entries belonging to this trust context (persona) are returned.
 	// Omit to query across all contexts the requesting consumer has VaultRead on.
@@ -325,6 +329,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/vault/list/0.1"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vault/list/0.4"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vault/list/0.1#response"

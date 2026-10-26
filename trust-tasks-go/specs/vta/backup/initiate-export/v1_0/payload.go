@@ -9,6 +9,8 @@ import (
 )
 
 // Response VTA Backup Initiate Export — response payload
+//
+// Deprecated: superseded by vta/backup/initiate-export/1.1
 type Response struct {
 	// Where the bytes are, what they should be, and until when.
 	Descriptor BundleDescriptor `json:"descriptor"`
@@ -63,6 +65,8 @@ type Ext = map[string]json.RawMessage
 // Payload Asks the recipient to serialize its entire state into a password-encrypted
 // bundle and return the descriptor that fetches it. The outer document members (id, type,
 // issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+//
+// Deprecated: superseded by vta/backup/initiate-export/1.1
 type Payload struct {
 	// Key-derivation input protecting the bundle. Chosen by the producer and never
 	// recoverable from the recipient. `writeOnly` is the machine-readable form of the rule in
@@ -91,6 +95,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/vta/backup/initiate-export/1.0"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vta/backup/initiate-export/1.1"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/backup/initiate-export/1.0#response"

@@ -55,6 +55,8 @@ type Floor struct {
 // Response The policy the maintainer now holds after applying the request. Carried in a
 // Trust Task document whose type is
 // https://trusttasks.org/spec/auth/step-up/policy/0.1#response.
+//
+// Deprecated: superseded by auth/step-up/policy/0.2
 type Response struct {
 	// The effective master switch the maintainer now holds.
 	Enabled bool `json:"enabled"`
@@ -73,6 +75,8 @@ type Ext = map[string]json.RawMessage
 // per-operation-class floor that decides whether — and how — a step-up to a higher
 // assurance level is required before a gated operation proceeds. Set by an administrator;
 // resolved per request against per-entry overrides (see acl/_shared AclEntry.stepUp).
+//
+// Deprecated: superseded by auth/step-up/policy/0.2
 type Payload struct {
 	// Master switch. `false` (the shipping default) ⇒ step-up is NOT enforced anywhere; every
 	// operation proceeds at AAL1 regardless of `floors`, because a freshly-provisioned
@@ -93,6 +97,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/auth/step-up/policy/0.1"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by auth/step-up/policy/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/auth/step-up/policy/0.1#response"

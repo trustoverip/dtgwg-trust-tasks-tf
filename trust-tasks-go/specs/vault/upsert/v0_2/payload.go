@@ -9,6 +9,8 @@ import (
 )
 
 // Response Vault Upsert — response payload
+//
+// Deprecated: superseded by vault/upsert/0.4
 type Response struct {
 	Entry VaultEntry `json:"entry"`
 
@@ -264,6 +266,8 @@ const (
 // authenticator, not plaintext. Updates may be partial: any populated metadata field
 // replaces the current value; omitted fields are left untouched; explicit null clears the
 // field (per `clearFields`). Optimistic-concurrency check via `expectedVersion`.
+//
+// Deprecated: superseded by vault/upsert/0.4
 type Payload struct {
 	// Entry id. Omit to create; supply to update. Maintainers MAY accept consumer-supplied
 	// ids on create (recommended: ULID) or MAY assign their own and return the assigned id in
@@ -306,6 +310,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/vault/upsert/0.2"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vault/upsert/0.4"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vault/upsert/0.2#response"

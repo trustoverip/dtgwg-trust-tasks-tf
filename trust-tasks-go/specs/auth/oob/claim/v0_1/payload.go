@@ -11,6 +11,8 @@ import (
 // Response Step 1 of the disclosure ladder, signed by the service's assertionMethod key:
 // who the service is, where the request will be used and for what, and when the decision
 // window closes. It MUST contain nothing about the starter.
+//
+// Deprecated: superseded by auth/oob/claim/0.2
 type Response struct {
 	RequestID RequestID `json:"requestId"`
 	Service   Service   `json:"service"`
@@ -70,6 +72,8 @@ type RequestID = string
 // service, and carrying the request's handle both here and as the envelope's
 // `parentThreadId`. The outer document members (id, type, issuer, recipient, issuedAt,
 // expiresAt, parentThreadId, proof) are owned by the framework — SPEC §6.3.
+//
+// Deprecated: superseded by auth/oob/claim/0.2
 type Payload struct {
 	// The handle read from the trigger link's `_id`. MUST equal the document's
 	// `parentThreadId`.
@@ -79,6 +83,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/auth/oob/claim/0.1"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by auth/oob/claim/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/auth/oob/claim/0.1#response"

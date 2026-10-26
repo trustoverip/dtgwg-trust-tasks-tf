@@ -51,6 +51,8 @@ type ResponseNext struct {
 }
 
 // Response Whether the bridge took the job.
+//
+// Deprecated: superseded by git-ns/bridge/job/0.6
 type Response struct {
 	JobID JobID `json:"jobId"`
 
@@ -164,6 +166,8 @@ const (
 // bridge holds those. Which optional members a job carries is fixed by its `kind` (see
 // the specification's kind table); a bridge refuses a job that carries a member its kind
 // does not use, or lacks one its kind requires.
+//
+// Deprecated: superseded by git-ns/bridge/job/0.6
 type Payload struct {
 	// The VTC's identifier for this job. The bridge reports on it with git-ns/bridge/result.
 	JobID JobID `json:"jobId"`
@@ -214,6 +218,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/git-ns/bridge/job/0.3"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by git-ns/bridge/job/0.6"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/git-ns/bridge/job/0.3#response"

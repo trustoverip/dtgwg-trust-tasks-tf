@@ -37,6 +37,8 @@ const (
 )
 
 // Response What the resolution did, and where the repository's sync now stands.
+//
+// Deprecated: superseded by git-ns/drift/resolve/0.4
 type Response struct {
 	// The action taken, as requested.
 	Action ResponseAction `json:"action"`
@@ -246,6 +248,8 @@ const (
 // drift item: `adopt` records the forge-side role as a VTC right for the member the
 // resolver names, under the same rules as git-ns/right/grant; `revert` has the bridge
 // undo the forge-side change.
+//
+// Deprecated: superseded by git-ns/drift/resolve/0.4
 type Payload struct {
 	// The repository whose drift is resolved.
 	Resource RepoResource  `json:"resource"`
@@ -271,6 +275,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/git-ns/drift/resolve/0.3"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by git-ns/drift/resolve/0.4"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/git-ns/drift/resolve/0.3#response"

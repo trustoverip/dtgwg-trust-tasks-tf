@@ -15,6 +15,8 @@ type ConfigItem struct {
 }
 
 // Response VTC Storage — Configs — List — response payload
+//
+// Deprecated: superseded by vtc/storage/configs/list/0.2
 type Response struct {
 	Items []ConfigItem `json:"items"`
 
@@ -294,6 +296,8 @@ const (
 
 // Payload Page through the community's storage configs. The outer document members are
 // owned by the framework — SPEC §6.3.
+//
+// Deprecated: superseded by vtc/storage/configs/list/0.2
 type Payload struct {
 	State *ConfigState `json:"state,omitempty"`
 	Kind  *StorageKind `json:"kind,omitempty"`
@@ -308,6 +312,12 @@ type Payload struct {
 
 // TypeURI is the Trust Task type URI this package's Payload is carried under.
 const TypeURI = "https://trusttasks.org/spec/vtc/storage/configs/list/0.1"
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vtc/storage/configs/list/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/storage/configs/list/0.1#response"
