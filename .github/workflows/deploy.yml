@@ -81,6 +81,16 @@ jobs:
       # against the tree, and every schema against the TypeScript generator's.
       - name: Check registry bundles
         run: npm run check-bundles
+      # The by-digest store (milestone 2): every bundle again at
+      # `specs/by-digest/sha256-<hex>.json`, its content address. A lockfile
+      # pins a digest, and a draft may change in place, so `trust-tasks add`
+      # and `update` fetch by digest — the path serves only the current bytes.
+      # The store is APPEND-ONLY: the deploy job uploads it without `--delete`
+      # and excludes it from the site sync's `--delete`, so a digest once
+      # published stays fetchable after its version changes or is withdrawn.
+      # Each copy is re-hashed, so a name can never promise other content.
+      - name: Write the by-digest store
+        run: scripts/write-by-digest-store.sh website/specs
 
       # The CloudFront function that serves schemas at their Type URIs (SPEC
       # §6.2) runs on CloudFront's own engine, so CI cannot exercise it live.
@@ -118,8 +128,23 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      # The by-digest store first, so a new index never names a digest the
+      # store cannot serve yet. No `--delete`: the store is append-only, and an
+      # object this build did not write is a digest some lockfile may still
+      # pin. `--size-only` because a content-addressed name with a matching
+      # size is the same bytes — without it every deploy would re-upload all of
+      # them for their fresh mtimes. Immutable for the same reason.
+      - name: Deploy the by-digest store to S3 (append-only)
+        run: >-
+          aws s3 sync website/specs/by-digest/
+          s3://${{ secrets.AWS_S3_BUCKET }}/website/specs/by-digest/
+          --size-only
+          --cache-control "public, max-age=31536000, immutable"
+
+      # `--exclude` keeps the by-digest prefix out of this sync entirely —
+      # neither uploaded (done above) nor deleted by `--delete`.
       - name: Deploy to S3
-        run: aws s3 sync website/ s3://${{ secrets.AWS_S3_BUCKET }}/website/ --delete
+        run: aws s3 sync website/ s3://${{ secrets.AWS_S3_BUCKET }}/website/ --delete --exclude "specs/by-digest/*"
 
       - name: Invalidate CloudFront Cache
         if: env.CLOUDFRONT_DISTRIBUTION_ID != ''

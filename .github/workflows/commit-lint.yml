@@ -61,7 +61,7 @@ jobs:
             # spec changes (#858 among them, whose crate API did not change at
             # all) each cost every library a MINOR before this was enforced.
             if printf '%s' "$TITLE" | grep -qE '^[a-z]+(\([^)]*\))?!:'; then
-              pkg='rs|ts|go|dart|codegen|runtime|bindings|https|didcomm|didcomm-v1|tsp|proof|ceremony|capability-client|(rs|ts|go|dart)-[a-z0-9-]+'
+              pkg='rs|ts|go|dart|codegen|runtime|bindings|https|didcomm|didcomm-v1|tsp|proof|ceremony|capability-client|cli|build|(rs|ts|go|dart)-[a-z0-9-]+'
               scopes=$(printf '%s' "$TITLE" | sed -nE 's/^[a-z]+\(([^)]*)\)!:.*/\1/p' | tr ',' '\n' | sed 's/^ *//; s/ *$//')
               bad=$(printf '%s\n' "$scopes" | grep -vxE "$pkg" || true)
               if [ -z "$scopes" ] || [ -n "$bad" ]; then

@@ -32,6 +32,7 @@
 //! "withdrawn"`), so a pinned bundle remains fetchable and verifiable after its
 //! version leaves the libraries.
 
+use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
@@ -43,7 +44,7 @@ use walkdir::WalkDir;
 
 use crate::{
     compute_lifecycles, discover_specs, parse_version, read_spec_policy, spec_schemas, Lifecycle,
-    Spec, SKIP_SLUGS,
+    Spec, SpecSchemas, SKIP_SLUGS,
 };
 
 /// `bundleVersion` — the shape of `bundle.json`. Bumped on any change a reader
@@ -140,6 +141,9 @@ pub(crate) fn build_bundle(spec: &Spec) -> Result<BuiltBundle> {
     let status = fm_str("status")
         .ok_or_else(|| anyhow!("{}/{} declares no `status`", spec.slug, spec.version))?;
 
+    let property_order = property_order(spec, &schemas)
+        .with_context(|| format!("propertyOrder for {}/{}", spec.slug, spec.version))?;
+
     let error_codes: Vec<Value> = policy
         .error_codes
         .iter()
@@ -187,6 +191,7 @@ pub(crate) fn build_bundle(spec: &Spec) -> Result<BuiltBundle> {
             },
         },
         "errorCodes": error_codes,
+        "propertyOrder": property_order,
         "schema": schemas.schema,
         "responseSchema": schemas.response,
     });
@@ -205,6 +210,220 @@ pub(crate) fn build_bundle(spec: &Spec) -> Result<BuiltBundle> {
         bytes,
         digest,
     })
+}
+
+/// `propertyOrder`: for every schema object in `schema` and `responseSchema`
+/// that has `properties`, the authored order of their names — keyed by the
+/// JSON Pointer, from the bundle root, of the object owning `properties`
+/// (`/schema`, `/schema/$defs/AclEntry`).
+///
+/// The bundle's schemas are key-sorted (canonical JSON), which loses the order
+/// the TypeScript, Go and Dart generators give struct fields. Each pointer is
+/// looked up in the file the definition was written in: the payload schema,
+/// or — for a `$defs` entry spliced in from a shared file
+/// (`SpecSchemas::def_origins`) — that file. The names must be exactly the
+/// bundled schema's; anything else is a bug in the splice, and stops the build.
+pub(crate) fn property_order(spec: &Spec, schemas: &SpecSchemas) -> Result<Value> {
+    let mut sources: BTreeMap<PathBuf, Ordered> = BTreeMap::new();
+    let mut out = Map::new();
+    for (root, value) in [
+        ("/schema", Some(&schemas.schema)),
+        ("/responseSchema", schemas.response.as_ref()),
+    ] {
+        let Some(value) = value else { continue };
+        let mut owners = Vec::new();
+        collect_property_owners(value, &mut Vec::new(), &mut owners);
+        for (segments, sorted_names) in owners {
+            let source_path = match segments.as_slice() {
+                [defs, name, ..] if defs == "$defs" => schemas
+                    .def_origins
+                    .get(name)
+                    .cloned()
+                    .unwrap_or_else(|| spec.schema_path.clone()),
+                _ => spec.schema_path.clone(),
+            };
+            if !sources.contains_key(&source_path) {
+                let text = fs::read_to_string(&source_path)
+                    .with_context(|| format!("read {}", source_path.display()))?;
+                let parsed: Ordered = serde_json::from_str(&text)
+                    .with_context(|| format!("parse {}", source_path.display()))?;
+                sources.insert(source_path.clone(), parsed);
+            }
+            let pointer = format!("{root}{}", json_pointer(&segments));
+            let authored = sources[&source_path]
+                .at(&segments)
+                .and_then(|owner| owner.get("properties"))
+                .and_then(Ordered::keys)
+                .ok_or_else(|| {
+                    anyhow!(
+                        "{pointer}: no `properties` at {} in {}",
+                        json_pointer(&segments),
+                        source_path.display()
+                    )
+                })?;
+            let mut check = authored.clone();
+            check.sort();
+            if check != sorted_names {
+                return Err(anyhow!(
+                    "{pointer}: the authored members {authored:?} in {} are not the bundled \
+                     schema's {sorted_names:?}",
+                    source_path.display()
+                ));
+            }
+            out.insert(pointer, json!(authored));
+        }
+    }
+    Ok(Value::Object(out))
+}
+
+/// The keywords whose value maps *names* to schemas, rather than being one.
+const SCHEMA_MAP_KEYWORDS: &[&str] = &[
+    "properties",
+    "$defs",
+    "definitions",
+    "patternProperties",
+    "dependentSchemas",
+];
+
+/// The keywords whose value is data, not a schema, and is not walked.
+const DATA_KEYWORDS: &[&str] = &["enum", "const", "default", "examples", "example"];
+
+/// Every object under `value` that has a `properties` map: its path segments
+/// and its property names, sorted. Schema-aware, so a member that happens to
+/// be called `properties` is not mistaken for the keyword.
+fn collect_property_owners(
+    value: &Value,
+    path: &mut Vec<String>,
+    out: &mut Vec<(Vec<String>, Vec<String>)>,
+) {
+    match value {
+        Value::Object(map) => {
+            if let Some(Value::Object(props)) = map.get("properties") {
+                let mut names: Vec<String> = props.keys().cloned().collect();
+                names.sort();
+                out.push((path.clone(), names));
+            }
+            for (key, child) in map {
+                if DATA_KEYWORDS.contains(&key.as_str()) {
+                    continue;
+                }
+                path.push(key.clone());
+                match child {
+                    Value::Object(entries) if SCHEMA_MAP_KEYWORDS.contains(&key.as_str()) => {
+                        for (name, schema) in entries {
+                            path.push(name.clone());
+                            collect_property_owners(schema, path, out);
+                            path.pop();
+                        }
+                    }
+                    _ => collect_property_owners(child, path, out),
+                }
+                path.pop();
+            }
+        }
+        Value::Array(items) => {
+            for (i, item) in items.iter().enumerate() {
+                path.push(i.to_string());
+                collect_property_owners(item, path, out);
+                path.pop();
+            }
+        }
+        _ => {}
+    }
+}
+
+/// RFC 6901: each segment prefixed with `/`, `~` written `~0` and `/` `~1`.
+fn json_pointer(segments: &[String]) -> String {
+    segments
+        .iter()
+        .map(|s| format!("/{}", s.replace('~', "~0").replace('/', "~1")))
+        .collect()
+}
+
+/// A JSON value that keeps its objects' member order — which
+/// `serde_json::Value` does not here, because nothing in this build enables
+/// `preserve_order` (and turning it on would reorder every generated module).
+#[derive(Debug)]
+enum Ordered {
+    Object(Vec<(String, Ordered)>),
+    Array(Vec<Ordered>),
+    Scalar,
+}
+
+impl Ordered {
+    fn get(&self, key: &str) -> Option<&Ordered> {
+        match self {
+            Ordered::Object(members) => members.iter().find(|(k, _)| k == key).map(|(_, v)| v),
+            _ => None,
+        }
+    }
+
+    fn at(&self, segments: &[String]) -> Option<&Ordered> {
+        segments.iter().try_fold(self, |node, seg| match node {
+            Ordered::Array(items) => seg.parse::<usize>().ok().and_then(|i| items.get(i)),
+            _ => node.get(seg),
+        })
+    }
+
+    fn keys(&self) -> Option<Vec<String>> {
+        match self {
+            Ordered::Object(members) => Some(members.iter().map(|(k, _)| k.clone()).collect()),
+            _ => None,
+        }
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for Ordered {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        struct V;
+        impl<'de> serde::de::Visitor<'de> for V {
+            type Value = Ordered;
+            fn expecting(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                f.write_str("any JSON value")
+            }
+            fn visit_bool<E>(self, _: bool) -> Result<Ordered, E> {
+                Ok(Ordered::Scalar)
+            }
+            fn visit_i64<E>(self, _: i64) -> Result<Ordered, E> {
+                Ok(Ordered::Scalar)
+            }
+            fn visit_u64<E>(self, _: u64) -> Result<Ordered, E> {
+                Ok(Ordered::Scalar)
+            }
+            fn visit_f64<E>(self, _: f64) -> Result<Ordered, E> {
+                Ok(Ordered::Scalar)
+            }
+            fn visit_str<E>(self, _: &str) -> Result<Ordered, E> {
+                Ok(Ordered::Scalar)
+            }
+            fn visit_unit<E>(self) -> Result<Ordered, E> {
+                Ok(Ordered::Scalar)
+            }
+            fn visit_seq<A: serde::de::SeqAccess<'de>>(
+                self,
+                mut seq: A,
+            ) -> Result<Ordered, A::Error> {
+                let mut items = Vec::new();
+                while let Some(item) = seq.next_element()? {
+                    items.push(item);
+                }
+                Ok(Ordered::Array(items))
+            }
+            fn visit_map<A: serde::de::MapAccess<'de>>(
+                self,
+                mut map: A,
+            ) -> Result<Ordered, A::Error> {
+                let mut members: Vec<(String, Ordered)> = Vec::new();
+                while let Some((key, value)) = map.next_entry::<String, Ordered>()? {
+                    // serde_json keeps the last of a duplicated key; so does this.
+                    members.retain(|(k, _)| *k != key);
+                    members.push((key, value));
+                }
+                Ok(Ordered::Object(members))
+            }
+        }
+        deserializer.deserialize_any(V)
+    }
 }
 
 /// Build every bundle in the registry, in index order.
@@ -656,5 +875,94 @@ mod tests {
         );
         assert!(canonical_json(&json!(1.0)).is_err());
         assert!(canonical_json(&json!(1e21)).is_err());
+    }
+
+    /// The JSON value a pointer from the bundle root names.
+    fn at<'a>(bundle: &'a Value, pointer: &str) -> &'a Value {
+        bundle
+            .pointer(pointer)
+            .unwrap_or_else(|| panic!("{pointer} names nothing in the bundle"))
+    }
+
+    /// `propertyOrder` is the authored order — of the payload schema's own
+    /// members, and of a definition inlined from a shared file — and names
+    /// exactly the members of the object each pointer names.
+    ///
+    /// The authored order is checked against the *text* of each source file
+    /// (each member's first appearance after the definition starts), not
+    /// through the order-keeping parser the bundle writer uses, so the two
+    /// cannot agree by sharing a bug.
+    #[test]
+    fn property_order_is_the_authored_order() {
+        let repo_root = find_repo_root().unwrap();
+        let spec = spec("acl/grant", "0.2");
+        let built = build_bundle(&spec).unwrap();
+        let bundle: Value = serde_json::from_slice(&built.bytes).unwrap();
+        let order = bundle["propertyOrder"].as_object().unwrap();
+
+        let names = |pointer: &str| -> Vec<String> {
+            order[pointer]
+                .as_array()
+                .unwrap_or_else(|| panic!("no propertyOrder entry {pointer}"))
+                .iter()
+                .map(|v| v.as_str().unwrap().to_string())
+                .collect()
+        };
+        let in_text_order = |text: &str, from: usize, members: &[String]| {
+            let mut last = from;
+            for name in members {
+                let at = text[last..]
+                    .find(&format!("\"{name}\""))
+                    .unwrap_or_else(|| panic!("{name} does not follow offset {last}"));
+                last += at + 1;
+            }
+        };
+
+        // The payload schema's own members, which key-sorting would reorder
+        // (`entry`, `ext`, `reason`).
+        assert_eq!(names("/schema"), ["entry", "reason", "ext"]);
+        assert_eq!(names("/schema/$defs/Response"), ["entry", "ext"]);
+
+        // A definition spliced in from `acl/_shared/0.2/acl-entry.schema.json`.
+        let shared_path = repo_root.join("specs/acl/_shared/0.2/acl-entry.schema.json");
+        let shared = fs::read_to_string(&shared_path).unwrap();
+        let acl_entry = names("/schema/$defs/AclEntry");
+        let mut sorted = acl_entry.clone();
+        sorted.sort();
+        assert_ne!(acl_entry, sorted, "AclEntry's authored order is not sorted");
+        let def_start = shared.find("\"AclEntry\"").unwrap();
+        let props_start = def_start + shared[def_start..].find("\"properties\"").unwrap();
+        in_text_order(&shared, props_start, &acl_entry);
+
+        // Every pointer names an object whose `properties` are exactly the
+        // listed names, and the response document's inlined `$defs` carry the
+        // same order as the request's.
+        for (pointer, listed) in order {
+            let mut listed: Vec<&str> = listed
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|v| v.as_str().unwrap())
+                .collect();
+            let mut actual: Vec<&str> = at(&bundle, pointer)["properties"]
+                .as_object()
+                .unwrap_or_else(|| panic!("{pointer} has no properties"))
+                .keys()
+                .map(String::as_str)
+                .collect();
+            listed.sort_unstable();
+            actual.sort_unstable();
+            assert_eq!(listed, actual, "{pointer}");
+            if let Some(rest) = pointer.strip_prefix("/responseSchema/$defs/") {
+                assert_eq!(order[pointer], order[&format!("/schema/$defs/{rest}")]);
+            }
+        }
+        // And every object with `properties` in either schema has an entry.
+        let mut owners = Vec::new();
+        collect_property_owners(&bundle["schema"], &mut Vec::new(), &mut owners);
+        assert_eq!(
+            owners.len(),
+            order.keys().filter(|k| k.starts_with("/schema")).count()
+        );
     }
 }
