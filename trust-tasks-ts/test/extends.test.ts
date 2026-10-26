@@ -185,6 +185,77 @@ describe("extends chain lookup", () => {
   });
 });
 
+describe("extends under a third-party authority (SPEC §6.5)", () => {
+  // Same slug as the registry's BASE, under two other authorities and both
+  // non-registry forms. Each declares its own chain; none may borrow the
+  // registry's, and the registry's may not borrow theirs.
+  const PATH = "did:web:acme.example/spec/auth/authenticate";
+  const urn = (v: string) => `urn:example:acme:spec:auth:authenticate:${v}`;
+  const THIRD_PARTY = {
+    [`${PATH}/0.3`]: "0.2",
+    [`${PATH}/0.2`]: "0.1",
+    [urn("0.3")]: "0.2",
+    [urn("0.2")]: "0.1",
+  };
+
+  it("walks the chain under the same authority and form, path and URN", () => {
+    assert.equal(extendsOf(`${PATH}/0.3#response`, THIRD_PARTY), "0.2");
+    assert.deepEqual(extendsChain(`${PATH}/0.3`, THIRD_PARTY), ["0.2", "0.1"]);
+    assert.equal(extendsOf(`${urn("0.3")}#response`, THIRD_PARTY), "0.2");
+    assert.deepEqual(extendsChain(urn("0.3"), THIRD_PARTY), ["0.2", "0.1"]);
+    // Each lookup is under the received authority: the walk asks for exactly these keys.
+    const asked: string[] = [];
+    extendsChain(urn("0.3"), (k) => (asked.push(k), (THIRD_PARTY as Record<string, string>)[k]));
+    assert.deepEqual(asked, [urn("0.3"), urn("0.2"), urn("0.1")]);
+  });
+
+  it("never crosses to the registry's declarations for the same slug, or back", () => {
+    // Only the registry declares; the third-party chain stays empty.
+    assert.deepEqual(extendsChain(`${PATH}/0.3`, INDEX), []);
+    assert.deepEqual(extendsChain(urn("0.3"), INDEX), []);
+    // Only the third party declares; the registry chain stays empty.
+    assert.deepEqual(extendsChain(`${BASE}/0.3`, THIRD_PARTY), []);
+    // A chain whose second link exists only under another authority stops there.
+    const mixed = { [`${PATH}/0.3`]: "0.2", [`${BASE}/0.2`]: "0.1" };
+    assert.deepEqual(extendsChain(`${PATH}/0.3`, mixed), ["0.2"]);
+  });
+
+  it("readForSpec routes a later third-party version to the one implemented under that authority", () => {
+    const both = { ...INDEX, ...THIRD_PARTY };
+    for (const [received, implemented] of [
+      [`${PATH}/0.3`, `${PATH}/0.1`],
+      [urn("0.3"), urn("0.1")],
+    ] as const) {
+      const read = readForSpec<V01.Payload>({ ...doc03(), type: received }, { ...V01.SPEC, typeUri: implemented }, { index: both });
+      assert.equal(read.kind, "accepted", received);
+      if (read.kind !== "accepted") continue;
+      assert.equal(read.extended, true);
+      assert.equal(read.doc.type, received);
+      assert.deepEqual(read.doc.payload, { challenge: "c".repeat(32), sessionId: "s-1" });
+    }
+  });
+
+  it("readForSpec refuses a same-slug document under another authority or form as unsupportedType", () => {
+    const both = { ...INDEX, ...THIRD_PARTY };
+    for (const [received, implemented] of [
+      [`${PATH}/0.3`, V01.TYPE_URI], // third party → registry
+      [V03.TYPE_URI, `${PATH}/0.1`], // registry → third party
+      [urn("0.3"), `${PATH}/0.1`], // URN → path form of a look-alike
+      [`did:web:other.example/spec/auth/authenticate/0.3`, `${PATH}/0.1`], // another DID
+    ] as const) {
+      const read = readForSpec({ ...doc03(), type: received }, { ...V01.SPEC, typeUri: implemented }, { index: both });
+      assert.equal(read.kind === "refused" && read.reason.code, "unsupportedType", `${received} → ${implemented}`);
+    }
+  });
+
+  it("readForSpec refuses an http or malformed type as unsupportedType", () => {
+    for (const type of ["http://acme.example/spec/auth/authenticate/0.3", `${PATH}/0.3#cancel`, `${PATH}/three`]) {
+      const read = readForSpec({ ...doc03(), type }, { ...V01.SPEC, typeUri: `${PATH}/0.1` }, { index: THIRD_PARTY });
+      assert.equal(read.kind === "refused" && read.reason.code, "unsupportedType", type);
+    }
+  });
+});
+
 describe("readForSpec", () => {
   it("passes the implemented version through untouched", () => {
     const received = { ...doc03(), type: V01.TYPE_URI, payload: { challenge: "c".repeat(32), sessionId: "s-1" } };
