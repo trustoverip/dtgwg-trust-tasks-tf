@@ -72,7 +72,7 @@ related:
 
 [`vta/witness/accept`](../../accept/0.2/spec.md) stores a Verifiable Witness Credential (VWC) in the principal's credential vault **with its evidence**: the `witness/session` document that opened the session, and the witness's `witness/session/submit` `#response` that closed it. A VWC shown without both counts for nothing, because a verifier cannot pair it with a session that completed ([`witness/session/submit/0.2`](../../../../witness/session/submit/0.2/spec.md), *This response is the outcome evidence*).
 
-Until now the only copy of that evidence a client received was `accept`'s own answer. A client that lost it — it stopped between `accept` returning and recording the result, or it is a second device of the same principal — could see the VWC in the vault and could not present it: [`vault/credentials/query/0.1`](../../../../vault/credentials/query/0.1/spec.md) returns body-free descriptors and [`vault/credentials/get/0.1`](../../../../vault/credentials/get/0.1/spec.md) the credential alone.
+Until now the only copy of that evidence a client received was `accept`'s own answer. A client that lost it — it stopped between `accept` returning and recording the result, or it is a second device of the same principal — could see the VWC in the vault and could not present it: [`vault/credentials/query/0.1`](../../../../vault/credentials/query/0.1/spec.md) returns body-free descriptors and [`vault/credentials/get/0.2`](../../../../vault/credentials/get/0.2/spec.md) the credential alone.
 
 **VTA Witness — List** reads back every stored VWC the caller may read, each with its evidence exactly as stored, so the principal's client can rebuild its record of a witnessing at any time.
 

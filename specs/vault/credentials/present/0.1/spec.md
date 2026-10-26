@@ -120,7 +120,7 @@ The **consumer** carries `presentation` to the verifier unchanged: it carries a 
 
 ## Authorization
 
-**Authority: custody of the credential and its subject's key.** The maintainer signs as the subject, so a consumer that may read a credential but not use its subject's key may not have it presented. Being able to read a credential with [`get`](../../get/0.1/spec.md) does not imply being able to present it, and the reverse.
+**Authority: custody of the credential and its subject's key.** The maintainer signs as the subject, so a consumer that may read a credential but not use its subject's key may not have it presented. Being able to read a credential with [`get`](../../get/0.2/spec.md) does not imply being able to present it, and the reverse.
 
 Where that entitlement is expressed as a capability, the registered value is **`credentialPresent`** — see `Capability` in [`device/_shared`](../../../../device/_shared/0.2/device-binding.schema.json). It is not `sign` and is not conferred by it: the maintainer signs only a presentation it builds itself, of a credential it holds, for one audience and nonce, so a holder of `credentialPresent` obtains that and nothing else. Nor is it `vaultRead`: reading a credential is not disclosing it to a third party under its subject's signature.
 
@@ -197,4 +197,4 @@ The consumer's signed request is the holder's instruction to disclose. Descripti
 
 ### Custody scope
 
-A maintainer holds credentials and keys on behalf of more than one context. Where the consumer's scope does not reach the credential or its subject's key, the maintainer **MUST** answer exactly as for an identifier it does not hold, as [`get`](../../get/0.1/spec.md) does, so that the task cannot be used to map another context's vault.
+A maintainer holds credentials and keys on behalf of more than one context. Where the consumer's scope does not reach the credential or its subject's key, the maintainer **MUST** answer exactly as for an identifier it does not hold, as [`get`](../../get/0.2/spec.md) does, so that the task cannot be used to map another context's vault.

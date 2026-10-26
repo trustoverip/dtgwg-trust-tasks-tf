@@ -1,9 +1,10 @@
 ---
 slug: vault/credentials/get
 version: "0.1"
+supersededBy: vault/credentials/get/0.2
 title: "Vault Credentials — Get"
 summary: "Fetch one stored credential's full body by id, for presentation."
-status: draft
+status: retired
 targetFrameworkVersion: "0.5.0"
 category: credentials
 keywords:
@@ -50,7 +51,7 @@ Query enumerates; get discloses. Splitting them is the point: a consumer can bro
 
 ## Status of this Document
 
-This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). It targets framework version 0.5.0 and may change without a version bump while it remains a draft ([SPEC §5.2](/SPEC.md#52-compatibility-rules)).
+This specification is **retired** per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); it is superseded by [`vault/credentials/get/0.2`](../0.2/spec.md), which can return a credential whose canonical form is not a JSON object — an SD-JWT or an mdoc — where this version could not. The schema is frozen; the document is retained so already-issued documents remain verifiable.
 
 It documents a family that maintainers already implement and drive in production tooling, written down so that the shapes stop being recoverable only by reading an implementation.
 

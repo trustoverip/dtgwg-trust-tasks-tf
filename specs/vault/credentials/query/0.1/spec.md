@@ -39,7 +39,7 @@ related: []
 
 ## Abstract
 
-The **Vault Credentials — Query** Trust Task returns the **body-free metadata view** of the W3C credentials a holder's agent stores on its behalf — invitations, memberships, roles. A consumer uses it to render a wallet, answer "which membership do I hold for this community", and choose which credential to present before fetching a body with [`vault/credentials/get`](../../get/0.1/spec.md).
+The **Vault Credentials — Query** Trust Task returns the **body-free metadata view** of the W3C credentials a holder's agent stores on its behalf — invitations, memberships, roles. A consumer uses it to render a wallet, answer "which membership do I hold for this community", and choose which credential to present before fetching a body with [`vault/credentials/get`](../../get/0.2/spec.md).
 
 It is a Trust Task rather than an API call because the maintainer is a distinct party that must authenticate the consumer, evaluate its custody scope, and record the access. The answer is scoped to what that particular consumer is entitled to see, which is a decision only the maintainer can make.
 
