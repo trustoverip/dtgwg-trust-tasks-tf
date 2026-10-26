@@ -117,6 +117,7 @@ no hand-written entries.
 | `@openvtc/trust-tasks-proof` | npm — Data Integrity proof verification/signing for `@openvtc/trust-tasks`, on @noble |
 | `@openvtc/trust-tasks-tsp` | npm — the TSP transport binding, on `@openvtc/vti-tsp-js` |
 | `@openvtc/trust-tasks-capability-client` | npm — capability/`git-trust` document builders + reply parsing, no crypto |
+| `@openvtc/trust-tasks-gen` | npm — `trust-tasks-gen-ts`: generates TypeScript modules for the versions pinned in `trust-tasks.lock`. **Not yet released**: absent from `TS_PACKAGES` in `scripts/release-pr.sh` and from `publish.yml`'s `publish-npm` matrix (its `release-bump-ts.sh` case exists) until its manual first publish — the steps below, then add the matrix leg (`dir: trust-tasks-ts-gen`, `prefix: trust-tasks-ts-gen-v`) and the `TS_PACKAGES` entry. Listing it earlier would fail every Release PR run: `release-bump-ts.sh` refuses a package with no anchor tag |
 
 > ⚠️ **First publish of each new npm package is manual**, the same chicken-and-egg
 > as pub.dev: npm trusted publishing cannot create a package that does not exist.

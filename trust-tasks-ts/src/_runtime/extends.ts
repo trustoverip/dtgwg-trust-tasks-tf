@@ -36,7 +36,8 @@ const VERSION_RE = /^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$/;
 /**
  * Where to look up the version a Type URI declares it extends. Either a map
  * from bare request Type URI to version (the shape of the generated
- * `EXTENDS_BY_TYPE_URI`), or a function. Defaults to the generated index; pass
+ * `EXTENDS_BY_TYPE_URI`), or a function. Defaults to the generated index plus
+ * the tables an application registered with {@link declareExtends}; pass
  * your own to route on knowledge this library release does not carry, or in a
  * test.
  */
@@ -67,6 +68,42 @@ function parseTypeUri(typeUri: string): ParsedTypeUri | null {
   return { slug: rest.slice(0, cut), version, major: Number(m[1]), minor: Number(m[2]), fragment };
 }
 
+/**
+ * Tables an application registered with {@link declareExtends}, in the order
+ * they were declared.
+ */
+const APPLICATION_EXTENDS: Readonly<Record<string, string>>[] = [];
+
+/**
+ * Teach the default lookup — {@link extendsOf}, {@link extendsChain} and
+ * {@link readForSpec} when no `index` is passed — the `extends` declarations
+ * of specification versions this package's generated table does not carry:
+ * those an application generated itself from registry bundles with
+ * `trust-tasks-gen-ts` (`@openvtc/trust-tasks-gen`).
+ *
+ * Each key is a bare request Type URI and each value the `"MAJOR.MINOR"` it
+ * extends — the shape of the generated `EXTENDS_BY_TYPE_URI`. The `index.ts`
+ * the generator writes exports a `declareExtends()` that calls this with its
+ * table, so an application calls that once at start-up.
+ *
+ * Process-wide and additive. Declaring the same table twice is harmless, and
+ * where this package's generated table already answers for a Type URI that
+ * answer stands. A declaration is still only followed when it names a strictly
+ * earlier MINOR of the same MAJOR (SPEC §5.2).
+ */
+export function declareExtends(declarations: Readonly<Record<string, string>>): void {
+  if (!APPLICATION_EXTENDS.includes(declarations)) APPLICATION_EXTENDS.push(declarations);
+}
+
+const hasOwn = (o: object, k: string): boolean => Object.prototype.hasOwnProperty.call(o, k);
+
+/** The default {@link ExtendsLookup}: the generated table, then {@link declareExtends}'s. */
+function defaultLookup(bare: string): string | undefined {
+  if (hasOwn(EXTENDS_BY_TYPE_URI, bare)) return EXTENDS_BY_TYPE_URI[bare];
+  for (const table of APPLICATION_EXTENDS) if (hasOwn(table, bare)) return table[bare];
+  return undefined;
+}
+
 function lookup(index: ExtendsLookup, bare: string): string | null {
   const v = typeof index === "function" ? index(bare) : Object.prototype.hasOwnProperty.call(index, bare) ? index[bare] : undefined;
   return typeof v === "string" && VERSION_RE.test(v) ? v : null;
@@ -77,7 +114,7 @@ function lookup(index: ExtendsLookup, bare: string): string | null {
  * `#request` / `#response` fragment is ignored — the declaration is the
  * specification's, covering both variants.
  */
-export function extendsOf(typeUri: string, index: ExtendsLookup = EXTENDS_BY_TYPE_URI): string | null {
+export function extendsOf(typeUri: string, index: ExtendsLookup = defaultLookup): string | null {
   const p = parseTypeUri(typeUri);
   if (p === null) return null;
   return lookup(index, `${PREFIX}${p.slug}/${p.version}`);
@@ -91,7 +128,7 @@ export function extendsOf(typeUri: string, index: ExtendsLookup = EXTENDS_BY_TYP
  * not strictly earlier within the same MAJOR (the build refuses those), and at
  * a cycle.
  */
-export function extendsChain(typeUri: string, index: ExtendsLookup = EXTENDS_BY_TYPE_URI): string[] {
+export function extendsChain(typeUri: string, index: ExtendsLookup = defaultLookup): string[] {
   const start = parseTypeUri(typeUri);
   if (start === null) return [];
   const chain: string[] = [];
@@ -172,7 +209,7 @@ export function readForSpec<P>(
   spec: SpecPolicy,
   options: { index?: ExtendsLookup } = {},
 ): ReadForSpecResult<P> {
-  const index = options.index ?? EXTENDS_BY_TYPE_URI;
+  const index = options.index ?? defaultLookup;
   if (!isPlainObject(received) || typeof received.type !== "string" || !("payload" in received)) {
     return refused("malformedRequest", "not a Trust Task document (SPEC §4.2)");
   }
