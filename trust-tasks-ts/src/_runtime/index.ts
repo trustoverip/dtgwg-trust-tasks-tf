@@ -68,6 +68,20 @@ export {
   type ProofVerifier,
 } from "./consume.js";
 
+export {
+  FRAMEWORK_RESERVED_SLUGS,
+  REGISTRY_TYPE_URI_AUTHORITY,
+  TypeUriError,
+  formatTypeUri,
+  parseTypeUri,
+  sameSpecification,
+  tryParseTypeUri,
+  typeUriWithVersion,
+  type TypeUri,
+  type TypeUriErrorKind,
+  type TypeUriVariant,
+} from "./type-uri.js";
+
 export { canonicalJson, sha256Hex } from "./canonical.js";
 
 export {
