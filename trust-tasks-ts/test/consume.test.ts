@@ -567,7 +567,7 @@ describe("§7.2 item 2 — payload schema validation", () => {
   });
 
   it("generated SPEC objects carry the schema", async () => {
-    const { WitnessSessionSubmit_v0_1: S } = await import("../src/index.js");
+    const { WitnessSessionSubmit_v0_2: S } = await import("../src/index.js");
     assert.ok(S.SPEC.payloadSchema !== undefined, "request SPEC must carry its schema");
     assert.ok(
       S.RESPONSE_SPEC.payloadSchema !== undefined,

@@ -339,7 +339,7 @@ pub trait Payload: Serialize + DeserializeOwned {
 ///   `send()` compile for an exchange that yields no document, trading a
 ///   compile-time error for a runtime one (the HTTPS binding answers such a
 ///   request with `204` and no body).
-/// - **`trust_task_ok::v0_1::Payload`** — a real payload, but the wrong one
+/// - **the `trust-task-ok/0.1` payload** — a real payload, but the wrong one
 ///   to bake in: framework 0.5.0 deprecates `trust-task-ok` in favour of a
 ///   specification declaring an empty `#response` of its own. Pairing every
 ///   response-less specification with a type that is being retired would
@@ -363,12 +363,11 @@ pub trait RequestPayload: Payload {
 }
 
 #[cfg(all(test, feature = "acl"))] // its specimens are acl payloads
-#[allow(deprecated)] // the specimens are fixed versions; that they are superseded is beside the point
 mod tests {
     use super::*;
-    use crate::specs::acl::change_role::v0_1 as change_role;
-    use crate::specs::acl::grant::v0_1 as grant;
-    use crate::specs::trust_task_discovery::v0_1 as discovery;
+    use crate::specs::acl::change_role::v0_2 as change_role;
+    use crate::specs::acl::grant::v0_2 as grant;
+    use crate::specs::trust_task_discovery::v0_3 as discovery;
 
     #[test]
     fn extended_code_sources_slug_from_type_uri() {

@@ -1,4 +1,4 @@
-//! A signed `acl/grant/0.1` round trip over HTTPS, both ends in one process.
+//! A signed `acl/grant/0.2` round trip over HTTPS, both ends in one process.
 //!
 //! ```sh
 //! cargo run -p trust-tasks --features https,proof-affinidi \
@@ -17,15 +17,12 @@
 //!
 //! [`GETTING-STARTED.md`]: https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/GETTING-STARTED.md
 
-// These name pinned, now-superseded spec versions as fixed specimens; they move before
-// those versions are withdrawn (CLAUDE.md, "Superseded, retired and withdrawn versions").
-#![allow(deprecated)]
 // GETTING-STARTED:begin imports
 use affinidi_secrets_resolver::secrets::Secret;
 use trust_tasks::https::{BearerAuth, ClientError, HttpsClient, HttpsServer};
 use trust_tasks::proof::affinidi::{SignOptions, Verifier};
 use trust_tasks::proof::ProofExt;
-use trust_tasks::specs::acl::grant::v0_1 as grant;
+use trust_tasks::specs::acl::grant::v0_2 as grant;
 use trust_tasks::TrustTask;
 // GETTING-STARTED:end imports
 
@@ -61,8 +58,8 @@ async fn receiver(alice_did: String) -> std::io::Result<()> {
             println!(
                 "  [server] acl/grant from {} → subject={} role={}",
                 ctx.authenticated_sender.as_deref().unwrap_or("<unauth>"),
-                req.payload.entry.subject,
-                &*req.payload.entry.role,
+                req.payload.entry.subject.as_str(),
+                req.payload.entry.role.as_str(),
             );
             // Generated types are `#[non_exhaustive]`: build with `builder()`.
             Ok(grant::Response::builder()
@@ -96,9 +93,21 @@ async fn sender(secret: &Secret, my_did: &str) -> Result<(), Box<dyn std::error:
     // A free-text member declaring a `maxLength` (SPEC §7.3) generates a
     // validating newtype rather than a bare `String`, so the bound is checked
     // where the value is authored instead of at the far end of the wire.
+    //
+    // acl/grant/0.2 states every authority axis explicitly — there is no
+    // default and no implicit form. Carol may act everywhere, may use no
+    // keys, and holds the full ceiling of the `moderator` role.
+    let act = grant::AuthorityScopeAll::try_from(grant::AuthorityScopeAll::builder().scope("all"))?;
+    let keys = grant::KeyScopeNone::try_from(grant::KeyScopeNone::builder().scope("none"))?;
+    let capabilities = grant::CapabilityScopeCeiling::try_from(
+        grant::CapabilityScopeCeiling::builder().scope("ceiling"),
+    )?;
     let entry: grant::AclEntry = grant::AclEntry::builder()
         .subject("did:web:carol.example")
         .role("moderator")
+        .act(act)
+        .keys(keys)
+        .capabilities(capabilities)
         .label(grant::AclEntryLabel::try_from(
             "Carol — content moderation",
         )?)
@@ -128,8 +137,8 @@ async fn sender(secret: &Secret, my_did: &str) -> Result<(), Box<dyn std::error:
             "  [client] ← {}\n           threadId={} entry: subject={} role={}",
             resp.type_uri,
             resp.thread_id.as_deref().unwrap_or("<none>"),
-            resp.payload.entry.subject,
-            &*resp.payload.entry.role,
+            resp.payload.entry.subject.as_str(),
+            resp.payload.entry.role.as_str(),
         ),
         Err(ClientError::TrustTaskError { http_status, error }) => println!(
             "  [client] ← HTTP {} trust-task-error: code={} retryable={}",

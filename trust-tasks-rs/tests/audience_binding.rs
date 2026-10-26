@@ -5,19 +5,20 @@
 //! proof, since the signature does not cover the audience identity.
 //!
 //! Its specimens are `acl` payloads, so a build without that family skips it.
-// Pinned to fixed spec versions on purpose; that they are superseded is beside the point.
-#![allow(deprecated)]
 #![cfg(feature = "acl")]
 
 use chrono::Utc;
-use trust_tasks_rs::{specs::acl::grant::v0_1 as grant, Payload, Proof, StandardCode, TrustTask};
+use trust_tasks_rs::{specs::acl::grant::v0_2 as grant, Payload, Proof, StandardCode, TrustTask};
 
 fn entry() -> grant::AclEntry {
-    grant::AclEntry::builder()
-        .subject("did:web:alice.example")
-        .role("admin")
-        .try_into()
-        .expect("acl entry builder")
+    serde_json::from_value(serde_json::json!({
+        "subject": "did:web:alice.example",
+        "role": "admin",
+        "act": { "scope": "all" },
+        "keys": { "scope": "all" },
+        "capabilities": { "scope": "ceiling" }
+    }))
+    .expect("a valid acl/grant/0.2 entry")
 }
 
 fn payload() -> grant::Payload {

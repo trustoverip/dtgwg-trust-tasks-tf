@@ -722,30 +722,22 @@ fn proof_error_to_reject(err: VerificationError) -> RejectReason {
 }
 
 #[cfg(all(test, feature = "acl"))] // its specimens are acl payloads
-#[allow(deprecated)] // the specimens are fixed versions; that they are superseded is beside the point
 mod tests {
     use super::*;
     use crate::handlers::NoopHandler;
     use crate::proof::Proof;
-    use crate::specs::acl::grant::v0_1 as grant;
+    use crate::specs::acl::grant::v0_2 as grant;
     use crate::StandardCode;
 
     fn entry() -> grant::AclEntry {
-        grant::AclEntry {
-            allowed_keys: None,
-            subject: "did:web:alice.example".into(),
-            role: "admin".into(),
-            scopes: vec![],
-            label: None,
-            created_at: None,
-            created_by: None,
-            updated_at: None,
-            updated_by: None,
-            expires_at: None,
-            approve: None,
-            step_up: None,
-            ext: None,
-        }
+        serde_json::from_value(serde_json::json!({
+            "subject": "did:web:alice.example",
+            "role": "admin",
+            "act": { "scope": "all" },
+            "keys": { "scope": "all" },
+            "capabilities": { "scope": "ceiling" }
+        }))
+        .expect("a valid acl/grant/0.2 entry")
     }
 
     fn grant_payload() -> grant::Payload {
@@ -810,7 +802,7 @@ mod tests {
         let mut doc = TrustTask::for_payload("req-1", grant_payload());
         doc.issuer = Some("did:web:org.example".into());
         doc.recipient = Some("did:web:maintainer.example".into());
-        // acl/grant/0.1 now declares issuedAtRequirement: REQUIRED (SPEC §7.3
+        // acl/grant declares issuedAtRequirement: REQUIRED (SPEC §7.3
         // item 17), so a document meant to be judged on any other ground has
         // to carry a stamped instant to be placed in an acceptance window.
         doc.issued_at = Some(Utc::now());
@@ -844,7 +836,7 @@ mod tests {
         match outcome {
             ConsumeOutcome::Handled(resp) => {
                 assert_eq!(resp.id, "resp-1");
-                assert_eq!(resp.payload.entry.subject, "did:web:alice.example");
+                assert_eq!(resp.payload.entry.subject.as_str(), "did:web:alice.example");
             }
             other => panic!("expected Handled, got {other:?}"),
         }
@@ -860,7 +852,7 @@ mod tests {
         let mut doc = TrustTask::for_payload("req-1", grant_payload());
         doc.issuer = Some("did:web:org.example".into());
         doc.recipient = Some("did:web:maintainer.example".into());
-        // acl/grant/0.1 now declares issuedAtRequirement: REQUIRED (SPEC §7.3
+        // acl/grant declares issuedAtRequirement: REQUIRED (SPEC §7.3
         // item 17), so a document meant to be judged on any other ground has
         // to carry a stamped instant to be placed in an acceptance window.
         doc.issued_at = Some(Utc::now());
@@ -906,7 +898,7 @@ mod tests {
         let mut doc = TrustTask::for_payload("req-1", grant_payload());
         doc.issuer = Some("did:web:org.example".into());
         doc.recipient = Some("did:web:maintainer.example".into());
-        // acl/grant/0.1 now declares issuedAtRequirement: REQUIRED (SPEC §7.3
+        // acl/grant declares issuedAtRequirement: REQUIRED (SPEC §7.3
         // item 17), so a document meant to be judged on any other ground has
         // to carry a stamped instant to be placed in an acceptance window.
         doc.issued_at = Some(Utc::now());
@@ -1034,7 +1026,7 @@ mod tests {
         let mut doc = TrustTask::for_payload("req-3", grant_payload());
         doc.issuer = Some("did:web:org.example".into());
         doc.recipient = Some("did:web:maintainer.example".into());
-        // acl/grant/0.1 now declares issuedAtRequirement: REQUIRED (SPEC §7.3
+        // acl/grant declares issuedAtRequirement: REQUIRED (SPEC §7.3
         // item 17), so a document meant to be judged on any other ground has
         // to carry a stamped instant to be placed in an acceptance window.
         doc.issued_at = Some(Utc::now());
@@ -1076,7 +1068,7 @@ mod tests {
         let mut doc = TrustTask::for_payload("req-4", grant_payload());
         doc.issuer = Some("did:web:org.example".into());
         doc.recipient = Some("did:web:maintainer.example".into());
-        // acl/grant/0.1 now declares issuedAtRequirement: REQUIRED (SPEC §7.3
+        // acl/grant declares issuedAtRequirement: REQUIRED (SPEC §7.3
         // item 17), so a document meant to be judged on any other ground has
         // to carry a stamped instant to be placed in an acceptance window.
         doc.issued_at = Some(Utc::now());
@@ -1130,7 +1122,7 @@ mod tests {
         let mut doc = TrustTask::for_payload("req-5", grant_payload());
         doc.issuer = Some("did:web:org.example".into());
         doc.recipient = Some("did:web:maintainer.example".into());
-        // acl/grant/0.1 now declares issuedAtRequirement: REQUIRED (SPEC §7.3
+        // acl/grant declares issuedAtRequirement: REQUIRED (SPEC §7.3
         // item 17), so a document meant to be judged on any other ground has
         // to carry a stamped instant to be placed in an acceptance window.
         doc.issued_at = Some(Utc::now());
@@ -1181,24 +1173,13 @@ mod tests {
     /// every spec to behave like REQUIRED.
     #[tokio::test]
     async fn recommended_spec_accepts_proofless_under_verify_policy() {
-        use crate::specs::acl::list::v0_1 as list;
+        use crate::specs::acl::list::v0_3 as list;
         let transport = NoopHandler::new();
         let verifier = StubVerifier { outcome: Ok(()) };
-        let mut doc = TrustTask::for_payload(
-            "req-rec-1",
-            list::Payload {
-                role: None,
-                scope: None,
-                direction: None,
-                subject_prefix: None,
-                page_size: None,
-                cursor: None,
-                ext: None,
-            },
-        );
+        let mut doc = TrustTask::for_payload("req-rec-1", list::Payload::default());
         doc.issuer = Some("did:web:org.example".into());
         doc.recipient = Some("did:web:maintainer.example".into());
-        // acl/grant/0.1 now declares issuedAtRequirement: REQUIRED (SPEC §7.3
+        // acl/grant declares issuedAtRequirement: REQUIRED (SPEC §7.3
         // item 17), so a document meant to be judged on any other ground has
         // to carry a stamped instant to be placed in an acceptance window.
         doc.issued_at = Some(Utc::now());
@@ -1218,9 +1199,8 @@ mod tests {
                     "resp-rec-1",
                     list::Response {
                         entries: vec![],
-                        cursor: None,
+                        next_cursor: None,
                         redacted_fields: vec![],
-                        truncated: false,
                         ext: None,
                     },
                 ))
@@ -1235,23 +1215,12 @@ mod tests {
     /// without invoking any verifier. Locks in the explicit opt-out.
     #[tokio::test]
     async fn accept_unverified_passes_proof_bearing_doc_through() {
-        use crate::specs::acl::list::v0_1 as list;
+        use crate::specs::acl::list::v0_3 as list;
         let transport = NoopHandler::new();
-        let mut doc = TrustTask::for_payload(
-            "req-au-1",
-            list::Payload {
-                role: None,
-                scope: None,
-                direction: None,
-                subject_prefix: None,
-                page_size: None,
-                cursor: None,
-                ext: None,
-            },
-        );
+        let mut doc = TrustTask::for_payload("req-au-1", list::Payload::default());
         doc.issuer = Some("did:web:org.example".into());
         doc.recipient = Some("did:web:maintainer.example".into());
-        // acl/grant/0.1 now declares issuedAtRequirement: REQUIRED (SPEC §7.3
+        // acl/grant declares issuedAtRequirement: REQUIRED (SPEC §7.3
         // item 17), so a document meant to be judged on any other ground has
         // to carry a stamped instant to be placed in an acceptance window.
         doc.issued_at = Some(Utc::now());
@@ -1272,9 +1241,8 @@ mod tests {
                         "resp-au-1",
                         list::Response {
                             entries: vec![],
-                            cursor: None,
+                            next_cursor: None,
                             redacted_fields: vec![],
-                            truncated: false,
                             ext: None,
                         },
                     ))
@@ -1303,7 +1271,7 @@ mod tests {
         let mut doc = TrustTask::for_payload("req-pi-1", grant_payload());
         doc.issuer = Some("did:web:org.example".into());
         doc.recipient = Some("did:web:maintainer.example".into());
-        // acl/grant/0.1 now declares issuedAtRequirement: REQUIRED (SPEC §7.3
+        // acl/grant declares issuedAtRequirement: REQUIRED (SPEC §7.3
         // item 17), so a document meant to be judged on any other ground has
         // to carry a stamped instant to be placed in an acceptance window.
         doc.issued_at = Some(Utc::now());
@@ -1343,29 +1311,18 @@ mod tests {
     #[tokio::test]
     async fn resolved_parties_filled_in_from_transport_when_in_band_absent() {
         use crate::handlers::InMemoryHandler;
-        use crate::specs::acl::list::v0_1 as list;
+        use crate::specs::acl::list::v0_3 as list;
         let transport = InMemoryHandler::new()
             .with_local("did:web:maintainer.example")
             .with_peer("did:web:org.example");
-        let mut doc = TrustTask::for_payload(
-            "req-rp-1",
-            list::Payload {
-                role: None,
-                scope: None,
-                direction: None,
-                subject_prefix: None,
-                page_size: None,
-                cursor: None,
-                ext: None,
-            },
-        );
+        let mut doc = TrustTask::for_payload("req-rp-1", list::Payload::default());
         // acl/list declares its recipient party REQUIRED, so `recipient` must be
         // carried in-band (§7.2 item 5b) — the consumer cross-checks it against
         // the transport-authenticated local VID. `issuer` is omitted and is the
         // member filled from the transport-authenticated peer (§4.8.1), which is
         // the behaviour under test.
         doc.recipient = Some("did:web:maintainer.example".into());
-        // acl/grant/0.1 now declares issuedAtRequirement: REQUIRED (SPEC §7.3
+        // acl/grant declares issuedAtRequirement: REQUIRED (SPEC §7.3
         // item 17), so a document meant to be judged on any other ground has
         // to carry a stamped instant to be placed in an acceptance window.
         doc.issued_at = Some(Utc::now());
@@ -1390,9 +1347,8 @@ mod tests {
                         "resp-rp-1",
                         list::Response {
                             entries: vec![],
-                            cursor: None,
+                            next_cursor: None,
                             redacted_fields: vec![],
-                            truncated: false,
                             ext: None,
                         },
                     ))
@@ -1410,19 +1366,11 @@ mod tests {
     async fn identity_mismatch_with_no_transport_sender_is_suppressed() {
         let mut doc = TrustTask::for_payload(
             "req-im-1",
-            crate::specs::acl::list::v0_1::Payload {
-                role: None,
-                scope: None,
-                direction: None,
-                subject_prefix: None,
-                page_size: None,
-                cursor: None,
-                ext: None,
-            },
+            crate::specs::acl::list::v0_3::Payload::default(),
         );
         doc.issuer = Some("did:web:attacker.example".into());
         doc.recipient = Some("did:web:maintainer.example".into());
-        // acl/grant/0.1 now declares issuedAtRequirement: REQUIRED (SPEC §7.3
+        // acl/grant declares issuedAtRequirement: REQUIRED (SPEC §7.3
         // item 17), so a document meant to be judged on any other ground has
         // to carry a stamped instant to be placed in an acceptance window.
         doc.issued_at = Some(Utc::now());
@@ -1467,7 +1415,7 @@ mod tests {
             }
         }
 
-        let outcome: ConsumeOutcome<crate::specs::acl::list::v0_1::Response> =
+        let outcome: ConsumeOutcome<crate::specs::acl::list::v0_3::Response> =
             consume_inbound::<_, _, _, StubVerifier, NoValidator, _, _>(
                 &MismatchingNoSenderTransport,
                 ProofPolicy::RejectIfPresent,
@@ -1524,15 +1472,15 @@ mod tests {
     }
 
     /// SPEC §5.2 "Declared extension" through the full pipeline: a signed
-    /// document of a (fictional) `acl/grant/0.9` declared to extend `0.1` is
-    /// read as `0.1` with its added members pruned, and its proof is verified
+    /// document of a (fictional) `acl/grant/0.9` declared to extend `0.2` is
+    /// read as `0.2` with its added members pruned, and its proof is verified
     /// over the document **as received** — added members and all — not over
     /// the pruned one, over which it would fail.
     #[tokio::test]
     async fn a_signed_extended_document_verifies_over_what_was_received() {
         crate::extension::test_index::declare(
             "https://trusttasks.org/spec/acl/grant/0.9",
-            Some("0.1"),
+            Some("0.2"),
         );
         let mut doc = TrustTask::for_payload("req-ext", grant_payload());
         doc.issuer = Some("did:web:org.example".into());
@@ -1550,7 +1498,7 @@ mod tests {
             let typed = crate::extension::read_as::<grant::Payload>(
                 serde_json::from_value(received.clone()).unwrap(),
             )
-            .expect("0.9 reads as 0.1");
+            .expect("0.9 reads as 0.2");
             // The typed document is pruned, so the proof does not hold over
             // it — which is why the verifier must never see it.
             let typed_value = serde_json::to_value(&typed).unwrap();
