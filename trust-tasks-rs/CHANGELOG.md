@@ -31,6 +31,99 @@ consumer should read it.
 
 ## [Unreleased]
 
+## [0.35.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.35.0...trust-tasks-rs-v0.35.1) — 2026-10-26
+
+
+### Added
+
+- **rs, build, cli**: An application generates only the tasks it pins, and builds three of them in 8 s instead of 140 s ([#930](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/930))
+
+* feat(rs, build, cli): an application generates only the tasks it pins, and builds three of them in 8 s instead of 140 s
+
+  Milestone 2 of consumer-side generation (docs/design/consumer-side-generation.md).
+
+  - trust-tasks-cli: the `trust-tasks` command — add, remove, update, fetch,
+    check, list. trust-tasks.toml is the intent, trust-tasks.lock the
+    resolution; bundles are vendored by digest from the append-only
+    /specs/by-digest/ store, which deploy now writes and never deletes.
+  - trust-tasks-build: an application's build.rs generates the versions its
+    lock pins, after verifying each vendored bundle against the lock. The
+    per-module generator moved here from trust-tasks-codegen, which now goes
+    spec → bundle → generate_module and regenerates the repo byte-identically.
+  - trust-tasks-rs (additive): a hidden `__private` re-export of serde,
+    serde_json, regress and chrono, `extension::declare_extends` so the
+    dispatchers route along app-generated `extends` chains, and a hidden
+    `DeclaredErrorCode::__from_declaration`.
+  - Bundles carry `propertyOrder`, the authored member order the canonical
+    form sorts away.
+  - examples/consumer-app pins three tasks: cold build 8.1 s / 0.41 GB, against
+    140.2 s / 17.4 GB for trust-tasks-rs with every prebuilt module.
+
+  Both new crates are `release = false` until their manual first publish.
+
+- **specs**: Registry/* in lowerCamelCase, with a validity window on trust records ([#925](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/925))
+
+* feat(specs): registry/* in lowerCamelCase, with a validity window on trust records
+
+  New versions of every live registry/* spec move the family from TRQP's
+  snake_case to the registry-wide lowerCamelCase convention, and give trust
+  records an optional validity window so a query's `context.time` has
+  something to be judged against (TRQP v2.0, Identifiers: `time` is "the
+  datetime as of which the target authority statement is valid").
+
+  - registry/_shared 0.2: TrustRecord members entityId, authorityId,
+    recordType; new optional validFrom (inclusive) / validUntil (exclusive).
+  - registry/authorization 0.2, registry/recognition 0.2: entityId,
+    authorityId; time_evaluated -> evaluatedAt and time_requested -> asOf,
+    per the `<event>At` / `asOf` instant conventions. New Evaluation section:
+    outside the window the answer is false; a registry evaluating at its own
+    clock MAY start a record up to 60 s before validFrom, never extends
+    validUntil, and evaluates an explicit context.time exactly. A TRQP field
+    names table gives the mapping a registry applies on the plain HTTP
+    TRQP binding.
+  - registry/record/put 0.3, registry/record/query 0.3,
+    registry/record/delete 0.2: renamed members; put defines the window and
+    rejects validFrom >= validUntil as malformedRequest.
+  - registry/did/rotate 0.2: preRotationCount, newScid, newVersionId.
+
+  The superseded versions stay published. Stale prose links in git-trust and
+  vtc/directory/card/publish are moved to the new versions, and the TRQP
+  instant-name allowlist entries are dropped, since no current spec uses them.
+  Libraries regenerated.
+
+- **rs, https, dart-https**: Answer trust-task-discovery 0.3, and move every hand-written use off the versions the first withdrawal batch removes ([#924](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/924))
+
+* ci: warn about hand-written imports of versions due in the next withdrawal batch, and fail inside 30 days of it
+
+
+
+### Fixed
+
+- **rs**: Keep the published crate well under crates.io's 10 MB upload limit ([#926](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/926))
+
+* fix(rs): keep the published crate well under crates.io's 10 MB upload limit
+
+  `cargo package -p trust-tasks-rs` produced a 9.96 MB .crate: the next release
+  adding a few spec versions would have failed to publish. Three changes, none
+  visible in the API, take it to 7.80 MB:
+
+  - Exclude the generated conformance tests (tests/conformance, 1,057 files)
+    from the package. They run in this repository's CI; a consumer never
+    compiles another crate's integration tests.
+  - Drop the `<details><summary>JSON schema</summary>` block typify writes into
+    every generated type's doc comment. It restated the type's schema, nested
+    types included, once per enclosing type — 11–14 MB of source. The prose
+    description is kept; the schema itself is PAYLOAD_SCHEMA and the published
+    document at the Type URI.
+  - Emit PAYLOAD_SCHEMA compact rather than pretty-printed. The value is the same
+    JSON (check-bindings parses it and agrees across all four languages); only
+    the whitespace a validator never reads is gone.
+
+  Generated source: 87 MB → 71 MB. clippy --all-features -D warnings, the acl
+  tests and rustdoc -D warnings pass.
+
+
+
 ## [0.35.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-rs-v0.34.2...trust-tasks-rs-v0.35.0) — 2026-10-26
 
 
