@@ -51,12 +51,16 @@ describe("generated shared definitions", () => {
     // places with a different `description` at each, and the compiler emits a
     // copy per description. That duplication is inside one schema, not across
     // files, so hoisting cross-file components does not reach it. Listed rather
-    // than filtered out by pattern so that a new one has to be looked at.
-    const expected = new Set([
-      "provision/integration/0.1/payload.ts",
-      "provision/integration/0.2/payload.ts",
-      "provision/integration/0.3/payload.ts",
-    ]);
+    // than filtered out by pattern so that a new one has to be looked at. A
+    // listed version that has been withdrawn is no longer generated, so it
+    // drops out of the expectation instead of failing the withdrawal batch.
+    const expected = new Set(
+      [
+        "provision/integration/0.1/payload.ts",
+        "provision/integration/0.2/payload.ts",
+        "provision/integration/0.3/payload.ts",
+      ].filter((rel) => fs.existsSync(path.join(SRC, rel))),
+    );
 
     const offenders = new Map<string, string[]>();
     for (const file of generatedModules()) {

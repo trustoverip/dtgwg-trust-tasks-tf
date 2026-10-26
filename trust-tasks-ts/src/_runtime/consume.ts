@@ -10,7 +10,7 @@
  * ```ts
  * import {
  *   consequentialChecks, consumeInbound, InMemoryReplayGuard,
- *   StaticTransport, AclGrant_v0_1,
+ *   StaticTransport, AclGrant_v0_2,
  * } from "@openvtc/trust-tasks";
  *
  * // One guard per consumer, not one per document: it *is* the record.
@@ -18,7 +18,7 @@
  *
  * const outcome = await consumeInbound({
  *   transport,
- *   spec: AclGrant_v0_1.SPEC,
+ *   spec: AclGrant_v0_2.SPEC,
  *   proofPolicy: { kind: "verify", verify: myVerifier },
  *   // ajv, or whatever validator you already run — see PayloadPolicy.
  *   payloadPolicy: { kind: "validate", validate: myValidator },
