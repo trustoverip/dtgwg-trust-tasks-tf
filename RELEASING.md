@@ -198,13 +198,12 @@ How each part of it is computed:
 
 **The crates** — `release-plz update`, reading `release-plz.toml` exactly as
 the old release-plz PR did (the `core` version group, `cliff.toml`). The bump
-levels are **derived, not guessed**:
-[`cargo-semver-checks`](https://github.com/obi1kenobi/cargo-semver-checks)
-compares each crate's public API against the version on crates.io, so a genuine
-API break moves the compatibility field whether or not anyone remembered to say
-so. Every crate here is `0.x`, where cargo treats the **minor** field as the
-compatibility boundary: `0.14.0` → `0.14.1` is compatible, `0.14.0` → `0.15.0`
-is not.
+levels come from the conventional commits, as for every other package: a `!`
+scoped to a crate (or a `BREAKING CHANGE:` trailer) moves the compatibility
+field, anything else is a patch. `semver_check` is off; what keeps the subjects
+honest is `rs API compatibility` on every pull request (below). Every crate here
+is `0.x`, where cargo treats the **minor** field as the compatibility boundary:
+`0.14.0` → `0.14.1` is compatible, `0.14.0` → `0.15.0` is not.
 
 **The npm packages** — `scripts/release-bump-ts.sh <package>`, from the
 conventional commits since the package's `<prefix>-v*` tag. The core
@@ -229,25 +228,38 @@ declarations that must stay equal: `version:` in `pubspec.yaml` and
 `packageVersion` in `lib/src/runtime/version.dart`. The others watch only their
 own directory and move `version:` alone.
 
-`release-plz` runs one `cargo-semver-checks` per changed crate, in parallel, and
-each builds rustdoc for its crate and every dependency. With `trust-tasks-rs`
-alone peaking near 13 GB, four at once exhausted the 16 GB runner and the
-kernel killed the job (exit 143, with no error in the log). `publish.yml`
-therefore wraps the binary in `flock` so they run one at a time; the Release PR
-job takes about 40 minutes as a result, and its timeout is 90.
+The Release PR job used to run `cargo-semver-checks` through release-plz, after
+every merge, over every generated module: ~12.6 GB for `trust-tasks-rs` alone,
+8 to 40 minutes (the checks had to be serialised to stop the kernel killing the
+job), and a break found only after it had merged. It now runs no API check and
+takes about a minute.
 
 **Every library's API is checked on the pull request.** The crates have
-`cargo-semver-checks`, run by release-plz; the core npm, Go and Dart packages
+`rs API compatibility` (`scripts/check-rs-api-compat.sh`, cargo-semver-checks
+against each crate's last release tag); the core npm, Go and Dart packages
 each have an API compatibility job that compares the PR with the last published
-release and refuses an undeclared break. All three apply one rule: a break passes
-when the PR title carries a `!` whose scope list names the package (`feat(ts)!:`,
-`feat(go)!:`, `feat(dart)!:`; the withdrawal batch's `feat(rs, ts, go, dart)!:`
-names all three), or when a change merged since that release already makes the
+release and refuses an undeclared break. All four apply one rule: a break passes
+when the PR title carries a `!` whose scope list names the package (`feat(rs)!:`,
+`feat(ts)!:`, `feat(go)!:`, `feat(dart)!:`; the withdrawal batch's
+`feat(rs, ts, go, dart)!:` names all four), or when a change merged since that release already makes the
 next one breaking. Each reads the PR title live, so after retitling a PR, re-run
 the job. The bump scripts (`release-bump-{ts,go,dart}.sh`) count a `!` the same
 scoped way, so a spec-scoped `!` from before commit-lint enforced package scopes
 no longer makes them breaking.
 
+- **Rust** — `rs API compatibility` (`rust.yml`, `scripts/check-rs-api-compat.sh`)
+  runs `cargo-semver-checks --baseline-rev <crate>-v<x.y.z>` for each published
+  crate. `trust-tasks-rs` is compared with only the runtime, `validate` and the
+  `acl` family: the other families are the same generator's output, and a schema
+  change is judged by `check-published-schemas`. That keeps it near a minute and
+  ~200 MB, against ~12.6 GB for every family. The facade and
+  `trust-tasks-ceremony` are always checked; a binding crate (which compiles every
+  family through its dependency, ~13 GB, ~5 minutes) only when the PR changes
+  it. The core crates release as one version group, so a `!` scoped to any of
+  them (`rs`, `codegen`, `https`, `didcomm`, `didcomm-v1`, `tsp`, `proof`,
+  `capability-client`) declares a break for all; `ceremony` versions alone.
+  Crates with no release tag yet are skipped. Locally:
+  `PR_TITLE='fix: x' BASE_REF=origin/main scripts/check-rs-api-compat.sh`.
 - **TypeScript** — `ts API compatibility` (`ts.yml`, `trust-tasks-ts/scripts/api-compat.mjs`)
   compares every `.d.ts` of `@openvtc/trust-tasks` (the package exports `./*`)
   with the last npm release, using `@microsoft/api-extractor` (pinned in
