@@ -285,6 +285,16 @@ class Payload {
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/chat/message/0.1';
 
+/// The `MAJOR.MINOR` this version declares it extends (SPEC §5.2, "Declared
+/// extension"), or null when it declares none.
+///
+/// Only the direct declaration. A consumer implementing that version SHOULD
+/// accept a document of this one by ignoring the payload members it does not
+/// recognise; [readForVersion] does that, walking the whole chain through
+/// `package:trust_tasks/specs/extends_index.dart`. Named `extendsVersion`
+/// because `extends` is a reserved word.
+const String? extendsVersion = null;
+
 /// This specification's payload schema, as JSON text.
 ///
 /// SPEC §7.2 item 2 is performed against this. It ships with the library rather
