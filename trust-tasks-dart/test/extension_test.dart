@@ -1,3 +1,6 @@
+// auth/authenticate/0.1 is the older version a newer document is routed to here, and is
+// superseded; same-package use of it is reported as deprecated by SDKs before 3.4.
+// ignore_for_file: deprecated_member_use_from_same_package
 // Forward-minor reading along a declared `extends` chain (SPEC §5.2,
 // "Declared extension").
 //
