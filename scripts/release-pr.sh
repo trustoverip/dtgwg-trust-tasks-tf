@@ -14,8 +14,9 @@
 #
 #   1. `release-plz update` bumps the crates and writes their changelogs —
 #      everything the release-plz Release PR used to contain, including the
-#      cargo-semver-checks bump levels and the `core` version group
-#      (release-plz.toml). Only the PR-opening half of release-plz is dropped.
+#      `core` version group (release-plz.toml). Bump levels come from the
+#      conventional commits; an undeclared API break was already refused on its
+#      pull request (`rs API compatibility`). Only the PR-opening half of release-plz is dropped.
 #   2. scripts/release-bump-{ts,go,dart}.sh bump each npm package, Go module
 #      and Dart package from the conventional commits since its own tag. Each
 #      is a no-op when its package has nothing to release.
@@ -32,7 +33,7 @@
 # the branch, so a re-run recomputes the same tree.
 #
 # Run from the repository root, on a full-history checkout of `main`, with `gh`
-# authenticated (GH_TOKEN), and `release-plz`, `cargo-semver-checks`,
+# authenticated (GH_TOKEN), and `release-plz`,
 # `git-cliff`, `node` and `jq` on PATH.
 
 set -euo pipefail
@@ -102,7 +103,7 @@ crate_versions() {
 before="$(crate_versions)"
 
 # release-plz insists on a clean tree, so it runs first. It reads
-# release-plz.toml (semver_check, the `core` version group, cliff.toml) the same
+# release-plz.toml (the `core` version group, cliff.toml) the same
 # way `release-pr` did.
 release-plz update
 
@@ -173,7 +174,7 @@ version is not published yet"):
 
 - **crates.io** — \`release-plz-release\` tags \`<crate>-v<version>\`, publishes in
   dependency order and creates a GitHub Release per crate. Bump levels come from
-  \`cargo-semver-checks\`.
+  the commit subjects.
 - **npm** — \`publish-npm\` publishes with OIDC provenance and tags
   \`<prefix>-v<version>\`.
 - **Go** — \`publish-go\` builds, vets and tests, then pushes the tag, which *is*
@@ -181,9 +182,9 @@ version is not published yet"):
 - **pub.dev** — \`tag-dart\` verifies against the *published* core and pushes the
   tag; \`publish-dart.yml\` publishes from it.
 
-The npm, Go and Dart bumps follow the commit subjects; an undeclared API break in
-any of them is refused on its pull request by that language's API compatibility
-check, as \`cargo-semver-checks\` refuses one in the crates here.
+Every bump follows the commit subjects; an undeclared API break is refused on its
+pull request by that language's API compatibility check (\`rs\`, \`ts\`, \`go\` and
+\`Dart API compatibility\`).
 
 This branch is regenerated from \`main\` on every push, so do not commit to it —
 edits are force-pushed away. See RELEASING.md.

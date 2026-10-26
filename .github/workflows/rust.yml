@@ -256,6 +256,72 @@ jobs:
           PUBLISHED_BASE_REF: ${{ github.event.pull_request.base.sha }}
         run: node scripts/check-published-schemas.mjs
 
+  # The crates' counterpart of `go API compatibility` and friends: each
+  # published crate against its own last release, failing an incompatible
+  # change the PR title does not declare with a `!`. This used to run inside
+  # the Release PR job (release-plz's `semver_check`), after the merge and over
+  # every generated module (~12.6 GB, 8-13 minutes, repeatedly killed for
+  # memory). Here it compares the runtime plus one generated family and takes
+  # about a minute; what it checks and why that is enough is in the script.
+  api-compat:
+    name: rs API compatibility
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # Tags for the baselines, history for the "already breaking" check.
+          fetch-depth: 0
+      # A changed binding crate pulls in Affinidi's TDK, whose build scripts
+      # probe for libdbus-1. See the `test` job for why `update` may fail.
+      - name: Install libdbus-1-dev
+        run: |
+          sudo apt-get update || true
+          sudo apt-get install -y libdbus-1-dev pkg-config
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-semver-checks
+      # Only a PR that changes a binding crate needs this: documenting one
+      # compiles trust-tasks-rs with every family, ~13 GB resident, measured.
+      # A standard runner has 16 GB; swap lets it finish under pressure. On
+      # whichever of / and /mnt has more room, up to 16 GB, leaving 8 GB for
+      # the builds — the runner image's disk layout is not ours to assume.
+      - name: Add swap
+        run: |
+          sudo systemctl stop systemd-oomd || true
+          sudo swapoff -a
+          sudo rm -f /mnt/swapfile /swapfile
+          root_free=$(df --output=avail -BG / | tail -1 | tr -dc 0-9)
+          mnt_free=$(df --output=avail -BG /mnt | tail -1 | tr -dc 0-9)
+          if [ "$mnt_free" -gt "$root_free" ]; then dir=/mnt free=$mnt_free; else dir='' free=$root_free; fi
+          size=$(( free - 8 < 16 ? free - 8 : 16 ))
+          if [ "$size" -lt 4 ]; then
+            echo "::warning::only ${free}G free; not adding swap"
+          else
+            sudo fallocate -l "${size}G" "$dir/swapfile"
+            sudo chmod 600 "$dir/swapfile"
+            sudo mkswap "$dir/swapfile"
+            sudo swapon "$dir/swapfile"
+          fi
+          free -h
+      - name: Compare with the last releases
+        # The title is read through the API, never interpolated into the
+        # script body (see go.yml's api-compat for why it is fetched now rather
+        # than taken from the event: retitle, re-run, and this sees the change).
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          EVENT_TITLE: ${{ github.event.pull_request.title }}
+          BASE_REF: ${{ github.event.pull_request.base.sha }}
+          # Lints from the published crates' own source are not this job's
+          # business; cargo-semver-checks builds both trees.
+          RUSTFLAGS: ""
+        run: |
+          PR_TITLE=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq .title) || PR_TITLE="$EVENT_TITLE"
+          export PR_TITLE
+          scripts/check-rs-api-compat.sh
+
   fmt:
     name: cargo fmt
     runs-on: ubuntu-latest

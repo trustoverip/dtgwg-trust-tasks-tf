@@ -153,7 +153,7 @@ jobs:
         working-directory: ${{ matrix.package }}
         run: npm test
 
-  # Rust has cargo-semver-checks (release-plz runs it); this is the
+  # Rust has cargo-semver-checks (`rs API compatibility`); this is the
   # TypeScript counterpart, on the PR so an undeclared break is caught when
   # it is made instead of shipping as a patch. It compares the PR's public
   # declarations — every .d.ts, since `exports` has `./*` — with the last
