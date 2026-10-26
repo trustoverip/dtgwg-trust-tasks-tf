@@ -223,3 +223,59 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Check bindings against specs
         run: npm run check-bindings
+
+  # Consumer-side generation (docs/design/consumer-side-generation.md,
+  # milestone 3): trust-tasks-gen-ts generates modules from registry bundles.
+  # This runs it over EVERY bundle and compares the result with the prebuilt
+  # modules scripts/build-ts-bindings.mjs commits — every module and every
+  # hoisted shared definition byte-identical, schemas JSON-equal in the same
+  # member order, the generated tree type-checked. What it compares and the
+  # differences it explains: trust-tasks-ts-gen/scripts/equivalence.mjs.
+  gen-equivalence:
+    name: trust-tasks-gen-ts equivalence
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+      - name: Install trust-tasks-ts dev dependencies (tsc)
+        working-directory: trust-tasks-ts
+        run: npm ci --no-audit --no-fund
+      - name: Install
+        working-directory: trust-tasks-ts-gen
+        run: npm ci --no-audit --no-fund
+      - name: Test
+        working-directory: trust-tasks-ts-gen
+        run: npm test
+      - name: Build the registry bundles
+        run: cargo run -q --release -p trust-tasks-codegen -- --bundles "$RUNNER_TEMP/bundles"
+      - name: Generate every bundle and compare with the prebuilt modules
+        working-directory: trust-tasks-ts-gen
+        run: npm run build && node scripts/equivalence.mjs --bundles "$RUNNER_TEMP/bundles" --work "$RUNNER_TEMP/equivalence"
+
+  # An application that pins three registry tasks and one third-party task,
+  # generates them with trust-tasks-gen-ts, type-checks, and runs a round trip
+  # through the runtime — against the runtime in this checkout, because the
+  # generated index calls `declareExtends`, which is newer than the last
+  # release. The TypeScript twin of rust.yml's `consumer-app`.
+  consumer-app-ts:
+    name: example application (trust-tasks-gen-ts)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+      - name: Build @openvtc/trust-tasks
+        working-directory: trust-tasks-ts
+        run: npm ci --no-audit --no-fund && npm run build
+      - name: Build @openvtc/trust-tasks-gen
+        working-directory: trust-tasks-ts-gen
+        run: npm ci --no-audit --no-fund && npm run build
+      - name: Generate, build and run
+        working-directory: examples/consumer-app-ts
+        run: npm ci --no-audit --no-fund && npm run all
