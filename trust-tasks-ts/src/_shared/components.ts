@@ -12740,7 +12740,7 @@ export interface TransportObservation_DidManagementV0_3 {
   transport: "tsp" | "didcomm" | "https";
   observedAt: string;
 }
-export interface TrustRecord {
+export interface TrustRecord_RegistryV0_1 {
   entity_id: string;
   authority_id: string;
   action: string;
@@ -12760,6 +12760,35 @@ export interface TrustRecord {
     [k: string]: unknown | undefined;
   };
   record_type: RecordType;
+}
+export interface TrustRecord_RegistryV0_2 {
+  entityId: string;
+  authorityId: string;
+  action: string;
+  resource: string;
+  /**
+   * Present on recognition records: whether the action+resource is recognised.
+   */
+  recognized?: boolean;
+  /**
+   * Present on authorization records: whether the action+resource authorization is confirmed.
+   */
+  authorized?: boolean;
+  /**
+   * Opaque governance context attached to the record.
+   */
+  context?: {
+    [k: string]: unknown | undefined;
+  };
+  recordType: RecordType;
+  /**
+   * The first instant at which the authority statement holds (inclusive). Absent: no lower bound.
+   */
+  validFrom?: string;
+  /**
+   * The instant at which the authority statement stops holding (exclusive). Absent: no upper bound. When both bounds are present, `validFrom` MUST be earlier than `validUntil`.
+   */
+  validUntil?: string;
 }
 /**
  * The trustees of a sealed or tallied-encrypted election and the number of them decryption needs (VTI-VOT-062). Neither the community nor the ballot box may be one.

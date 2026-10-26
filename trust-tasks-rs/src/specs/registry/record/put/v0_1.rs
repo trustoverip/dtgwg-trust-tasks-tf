@@ -4,7 +4,7 @@
 #![allow(deprecated)]
 /// Why this specification version is deprecated (SPEC "Superseded and
 /// Withdrawn Versions"), or `None` while it is current.
-pub const DEPRECATION: Option<&str> = Some("superseded by registry/record/put/0.2");
+pub const DEPRECATION: Option<&str> = Some("superseded by registry/record/put/0.3");
 #[allow(unused_imports)]
 use serde::{Deserialize, Serialize};
 /// Error types.
@@ -173,7 +173,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by registry/record/put/0.2")]
+#[deprecated(note = "superseded by registry/record/put/0.3")]
 pub struct Payload {
     ///Optional existence assertion. When true, the registry MUST reject with `registry/record/put:notFound` if no record exists at the key (strict update). When false, the registry MUST reject with `registry/record/put:alreadyExists` if one does (strict create). Omitted: pure create-or-update.
     #[serde(
@@ -304,7 +304,7 @@ impl ::std::convert::TryFrom<::std::string::String> for RecordType {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "superseded by registry/record/put/0.2")]
+#[deprecated(note = "superseded by registry/record/put/0.3")]
 pub struct Response {
     ///True when the put created a new record, false when it replaced an existing one.
     pub created: bool,

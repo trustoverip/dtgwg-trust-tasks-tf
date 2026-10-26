@@ -1,0 +1,22 @@
+[
+  {
+    "note": "Empty payload omits the required identifiers.",
+    "payload": {}
+  },
+  {
+    "note": "Missing action + resource.",
+    "payload": {
+      "entityId": "did:example:entity",
+      "authorityId": "did:example:authority"
+    }
+  },
+  {
+    "note": "The pre-0.2 snake_case members `entity_id` and `authority_id` are rejected (additionalProperties: false); the members are `entityId` and `authorityId`.",
+    "payload": {
+      "entity_id": "did:example:entity",
+      "authority_id": "did:example:authority",
+      "action": "issue",
+      "resource": "vc"
+    }
+  }
+]

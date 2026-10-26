@@ -3,19 +3,19 @@
  * Source: specs/registry/record/update/0.1/payload.schema.json
  */
 
-import type { Ext, RecordType, TrustRecord } from "../../../../_shared/components.js";
+import type { Ext, RecordType, TrustRecord_RegistryV0_1 as TrustRecord } from "../../../../_shared/components.js";
 
 
 /**
  * An administrator asks a trust registry to update an existing trust record. The record key (entity+authority+action+resource) must already exist.
  *
- * @deprecated retired; use registry/record/put/0.2
+ * @deprecated retired; use registry/record/put/0.3
  */
 export interface RegistryRecordUpdatePayload {
   record: TrustRecord;
   ext?: Ext;
 }
-/** @deprecated retired; use registry/record/put/0.2 */
+/** @deprecated retired; use registry/record/put/0.3 */
 export interface RegistryRecordUpdateResponsePayload {
   /**
    * Whether the record was updated.
@@ -48,12 +48,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "retired; use registry/record/put/0.2";
+export const DEPRECATION: string | null = "retired; use registry/record/put/0.3";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated retired; use registry/record/put/0.2
+ * @deprecated retired; use registry/record/put/0.3
  */
 export type Payload = RegistryRecordUpdatePayload;
 
@@ -63,7 +63,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/registry/record/up
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated retired; use registry/record/put/0.2
+ * @deprecated retired; use registry/record/put/0.3
  */
 export type Response = RegistryRecordUpdateResponsePayload;
 

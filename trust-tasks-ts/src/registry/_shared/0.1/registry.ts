@@ -14,4 +14,4 @@ export interface SharedDefinitionsForTheRegistrySpecFamily {
  * The definitions this shared schema publishes, hoisted to one declaration each.
  * See "../../../_shared/components.js".
  */
-export type { QueryContext, RecordType, TrustRecord } from "../../../_shared/components.js";
+export type { QueryContext, RecordType, TrustRecord_RegistryV0_1 as TrustRecord } from "../../../_shared/components.js";

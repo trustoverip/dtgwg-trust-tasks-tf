@@ -9,6 +9,8 @@ import (
 )
 
 // Response Registry Record Delete — response payload
+//
+// Deprecated: superseded by registry/record/delete/0.2
 type Response struct {
 	// Whether the record was deleted.
 	OK bool `json:"ok"`
@@ -24,6 +26,8 @@ type Ext = map[string]json.RawMessage
 
 // Payload An administrator asks a trust registry to delete the trust record identified by
 // the four TRQP identifiers.
+//
+// Deprecated: superseded by registry/record/delete/0.2
 type Payload struct {
 	EntityID    string `json:"entity_id"`
 	AuthorityID string `json:"authority_id"`
@@ -47,7 +51,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by registry/record/delete/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/registry/record/delete/0.1#response"

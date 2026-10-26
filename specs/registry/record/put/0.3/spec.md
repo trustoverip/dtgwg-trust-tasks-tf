@@ -1,0 +1,146 @@
+---
+slug: registry/record/put
+version: "0.3"
+title: Registry — Put Record
+summary: An administrator creates or replaces, in a verifiable form, the recognition or authorization record at a trust registry key — one task for both halves of the superseded create/update pair.
+status: draft
+targetFrameworkVersion: "0.6.0"
+category: governance
+keywords:
+  - trust-registry
+  - trqp
+  - record
+  - put
+  - upsert
+  - admin
+authors:
+  - Glenn Gore (https://github.com/stormer78)
+parties:
+  - role: Registry administrator
+    requirement: REQUIRED
+    member: issuer
+  - role: Trust registry
+    requirement: REQUIRED
+    member: recipient
+proofRequirement:
+  requirement: REQUIRED
+  rationale: Putting a trust record is an evidentiary, state-changing administrative act that may be audited or replayed after the original transport has closed; transport-independent integrity is required.
+issuedAtRequirement:
+  requirement: REQUIRED
+  rationale: A put replaces the record wholesale, so an out-of-order copy silently restores an earlier revision that resolvers will then serve as current.
+sideEffects:
+  level: mutating
+  rationale: "Creates or replaces a trust record; deletable and re-puttable."
+exposure:
+  discloses: none
+  actsAsSubject: false
+errorCodes:
+  - code: registry/record/put:alreadyExists
+    meaning: "`expectedExisting: false` was asserted but a record already exists for the given entity+authority+action+resource key."
+    retryable: false
+  - code: registry/record/put:notFound
+    meaning: "`expectedExisting: true` was asserted but no record exists for the given entity+authority+action+resource key."
+    retryable: false
+related:
+  - registry/record/query
+  - registry/record/delete
+  - registry/recognition
+  - registry/authorization
+  - vault/upsert
+---
+
+## Abstract
+
+The **Registry — Put Record** Trust Task creates or replaces a trust record — a recognition or authorization assertion — in a trust registry. The *registry administrator* declares the [`TrustRecord`](../../../_shared/0.2/registry.schema.json) to store; the *trust registry* applies its own policy and, if accepted, stores it at the record's four-part key (`entityId`, `authorityId`, `action`, `resource`), overwriting any record already there.
+
+This task supersedes the [`registry/record/create`](../../create/0.1/spec.md) / [`registry/record/update`](../../update/0.1/spec.md) pair, which carried the identical single-`record` payload and differed only in their already-exists / not-found error codes. Following the [`vault/upsert`](../../../../vault/upsert/0.4/spec.md) precedent, those strict semantics remain available through the optional `expectedExisting` assertion — so nothing expressible before is lost, and the common case is one round trip with no prior existence check.
+
+## Status of this Document
+
+This is a **draft** *Trust Task specification* per [SPEC.md §5.3](/SPEC.md#53-maturity-levels); the schema **MAY** change without notice. Feedback via the [issue tracker](https://github.com/trustoverip/dtgwg-trust-tasks-tf/issues).
+
+## Changes from 0.2
+
+- Members are renamed to lowerCamelCase, as throughout the `registry/*` family: `record.entity_id` → `entityId`, `record.authority_id` → `authorityId`, `record.record_type` → `recordType`. Types, requiredness and meaning are unchanged.
+- `record` gains the optional validity window `validFrom` / `validUntil` (RFC 3339 instants), from the shared [`TrustRecord`](../../../_shared/0.2/registry.schema.json) 0.2. A record without them holds at every instant, as every 0.2 record did.
+- The response is unchanged.
+
+Breaking on the wire, released as a `MINOR` increment under [§5.2](/SPEC.md#52-compatibility-rules)'s `draft` allowance. `0.2` remains published.
+
+## Conformance
+
+[[RFC2119]](https://www.rfc-editor.org/rfc/rfc2119) and [[RFC8174]](https://www.rfc-editor.org/rfc/rfc8174) key-word conventions apply.
+
+## Definitions
+
+`record` follows the shared [`TrustRecord`](../../../_shared/0.2/registry.schema.json) definition: the four identifiers, a `recordType` (`recognition` or `authorization`), the corresponding `recognized`/`authorized` boolean, an opaque governance `context`, and an optional validity window. Its members are lowerCamelCase, as throughout the `registry/*` family.
+
+The validity window is the half-open interval from `validFrom` (inclusive) to `validUntil` (exclusive). Either bound MAY be omitted, which leaves that side open; a record with neither bound holds at every instant. When both are present, `validFrom` MUST be earlier than `validUntil`, and the registry MUST reject a record that breaks this with `trust-task-error` (framework `malformedRequest`). A record whose window has ended stays stored until it is replaced or deleted, so queries about an instant inside the window still find it.
+
+`expectedExisting` is an OPTIONAL existence assertion:
+
+* **absent** — pure create-or-update: the registry stores the record whether or not the key already exists.
+* **`true`** — strict update: the key MUST already exist; otherwise the registry MUST reject with `registry/record/put:notFound`.
+* **`false`** — strict create: the key MUST NOT already exist; otherwise the registry MUST reject with `registry/record/put:alreadyExists`.
+
+## Request
+
+The *registry administrator* (document `issuer`) sends the record to the *trust registry* (document `recipient`). A `proof` is REQUIRED.
+
+### Example request
+
+```json
+{
+  "record": {
+    "entityId": "did:example:issuer-42",
+    "authorityId": "did:web:ecosystem.example",
+    "action": "issue",
+    "resource": "https://schema.example/PersonhoodCredential",
+    "authorized": true,
+    "recordType": "authorization",
+    "context": {},
+    "validFrom": "2026-07-01T00:00:00Z",
+    "validUntil": "2027-07-01T00:00:00Z"
+  }
+}
+```
+
+## Response
+
+The *trust registry* (now the `issuer` of the response) replies with the `#response` document reachable via `$anchor: "response"` in `payload.schema.json`, carrying `ok: true` and `wasCreated` — `true` when the put created a new record, `false` when it replaced an existing one. A violated `expectedExisting` assertion uses `trust-task-error` with the corresponding error code, not a `#response` document.
+
+### Example response
+
+```json
+{ "ok": true, "wasCreated": true }
+```
+
+## Security & Privacy
+
+### Data carried
+
+The request carries one [`TrustRecord`](../../../_shared/0.2/registry.schema.json):
+the entity, authority, action and resource identifiers, the record type, the
+`recognized`/`authorized` boolean, an opaque governance `context` and the
+optional validity window, plus the optional `expectedExisting` assertion. The response carries `ok`, `wasCreated`
+and an optional `message` of at most 1024 characters. The specification imposes
+no minimisation rule on `context` or `ext`.
+
+### Correlation
+
+The record's key joins an entity identifier to the authority that recognizes or
+authorizes it and to the action and resource concerned; that join is the
+record's purpose, and the registry serves it to resolvers. The document's
+`issuer` and its `proof` tie each put to the administrator who made it.
+`threadId` correlates request and response. The specification imposes no
+further rule on correlation.
+
+### Retention
+
+Records are evidentiary; the registry SHOULD retain an audit trail of put/delete operations that records whether each put created or replaced. A stored record persists until replaced or deleted (`registry/record/delete`).
+
+### Consent/purpose
+
+Only administrators authorized by the registry's own ACL may put records; the registry MUST verify the `proof` and the authenticated sender before applying the change. The record is stored so that the registry can answer recognition and authorization queries about the entity.
+
+Because a bare put silently replaces whatever is at the key, administrators racing on the same key can overwrite each other; tooling that requires lost-update protection SHOULD assert `expectedExisting` (and compare the read-back record via [`registry/record/query`](../../query/0.3/spec.md)) rather than issuing blind puts.

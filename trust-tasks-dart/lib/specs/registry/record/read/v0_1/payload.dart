@@ -21,7 +21,7 @@ extension type const RecordType(String value) {
 }
 
 /// Registry Record Read — response payload (a TrustRecord)
-@Deprecated('retired; use registry/record/query/0.2')
+@Deprecated('retired; use registry/record/query/0.3')
 class Response {
   const Response({
     required this.entityId,
@@ -75,7 +75,7 @@ typedef Ext = Map<String, dynamic>;
 /// An administrator reads the full trust record identified by the four TRQP
 /// identifiers (both the recognized and authorized facets, unlike the filtered TRQP
 /// query responses).
-@Deprecated('retired; use registry/record/query/0.2')
+@Deprecated('retired; use registry/record/query/0.3')
 class Payload {
   const Payload({
     required this.entityId,
@@ -117,7 +117,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'retired; use registry/record/query/0.2';
+const String? deprecation = 'retired; use registry/record/query/0.3';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/registry/record/read/0.1';

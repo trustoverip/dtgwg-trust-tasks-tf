@@ -57,7 +57,7 @@ registry as the TRQP authorization tuple `{entity_id: subject, authority_id:
 the community's authority DID (from the capability's config), action:
 "git.commit.sign", resource}`. CI verifiers (e.g. `did-git-sign
 verify-trust`) query that tuple anonymously via
-[`registry/authorization`](../../../registry/authorization/0.1/spec.md);
+[`registry/authorization`](../../../registry/authorization/0.2/spec.md);
 repo-scoped queries may fall back to the org-scoped tuple per the verifier's
 configuration.
 
