@@ -60,6 +60,10 @@
 // family/version-qualified identifier (`VaultEntry_VaultV0_1`). Only a name
 // with exactly one shape across the whole registry keeps the bare form.
 //
+// Once emitted, a name is kept: `trust-tasks-ts/component-names.lock.json`
+// records it, so a later second shape (a new `_shared` version) is qualified
+// alone and the published bare name does not move. See `buildComponentRegistry`.
+//
 // Each spec module re-exports what it uses under the definition's own name, so
 // `AclEntry` is still `AclEntry` there — what disappears is the numbered
 // duplicates. Shared schema modules re-export their own definitions the same
@@ -353,15 +357,57 @@ function familyTag(abs) {
 }
 
 /**
+ * Where the names given to hoisted components are remembered between runs.
+ *
+ * The name a component gets is part of the package's public API: modules
+ * re-export it, and `SharedComponents` exports it under that name. Deriving it
+ * afresh each run made it depend on what *else* exists. A name with one shape
+ * is bare, a name with several is qualified, so publishing a second shape of
+ * `TrustRecord` (a new `_shared` version) renamed the first one to
+ * `TrustRecord_RegistryV0_1` in every module that already exported it. That is
+ * a breaking release of the package for a purely additive spec change.
+ *
+ * The lock keeps every name that has been generated. A component that has a
+ * name keeps it; only components without one are named by the rules below.
+ * It lives outside `src/` so it is not shipped, and the drift job diffs it with
+ * `src/`, so a regenerated lock that was not committed fails CI.
+ */
+const NAME_LOCK_PATH = path.join(REPO_ROOT, "trust-tasks-ts", "component-names.lock.json");
+
+const lockKey = (component) =>
+  `${path.relative(SPECS_DIR, component.file).split(path.sep).join("/")}#/$defs/${component.defName}`;
+
+function readNameLock() {
+  if (!fsSync.existsSync(NAME_LOCK_PATH)) return new Map();
+  return new Map(Object.entries(JSON.parse(fsSync.readFileSync(NAME_LOCK_PATH, "utf8"))));
+}
+
+async function writeNameLock(components) {
+  const entries = [...components.values()].map((c) => [lockKey(c), c.tsName]);
+  entries.sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+  await fs.writeFile(NAME_LOCK_PATH, JSON.stringify(Object.fromEntries(entries), null, 2) + "\n", "utf8");
+}
+
+/**
  * Give every component a TypeScript name.
  *
- * A `$defs` name that denotes exactly one shape across the whole registry keeps
- * it. A name that denotes several is emitted once per shape, and *every* one of
- * them is qualified — leaving one unqualified would imply it is the canonical
- * `VaultEntry` when there is no such thing.
+ * Components are grouped by shape, so a group is one TypeScript type.
+ *
+ * 1. A group keeps the name the lock gives its components. When two groups
+ *    claim one locked name (a shape that split, by an in-place additive edit to
+ *    one of its copies), the group holding the earliest source file keeps it
+ *    and the other is named afresh.
+ * 2. Any other group is named afresh. A `$defs` name with exactly one shape
+ *    across the registry, and not already taken, is used bare. Otherwise the
+ *    name is qualified with the family and version (`VaultEntry_VaultV0_1`).
+ *    A brand-new name with several shapes qualifies *every* one of them,
+ *    because leaving one bare would imply it is the canonical `VaultEntry` when
+ *    there is no such thing. A name that already shipped bare stays bare, and
+ *    the new shape beside it is the one that gets qualified.
  */
 function buildComponentRegistry(payloadPaths) {
   const components = collectComponents(payloadPaths);
+  const lock = readNameLock();
 
   const byDefName = new Map();
   for (const component of components.values()) {
@@ -370,29 +416,53 @@ function buildComponentRegistry(payloadPaths) {
     byDefName.get(component.baseName).push(component);
   }
 
-  const byName = new Map();
+  const groups = [];
   const multiShaped = [];
   for (const [baseName, list] of byDefName) {
-    const groups = new Map();
+    const byShape = new Map();
     for (const component of list) {
-      if (!groups.has(component.shape)) groups.set(component.shape, []);
-      groups.get(component.shape).push(component);
+      if (!byShape.has(component.shape)) byShape.set(component.shape, []);
+      byShape.get(component.shape).push(component);
     }
-    const qualify = groups.size > 1;
-    if (qualify) multiShaped.push({ baseName, shapes: groups.size });
-    for (const group of groups.values()) {
-      group.sort((a, b) => (a.file < b.file ? -1 : a.file > b.file ? 1 : 0));
-      const name = qualify ? `${baseName}_${familyTag(group[0].file)}` : baseName;
-      if (byName.has(name)) {
-        throw new Error(
-          `two shapes of ${baseName} both want the TypeScript name ${name} — ` +
-            `they come from the same family and version (${group[0].file} vs ` +
-            `${byName.get(name).sources[0].file}); one of them needs renaming in the schema`,
-        );
-      }
-      byName.set(name, { name, baseName, fragment: group[0].fragment, file: group[0].file, sources: group });
-      for (const component of group) component.tsName = name;
+    if (byShape.size > 1) multiShaped.push({ baseName, shapes: byShape.size });
+    for (const sources of byShape.values()) {
+      sources.sort((a, b) => (a.file < b.file ? -1 : a.file > b.file ? 1 : 0));
+      groups.push({ baseName, sources, shapes: byShape.size });
     }
+  }
+  groups.sort((a, b) => (a.sources[0].file < b.sources[0].file ? -1 : a.sources[0].file > b.sources[0].file ? 1 : 0));
+
+  const byName = new Map();
+  const assign = (group, name) => {
+    byName.set(name, { name, baseName: group.baseName, fragment: group.sources[0].fragment, file: group.sources[0].file, sources: group.sources });
+    for (const component of group.sources) component.tsName = name;
+    group.name = name;
+  };
+
+  // 1. Locked names. A group whose sources were locked under different names
+  // (two shapes that later converged) keeps the bare one if it has it, else
+  // the first in sort order.
+  for (const group of groups) {
+    const locked = [...new Set(group.sources.map((c) => lock.get(lockKey(c))).filter(Boolean))].sort(
+      (a, b) => (a === group.baseName ? -1 : b === group.baseName ? 1 : a.localeCompare(b)),
+    );
+    const name = locked.find((n) => !byName.has(n));
+    if (name) assign(group, name);
+  }
+
+  // 2. Everything else.
+  for (const group of groups) {
+    if (group.name) continue;
+    const bare = group.shapes === 1 && !byName.has(group.baseName);
+    const name = bare ? group.baseName : `${group.baseName}_${familyTag(group.sources[0].file)}`;
+    if (byName.has(name)) {
+      throw new Error(
+        `two shapes of ${group.baseName} both want the TypeScript name ${name} — ` +
+          `they come from the same family and version (${group.sources[0].file} vs ` +
+          `${byName.get(name).sources[0].file}); one of them needs renaming in the schema`,
+      );
+    }
+    assign(group, name);
   }
 
   // A hoisted name that collides with one of the module tail's own exports
@@ -1547,6 +1617,7 @@ async function main() {
   for (const { baseName, shapes } of registry.multiShaped) {
     console.log(`  · ${baseName}: ${shapes} shapes`);
   }
+  await writeNameLock(registry.components);
   await emitComponentsModule(registry);
 
   console.log(`Generating bindings for ${filtered.length} schemas...`);

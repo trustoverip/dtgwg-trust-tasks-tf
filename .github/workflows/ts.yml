@@ -50,9 +50,13 @@ jobs:
         run: npm run build-ts-bindings
       - name: Check for drift
         run: |
-          if ! git diff --quiet trust-tasks-ts/src; then
-            echo "::error::TS bindings are stale. Run \`npm run build-ts-bindings\` and commit the diff. Do NOT bump @openvtc/trust-tasks — the Release PR does that; see RELEASING.md."
-            git diff trust-tasks-ts/src
+          # The name lock is generator output too: a run that names a new
+          # shared component must commit it, or the next shape of that name
+          # could rename it.
+          git add -N trust-tasks-ts/component-names.lock.json
+          if ! git diff --quiet trust-tasks-ts/src trust-tasks-ts/component-names.lock.json; then
+            echo "::error::TS bindings are stale. Run \`npm run build-ts-bindings\` and commit the diff (including trust-tasks-ts/component-names.lock.json). Do NOT bump @openvtc/trust-tasks — the Release PR does that; see RELEASING.md."
+            git diff trust-tasks-ts/src trust-tasks-ts/component-names.lock.json
             exit 1
           fi
 
