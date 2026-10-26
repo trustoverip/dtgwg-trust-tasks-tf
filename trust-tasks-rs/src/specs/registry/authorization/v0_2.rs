@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,48 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///TRQP v2.0 authorization query: ask a trust registry whether an entity is authorized by an authority for a given action+resource, evaluated as of `context.time` (or the registry's current time) against the matching record's validity window. Members are lowerCamelCase per the registry naming convention; a registry serving the plain HTTP TRQP binding maps them to TRQP's snake_case field names (`entityId` ↔ `entity_id`, `evaluatedAt` ↔ `time_evaluated`, and so on) at that binding.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/registry/authorization/0.2",
-///  "title": "Payload",
-///  "description": "TRQP v2.0 authorization query: ask a trust registry whether an entity is authorized by an authority for a given action+resource, evaluated as of `context.time` (or the registry's current time) against the matching record's validity window. Members are lowerCamelCase per the registry naming convention; a registry serving the plain HTTP TRQP binding maps them to TRQP's snake_case field names (`entityId` ↔ `entity_id`, `evaluatedAt` ↔ `time_evaluated`, and so on) at that binding.",
-///  "type": "object",
-///  "required": [
-///    "action",
-///    "authorityId",
-///    "entityId",
-///    "resource"
-///  ],
-///  "properties": {
-///    "action": {
-///      "description": "The action the query is checking authorization for.",
-///      "type": "string"
-///    },
-///    "authorityId": {
-///      "description": "Identifier of the authority being queried.",
-///      "type": "string"
-///    },
-///    "context": {
-///      "$ref": "#/definitions/QueryContext"
-///    },
-///    "entityId": {
-///      "description": "Identifier of the entity being tested for authorization.",
-///      "type": "string"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "resource": {
-///      "description": "The resource the query is checking authorization for.",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -210,30 +144,6 @@ impl Payload {
 }
 ///Optional TRQP query context. `time` requests evaluation as of a given instant; `locator` is an authority-defined hint for locating records.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "QueryContext",
-///  "description": "Optional TRQP query context. `time` requests evaluation as of a given instant; `locator` is an authority-defined hint for locating records.",
-///  "type": "object",
-///  "properties": {
-///    "locator": {
-///      "description": "Optional hint for systems that need extra information to locate the records in question (authorization queries).",
-///      "type": "string"
-///    },
-///    "time": {
-///      "description": "Evaluate the query as of this RFC3339 (Z offset) instant. Blank/absent uses current server time.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": {
-///    "type": "string"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
 pub struct QueryContext {
@@ -253,64 +163,6 @@ impl QueryContext {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "action",
-///    "authorityId",
-///    "authorized",
-///    "entityId",
-///    "evaluatedAt",
-///    "resource"
-///  ],
-///  "properties": {
-///    "action": {
-///      "type": "string"
-///    },
-///    "asOf": {
-///      "description": "The requested server time, echoed from the request `context.time` when supplied.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "authorityId": {
-///      "type": "string"
-///    },
-///    "authorized": {
-///      "description": "True if the action+resource authorization has been confirmed, false otherwise.",
-///      "type": "boolean"
-///    },
-///    "context": {
-///      "$ref": "#/definitions/QueryContext"
-///    },
-///    "entityId": {
-///      "type": "string"
-///    },
-///    "evaluatedAt": {
-///      "description": "Server time the query was evaluated at, per the endpoint clock.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "message": {
-///      "description": "Additional human-readable detail about the authorization response.",
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "resource": {
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -348,16 +200,6 @@ impl Response {
 }
 ///Additional human-readable detail about the authorization response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Additional human-readable detail about the authorization response.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseMessage(::std::string::String);
@@ -790,7 +632,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/registry/authorization/0.2";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"QueryContext\": {\n      \"additionalProperties\": {\n        \"type\": \"string\"\n      },\n      \"description\": \"Optional TRQP query context. `time` requests evaluation as of a given instant; `locator` is an authority-defined hint for locating records.\",\n      \"properties\": {\n        \"locator\": {\n          \"description\": \"Optional hint for systems that need extra information to locate the records in question (authorization queries).\",\n          \"type\": \"string\"\n        },\n        \"time\": {\n          \"description\": \"Evaluate the query as of this RFC3339 (Z offset) instant. Blank/absent uses current server time.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"title\": \"QueryContext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"action\": {\n          \"type\": \"string\"\n        },\n        \"asOf\": {\n          \"description\": \"The requested server time, echoed from the request `context.time` when supplied.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"authorityId\": {\n          \"type\": \"string\"\n        },\n        \"authorized\": {\n          \"description\": \"True if the action+resource authorization has been confirmed, false otherwise.\",\n          \"type\": \"boolean\"\n        },\n        \"context\": {\n          \"$ref\": \"#/$defs/QueryContext\"\n        },\n        \"entityId\": {\n          \"type\": \"string\"\n        },\n        \"evaluatedAt\": {\n          \"description\": \"Server time the query was evaluated at, per the endpoint clock.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"message\": {\n          \"description\": \"Additional human-readable detail about the authorization response.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"resource\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"entityId\",\n        \"authorityId\",\n        \"action\",\n        \"resource\",\n        \"authorized\",\n        \"evaluatedAt\"\n      ],\n      \"title\": \"Registry Authorization — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/registry/authorization/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"TRQP v2.0 authorization query: ask a trust registry whether an entity is authorized by an authority for a given action+resource, evaluated as of `context.time` (or the registry's current time) against the matching record's validity window. Members are lowerCamelCase per the registry naming convention; a registry serving the plain HTTP TRQP binding maps them to TRQP's snake_case field names (`entityId` ↔ `entity_id`, `evaluatedAt` ↔ `time_evaluated`, and so on) at that binding.\",\n  \"properties\": {\n    \"action\": {\n      \"description\": \"The action the query is checking authorization for.\",\n      \"type\": \"string\"\n    },\n    \"authorityId\": {\n      \"description\": \"Identifier of the authority being queried.\",\n      \"type\": \"string\"\n    },\n    \"context\": {\n      \"$ref\": \"#/$defs/QueryContext\"\n    },\n    \"entityId\": {\n      \"description\": \"Identifier of the entity being tested for authorization.\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"resource\": {\n      \"description\": \"The resource the query is checking authorization for.\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"entityId\",\n    \"authorityId\",\n    \"action\",\n    \"resource\"\n  ],\n  \"title\": \"Registry Authorization — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"QueryContext\":{\"additionalProperties\":{\"type\":\"string\"},\"description\":\"Optional TRQP query context. `time` requests evaluation as of a given instant; `locator` is an authority-defined hint for locating records.\",\"properties\":{\"locator\":{\"description\":\"Optional hint for systems that need extra information to locate the records in question (authorization queries).\",\"type\":\"string\"},\"time\":{\"description\":\"Evaluate the query as of this RFC3339 (Z offset) instant. Blank/absent uses current server time.\",\"format\":\"date-time\",\"type\":\"string\"}},\"title\":\"QueryContext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"action\":{\"type\":\"string\"},\"asOf\":{\"description\":\"The requested server time, echoed from the request `context.time` when supplied.\",\"format\":\"date-time\",\"type\":\"string\"},\"authorityId\":{\"type\":\"string\"},\"authorized\":{\"description\":\"True if the action+resource authorization has been confirmed, false otherwise.\",\"type\":\"boolean\"},\"context\":{\"$ref\":\"#/$defs/QueryContext\"},\"entityId\":{\"type\":\"string\"},\"evaluatedAt\":{\"description\":\"Server time the query was evaluated at, per the endpoint clock.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"message\":{\"description\":\"Additional human-readable detail about the authorization response.\",\"maxLength\":1024,\"type\":\"string\"},\"resource\":{\"type\":\"string\"}},\"required\":[\"entityId\",\"authorityId\",\"action\",\"resource\",\"authorized\",\"evaluatedAt\"],\"title\":\"Registry Authorization — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/registry/authorization/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"TRQP v2.0 authorization query: ask a trust registry whether an entity is authorized by an authority for a given action+resource, evaluated as of `context.time` (or the registry's current time) against the matching record's validity window. Members are lowerCamelCase per the registry naming convention; a registry serving the plain HTTP TRQP binding maps them to TRQP's snake_case field names (`entityId` ↔ `entity_id`, `evaluatedAt` ↔ `time_evaluated`, and so on) at that binding.\",\"properties\":{\"action\":{\"description\":\"The action the query is checking authorization for.\",\"type\":\"string\"},\"authorityId\":{\"description\":\"Identifier of the authority being queried.\",\"type\":\"string\"},\"context\":{\"$ref\":\"#/$defs/QueryContext\"},\"entityId\":{\"description\":\"Identifier of the entity being tested for authorization.\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"resource\":{\"description\":\"The resource the query is checking authorization for.\",\"type\":\"string\"}},\"required\":[\"entityId\",\"authorityId\",\"action\",\"resource\"],\"title\":\"Registry Authorization — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -798,7 +640,7 @@ impl crate::Payload for Response {
         "https://trusttasks.org/spec/registry/authorization/0.2#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"QueryContext\": {\n      \"additionalProperties\": {\n        \"type\": \"string\"\n      },\n      \"description\": \"Optional TRQP query context. `time` requests evaluation as of a given instant; `locator` is an authority-defined hint for locating records.\",\n      \"properties\": {\n        \"locator\": {\n          \"description\": \"Optional hint for systems that need extra information to locate the records in question (authorization queries).\",\n          \"type\": \"string\"\n        },\n        \"time\": {\n          \"description\": \"Evaluate the query as of this RFC3339 (Z offset) instant. Blank/absent uses current server time.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"title\": \"QueryContext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"action\": {\n          \"type\": \"string\"\n        },\n        \"asOf\": {\n          \"description\": \"The requested server time, echoed from the request `context.time` when supplied.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"authorityId\": {\n          \"type\": \"string\"\n        },\n        \"authorized\": {\n          \"description\": \"True if the action+resource authorization has been confirmed, false otherwise.\",\n          \"type\": \"boolean\"\n        },\n        \"context\": {\n          \"$ref\": \"#/$defs/QueryContext\"\n        },\n        \"entityId\": {\n          \"type\": \"string\"\n        },\n        \"evaluatedAt\": {\n          \"description\": \"Server time the query was evaluated at, per the endpoint clock.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"message\": {\n          \"description\": \"Additional human-readable detail about the authorization response.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"resource\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"entityId\",\n        \"authorityId\",\n        \"action\",\n        \"resource\",\n        \"authorized\",\n        \"evaluatedAt\"\n      ],\n      \"title\": \"Registry Authorization — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"QueryContext\":{\"additionalProperties\":{\"type\":\"string\"},\"description\":\"Optional TRQP query context. `time` requests evaluation as of a given instant; `locator` is an authority-defined hint for locating records.\",\"properties\":{\"locator\":{\"description\":\"Optional hint for systems that need extra information to locate the records in question (authorization queries).\",\"type\":\"string\"},\"time\":{\"description\":\"Evaluate the query as of this RFC3339 (Z offset) instant. Blank/absent uses current server time.\",\"format\":\"date-time\",\"type\":\"string\"}},\"title\":\"QueryContext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"action\":{\"type\":\"string\"},\"asOf\":{\"description\":\"The requested server time, echoed from the request `context.time` when supplied.\",\"format\":\"date-time\",\"type\":\"string\"},\"authorityId\":{\"type\":\"string\"},\"authorized\":{\"description\":\"True if the action+resource authorization has been confirmed, false otherwise.\",\"type\":\"boolean\"},\"context\":{\"$ref\":\"#/$defs/QueryContext\"},\"entityId\":{\"type\":\"string\"},\"evaluatedAt\":{\"description\":\"Server time the query was evaluated at, per the endpoint clock.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"message\":{\"description\":\"Additional human-readable detail about the authorization response.\",\"maxLength\":1024,\"type\":\"string\"},\"resource\":{\"type\":\"string\"}},\"required\":[\"entityId\",\"authorityId\",\"action\",\"resource\",\"authorized\",\"evaluatedAt\"],\"title\":\"Registry Authorization — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

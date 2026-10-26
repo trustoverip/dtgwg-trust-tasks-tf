@@ -284,8 +284,10 @@ off, `RUSTC_WRAPPER= CARGO_TARGET_DIR=<fresh> /usr/bin/time -l cargo build …`)
 | `-p trust-tasks-rs --no-default-features --features acl,keys,vault` (today's family gating) | 13.9 s | 1.8 GB |
 | `-p trust-tasks-rs --no-default-features` (the runtime alone) | 5.8 s | 0.41 GB |
 
-The generated file for the three tasks is 418 KB (8,286 lines); after a lock
-change, regenerating and recompiling the application takes 1.1 s.
+The generated file for the three tasks was 418 KB (8,286 lines) when measured,
+and is 335 KB (6,800 lines) since the generator took #926's compact schemas and
+dropped the rustdoc schema blocks; after a lock change, regenerating and
+recompiling the application takes 1.1 s.
 
 ## Milestone 2 — the CLI
 

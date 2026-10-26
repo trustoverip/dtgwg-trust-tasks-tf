@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,31 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A member's own client asks the member's key holder to complete one host-bound room request — or one of the two requests by which a member takes up a community's offer of admission to a room — as the member: the member's own authority narrowed to the one action the request's type needs, the member as issuer, and the member's signature. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/rooms/keys/act/0.8",
-///  "title": "Payload",
-///  "description": "A member's own client asks the member's key holder to complete one host-bound room request — or one of the two requests by which a member takes up a community's offer of admission to a room — as the member: the member's own authority narrowed to the one action the request's type needs, the member as issuer, and the member's signature. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "document"
-///  ],
-///  "properties": {
-///    "document": {
-///      "description": "The room request to complete, as the client will send it, minus its presentation and its proof.",
-///      "$ref": "#/definitions/UnsignedRoomRequest"
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -184,51 +135,6 @@ impl Payload {
 }
 ///Success response to rooms/keys/act. Type https://trusttasks.org/spec/rooms/keys/act/0.8#response. The request, completed as the member, for the caller to send to its recipient unaltered.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to rooms/keys/act. Type https://trusttasks.org/spec/rooms/keys/act/0.8#response. The request, completed as the member, for the caller to send to its recipient unaltered.",
-///  "type": "object",
-///  "required": [
-///    "document",
-///    "principal"
-///  ],
-///  "properties": {
-///    "document": {
-///      "description": "The supplied document with `issuer` set to the member, `payload.presentation` inserted where the type takes one, and the member's Data Integrity `proof` (`proofPurpose: authentication`). Every other member is unchanged.",
-///      "type": "object",
-///      "required": [
-///        "id",
-///        "issuedAt",
-///        "issuer",
-///        "payload",
-///        "proof",
-///        "recipient",
-///        "type"
-///      ]
-///    },
-///    "expiresAt": {
-///      "description": "When the inserted presentation's leaf lapses. Absent when the type takes no presentation.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "principal": {
-///      "description": "The member the recipient signed as: the completed document's `issuer`.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -253,24 +159,6 @@ impl Response {
 }
 ///The supplied document with `issuer` set to the member, `payload.presentation` inserted where the type takes one, and the member's Data Integrity `proof` (`proofPurpose: authentication`). Every other member is unchanged.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The supplied document with `issuer` set to the member, `payload.presentation` inserted where the type takes one, and the member's Data Integrity `proof` (`proofPurpose: authentication`). Every other member is unchanged.",
-///  "type": "object",
-///  "required": [
-///    "id",
-///    "issuedAt",
-///    "issuer",
-///    "payload",
-///    "proof",
-///    "recipient",
-///    "type"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
 pub struct ResponseDocument {
@@ -291,17 +179,6 @@ impl ResponseDocument {
 }
 ///The member the recipient signed as: the completed document's `issuer`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The member the recipient signed as: the completed document's `issuer`.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponsePrincipal(::std::string::String);
@@ -366,76 +243,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponsePrincipal {
 }
 ///A Trust Task document of a type in the rooms/keys/act table, built by the member's client: no proof, and no presentation in its payload. The recipient validates the payload against the named type's own schema; this one fixes only the envelope.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Unsigned room request",
-///  "description": "A Trust Task document of a type in the rooms/keys/act table, built by the member's client: no proof, and no presentation in its payload. The recipient validates the payload against the named type's own schema; this one fixes only the envelope.",
-///  "type": "object",
-///  "not": {
-///    "required": [
-///      "proof"
-///    ]
-///  },
-///  "required": [
-///    "id",
-///    "issuedAt",
-///    "payload",
-///    "recipient",
-///    "type"
-///  ],
-///  "properties": {
-///    "expiresAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "id": {
-///      "description": "The request's identifier, set by the client. The host keys duplicate-execution protection on it.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    },
-///    "issuedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "issuer": {
-///      "description": "The member to act as, and this task's subject (subjectPath /document/issuer). REQUIRED for a type that names no room (rooms/blobs/chunk/0.1, rooms/blobs/upload/{commit,abort}/0.2), where it is the member whose request opened the transfer; REQUIRED for the community types (vtc/rooms/offers/list/0.1, 0.2, 0.3 and 0.4, vtc/rooms/offers/accept/0.1, vtc/rooms/memberships/list/0.1), where it is the DID the community addressed its offers to; REQUIRED where the caller may act as more than one member of the room; optional where it may act as exactly one. A rule over two members this schema does not express: the recipient refuses an absent issuer it needs with principalAmbiguous. Never the client's own identifier.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    },
-///    "payload": {
-///      "description": "The request's payload, as the named type's schema defines it but without `presentation`: the recipient inserts the member's own, narrowed to the table's action, where the type takes one, and refuses a payload that already carries one. For vtc/rooms/offers/accept/0.1 a `keyPackage`, where present, MUST be one the recipient minted with rooms/keys/key-package at 0.1 or 0.2 (Recipient item 10).",
-///      "type": "object"
-///    },
-///    "recipient": {
-///      "description": "The room's host, or for the community types the community that made the offers: the party the completed document is for. Covered by the member's proof.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    },
-///    "threadId": {
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    },
-///    "type": {
-///      "description": "The room request's Type URI: a rooms/* request, or one of the community types: vtc/rooms/offers/{list,accept} or vtc/rooms/memberships/list. Only the types in this task's table are completed; any other is `typeNotActable`.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^https://trusttasks\\.org/spec/(rooms|vtc/rooms/(offers|memberships))/"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "unsigned-room-request"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -476,17 +283,6 @@ impl UnsignedRoomRequest {
 }
 ///The request's identifier, set by the client. The host keys duplicate-execution protection on it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The request's identifier, set by the client. The host keys duplicate-execution protection on it.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct UnsignedRoomRequestId(::std::string::String);
@@ -549,17 +345,6 @@ impl<'de> ::serde::Deserialize<'de> for UnsignedRoomRequestId {
 }
 ///The member to act as, and this task's subject (subjectPath /document/issuer). REQUIRED for a type that names no room (rooms/blobs/chunk/0.1, rooms/blobs/upload/{commit,abort}/0.2), where it is the member whose request opened the transfer; REQUIRED for the community types (vtc/rooms/offers/list/0.1, 0.2, 0.3 and 0.4, vtc/rooms/offers/accept/0.1, vtc/rooms/memberships/list/0.1), where it is the DID the community addressed its offers to; REQUIRED where the caller may act as more than one member of the room; optional where it may act as exactly one. A rule over two members this schema does not express: the recipient refuses an absent issuer it needs with principalAmbiguous. Never the client's own identifier.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The member to act as, and this task's subject (subjectPath /document/issuer). REQUIRED for a type that names no room (rooms/blobs/chunk/0.1, rooms/blobs/upload/{commit,abort}/0.2), where it is the member whose request opened the transfer; REQUIRED for the community types (vtc/rooms/offers/list/0.1, 0.2, 0.3 and 0.4, vtc/rooms/offers/accept/0.1, vtc/rooms/memberships/list/0.1), where it is the DID the community addressed its offers to; REQUIRED where the caller may act as more than one member of the room; optional where it may act as exactly one. A rule over two members this schema does not express: the recipient refuses an absent issuer it needs with principalAmbiguous. Never the client's own identifier.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct UnsignedRoomRequestIssuer(::std::string::String);
@@ -624,17 +409,6 @@ impl<'de> ::serde::Deserialize<'de> for UnsignedRoomRequestIssuer {
 }
 ///The room's host, or for the community types the community that made the offers: the party the completed document is for. Covered by the member's proof.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The room's host, or for the community types the community that made the offers: the party the completed document is for. Covered by the member's proof.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct UnsignedRoomRequestRecipient(::std::string::String);
@@ -699,16 +473,6 @@ impl<'de> ::serde::Deserialize<'de> for UnsignedRoomRequestRecipient {
 }
 ///`UnsignedRoomRequestThreadId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct UnsignedRoomRequestThreadId(::std::string::String);
@@ -771,17 +535,6 @@ impl<'de> ::serde::Deserialize<'de> for UnsignedRoomRequestThreadId {
 }
 ///The room request's Type URI: a rooms/* request, or one of the community types: vtc/rooms/offers/{list,accept} or vtc/rooms/memberships/list. Only the types in this task's table are completed; any other is `typeNotActable`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The room request's Type URI: a rooms/* request, or one of the community types: vtc/rooms/offers/{list,accept} or vtc/rooms/memberships/list. Only the types in this task's table are completed; any other is `typeNotActable`.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^https://trusttasks\\.org/spec/(rooms|vtc/rooms/(offers|memberships))/"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct UnsignedRoomRequestType(::std::string::String);
@@ -1293,7 +1046,7 @@ impl crate::Payload for Payload {
     const MAX_DOCUMENT_BYTES: Option<usize> = Some(327680usize);
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/keys/act. Type https://trusttasks.org/spec/rooms/keys/act/0.8#response. The request, completed as the member, for the caller to send to its recipient unaltered.\",\n      \"properties\": {\n        \"document\": {\n          \"description\": \"The supplied document with `issuer` set to the member, `payload.presentation` inserted where the type takes one, and the member's Data Integrity `proof` (`proofPurpose: authentication`). Every other member is unchanged.\",\n          \"required\": [\n            \"id\",\n            \"type\",\n            \"issuer\",\n            \"recipient\",\n            \"issuedAt\",\n            \"payload\",\n            \"proof\"\n          ],\n          \"type\": \"object\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the inserted presentation's leaf lapses. Absent when the type takes no presentation.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"principal\": {\n          \"description\": \"The member the recipient signed as: the completed document's `issuer`.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"principal\",\n        \"document\"\n      ],\n      \"title\": \"Rooms Keys Act — response payload\",\n      \"type\": \"object\"\n    },\n    \"UnsignedRoomRequest\": {\n      \"$anchor\": \"unsigned-room-request\",\n      \"additionalProperties\": false,\n      \"description\": \"A Trust Task document of a type in the rooms/keys/act table, built by the member's client: no proof, and no presentation in its payload. The recipient validates the payload against the named type's own schema; this one fixes only the envelope.\",\n      \"not\": {\n        \"required\": [\n          \"proof\"\n        ]\n      },\n      \"properties\": {\n        \"expiresAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"description\": \"The request's identifier, set by the client. The host keys duplicate-execution protection on it.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issuedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"issuer\": {\n          \"description\": \"The member to act as, and this task's subject (subjectPath /document/issuer). REQUIRED for a type that names no room (rooms/blobs/chunk/0.1, rooms/blobs/upload/{commit,abort}/0.2), where it is the member whose request opened the transfer; REQUIRED for the community types (vtc/rooms/offers/list/0.1, 0.2, 0.3 and 0.4, vtc/rooms/offers/accept/0.1, vtc/rooms/memberships/list/0.1), where it is the DID the community addressed its offers to; REQUIRED where the caller may act as more than one member of the room; optional where it may act as exactly one. A rule over two members this schema does not express: the recipient refuses an absent issuer it needs with principalAmbiguous. Never the client's own identifier.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"payload\": {\n          \"description\": \"The request's payload, as the named type's schema defines it but without `presentation`: the recipient inserts the member's own, narrowed to the table's action, where the type takes one, and refuses a payload that already carries one. For vtc/rooms/offers/accept/0.1 a `keyPackage`, where present, MUST be one the recipient minted with rooms/keys/key-package at 0.1 or 0.2 (Recipient item 10).\",\n          \"type\": \"object\"\n        },\n        \"recipient\": {\n          \"description\": \"The room's host, or for the community types the community that made the offers: the party the completed document is for. Covered by the member's proof.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"threadId\": {\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"type\": {\n          \"description\": \"The room request's Type URI: a rooms/* request, or one of the community types: vtc/rooms/offers/{list,accept} or vtc/rooms/memberships/list. Only the types in this task's table are completed; any other is `typeNotActable`.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^https://trusttasks\\\\.org/spec/(rooms|vtc/rooms/(offers|memberships))/\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"type\",\n        \"recipient\",\n        \"issuedAt\",\n        \"payload\"\n      ],\n      \"title\": \"Unsigned room request\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/rooms/keys/act/0.8\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A member's own client asks the member's key holder to complete one host-bound room request — or one of the two requests by which a member takes up a community's offer of admission to a room — as the member: the member's own authority narrowed to the one action the request's type needs, the member as issuer, and the member's signature. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"document\": {\n      \"$ref\": \"#/$defs/UnsignedRoomRequest\",\n      \"description\": \"The room request to complete, as the client will send it, minus its presentation and its proof.\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    }\n  },\n  \"required\": [\n    \"document\"\n  ],\n  \"title\": \"Rooms Keys Act — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/keys/act. Type https://trusttasks.org/spec/rooms/keys/act/0.8#response. The request, completed as the member, for the caller to send to its recipient unaltered.\",\"properties\":{\"document\":{\"description\":\"The supplied document with `issuer` set to the member, `payload.presentation` inserted where the type takes one, and the member's Data Integrity `proof` (`proofPurpose: authentication`). Every other member is unchanged.\",\"required\":[\"id\",\"type\",\"issuer\",\"recipient\",\"issuedAt\",\"payload\",\"proof\"],\"type\":\"object\"},\"expiresAt\":{\"description\":\"When the inserted presentation's leaf lapses. Absent when the type takes no presentation.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"principal\":{\"description\":\"The member the recipient signed as: the completed document's `issuer`.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"principal\",\"document\"],\"title\":\"Rooms Keys Act — response payload\",\"type\":\"object\"},\"UnsignedRoomRequest\":{\"$anchor\":\"unsigned-room-request\",\"additionalProperties\":false,\"description\":\"A Trust Task document of a type in the rooms/keys/act table, built by the member's client: no proof, and no presentation in its payload. The recipient validates the payload against the named type's own schema; this one fixes only the envelope.\",\"not\":{\"required\":[\"proof\"]},\"properties\":{\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"description\":\"The request's identifier, set by the client. The host keys duplicate-execution protection on it.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"issuer\":{\"description\":\"The member to act as, and this task's subject (subjectPath /document/issuer). REQUIRED for a type that names no room (rooms/blobs/chunk/0.1, rooms/blobs/upload/{commit,abort}/0.2), where it is the member whose request opened the transfer; REQUIRED for the community types (vtc/rooms/offers/list/0.1, 0.2, 0.3 and 0.4, vtc/rooms/offers/accept/0.1, vtc/rooms/memberships/list/0.1), where it is the DID the community addressed its offers to; REQUIRED where the caller may act as more than one member of the room; optional where it may act as exactly one. A rule over two members this schema does not express: the recipient refuses an absent issuer it needs with principalAmbiguous. Never the client's own identifier.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"payload\":{\"description\":\"The request's payload, as the named type's schema defines it but without `presentation`: the recipient inserts the member's own, narrowed to the table's action, where the type takes one, and refuses a payload that already carries one. For vtc/rooms/offers/accept/0.1 a `keyPackage`, where present, MUST be one the recipient minted with rooms/keys/key-package at 0.1 or 0.2 (Recipient item 10).\",\"type\":\"object\"},\"recipient\":{\"description\":\"The room's host, or for the community types the community that made the offers: the party the completed document is for. Covered by the member's proof.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"threadId\":{\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"type\":{\"description\":\"The room request's Type URI: a rooms/* request, or one of the community types: vtc/rooms/offers/{list,accept} or vtc/rooms/memberships/list. Only the types in this task's table are completed; any other is `typeNotActable`.\",\"maxLength\":2048,\"pattern\":\"^https://trusttasks\\\\.org/spec/(rooms|vtc/rooms/(offers|memberships))/\",\"type\":\"string\"}},\"required\":[\"id\",\"type\",\"recipient\",\"issuedAt\",\"payload\"],\"title\":\"Unsigned room request\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/rooms/keys/act/0.8\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A member's own client asks the member's key holder to complete one host-bound room request — or one of the two requests by which a member takes up a community's offer of admission to a room — as the member: the member's own authority narrowed to the one action the request's type needs, the member as issuer, and the member's signature. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"document\":{\"$ref\":\"#/$defs/UnsignedRoomRequest\",\"description\":\"The room request to complete, as the client will send it, minus its presentation and its proof.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"required\":[\"document\"],\"title\":\"Rooms Keys Act — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1303,7 +1056,7 @@ impl crate::Payload for Response {
     const MAX_DOCUMENT_BYTES: Option<usize> = Some(393216usize);
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/keys/act. Type https://trusttasks.org/spec/rooms/keys/act/0.8#response. The request, completed as the member, for the caller to send to its recipient unaltered.\",\n      \"properties\": {\n        \"document\": {\n          \"description\": \"The supplied document with `issuer` set to the member, `payload.presentation` inserted where the type takes one, and the member's Data Integrity `proof` (`proofPurpose: authentication`). Every other member is unchanged.\",\n          \"required\": [\n            \"id\",\n            \"type\",\n            \"issuer\",\n            \"recipient\",\n            \"issuedAt\",\n            \"payload\",\n            \"proof\"\n          ],\n          \"type\": \"object\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the inserted presentation's leaf lapses. Absent when the type takes no presentation.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"principal\": {\n          \"description\": \"The member the recipient signed as: the completed document's `issuer`.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"principal\",\n        \"document\"\n      ],\n      \"title\": \"Rooms Keys Act — response payload\",\n      \"type\": \"object\"\n    },\n    \"UnsignedRoomRequest\": {\n      \"$anchor\": \"unsigned-room-request\",\n      \"additionalProperties\": false,\n      \"description\": \"A Trust Task document of a type in the rooms/keys/act table, built by the member's client: no proof, and no presentation in its payload. The recipient validates the payload against the named type's own schema; this one fixes only the envelope.\",\n      \"not\": {\n        \"required\": [\n          \"proof\"\n        ]\n      },\n      \"properties\": {\n        \"expiresAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"description\": \"The request's identifier, set by the client. The host keys duplicate-execution protection on it.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issuedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"issuer\": {\n          \"description\": \"The member to act as, and this task's subject (subjectPath /document/issuer). REQUIRED for a type that names no room (rooms/blobs/chunk/0.1, rooms/blobs/upload/{commit,abort}/0.2), where it is the member whose request opened the transfer; REQUIRED for the community types (vtc/rooms/offers/list/0.1, 0.2, 0.3 and 0.4, vtc/rooms/offers/accept/0.1, vtc/rooms/memberships/list/0.1), where it is the DID the community addressed its offers to; REQUIRED where the caller may act as more than one member of the room; optional where it may act as exactly one. A rule over two members this schema does not express: the recipient refuses an absent issuer it needs with principalAmbiguous. Never the client's own identifier.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"payload\": {\n          \"description\": \"The request's payload, as the named type's schema defines it but without `presentation`: the recipient inserts the member's own, narrowed to the table's action, where the type takes one, and refuses a payload that already carries one. For vtc/rooms/offers/accept/0.1 a `keyPackage`, where present, MUST be one the recipient minted with rooms/keys/key-package at 0.1 or 0.2 (Recipient item 10).\",\n          \"type\": \"object\"\n        },\n        \"recipient\": {\n          \"description\": \"The room's host, or for the community types the community that made the offers: the party the completed document is for. Covered by the member's proof.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"threadId\": {\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"type\": {\n          \"description\": \"The room request's Type URI: a rooms/* request, or one of the community types: vtc/rooms/offers/{list,accept} or vtc/rooms/memberships/list. Only the types in this task's table are completed; any other is `typeNotActable`.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^https://trusttasks\\\\.org/spec/(rooms|vtc/rooms/(offers|memberships))/\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"type\",\n        \"recipient\",\n        \"issuedAt\",\n        \"payload\"\n      ],\n      \"title\": \"Unsigned room request\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/keys/act. Type https://trusttasks.org/spec/rooms/keys/act/0.8#response. The request, completed as the member, for the caller to send to its recipient unaltered.\",\"properties\":{\"document\":{\"description\":\"The supplied document with `issuer` set to the member, `payload.presentation` inserted where the type takes one, and the member's Data Integrity `proof` (`proofPurpose: authentication`). Every other member is unchanged.\",\"required\":[\"id\",\"type\",\"issuer\",\"recipient\",\"issuedAt\",\"payload\",\"proof\"],\"type\":\"object\"},\"expiresAt\":{\"description\":\"When the inserted presentation's leaf lapses. Absent when the type takes no presentation.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"principal\":{\"description\":\"The member the recipient signed as: the completed document's `issuer`.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"principal\",\"document\"],\"title\":\"Rooms Keys Act — response payload\",\"type\":\"object\"},\"UnsignedRoomRequest\":{\"$anchor\":\"unsigned-room-request\",\"additionalProperties\":false,\"description\":\"A Trust Task document of a type in the rooms/keys/act table, built by the member's client: no proof, and no presentation in its payload. The recipient validates the payload against the named type's own schema; this one fixes only the envelope.\",\"not\":{\"required\":[\"proof\"]},\"properties\":{\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"description\":\"The request's identifier, set by the client. The host keys duplicate-execution protection on it.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"issuer\":{\"description\":\"The member to act as, and this task's subject (subjectPath /document/issuer). REQUIRED for a type that names no room (rooms/blobs/chunk/0.1, rooms/blobs/upload/{commit,abort}/0.2), where it is the member whose request opened the transfer; REQUIRED for the community types (vtc/rooms/offers/list/0.1, 0.2, 0.3 and 0.4, vtc/rooms/offers/accept/0.1, vtc/rooms/memberships/list/0.1), where it is the DID the community addressed its offers to; REQUIRED where the caller may act as more than one member of the room; optional where it may act as exactly one. A rule over two members this schema does not express: the recipient refuses an absent issuer it needs with principalAmbiguous. Never the client's own identifier.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"payload\":{\"description\":\"The request's payload, as the named type's schema defines it but without `presentation`: the recipient inserts the member's own, narrowed to the table's action, where the type takes one, and refuses a payload that already carries one. For vtc/rooms/offers/accept/0.1 a `keyPackage`, where present, MUST be one the recipient minted with rooms/keys/key-package at 0.1 or 0.2 (Recipient item 10).\",\"type\":\"object\"},\"recipient\":{\"description\":\"The room's host, or for the community types the community that made the offers: the party the completed document is for. Covered by the member's proof.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"threadId\":{\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"type\":{\"description\":\"The room request's Type URI: a rooms/* request, or one of the community types: vtc/rooms/offers/{list,accept} or vtc/rooms/memberships/list. Only the types in this task's table are completed; any other is `typeNotActable`.\",\"maxLength\":2048,\"pattern\":\"^https://trusttasks\\\\.org/spec/(rooms|vtc/rooms/(offers|memberships))/\",\"type\":\"string\"}},\"required\":[\"id\",\"type\",\"recipient\",\"issuedAt\",\"payload\"],\"title\":\"Unsigned room request\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

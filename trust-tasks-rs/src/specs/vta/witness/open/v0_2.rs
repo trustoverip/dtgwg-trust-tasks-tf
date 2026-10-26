@@ -34,17 +34,6 @@ pub mod error {
 }
 ///A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried between the VTA and the witness by the client: one the VTA built and signed for the client to send, or one the witness returned for the client to hand back. Typed as an open object so every member survives a round trip: carried exactly as built or received, never re-serialised, because its proof is over itself. Its envelope is checked by the VTA against the session record (CONVENTIONS.md §3), not by this schema.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "CarriedDocument",
-///  "description": "A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried between the VTA and the witness by the client: one the VTA built and signed for the client to send, or one the witness returned for the client to hand back. Typed as an open object so every member survives a round trip: carried exactly as built or received, never re-serialised, because its proof is over itself. Its envelope is checked by the VTA against the session record (CONVENTIONS.md §3), not by this schema.",
-///  "type": "object",
-///  "minProperties": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct CarriedDocument(pub ::serde_json::Map<::std::string::String, ::serde_json::Value>);
@@ -70,21 +59,6 @@ impl ::std::convert::From<::serde_json::Map<::std::string::String, ::serde_json:
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -106,15 +80,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -178,33 +143,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A membership credential (VMC) held in the credential vault, and the DID it names. When memberDid is absent the VMC names relationshipDid and rides in the relationship presentation. When memberDid is present the VMC names that DID, and the VTA builds a second presentation — the member presentation, carried in witness/session/submit/0.2's memberPresentation — signed by memberDid and bound to the same session, which discloses memberDid to the witness.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Membership",
-///  "description": "A membership credential (VMC) held in the credential vault, and the DID it names. When memberDid is absent the VMC names relationshipDid and rides in the relationship presentation. When memberDid is present the VMC names that DID, and the VTA builds a second presentation — the member presentation, carried in witness/session/submit/0.2's memberPresentation — signed by memberDid and bound to the same session, which discloses memberDid to the witness.",
-///  "type": "object",
-///  "required": [
-///    "credentialId"
-///  ],
-///  "properties": {
-///    "credentialId": {
-///      "description": "The credential-vault handle of the membership credential.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "memberDid": {
-///      "description": "The member DID the membership credential names, when it is not relationshipDid. The VTA must hold a key of it in a context the caller may act in. Naming it is the caller's explicit choice to disclose it to the witness.",
-///      "type": "string",
-///      "pattern": "^did:"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -227,17 +165,6 @@ impl Membership {
 }
 ///The credential-vault handle of the membership credential.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The credential-vault handle of the membership credential.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct MembershipCredentialId(::std::string::String);
@@ -300,16 +227,6 @@ impl<'de> ::serde::Deserialize<'de> for MembershipCredentialId {
 }
 ///The member DID the membership credential names, when it is not relationshipDid. The VTA must hold a key of it in a context the caller may act in. Naming it is the caller's explicit choice to disclose it to the witness.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The member DID the membership credential names, when it is not relationshipDid. The VTA must hold a key of it in a context the caller may act in. Naming it is the caller's explicit choice to disclose it to the witness.",
-///  "type": "string",
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct MembershipMemberDid(::std::string::String);
@@ -371,67 +288,6 @@ impl<'de> ::serde::Deserialize<'de> for MembershipMemberDid {
 }
 ///A client asks its VTA to open a witnessed session for one of its principal's relationships: the VTA checks custody and the credentials to be presented, and returns the witness/session document, built and signed as the principal's relationship DID, for the client to send to the witness.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/witness/open/0.2",
-///  "title": "Payload",
-///  "description": "A client asks its VTA to open a witnessed session for one of its principal's relationships: the VTA checks custody and the credentials to be presented, and returns the witness/session document, built and signed as the principal's relationship DID, for the client to send to the witness.",
-///  "type": "object",
-///  "required": [
-///    "counterpartyDid",
-///    "relationshipCredentialId",
-///    "relationshipDid",
-///    "relationshipThreadId",
-///    "witness"
-///  ],
-///  "properties": {
-///    "counterpartyDid": {
-///      "description": "The other party's relationship DID. With relationshipDid it forms the session's `parties`, and it is the subject of the relationship credential presented.",
-///      "type": "string",
-///      "pattern": "^did:"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "membership": {
-///      "description": "The membership evidence to present beside the relationship credential, for a witness whose policy asks for it. Absent, none is presented. Bound to the session here.",
-///      "$ref": "#/definitions/Membership"
-///    },
-///    "relationshipCredentialId": {
-///      "description": "The credential-vault handle of the relationship credential (VRC) to present: issued by relationshipDid, naming counterpartyDid. Bound to the session here, so a later step cannot present another.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "relationshipDid": {
-///      "description": "The principal's relationship DID for this relationship: the participating party, the issuer of every document of the session, and the DID the client sends them from. The VTA must hold a key of it in a context the caller may act in.",
-///      "type": "string",
-///      "pattern": "^did:"
-///    },
-///    "relationshipThreadId": {
-///      "description": "The threadId of the relationship exchange the session is nested in, set as `parentThreadId` on every document of the session, as witness/session requires of a producer.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "storeAs": {
-///      "description": "The credential-vault handle to store the VWC under at vta/witness/accept. Absent, the VTA derives one.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "witness": {
-///      "description": "The witness to be witnessed by, as its public DID: the recipient of every document of the session, and the issuer of every answer the VTA will accept for it. Chosen by the caller, because which witness observes an exchange is the parties' privacy decision.",
-///      "type": "string",
-///      "pattern": "^did:"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -470,16 +326,6 @@ impl Payload {
 }
 ///The other party's relationship DID. With relationshipDid it forms the session's `parties`, and it is the subject of the relationship credential presented.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The other party's relationship DID. With relationshipDid it forms the session's `parties`, and it is the subject of the relationship credential presented.",
-///  "type": "string",
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCounterpartyDid(::std::string::String);
@@ -541,17 +387,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCounterpartyDid {
 }
 ///The credential-vault handle of the relationship credential (VRC) to present: issued by relationshipDid, naming counterpartyDid. Bound to the session here, so a later step cannot present another.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The credential-vault handle of the relationship credential (VRC) to present: issued by relationshipDid, naming counterpartyDid. Bound to the session here, so a later step cannot present another.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadRelationshipCredentialId(::std::string::String);
@@ -614,16 +449,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRelationshipCredentialId {
 }
 ///The principal's relationship DID for this relationship: the participating party, the issuer of every document of the session, and the DID the client sends them from. The VTA must hold a key of it in a context the caller may act in.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The principal's relationship DID for this relationship: the participating party, the issuer of every document of the session, and the DID the client sends them from. The VTA must hold a key of it in a context the caller may act in.",
-///  "type": "string",
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadRelationshipDid(::std::string::String);
@@ -685,17 +510,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRelationshipDid {
 }
 ///The threadId of the relationship exchange the session is nested in, set as `parentThreadId` on every document of the session, as witness/session requires of a producer.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The threadId of the relationship exchange the session is nested in, set as `parentThreadId` on every document of the session, as witness/session requires of a producer.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadRelationshipThreadId(::std::string::String);
@@ -758,17 +572,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRelationshipThreadId {
 }
 ///The credential-vault handle to store the VWC under at vta/witness/accept. Absent, the VTA derives one.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The credential-vault handle to store the VWC under at vta/witness/accept. Absent, the VTA derives one.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadStoreAs(::std::string::String);
@@ -831,16 +634,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadStoreAs {
 }
 ///The witness to be witnessed by, as its public DID: the recipient of every document of the session, and the issuer of every answer the VTA will accept for it. Chosen by the caller, because which witness observes an exchange is the parties' privacy decision.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The witness to be witnessed by, as its public DID: the recipient of every document of the session, and the issuer of every answer the VTA will accept for it. Chosen by the caller, because which witness observes an exchange is the parties' privacy decision.",
-///  "type": "string",
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadWitness(::std::string::String);
@@ -902,40 +695,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadWitness {
 }
 ///The session id and the witness/session document to send.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The session id and the witness/session document to send.",
-///  "type": "object",
-///  "required": [
-///    "document",
-///    "expiresAt",
-///    "sessionId"
-///  ],
-///  "properties": {
-///    "document": {
-///      "description": "The witness/session/0.2 document, issued and signed by relationshipDid and addressed to the witness, for the client to send from relationshipDid unaltered. Its id is sessionId.",
-///      "$ref": "#/definitions/CarriedDocument"
-///    },
-///    "expiresAt": {
-///      "description": "When the VTA's record of the session expires. The client must hand back the witness's answers before then.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "sessionId": {
-///      "$ref": "#/definitions/SessionId"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -957,18 +716,6 @@ impl Response {
 }
 ///The id of the witness/session document the VTA built in vta/witness/open: the session's name, the thread every document of the session is on, and the value the VWC carries as taskContext. The VTA keys its state for the session by it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "SessionId",
-///  "description": "The id of the witness/session document the VTA built in vta/witness/open: the session's name, the thread every document of the session is on, and the value the VWC carries as taskContext. The VTA keys its state for the session by it.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SessionId(::std::string::String);
@@ -1324,7 +1071,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CarriedDocument\": {\n      \"description\": \"A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried between the VTA and the witness by the client: one the VTA built and signed for the client to send, or one the witness returned for the client to hand back. Typed as an open object so every member survives a round trip: carried exactly as built or received, never re-serialised, because its proof is over itself. Its envelope is checked by the VTA against the session record (CONVENTIONS.md §3), not by this schema.\",\n      \"minProperties\": 1,\n      \"title\": \"CarriedDocument\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Membership\": {\n      \"additionalProperties\": false,\n      \"description\": \"A membership credential (VMC) held in the credential vault, and the DID it names. When memberDid is absent the VMC names relationshipDid and rides in the relationship presentation. When memberDid is present the VMC names that DID, and the VTA builds a second presentation — the member presentation, carried in witness/session/submit/0.2's memberPresentation — signed by memberDid and bound to the same session, which discloses memberDid to the witness.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"description\": \"The credential-vault handle of the membership credential.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"memberDid\": {\n          \"description\": \"The member DID the membership credential names, when it is not relationshipDid. The VTA must hold a key of it in a context the caller may act in. Naming it is the caller's explicit choice to disclose it to the witness.\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\"\n      ],\n      \"title\": \"Membership\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The session id and the witness/session document to send.\",\n      \"properties\": {\n        \"document\": {\n          \"$ref\": \"#/$defs/CarriedDocument\",\n          \"description\": \"The witness/session/0.2 document, issued and signed by relationshipDid and addressed to the witness, for the client to send from relationshipDid unaltered. Its id is sessionId.\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the VTA's record of the session expires. The client must hand back the witness's answers before then.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"sessionId\": {\n          \"$ref\": \"#/$defs/SessionId\"\n        }\n      },\n      \"required\": [\n        \"sessionId\",\n        \"document\",\n        \"expiresAt\"\n      ],\n      \"title\": \"VTA Witness — Open — response payload\",\n      \"type\": \"object\"\n    },\n    \"SessionId\": {\n      \"description\": \"The id of the witness/session document the VTA built in vta/witness/open: the session's name, the thread every document of the session is on, and the value the VWC carries as taskContext. The VTA keys its state for the session by it.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"title\": \"SessionId\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/witness/open/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A client asks its VTA to open a witnessed session for one of its principal's relationships: the VTA checks custody and the credentials to be presented, and returns the witness/session document, built and signed as the principal's relationship DID, for the client to send to the witness.\",\n  \"properties\": {\n    \"counterpartyDid\": {\n      \"description\": \"The other party's relationship DID. With relationshipDid it forms the session's `parties`, and it is the subject of the relationship credential presented.\",\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"membership\": {\n      \"$ref\": \"#/$defs/Membership\",\n      \"description\": \"The membership evidence to present beside the relationship credential, for a witness whose policy asks for it. Absent, none is presented. Bound to the session here.\"\n    },\n    \"relationshipCredentialId\": {\n      \"description\": \"The credential-vault handle of the relationship credential (VRC) to present: issued by relationshipDid, naming counterpartyDid. Bound to the session here, so a later step cannot present another.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"relationshipDid\": {\n      \"description\": \"The principal's relationship DID for this relationship: the participating party, the issuer of every document of the session, and the DID the client sends them from. The VTA must hold a key of it in a context the caller may act in.\",\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    },\n    \"relationshipThreadId\": {\n      \"description\": \"The threadId of the relationship exchange the session is nested in, set as `parentThreadId` on every document of the session, as witness/session requires of a producer.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"storeAs\": {\n      \"description\": \"The credential-vault handle to store the VWC under at vta/witness/accept. Absent, the VTA derives one.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"witness\": {\n      \"description\": \"The witness to be witnessed by, as its public DID: the recipient of every document of the session, and the issuer of every answer the VTA will accept for it. Chosen by the caller, because which witness observes an exchange is the parties' privacy decision.\",\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"witness\",\n    \"relationshipDid\",\n    \"counterpartyDid\",\n    \"relationshipThreadId\",\n    \"relationshipCredentialId\"\n  ],\n  \"title\": \"VTA Witness — Open — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"CarriedDocument\":{\"description\":\"A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried between the VTA and the witness by the client: one the VTA built and signed for the client to send, or one the witness returned for the client to hand back. Typed as an open object so every member survives a round trip: carried exactly as built or received, never re-serialised, because its proof is over itself. Its envelope is checked by the VTA against the session record (CONVENTIONS.md §3), not by this schema.\",\"minProperties\":1,\"title\":\"CarriedDocument\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Membership\":{\"additionalProperties\":false,\"description\":\"A membership credential (VMC) held in the credential vault, and the DID it names. When memberDid is absent the VMC names relationshipDid and rides in the relationship presentation. When memberDid is present the VMC names that DID, and the VTA builds a second presentation — the member presentation, carried in witness/session/submit/0.2's memberPresentation — signed by memberDid and bound to the same session, which discloses memberDid to the witness.\",\"properties\":{\"credentialId\":{\"description\":\"The credential-vault handle of the membership credential.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"memberDid\":{\"description\":\"The member DID the membership credential names, when it is not relationshipDid. The VTA must hold a key of it in a context the caller may act in. Naming it is the caller's explicit choice to disclose it to the witness.\",\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"credentialId\"],\"title\":\"Membership\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The session id and the witness/session document to send.\",\"properties\":{\"document\":{\"$ref\":\"#/$defs/CarriedDocument\",\"description\":\"The witness/session/0.2 document, issued and signed by relationshipDid and addressed to the witness, for the client to send from relationshipDid unaltered. Its id is sessionId.\"},\"expiresAt\":{\"description\":\"When the VTA's record of the session expires. The client must hand back the witness's answers before then.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"sessionId\":{\"$ref\":\"#/$defs/SessionId\"}},\"required\":[\"sessionId\",\"document\",\"expiresAt\"],\"title\":\"VTA Witness — Open — response payload\",\"type\":\"object\"},\"SessionId\":{\"description\":\"The id of the witness/session document the VTA built in vta/witness/open: the session's name, the thread every document of the session is on, and the value the VWC carries as taskContext. The VTA keys its state for the session by it.\",\"maxLength\":256,\"minLength\":1,\"title\":\"SessionId\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/vta/witness/open/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A client asks its VTA to open a witnessed session for one of its principal's relationships: the VTA checks custody and the credentials to be presented, and returns the witness/session document, built and signed as the principal's relationship DID, for the client to send to the witness.\",\"properties\":{\"counterpartyDid\":{\"description\":\"The other party's relationship DID. With relationshipDid it forms the session's `parties`, and it is the subject of the relationship credential presented.\",\"pattern\":\"^did:\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"membership\":{\"$ref\":\"#/$defs/Membership\",\"description\":\"The membership evidence to present beside the relationship credential, for a witness whose policy asks for it. Absent, none is presented. Bound to the session here.\"},\"relationshipCredentialId\":{\"description\":\"The credential-vault handle of the relationship credential (VRC) to present: issued by relationshipDid, naming counterpartyDid. Bound to the session here, so a later step cannot present another.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"relationshipDid\":{\"description\":\"The principal's relationship DID for this relationship: the participating party, the issuer of every document of the session, and the DID the client sends them from. The VTA must hold a key of it in a context the caller may act in.\",\"pattern\":\"^did:\",\"type\":\"string\"},\"relationshipThreadId\":{\"description\":\"The threadId of the relationship exchange the session is nested in, set as `parentThreadId` on every document of the session, as witness/session requires of a producer.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"storeAs\":{\"description\":\"The credential-vault handle to store the VWC under at vta/witness/accept. Absent, the VTA derives one.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"witness\":{\"description\":\"The witness to be witnessed by, as its public DID: the recipient of every document of the session, and the issuer of every answer the VTA will accept for it. Chosen by the caller, because which witness observes an exchange is the parties' privacy decision.\",\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"witness\",\"relationshipDid\",\"counterpartyDid\",\"relationshipThreadId\",\"relationshipCredentialId\"],\"title\":\"VTA Witness — Open — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1332,7 +1079,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CarriedDocument\": {\n      \"description\": \"A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried between the VTA and the witness by the client: one the VTA built and signed for the client to send, or one the witness returned for the client to hand back. Typed as an open object so every member survives a round trip: carried exactly as built or received, never re-serialised, because its proof is over itself. Its envelope is checked by the VTA against the session record (CONVENTIONS.md §3), not by this schema.\",\n      \"minProperties\": 1,\n      \"title\": \"CarriedDocument\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Membership\": {\n      \"additionalProperties\": false,\n      \"description\": \"A membership credential (VMC) held in the credential vault, and the DID it names. When memberDid is absent the VMC names relationshipDid and rides in the relationship presentation. When memberDid is present the VMC names that DID, and the VTA builds a second presentation — the member presentation, carried in witness/session/submit/0.2's memberPresentation — signed by memberDid and bound to the same session, which discloses memberDid to the witness.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"description\": \"The credential-vault handle of the membership credential.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"memberDid\": {\n          \"description\": \"The member DID the membership credential names, when it is not relationshipDid. The VTA must hold a key of it in a context the caller may act in. Naming it is the caller's explicit choice to disclose it to the witness.\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\"\n      ],\n      \"title\": \"Membership\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The session id and the witness/session document to send.\",\n      \"properties\": {\n        \"document\": {\n          \"$ref\": \"#/$defs/CarriedDocument\",\n          \"description\": \"The witness/session/0.2 document, issued and signed by relationshipDid and addressed to the witness, for the client to send from relationshipDid unaltered. Its id is sessionId.\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the VTA's record of the session expires. The client must hand back the witness's answers before then.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"sessionId\": {\n          \"$ref\": \"#/$defs/SessionId\"\n        }\n      },\n      \"required\": [\n        \"sessionId\",\n        \"document\",\n        \"expiresAt\"\n      ],\n      \"title\": \"VTA Witness — Open — response payload\",\n      \"type\": \"object\"\n    },\n    \"SessionId\": {\n      \"description\": \"The id of the witness/session document the VTA built in vta/witness/open: the session's name, the thread every document of the session is on, and the value the VWC carries as taskContext. The VTA keys its state for the session by it.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"title\": \"SessionId\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"CarriedDocument\":{\"description\":\"A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried between the VTA and the witness by the client: one the VTA built and signed for the client to send, or one the witness returned for the client to hand back. Typed as an open object so every member survives a round trip: carried exactly as built or received, never re-serialised, because its proof is over itself. Its envelope is checked by the VTA against the session record (CONVENTIONS.md §3), not by this schema.\",\"minProperties\":1,\"title\":\"CarriedDocument\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Membership\":{\"additionalProperties\":false,\"description\":\"A membership credential (VMC) held in the credential vault, and the DID it names. When memberDid is absent the VMC names relationshipDid and rides in the relationship presentation. When memberDid is present the VMC names that DID, and the VTA builds a second presentation — the member presentation, carried in witness/session/submit/0.2's memberPresentation — signed by memberDid and bound to the same session, which discloses memberDid to the witness.\",\"properties\":{\"credentialId\":{\"description\":\"The credential-vault handle of the membership credential.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"memberDid\":{\"description\":\"The member DID the membership credential names, when it is not relationshipDid. The VTA must hold a key of it in a context the caller may act in. Naming it is the caller's explicit choice to disclose it to the witness.\",\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"credentialId\"],\"title\":\"Membership\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The session id and the witness/session document to send.\",\"properties\":{\"document\":{\"$ref\":\"#/$defs/CarriedDocument\",\"description\":\"The witness/session/0.2 document, issued and signed by relationshipDid and addressed to the witness, for the client to send from relationshipDid unaltered. Its id is sessionId.\"},\"expiresAt\":{\"description\":\"When the VTA's record of the session expires. The client must hand back the witness's answers before then.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"sessionId\":{\"$ref\":\"#/$defs/SessionId\"}},\"required\":[\"sessionId\",\"document\",\"expiresAt\"],\"title\":\"VTA Witness — Open — response payload\",\"type\":\"object\"},\"SessionId\":{\"description\":\"The id of the witness/session document the VTA built in vta/witness/open: the session's name, the thread every document of the session is on, and the value the VWC carries as taskContext. The VTA keys its state for the session by it.\",\"maxLength\":256,\"minLength\":1,\"title\":\"SessionId\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,40 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/messaging/message/delete/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "msgIds"
-///  ],
-///  "properties": {
-///    "did": {
-///      "description": "The account whose queue holds the messages. Omitted = the requester's own account. A requester without administrative standing may name only itself.",
-///      "$ref": "#/definitions/Vid"
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "msgIds": {
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "minLength": 1
-///      },
-///      "maxItems": 100,
-///      "minItems": 1,
-///      "uniqueItems": true
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -196,15 +138,6 @@ impl Payload {
 }
 ///`PayloadMsgIdsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadMsgIdsItem(::std::string::String);
@@ -264,56 +197,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadMsgIdsItem {
 }
 ///The success response to a messaging/message/delete request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/message/delete/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The success response to a messaging/message/delete request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/message/delete/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "results"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "results": {
-///      "description": "One entry per requested msgId, in request order.",
-///      "type": "array",
-///      "items": {
-///        "type": "object",
-///        "required": [
-///          "deleted",
-///          "msgId"
-///        ],
-///        "properties": {
-///          "deleted": {
-///            "type": "boolean"
-///          },
-///          "msgId": {
-///            "type": "string",
-///            "minLength": 1
-///          },
-///          "reason": {
-///            "description": "Why it was not deleted. `notFound`: no such message. `notInAccount`: the message exists but is not in the named account's queues.",
-///            "type": "string",
-///            "enum": [
-///              "notFound",
-///              "notInAccount"
-///            ]
-///          }
-///        },
-///        "additionalProperties": false
-///      }
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -331,36 +214,6 @@ impl Response {
 }
 ///`ResponseResultsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "deleted",
-///    "msgId"
-///  ],
-///  "properties": {
-///    "deleted": {
-///      "type": "boolean"
-///    },
-///    "msgId": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "reason": {
-///      "description": "Why it was not deleted. `notFound`: no such message. `notInAccount`: the message exists but is not in the named account's queues.",
-///      "type": "string",
-///      "enum": [
-///        "notFound",
-///        "notInAccount"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -379,15 +232,6 @@ impl ResponseResultsItem {
 }
 ///`ResponseResultsItemMsgId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseResultsItemMsgId(::std::string::String);
@@ -447,19 +291,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseResultsItemMsgId {
 }
 ///Why it was not deleted. `notFound`: no such message. `notInAccount`: the message exists but is not in the named account's queues.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Why it was not deleted. `notFound`: no such message. `notInAccount`: the message exists but is not in the named account's queues.",
-///  "type": "string",
-///  "enum": [
-///    "notFound",
-///    "notInAccount"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -521,17 +352,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseResultsItemReaso
 }
 ///A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Vid",
-///  "description": "A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Vid(::std::string::String);
@@ -790,7 +610,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a messaging/message/delete request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/message/delete/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"results\": {\n          \"description\": \"One entry per requested msgId, in request order.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"deleted\": {\n                \"type\": \"boolean\"\n              },\n              \"msgId\": {\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"reason\": {\n                \"description\": \"Why it was not deleted. `notFound`: no such message. `notInAccount`: the message exists but is not in the named account's queues.\",\n                \"enum\": [\n                  \"notFound\",\n                  \"notInAccount\"\n                ],\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"msgId\",\n              \"deleted\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"results\"\n      ],\n      \"title\": \"Messaging — Delete Messages — response payload\",\n      \"type\": \"object\"\n    },\n    \"Vid\": {\n      \"description\": \"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\n      \"minLength\": 1,\n      \"title\": \"Vid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/messaging/message/delete/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"did\": {\n      \"$ref\": \"#/$defs/Vid\",\n      \"description\": \"The account whose queue holds the messages. Omitted = the requester's own account. A requester without administrative standing may name only itself.\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"msgIds\": {\n      \"items\": {\n        \"minLength\": 1,\n        \"type\": \"string\"\n      },\n      \"maxItems\": 100,\n      \"minItems\": 1,\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    }\n  },\n  \"required\": [\n    \"msgIds\"\n  ],\n  \"title\": \"Messaging — Delete Messages — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a messaging/message/delete request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/message/delete/0.1#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"results\":{\"description\":\"One entry per requested msgId, in request order.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"deleted\":{\"type\":\"boolean\"},\"msgId\":{\"minLength\":1,\"type\":\"string\"},\"reason\":{\"description\":\"Why it was not deleted. `notFound`: no such message. `notInAccount`: the message exists but is not in the named account's queues.\",\"enum\":[\"notFound\",\"notInAccount\"],\"type\":\"string\"}},\"required\":[\"msgId\",\"deleted\"],\"type\":\"object\"},\"type\":\"array\"}},\"required\":[\"results\"],\"title\":\"Messaging — Delete Messages — response payload\",\"type\":\"object\"},\"Vid\":{\"description\":\"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\"minLength\":1,\"title\":\"Vid\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/messaging/message/delete/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"did\":{\"$ref\":\"#/$defs/Vid\",\"description\":\"The account whose queue holds the messages. Omitted = the requester's own account. A requester without administrative standing may name only itself.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"msgIds\":{\"items\":{\"minLength\":1,\"type\":\"string\"},\"maxItems\":100,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"msgIds\"],\"title\":\"Messaging — Delete Messages — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -799,7 +619,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a messaging/message/delete request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/message/delete/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"results\": {\n          \"description\": \"One entry per requested msgId, in request order.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"deleted\": {\n                \"type\": \"boolean\"\n              },\n              \"msgId\": {\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"reason\": {\n                \"description\": \"Why it was not deleted. `notFound`: no such message. `notInAccount`: the message exists but is not in the named account's queues.\",\n                \"enum\": [\n                  \"notFound\",\n                  \"notInAccount\"\n                ],\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"msgId\",\n              \"deleted\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"results\"\n      ],\n      \"title\": \"Messaging — Delete Messages — response payload\",\n      \"type\": \"object\"\n    },\n    \"Vid\": {\n      \"description\": \"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\n      \"minLength\": 1,\n      \"title\": \"Vid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a messaging/message/delete request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/message/delete/0.1#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"results\":{\"description\":\"One entry per requested msgId, in request order.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"deleted\":{\"type\":\"boolean\"},\"msgId\":{\"minLength\":1,\"type\":\"string\"},\"reason\":{\"description\":\"Why it was not deleted. `notFound`: no such message. `notInAccount`: the message exists but is not in the named account's queues.\",\"enum\":[\"notFound\",\"notInAccount\"],\"type\":\"string\"}},\"required\":[\"msgId\",\"deleted\"],\"type\":\"object\"},\"type\":\"array\"}},\"required\":[\"results\"],\"title\":\"Messaging — Delete Messages — response payload\",\"type\":\"object\"},\"Vid\":{\"description\":\"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\"minLength\":1,\"title\":\"Vid\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

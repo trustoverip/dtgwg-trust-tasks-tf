@@ -35,42 +35,6 @@ pub mod error {
 }
 ///`CredentialDescriptor`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "PublicKeyCredentialDescriptor",
-///  "type": "object",
-///  "required": [
-///    "id",
-///    "type"
-///  ],
-///  "properties": {
-///    "id": {
-///      "description": "base64url-encoded credential id.",
-///      "type": "string"
-///    },
-///    "transports": {
-///      "type": "array",
-///      "items": {
-///        "enum": [
-///          "usb",
-///          "nfc",
-///          "ble",
-///          "internal",
-///          "hybrid"
-///        ]
-///      }
-///    },
-///    "type": {
-///      "const": "public-key"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "credentialDescriptor"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -89,20 +53,6 @@ impl CredentialDescriptor {
 }
 ///`CredentialDescriptorTransportsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "enum": [
-///    "usb",
-///    "nfc",
-///    "ble",
-///    "internal",
-///    "hybrid"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -176,52 +126,6 @@ impl ::std::convert::TryFrom<::std::string::String> for CredentialDescriptorTran
 }
 ///Server-issued options for `navigator.credentials.get({ publicKey: ... })`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "PublicKeyCredentialRequestOptions",
-///  "description": "Server-issued options for `navigator.credentials.get({ publicKey: ... })`.",
-///  "type": "object",
-///  "required": [
-///    "challenge"
-///  ],
-///  "properties": {
-///    "allowCredentials": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/CredentialDescriptor"
-///      }
-///    },
-///    "challenge": {
-///      "description": "base64url-encoded one-time nonce.",
-///      "type": "string"
-///    },
-///    "extensions": {
-///      "description": "Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\n\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\n\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.",
-///      "type": "object"
-///    },
-///    "rpId": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "timeout": {
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "userVerification": {
-///      "enum": [
-///        "discouraged",
-///        "preferred",
-///        "required"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "credentialRequestOptions"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -264,15 +168,6 @@ impl CredentialRequestOptions {
 }
 ///`CredentialRequestOptionsRpId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CredentialRequestOptionsRpId(::std::string::String);
@@ -332,18 +227,6 @@ impl<'de> ::serde::Deserialize<'de> for CredentialRequestOptionsRpId {
 }
 ///`CredentialRequestOptionsUserVerification`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "enum": [
-///    "discouraged",
-///    "preferred",
-///    "required"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -409,21 +292,6 @@ impl ::std::convert::TryFrom<::std::string::String> for CredentialRequestOptions
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -445,15 +313,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -517,81 +376,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A relying party asks an approver (typically a wallet or a VTA) to ratify an AAL elevation for a subject's session, or — bound to one operation — to approve that one act without elevating any session.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/auth/step-up/approve-request/0.3",
-///  "title": "Payload",
-///  "description": "A relying party asks an approver (typically a wallet or a VTA) to ratify an AAL elevation for a subject's session, or — bound to one operation — to approve that one act without elevating any session.",
-///  "type": "object",
-///  "required": [
-///    "challenge",
-///    "reason",
-///    "subject"
-///  ],
-///  "properties": {
-///    "acceptableEvidence": {
-///      "description": "Which approve-response evidence kinds the relying party will accept (see auth/step-up/approve-response `evidence`). When omitted, the approver MAY use any kind it supports. An approver that cannot satisfy any listed kind SHOULD refuse with `methodUnsupported`.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "enum": [
-///          "didSigned",
-///          "webauthn"
-///        ]
-///      },
-///      "minItems": 1,
-///      "uniqueItems": true
-///    },
-///    "boundTo": {
-///      "description": "Present when the step-up authorizes exactly one operation rather than raising a session's assurance level. An opaque relying-party identifier for that operation — for an operation that arrived as a signed document, a digest of its type and payload salted with `challenge`. Echoed by a `recorded` approve-response acknowledgement. Not a capability: the binding is the relying party's own state.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "challenge": {
-///      "description": "base64url-encoded nonce the approver will include in the approve-response signature. ≥128 bits entropy.",
-///      "type": "string",
-///      "minLength": 16
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "reason": {
-///      "description": "Human-readable explanation of WHY the relying party is asking (e.g. \"confirm transfer of 1000 USD to bob.example\"). Surfaced to the user by the approver for consent. SHOULD be specific enough that a user can refuse intelligently.",
-///      "type": "string",
-///      "maxLength": 500,
-///      "minLength": 1
-///    },
-///    "sessionId": {
-///      "description": "The session the relying party wants elevated. Opaque to the approver. Absent only when the step-up is bound to one operation that arrived without a session (a signed Trust Task document, for instance); see `boundTo`.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "subject": {
-///      "description": "The VID whose session is being elevated, or — for a step-up bound to one operation — the VID whose act that operation is. The approver MUST verify this is a VID it can speak for.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "targetAcr": {
-///      "description": "The acr the relying party expects on the elevated session. Approvers MAY refuse if they cannot deliver this level.",
-///      "type": "string"
-///    },
-///    "ttl": {
-///      "description": "Seconds within which the relying party expects the approve-response. Approvers SHOULD treat as advisory — the relying party's own expiry policy is authoritative.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "webauthn": {
-///      "description": "Optional WebAuthn `PublicKeyCredentialRequestOptions` the approver passes to the platform passkey API when producing `webauthn` evidence. When present, its `challenge` MUST equal `payload.challenge` so the resulting assertion binds the same nonce the relying party bound server-side. `rpId`/`allowCredentials` identify which credential the approver should assert with.",
-///      "$ref": "#/definitions/CredentialRequestOptions"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -647,18 +431,6 @@ impl Payload {
 }
 ///`PayloadAcceptableEvidenceItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "enum": [
-///    "didSigned",
-///    "webauthn"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -720,17 +492,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadAcceptableEvidenc
 }
 ///Present when the step-up authorizes exactly one operation rather than raising a session's assurance level. An opaque relying-party identifier for that operation — for an operation that arrived as a signed document, a digest of its type and payload salted with `challenge`. Echoed by a `recorded` approve-response acknowledgement. Not a capability: the binding is the relying party's own state.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Present when the step-up authorizes exactly one operation rather than raising a session's assurance level. An opaque relying-party identifier for that operation — for an operation that arrived as a signed document, a digest of its type and payload salted with `challenge`. Echoed by a `recorded` approve-response acknowledgement. Not a capability: the binding is the relying party's own state.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadBoundTo(::std::string::String);
@@ -793,16 +554,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadBoundTo {
 }
 ///base64url-encoded nonce the approver will include in the approve-response signature. ≥128 bits entropy.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "base64url-encoded nonce the approver will include in the approve-response signature. ≥128 bits entropy.",
-///  "type": "string",
-///  "minLength": 16
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadChallenge(::std::string::String);
@@ -862,17 +613,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadChallenge {
 }
 ///Human-readable explanation of WHY the relying party is asking (e.g. "confirm transfer of 1000 USD to bob.example"). Surfaced to the user by the approver for consent. SHOULD be specific enough that a user can refuse intelligently.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Human-readable explanation of WHY the relying party is asking (e.g. \"confirm transfer of 1000 USD to bob.example\"). Surfaced to the user by the approver for consent. SHOULD be specific enough that a user can refuse intelligently.",
-///  "type": "string",
-///  "maxLength": 500,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadReason(::std::string::String);
@@ -935,16 +675,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 }
 ///The session the relying party wants elevated. Opaque to the approver. Absent only when the step-up is bound to one operation that arrived without a session (a signed Trust Task document, for instance); see `boundTo`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The session the relying party wants elevated. Opaque to the approver. Absent only when the step-up is bound to one operation that arrived without a session (a signed Trust Task document, for instance); see `boundTo`.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadSessionId(::std::string::String);
@@ -1004,16 +734,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSessionId {
 }
 ///The VID whose session is being elevated, or — for a step-up bound to one operation — the VID whose act that operation is. The approver MUST verify this is a VID it can speak for.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The VID whose session is being elevated, or — for a step-up bound to one operation — the VID whose act that operation is. The approver MUST verify this is a VID it can speak for.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadSubject(::std::string::String);
@@ -1073,39 +793,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubject {
 }
 ///Synchronous ack from the approver acknowledging it received the request and will (or will not) deliver an approve-response. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/approve-request/0.3#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Synchronous ack from the approver acknowledging it received the request and will (or will not) deliver an approve-response. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/approve-request/0.3#response.",
-///  "type": "object",
-///  "required": [
-///    "status"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "reason": {
-///      "description": "Required when status is `refused`.",
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "status": {
-///      "description": "`accepted` means the approver received the request and will return an approve-response (typically via DIDComm). `refused` means it will not — `reason` MUST be set.",
-///      "type": "string",
-///      "enum": [
-///        "accepted",
-///        "refused"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1126,16 +813,6 @@ impl Response {
 }
 ///Required when status is `refused`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Required when status is `refused`.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseReason(::std::string::String);
@@ -1195,19 +872,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseReason {
 }
 ///`accepted` means the approver received the request and will return an approve-response (typically via DIDComm). `refused` means it will not — `reason` MUST be set.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`accepted` means the approver received the request and will return an approve-response (typically via DIDComm). `refused` means it will not — `reason` MUST be set.",
-///  "type": "string",
-///  "enum": [
-///    "accepted",
-///    "refused"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1728,7 +1392,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CredentialDescriptor\": {\n      \"$anchor\": \"credentialDescriptor\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"id\": {\n          \"description\": \"base64url-encoded credential id.\",\n          \"type\": \"string\"\n        },\n        \"transports\": {\n          \"items\": {\n            \"enum\": [\n              \"usb\",\n              \"nfc\",\n              \"ble\",\n              \"internal\",\n              \"hybrid\"\n            ]\n          },\n          \"type\": \"array\"\n        },\n        \"type\": {\n          \"const\": \"public-key\"\n        }\n      },\n      \"required\": [\n        \"type\",\n        \"id\"\n      ],\n      \"title\": \"PublicKeyCredentialDescriptor\",\n      \"type\": \"object\"\n    },\n    \"CredentialRequestOptions\": {\n      \"$anchor\": \"credentialRequestOptions\",\n      \"additionalProperties\": false,\n      \"description\": \"Server-issued options for `navigator.credentials.get({ publicKey: ... })`.\",\n      \"properties\": {\n        \"allowCredentials\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/CredentialDescriptor\"\n          },\n          \"type\": \"array\"\n        },\n        \"challenge\": {\n          \"description\": \"base64url-encoded one-time nonce.\",\n          \"type\": \"string\"\n        },\n        \"extensions\": {\n          \"description\": \"Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\\n\\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\\n\\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.\",\n          \"type\": \"object\"\n        },\n        \"rpId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"timeout\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"userVerification\": {\n          \"enum\": [\n            \"discouraged\",\n            \"preferred\",\n            \"required\"\n          ]\n        }\n      },\n      \"required\": [\n        \"challenge\"\n      ],\n      \"title\": \"PublicKeyCredentialRequestOptions\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Synchronous ack from the approver acknowledging it received the request and will (or will not) deliver an approve-response. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/approve-request/0.3#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"reason\": {\n          \"description\": \"Required when status is `refused`.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"`accepted` means the approver received the request and will return an approve-response (typically via DIDComm). `refused` means it will not — `reason` MUST be set.\",\n          \"enum\": [\n            \"accepted\",\n            \"refused\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\"\n      ],\n      \"title\": \"Auth Step-up Approve Request — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/step-up/approve-request/0.3\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A relying party asks an approver (typically a wallet or a VTA) to ratify an AAL elevation for a subject's session, or — bound to one operation — to approve that one act without elevating any session.\",\n  \"properties\": {\n    \"acceptableEvidence\": {\n      \"description\": \"Which approve-response evidence kinds the relying party will accept (see auth/step-up/approve-response `evidence`). When omitted, the approver MAY use any kind it supports. An approver that cannot satisfy any listed kind SHOULD refuse with `methodUnsupported`.\",\n      \"items\": {\n        \"enum\": [\n          \"didSigned\",\n          \"webauthn\"\n        ],\n        \"type\": \"string\"\n      },\n      \"minItems\": 1,\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    },\n    \"boundTo\": {\n      \"description\": \"Present when the step-up authorizes exactly one operation rather than raising a session's assurance level. An opaque relying-party identifier for that operation — for an operation that arrived as a signed document, a digest of its type and payload salted with `challenge`. Echoed by a `recorded` approve-response acknowledgement. Not a capability: the binding is the relying party's own state.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"challenge\": {\n      \"description\": \"base64url-encoded nonce the approver will include in the approve-response signature. ≥128 bits entropy.\",\n      \"minLength\": 16,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"reason\": {\n      \"description\": \"Human-readable explanation of WHY the relying party is asking (e.g. \\\"confirm transfer of 1000 USD to bob.example\\\"). Surfaced to the user by the approver for consent. SHOULD be specific enough that a user can refuse intelligently.\",\n      \"maxLength\": 500,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"sessionId\": {\n      \"description\": \"The session the relying party wants elevated. Opaque to the approver. Absent only when the step-up is bound to one operation that arrived without a session (a signed Trust Task document, for instance); see `boundTo`.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"subject\": {\n      \"description\": \"The VID whose session is being elevated, or — for a step-up bound to one operation — the VID whose act that operation is. The approver MUST verify this is a VID it can speak for.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"targetAcr\": {\n      \"description\": \"The acr the relying party expects on the elevated session. Approvers MAY refuse if they cannot deliver this level.\",\n      \"type\": \"string\"\n    },\n    \"ttl\": {\n      \"description\": \"Seconds within which the relying party expects the approve-response. Approvers SHOULD treat as advisory — the relying party's own expiry policy is authoritative.\",\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"webauthn\": {\n      \"$ref\": \"#/$defs/CredentialRequestOptions\",\n      \"description\": \"Optional WebAuthn `PublicKeyCredentialRequestOptions` the approver passes to the platform passkey API when producing `webauthn` evidence. When present, its `challenge` MUST equal `payload.challenge` so the resulting assertion binds the same nonce the relying party bound server-side. `rpId`/`allowCredentials` identify which credential the approver should assert with.\"\n    }\n  },\n  \"required\": [\n    \"subject\",\n    \"challenge\",\n    \"reason\"\n  ],\n  \"title\": \"Auth — Step-up Approve Request\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"CredentialDescriptor\":{\"$anchor\":\"credentialDescriptor\",\"additionalProperties\":false,\"properties\":{\"id\":{\"description\":\"base64url-encoded credential id.\",\"type\":\"string\"},\"transports\":{\"items\":{\"enum\":[\"usb\",\"nfc\",\"ble\",\"internal\",\"hybrid\"]},\"type\":\"array\"},\"type\":{\"const\":\"public-key\"}},\"required\":[\"type\",\"id\"],\"title\":\"PublicKeyCredentialDescriptor\",\"type\":\"object\"},\"CredentialRequestOptions\":{\"$anchor\":\"credentialRequestOptions\",\"additionalProperties\":false,\"description\":\"Server-issued options for `navigator.credentials.get({ publicKey: ... })`.\",\"properties\":{\"allowCredentials\":{\"items\":{\"$ref\":\"#/$defs/CredentialDescriptor\"},\"type\":\"array\"},\"challenge\":{\"description\":\"base64url-encoded one-time nonce.\",\"type\":\"string\"},\"extensions\":{\"description\":\"Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\\n\\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\\n\\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.\",\"type\":\"object\"},\"rpId\":{\"minLength\":1,\"type\":\"string\"},\"timeout\":{\"minimum\":1,\"type\":\"integer\"},\"userVerification\":{\"enum\":[\"discouraged\",\"preferred\",\"required\"]}},\"required\":[\"challenge\"],\"title\":\"PublicKeyCredentialRequestOptions\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Synchronous ack from the approver acknowledging it received the request and will (or will not) deliver an approve-response. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/approve-request/0.3#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"reason\":{\"description\":\"Required when status is `refused`.\",\"maxLength\":1024,\"type\":\"string\"},\"status\":{\"description\":\"`accepted` means the approver received the request and will return an approve-response (typically via DIDComm). `refused` means it will not — `reason` MUST be set.\",\"enum\":[\"accepted\",\"refused\"],\"type\":\"string\"}},\"required\":[\"status\"],\"title\":\"Auth Step-up Approve Request — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/auth/step-up/approve-request/0.3\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A relying party asks an approver (typically a wallet or a VTA) to ratify an AAL elevation for a subject's session, or — bound to one operation — to approve that one act without elevating any session.\",\"properties\":{\"acceptableEvidence\":{\"description\":\"Which approve-response evidence kinds the relying party will accept (see auth/step-up/approve-response `evidence`). When omitted, the approver MAY use any kind it supports. An approver that cannot satisfy any listed kind SHOULD refuse with `methodUnsupported`.\",\"items\":{\"enum\":[\"didSigned\",\"webauthn\"],\"type\":\"string\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"boundTo\":{\"description\":\"Present when the step-up authorizes exactly one operation rather than raising a session's assurance level. An opaque relying-party identifier for that operation — for an operation that arrived as a signed document, a digest of its type and payload salted with `challenge`. Echoed by a `recorded` approve-response acknowledgement. Not a capability: the binding is the relying party's own state.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"challenge\":{\"description\":\"base64url-encoded nonce the approver will include in the approve-response signature. ≥128 bits entropy.\",\"minLength\":16,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"reason\":{\"description\":\"Human-readable explanation of WHY the relying party is asking (e.g. \\\"confirm transfer of 1000 USD to bob.example\\\"). Surfaced to the user by the approver for consent. SHOULD be specific enough that a user can refuse intelligently.\",\"maxLength\":500,\"minLength\":1,\"type\":\"string\"},\"sessionId\":{\"description\":\"The session the relying party wants elevated. Opaque to the approver. Absent only when the step-up is bound to one operation that arrived without a session (a signed Trust Task document, for instance); see `boundTo`.\",\"minLength\":1,\"type\":\"string\"},\"subject\":{\"description\":\"The VID whose session is being elevated, or — for a step-up bound to one operation — the VID whose act that operation is. The approver MUST verify this is a VID it can speak for.\",\"minLength\":1,\"type\":\"string\"},\"targetAcr\":{\"description\":\"The acr the relying party expects on the elevated session. Approvers MAY refuse if they cannot deliver this level.\",\"type\":\"string\"},\"ttl\":{\"description\":\"Seconds within which the relying party expects the approve-response. Approvers SHOULD treat as advisory — the relying party's own expiry policy is authoritative.\",\"minimum\":1,\"type\":\"integer\"},\"webauthn\":{\"$ref\":\"#/$defs/CredentialRequestOptions\",\"description\":\"Optional WebAuthn `PublicKeyCredentialRequestOptions` the approver passes to the platform passkey API when producing `webauthn` evidence. When present, its `challenge` MUST equal `payload.challenge` so the resulting assertion binds the same nonce the relying party bound server-side. `rpId`/`allowCredentials` identify which credential the approver should assert with.\"}},\"required\":[\"subject\",\"challenge\",\"reason\"],\"title\":\"Auth — Step-up Approve Request\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1737,7 +1401,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CredentialDescriptor\": {\n      \"$anchor\": \"credentialDescriptor\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"id\": {\n          \"description\": \"base64url-encoded credential id.\",\n          \"type\": \"string\"\n        },\n        \"transports\": {\n          \"items\": {\n            \"enum\": [\n              \"usb\",\n              \"nfc\",\n              \"ble\",\n              \"internal\",\n              \"hybrid\"\n            ]\n          },\n          \"type\": \"array\"\n        },\n        \"type\": {\n          \"const\": \"public-key\"\n        }\n      },\n      \"required\": [\n        \"type\",\n        \"id\"\n      ],\n      \"title\": \"PublicKeyCredentialDescriptor\",\n      \"type\": \"object\"\n    },\n    \"CredentialRequestOptions\": {\n      \"$anchor\": \"credentialRequestOptions\",\n      \"additionalProperties\": false,\n      \"description\": \"Server-issued options for `navigator.credentials.get({ publicKey: ... })`.\",\n      \"properties\": {\n        \"allowCredentials\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/CredentialDescriptor\"\n          },\n          \"type\": \"array\"\n        },\n        \"challenge\": {\n          \"description\": \"base64url-encoded one-time nonce.\",\n          \"type\": \"string\"\n        },\n        \"extensions\": {\n          \"description\": \"Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\\n\\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\\n\\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.\",\n          \"type\": \"object\"\n        },\n        \"rpId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"timeout\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"userVerification\": {\n          \"enum\": [\n            \"discouraged\",\n            \"preferred\",\n            \"required\"\n          ]\n        }\n      },\n      \"required\": [\n        \"challenge\"\n      ],\n      \"title\": \"PublicKeyCredentialRequestOptions\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Synchronous ack from the approver acknowledging it received the request and will (or will not) deliver an approve-response. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/approve-request/0.3#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"reason\": {\n          \"description\": \"Required when status is `refused`.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"`accepted` means the approver received the request and will return an approve-response (typically via DIDComm). `refused` means it will not — `reason` MUST be set.\",\n          \"enum\": [\n            \"accepted\",\n            \"refused\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\"\n      ],\n      \"title\": \"Auth Step-up Approve Request — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"CredentialDescriptor\":{\"$anchor\":\"credentialDescriptor\",\"additionalProperties\":false,\"properties\":{\"id\":{\"description\":\"base64url-encoded credential id.\",\"type\":\"string\"},\"transports\":{\"items\":{\"enum\":[\"usb\",\"nfc\",\"ble\",\"internal\",\"hybrid\"]},\"type\":\"array\"},\"type\":{\"const\":\"public-key\"}},\"required\":[\"type\",\"id\"],\"title\":\"PublicKeyCredentialDescriptor\",\"type\":\"object\"},\"CredentialRequestOptions\":{\"$anchor\":\"credentialRequestOptions\",\"additionalProperties\":false,\"description\":\"Server-issued options for `navigator.credentials.get({ publicKey: ... })`.\",\"properties\":{\"allowCredentials\":{\"items\":{\"$ref\":\"#/$defs/CredentialDescriptor\"},\"type\":\"array\"},\"challenge\":{\"description\":\"base64url-encoded one-time nonce.\",\"type\":\"string\"},\"extensions\":{\"description\":\"Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\\n\\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\\n\\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.\",\"type\":\"object\"},\"rpId\":{\"minLength\":1,\"type\":\"string\"},\"timeout\":{\"minimum\":1,\"type\":\"integer\"},\"userVerification\":{\"enum\":[\"discouraged\",\"preferred\",\"required\"]}},\"required\":[\"challenge\"],\"title\":\"PublicKeyCredentialRequestOptions\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Synchronous ack from the approver acknowledging it received the request and will (or will not) deliver an approve-response. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/approve-request/0.3#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"reason\":{\"description\":\"Required when status is `refused`.\",\"maxLength\":1024,\"type\":\"string\"},\"status\":{\"description\":\"`accepted` means the approver received the request and will return an approve-response (typically via DIDComm). `refused` means it will not — `reason` MUST be set.\",\"enum\":[\"accepted\",\"refused\"],\"type\":\"string\"}},\"required\":[\"status\"],\"title\":\"Auth Step-up Approve Request — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

@@ -35,41 +35,6 @@ pub mod error {
 }
 ///A DIDComm mediator that is no longer advertised but is still accepting delivery, so in-flight messages routed through it are not stranded.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DrainEntry",
-///  "description": "A DIDComm mediator that is no longer advertised but is still accepting delivery, so in-flight messages routed through it are not stranded.",
-///  "type": "object",
-///  "required": [
-///    "drainsUntil",
-///    "endpoint",
-///    "mediatorDid"
-///  ],
-///  "properties": {
-///    "drainsUntil": {
-///      "description": "RFC 3339 instant after which the mediator is dropped and messages routed through it are lost.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "endpoint": {
-///      "description": "Where it is still reachable for the remainder of the drain.",
-///      "type": "string"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "mediatorDid": {
-///      "description": "The mediator being drained.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -92,16 +57,6 @@ impl DrainEntry {
 }
 ///The mediator being drained.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The mediator being drained.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DrainEntryMediatorDid(::std::string::String);
@@ -161,21 +116,6 @@ impl<'de> ::serde::Deserialize<'de> for DrainEntryMediatorDid {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -197,15 +137,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -269,23 +200,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Request payload for vta/services/drain/list. Enumerates DIDComm mediators that are no longer advertised but are still accepting delivery.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/services/drain/list/1.0",
-///  "title": "Payload",
-///  "description": "Request payload for vta/services/drain/list. Enumerates DIDComm mediators that are no longer advertised but are still accepting delivery.",
-///  "type": "object",
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -308,33 +222,6 @@ impl Payload {
 }
 ///Success response to vta/services/drain/list. Type https://trusttasks.org/spec/vta/services/drain/list/1.0#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to vta/services/drain/list. Type https://trusttasks.org/spec/vta/services/drain/list/1.0#response.",
-///  "type": "object",
-///  "required": [
-///    "entries"
-///  ],
-///  "properties": {
-///    "entries": {
-///      "description": "Mediators currently draining. An empty array means nothing is draining — which is the ordinary state, not an error.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/DrainEntry"
-///      }
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -526,7 +413,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/services/drain/list/1.0";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DrainEntry\": {\n      \"additionalProperties\": false,\n      \"description\": \"A DIDComm mediator that is no longer advertised but is still accepting delivery, so in-flight messages routed through it are not stranded.\",\n      \"properties\": {\n        \"drainsUntil\": {\n          \"description\": \"RFC 3339 instant after which the mediator is dropped and messages routed through it are lost.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"endpoint\": {\n          \"description\": \"Where it is still reachable for the remainder of the drain.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"mediatorDid\": {\n          \"description\": \"The mediator being drained.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"mediatorDid\",\n        \"endpoint\",\n        \"drainsUntil\"\n      ],\n      \"title\": \"DrainEntry\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/services/drain/list. Type https://trusttasks.org/spec/vta/services/drain/list/1.0#response.\",\n      \"properties\": {\n        \"entries\": {\n          \"description\": \"Mediators currently draining. An empty array means nothing is draining — which is the ordinary state, not an error.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/DrainEntry\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"entries\"\n      ],\n      \"title\": \"VTA Services Drain — List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/services/drain/list/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Request payload for vta/services/drain/list. Enumerates DIDComm mediators that are no longer advertised but are still accepting delivery.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"title\": \"VTA Services Drain — List — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"DrainEntry\":{\"additionalProperties\":false,\"description\":\"A DIDComm mediator that is no longer advertised but is still accepting delivery, so in-flight messages routed through it are not stranded.\",\"properties\":{\"drainsUntil\":{\"description\":\"RFC 3339 instant after which the mediator is dropped and messages routed through it are lost.\",\"format\":\"date-time\",\"type\":\"string\"},\"endpoint\":{\"description\":\"Where it is still reachable for the remainder of the drain.\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"mediatorDid\":{\"description\":\"The mediator being drained.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"mediatorDid\",\"endpoint\",\"drainsUntil\"],\"title\":\"DrainEntry\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vta/services/drain/list. Type https://trusttasks.org/spec/vta/services/drain/list/1.0#response.\",\"properties\":{\"entries\":{\"description\":\"Mediators currently draining. An empty array means nothing is draining — which is the ordinary state, not an error.\",\"items\":{\"$ref\":\"#/$defs/DrainEntry\"},\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"entries\"],\"title\":\"VTA Services Drain — List — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/services/drain/list/1.0\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Request payload for vta/services/drain/list. Enumerates DIDComm mediators that are no longer advertised but are still accepting delivery.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"title\":\"VTA Services Drain — List — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -534,7 +421,7 @@ impl crate::Payload for Response {
         "https://trusttasks.org/spec/vta/services/drain/list/1.0#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DrainEntry\": {\n      \"additionalProperties\": false,\n      \"description\": \"A DIDComm mediator that is no longer advertised but is still accepting delivery, so in-flight messages routed through it are not stranded.\",\n      \"properties\": {\n        \"drainsUntil\": {\n          \"description\": \"RFC 3339 instant after which the mediator is dropped and messages routed through it are lost.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"endpoint\": {\n          \"description\": \"Where it is still reachable for the remainder of the drain.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"mediatorDid\": {\n          \"description\": \"The mediator being drained.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"mediatorDid\",\n        \"endpoint\",\n        \"drainsUntil\"\n      ],\n      \"title\": \"DrainEntry\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/services/drain/list. Type https://trusttasks.org/spec/vta/services/drain/list/1.0#response.\",\n      \"properties\": {\n        \"entries\": {\n          \"description\": \"Mediators currently draining. An empty array means nothing is draining — which is the ordinary state, not an error.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/DrainEntry\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"entries\"\n      ],\n      \"title\": \"VTA Services Drain — List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"DrainEntry\":{\"additionalProperties\":false,\"description\":\"A DIDComm mediator that is no longer advertised but is still accepting delivery, so in-flight messages routed through it are not stranded.\",\"properties\":{\"drainsUntil\":{\"description\":\"RFC 3339 instant after which the mediator is dropped and messages routed through it are lost.\",\"format\":\"date-time\",\"type\":\"string\"},\"endpoint\":{\"description\":\"Where it is still reachable for the remainder of the drain.\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"mediatorDid\":{\"description\":\"The mediator being drained.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"mediatorDid\",\"endpoint\",\"drainsUntil\"],\"title\":\"DrainEntry\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vta/services/drain/list. Type https://trusttasks.org/spec/vta/services/drain/list/1.0#response.\",\"properties\":{\"entries\":{\"description\":\"Mediators currently draining. An empty array means nothing is draining — which is the ordinary state, not an error.\",\"items\":{\"$ref\":\"#/$defs/DrainEntry\"},\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"entries\"],\"title\":\"VTA Services Drain — List — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

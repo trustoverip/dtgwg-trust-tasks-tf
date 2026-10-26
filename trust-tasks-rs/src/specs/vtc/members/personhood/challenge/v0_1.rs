@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,30 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/members/personhood/challenge/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "did"
-///  ],
-///  "properties": {
-///    "did": {
-///      "description": "The member who will assert personhood.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -182,16 +134,6 @@ impl Payload {
 }
 ///The member who will assert personhood.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The member who will assert personhood.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadDid(::std::string::String);
@@ -251,36 +193,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDid {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "challengeId",
-///    "expiresAt"
-///  ],
-///  "properties": {
-///    "challengeId": {
-///      "description": "Single-use nonce (a UUID). Embed it into the assert VP's proof.challenge.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "expiresAt": {
-///      "description": "The assert handler refuses the presentation past this point.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -301,16 +213,6 @@ impl Response {
 }
 ///Single-use nonce (a UUID). Embed it into the assert VP's proof.challenge.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Single-use nonce (a UUID). Embed it into the assert VP's proof.challenge.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseChallengeId(::std::string::String);
@@ -496,7 +398,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"challengeId\": {\n          \"description\": \"Single-use nonce (a UUID). Embed it into the assert VP's proof.challenge.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"expiresAt\": {\n          \"description\": \"The assert handler refuses the presentation past this point.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"challengeId\",\n        \"expiresAt\"\n      ],\n      \"title\": \"VTC Members Personhood-Challenge — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/members/personhood/challenge/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"did\": {\n      \"description\": \"The member who will assert personhood.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"required\": [\n    \"did\"\n  ],\n  \"title\": \"VTC Members Personhood-Challenge — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"challengeId\":{\"description\":\"Single-use nonce (a UUID). Embed it into the assert VP's proof.challenge.\",\"minLength\":1,\"type\":\"string\"},\"expiresAt\":{\"description\":\"The assert handler refuses the presentation past this point.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"challengeId\",\"expiresAt\"],\"title\":\"VTC Members Personhood-Challenge — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/members/personhood/challenge/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"did\":{\"description\":\"The member who will assert personhood.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"did\"],\"title\":\"VTC Members Personhood-Challenge — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -505,7 +407,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"challengeId\": {\n          \"description\": \"Single-use nonce (a UUID). Embed it into the assert VP's proof.challenge.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"expiresAt\": {\n          \"description\": \"The assert handler refuses the presentation past this point.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"challengeId\",\n        \"expiresAt\"\n      ],\n      \"title\": \"VTC Members Personhood-Challenge — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"challengeId\":{\"description\":\"Single-use nonce (a UUID). Embed it into the assert VP's proof.challenge.\",\"minLength\":1,\"type\":\"string\"},\"expiresAt\":{\"description\":\"The assert handler refuses the presentation past this point.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"challengeId\",\"expiresAt\"],\"title\":\"VTC Members Personhood-Challenge — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

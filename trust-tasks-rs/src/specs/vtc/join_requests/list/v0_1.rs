@@ -35,21 +35,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -71,15 +56,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -143,130 +119,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///One application to join a Verifiable Trust Community.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "JoinRequest",
-///  "description": "One application to join a Verifiable Trust Community.",
-///  "type": "object",
-///  "required": [
-///    "applicantDid",
-///    "id",
-///    "status",
-///    "submittedAt",
-///    "vp"
-///  ],
-///  "properties": {
-///    "applicantDid": {
-///      "description": "DID of the applicant.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "attributes": {
-///      "description": "What the applicant told the community about themselves in answer to the manifest's `requestedAttributes` — self-asserted, and to be shown as such to whoever reviews the request. Absent when none were asked for or given.",
-///      "type": "array",
-///      "items": {
-///        "type": "object",
-///        "required": [
-///          "type",
-///          "value"
-///        ],
-///        "properties": {
-///          "type": {
-///            "description": "A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token.",
-///            "type": "string",
-///            "maxLength": 128,
-///            "minLength": 1,
-///            "pattern": "^(x:)?[a-z][A-Za-z0-9]*(\\.[a-z][A-Za-z0-9]*)*$"
-///          },
-///          "value": {
-///            "description": "The value the applicant gives. Self-asserted: the applicant's own statement, bound to them by the document proof, and attested by nobody."
-///          }
-///        },
-///        "additionalProperties": false
-///      },
-///      "maxItems": 32
-///    },
-///    "decision": {
-///      "description": "Why this request was refused, in terms meant for the applicant rather than the operator. `null` unless the request was rejected.\n\nDistinct from `policyDecision`, which records the community's internal verdict: both rejection paths — a policy auto-deny at submit and an admin's later refusal — write this one, so a client reads a single shape instead of reconciling two.",
-///      "type": [
-///        "object",
-///        "null"
-///      ],
-///      "required": [
-///        "code",
-///        "decidedAt"
-///      ],
-///      "properties": {
-///        "code": {
-///          "description": "Stable refusal code, safe to branch on.",
-///          "type": "string"
-///        },
-///        "decidedAt": {
-///          "description": "When the decision was taken — not when the poll answering it was produced. On an admin refusal the two diverge by however long the applicant takes to ask.",
-///          "type": "string",
-///          "format": "date-time"
-///        },
-///        "reason": {
-///          "description": "Elaboration in prose, when the decider gave one.",
-///          "type": [
-///            "string",
-///            "null"
-///          ],
-///          "maxLength": 1024
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "extensions": {
-///      "description": "Opaque community-defined extension bag.",
-///      "type": "object"
-///    },
-///    "id": {
-///      "description": "Stable id of this join request (a UUID).",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "policyDecision": {
-///      "description": "The community policy verdict recorded for this request (opaque here); absent while pending.",
-///      "type": "object"
-///    },
-///    "registryConsent": {
-///      "description": "Whether the applicant consented to trust-registry publication.",
-///      "type": "boolean"
-///    },
-///    "status": {
-///      "type": "string",
-///      "enum": [
-///        "pending",
-///        "approved",
-///        "rejected",
-///        "withdrawn",
-///        "deferred"
-///      ]
-///    },
-///    "submittedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "vp": {
-///      "description": "The W3C Verifiable Presentation the applicant submitted (opaque here).",
-///      "type": "object"
-///    },
-///    "vpClaims": {
-///      "description": "Canonical projection of `vp`, extracted when the request was submitted and used as the input the community's join policy reads. Carried on the row so an approval does not have to re-extract it, and opaque here: its members are whatever the community's policy asks of an applicant. `null` on a request recorded before a community began extracting one.",
-///      "type": [
-///        "object",
-///        "null"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "joinRequest"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -323,16 +175,6 @@ impl JoinRequest {
 }
 ///DID of the applicant.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "DID of the applicant.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct JoinRequestApplicantDid(::std::string::String);
@@ -392,31 +234,6 @@ impl<'de> ::serde::Deserialize<'de> for JoinRequestApplicantDid {
 }
 ///`JoinRequestAttributesItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "type",
-///    "value"
-///  ],
-///  "properties": {
-///    "type": {
-///      "description": "A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1,
-///      "pattern": "^(x:)?[a-z][A-Za-z0-9]*(\\.[a-z][A-Za-z0-9]*)*$"
-///    },
-///    "value": {
-///      "description": "The value the applicant gives. Self-asserted: the applicant's own statement, bound to them by the document proof, and attested by nobody."
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -434,18 +251,6 @@ impl JoinRequestAttributesItem {
 }
 ///A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1,
-///  "pattern": "^(x:)?[a-z][A-Za-z0-9]*(\\.[a-z][A-Za-z0-9]*)*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct JoinRequestAttributesItemType(::std::string::String);
@@ -520,39 +325,6 @@ Why this request was refused, in terms meant for the applicant rather than the o
 
 Distinct from `policyDecision`, which records the community's internal verdict: both rejection paths — a policy auto-deny at submit and an admin's later refusal — write this one, so a client reads a single shape instead of reconciling two.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Why this request was refused, in terms meant for the applicant rather than the operator. `null` unless the request was rejected.\n\nDistinct from `policyDecision`, which records the community's internal verdict: both rejection paths — a policy auto-deny at submit and an admin's later refusal — write this one, so a client reads a single shape instead of reconciling two.",
-///  "type": "object",
-///  "required": [
-///    "code",
-///    "decidedAt"
-///  ],
-///  "properties": {
-///    "code": {
-///      "description": "Stable refusal code, safe to branch on.",
-///      "type": "string"
-///    },
-///    "decidedAt": {
-///      "description": "When the decision was taken — not when the poll answering it was produced. On an admin refusal the two diverge by however long the applicant takes to ask.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "reason": {
-///      "description": "Elaboration in prose, when the decider gave one.",
-///      "type": [
-///        "string",
-///        "null"
-///      ],
-///      "maxLength": 1024
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -573,16 +345,6 @@ impl JoinRequestDecision {
 }
 ///Elaboration in prose, when the decider gave one.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Elaboration in prose, when the decider gave one.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct JoinRequestDecisionReason(::std::string::String);
@@ -642,16 +404,6 @@ impl<'de> ::serde::Deserialize<'de> for JoinRequestDecisionReason {
 }
 ///Stable id of this join request (a UUID).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Stable id of this join request (a UUID).",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct JoinRequestId(::std::string::String);
@@ -711,21 +463,6 @@ impl<'de> ::serde::Deserialize<'de> for JoinRequestId {
 }
 ///`JoinRequestStatus`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "enum": [
-///    "pending",
-///    "approved",
-///    "rejected",
-///    "withdrawn",
-///    "deferred"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -799,43 +536,6 @@ impl ::std::convert::TryFrom<::std::string::String> for JoinRequestStatus {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/join-requests/list/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "properties": {
-///    "cursor": {
-///      "description": "Opaque continuation token from a prior page.",
-///      "type": "string"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "limit": {
-///      "description": "Page size; clamped to 1..=200.",
-///      "type": "integer",
-///      "maximum": 200.0,
-///      "minimum": 1.0
-///    },
-///    "status": {
-///      "description": "Filter to requests in this status.",
-///      "type": "string",
-///      "enum": [
-///        "pending",
-///        "approved",
-///        "rejected",
-///        "withdrawn",
-///        "deferred"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -870,22 +570,6 @@ impl Payload {
 }
 ///Filter to requests in this status.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Filter to requests in this status.",
-///  "type": "string",
-///  "enum": [
-///    "pending",
-///    "approved",
-///    "rejected",
-///    "withdrawn",
-///    "deferred"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -959,43 +643,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadStatus {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "items"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "items": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/JoinRequest"
-///      }
-///    },
-///    "nextCursor": {
-///      "type": [
-///        "string",
-///        "null"
-///      ]
-///    },
-///    "totalEstimate": {
-///      "type": [
-///        "integer",
-///        "null"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1536,7 +1183,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/join-requests/list/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"JoinRequest\": {\n      \"$anchor\": \"joinRequest\",\n      \"additionalProperties\": false,\n      \"description\": \"One application to join a Verifiable Trust Community.\",\n      \"properties\": {\n        \"applicantDid\": {\n          \"description\": \"DID of the applicant.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"attributes\": {\n          \"description\": \"What the applicant told the community about themselves in answer to the manifest's `requestedAttributes` — self-asserted, and to be shown as such to whoever reviews the request. Absent when none were asked for or given.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"type\": {\n                \"description\": \"A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token.\",\n                \"maxLength\": 128,\n                \"minLength\": 1,\n                \"pattern\": \"^(x:)?[a-z][A-Za-z0-9]*(\\\\.[a-z][A-Za-z0-9]*)*$\",\n                \"type\": \"string\"\n              },\n              \"value\": {\n                \"description\": \"The value the applicant gives. Self-asserted: the applicant's own statement, bound to them by the document proof, and attested by nobody.\"\n              }\n            },\n            \"required\": [\n              \"type\",\n              \"value\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 32,\n          \"type\": \"array\"\n        },\n        \"decision\": {\n          \"additionalProperties\": false,\n          \"description\": \"Why this request was refused, in terms meant for the applicant rather than the operator. `null` unless the request was rejected.\\n\\nDistinct from `policyDecision`, which records the community's internal verdict: both rejection paths — a policy auto-deny at submit and an admin's later refusal — write this one, so a client reads a single shape instead of reconciling two.\",\n          \"properties\": {\n            \"code\": {\n              \"description\": \"Stable refusal code, safe to branch on.\",\n              \"type\": \"string\"\n            },\n            \"decidedAt\": {\n              \"description\": \"When the decision was taken — not when the poll answering it was produced. On an admin refusal the two diverge by however long the applicant takes to ask.\",\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"reason\": {\n              \"description\": \"Elaboration in prose, when the decider gave one.\",\n              \"maxLength\": 1024,\n              \"type\": [\n                \"string\",\n                \"null\"\n              ]\n            }\n          },\n          \"required\": [\n            \"code\",\n            \"decidedAt\"\n          ],\n          \"type\": [\n            \"object\",\n            \"null\"\n          ]\n        },\n        \"extensions\": {\n          \"description\": \"Opaque community-defined extension bag.\",\n          \"type\": \"object\"\n        },\n        \"id\": {\n          \"description\": \"Stable id of this join request (a UUID).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"policyDecision\": {\n          \"description\": \"The community policy verdict recorded for this request (opaque here); absent while pending.\",\n          \"type\": \"object\"\n        },\n        \"registryConsent\": {\n          \"description\": \"Whether the applicant consented to trust-registry publication.\",\n          \"type\": \"boolean\"\n        },\n        \"status\": {\n          \"enum\": [\n            \"pending\",\n            \"approved\",\n            \"rejected\",\n            \"withdrawn\",\n            \"deferred\"\n          ],\n          \"type\": \"string\"\n        },\n        \"submittedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"vp\": {\n          \"description\": \"The W3C Verifiable Presentation the applicant submitted (opaque here).\",\n          \"type\": \"object\"\n        },\n        \"vpClaims\": {\n          \"description\": \"Canonical projection of `vp`, extracted when the request was submitted and used as the input the community's join policy reads. Carried on the row so an approval does not have to re-extract it, and opaque here: its members are whatever the community's policy asks of an applicant. `null` on a request recorded before a community began extracting one.\",\n          \"type\": [\n            \"object\",\n            \"null\"\n          ]\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"applicantDid\",\n        \"vp\",\n        \"submittedAt\",\n        \"status\"\n      ],\n      \"title\": \"JoinRequest\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"items\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/JoinRequest\"\n          },\n          \"type\": \"array\"\n        },\n        \"nextCursor\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"totalEstimate\": {\n          \"type\": [\n            \"integer\",\n            \"null\"\n          ]\n        }\n      },\n      \"required\": [\n        \"items\"\n      ],\n      \"title\": \"VTC Join-Requests List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/join-requests/list/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"cursor\": {\n      \"description\": \"Opaque continuation token from a prior page.\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"limit\": {\n      \"description\": \"Page size; clamped to 1..=200.\",\n      \"maximum\": 200,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"status\": {\n      \"description\": \"Filter to requests in this status.\",\n      \"enum\": [\n        \"pending\",\n        \"approved\",\n        \"rejected\",\n        \"withdrawn\",\n        \"deferred\"\n      ],\n      \"type\": \"string\"\n    }\n  },\n  \"title\": \"VTC Join-Requests List — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"JoinRequest\":{\"$anchor\":\"joinRequest\",\"additionalProperties\":false,\"description\":\"One application to join a Verifiable Trust Community.\",\"properties\":{\"applicantDid\":{\"description\":\"DID of the applicant.\",\"minLength\":1,\"type\":\"string\"},\"attributes\":{\"description\":\"What the applicant told the community about themselves in answer to the manifest's `requestedAttributes` — self-asserted, and to be shown as such to whoever reviews the request. Absent when none were asked for or given.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"type\":{\"description\":\"A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^(x:)?[a-z][A-Za-z0-9]*(\\\\.[a-z][A-Za-z0-9]*)*$\",\"type\":\"string\"},\"value\":{\"description\":\"The value the applicant gives. Self-asserted: the applicant's own statement, bound to them by the document proof, and attested by nobody.\"}},\"required\":[\"type\",\"value\"],\"type\":\"object\"},\"maxItems\":32,\"type\":\"array\"},\"decision\":{\"additionalProperties\":false,\"description\":\"Why this request was refused, in terms meant for the applicant rather than the operator. `null` unless the request was rejected.\\n\\nDistinct from `policyDecision`, which records the community's internal verdict: both rejection paths — a policy auto-deny at submit and an admin's later refusal — write this one, so a client reads a single shape instead of reconciling two.\",\"properties\":{\"code\":{\"description\":\"Stable refusal code, safe to branch on.\",\"type\":\"string\"},\"decidedAt\":{\"description\":\"When the decision was taken — not when the poll answering it was produced. On an admin refusal the two diverge by however long the applicant takes to ask.\",\"format\":\"date-time\",\"type\":\"string\"},\"reason\":{\"description\":\"Elaboration in prose, when the decider gave one.\",\"maxLength\":1024,\"type\":[\"string\",\"null\"]}},\"required\":[\"code\",\"decidedAt\"],\"type\":[\"object\",\"null\"]},\"extensions\":{\"description\":\"Opaque community-defined extension bag.\",\"type\":\"object\"},\"id\":{\"description\":\"Stable id of this join request (a UUID).\",\"minLength\":1,\"type\":\"string\"},\"policyDecision\":{\"description\":\"The community policy verdict recorded for this request (opaque here); absent while pending.\",\"type\":\"object\"},\"registryConsent\":{\"description\":\"Whether the applicant consented to trust-registry publication.\",\"type\":\"boolean\"},\"status\":{\"enum\":[\"pending\",\"approved\",\"rejected\",\"withdrawn\",\"deferred\"],\"type\":\"string\"},\"submittedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"vp\":{\"description\":\"The W3C Verifiable Presentation the applicant submitted (opaque here).\",\"type\":\"object\"},\"vpClaims\":{\"description\":\"Canonical projection of `vp`, extracted when the request was submitted and used as the input the community's join policy reads. Carried on the row so an approval does not have to re-extract it, and opaque here: its members are whatever the community's policy asks of an applicant. `null` on a request recorded before a community began extracting one.\",\"type\":[\"object\",\"null\"]}},\"required\":[\"id\",\"applicantDid\",\"vp\",\"submittedAt\",\"status\"],\"title\":\"JoinRequest\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"items\":{\"items\":{\"$ref\":\"#/$defs/JoinRequest\"},\"type\":\"array\"},\"nextCursor\":{\"type\":[\"string\",\"null\"]},\"totalEstimate\":{\"type\":[\"integer\",\"null\"]}},\"required\":[\"items\"],\"title\":\"VTC Join-Requests List — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/join-requests/list/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"cursor\":{\"description\":\"Opaque continuation token from a prior page.\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"limit\":{\"description\":\"Page size; clamped to 1..=200.\",\"maximum\":200,\"minimum\":1,\"type\":\"integer\"},\"status\":{\"description\":\"Filter to requests in this status.\",\"enum\":[\"pending\",\"approved\",\"rejected\",\"withdrawn\",\"deferred\"],\"type\":\"string\"}},\"title\":\"VTC Join-Requests List — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1544,7 +1191,7 @@ impl crate::Payload for Response {
         "https://trusttasks.org/spec/vtc/join-requests/list/0.1#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"JoinRequest\": {\n      \"$anchor\": \"joinRequest\",\n      \"additionalProperties\": false,\n      \"description\": \"One application to join a Verifiable Trust Community.\",\n      \"properties\": {\n        \"applicantDid\": {\n          \"description\": \"DID of the applicant.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"attributes\": {\n          \"description\": \"What the applicant told the community about themselves in answer to the manifest's `requestedAttributes` — self-asserted, and to be shown as such to whoever reviews the request. Absent when none were asked for or given.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"type\": {\n                \"description\": \"A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token.\",\n                \"maxLength\": 128,\n                \"minLength\": 1,\n                \"pattern\": \"^(x:)?[a-z][A-Za-z0-9]*(\\\\.[a-z][A-Za-z0-9]*)*$\",\n                \"type\": \"string\"\n              },\n              \"value\": {\n                \"description\": \"The value the applicant gives. Self-asserted: the applicant's own statement, bound to them by the document proof, and attested by nobody.\"\n              }\n            },\n            \"required\": [\n              \"type\",\n              \"value\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 32,\n          \"type\": \"array\"\n        },\n        \"decision\": {\n          \"additionalProperties\": false,\n          \"description\": \"Why this request was refused, in terms meant for the applicant rather than the operator. `null` unless the request was rejected.\\n\\nDistinct from `policyDecision`, which records the community's internal verdict: both rejection paths — a policy auto-deny at submit and an admin's later refusal — write this one, so a client reads a single shape instead of reconciling two.\",\n          \"properties\": {\n            \"code\": {\n              \"description\": \"Stable refusal code, safe to branch on.\",\n              \"type\": \"string\"\n            },\n            \"decidedAt\": {\n              \"description\": \"When the decision was taken — not when the poll answering it was produced. On an admin refusal the two diverge by however long the applicant takes to ask.\",\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"reason\": {\n              \"description\": \"Elaboration in prose, when the decider gave one.\",\n              \"maxLength\": 1024,\n              \"type\": [\n                \"string\",\n                \"null\"\n              ]\n            }\n          },\n          \"required\": [\n            \"code\",\n            \"decidedAt\"\n          ],\n          \"type\": [\n            \"object\",\n            \"null\"\n          ]\n        },\n        \"extensions\": {\n          \"description\": \"Opaque community-defined extension bag.\",\n          \"type\": \"object\"\n        },\n        \"id\": {\n          \"description\": \"Stable id of this join request (a UUID).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"policyDecision\": {\n          \"description\": \"The community policy verdict recorded for this request (opaque here); absent while pending.\",\n          \"type\": \"object\"\n        },\n        \"registryConsent\": {\n          \"description\": \"Whether the applicant consented to trust-registry publication.\",\n          \"type\": \"boolean\"\n        },\n        \"status\": {\n          \"enum\": [\n            \"pending\",\n            \"approved\",\n            \"rejected\",\n            \"withdrawn\",\n            \"deferred\"\n          ],\n          \"type\": \"string\"\n        },\n        \"submittedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"vp\": {\n          \"description\": \"The W3C Verifiable Presentation the applicant submitted (opaque here).\",\n          \"type\": \"object\"\n        },\n        \"vpClaims\": {\n          \"description\": \"Canonical projection of `vp`, extracted when the request was submitted and used as the input the community's join policy reads. Carried on the row so an approval does not have to re-extract it, and opaque here: its members are whatever the community's policy asks of an applicant. `null` on a request recorded before a community began extracting one.\",\n          \"type\": [\n            \"object\",\n            \"null\"\n          ]\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"applicantDid\",\n        \"vp\",\n        \"submittedAt\",\n        \"status\"\n      ],\n      \"title\": \"JoinRequest\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"items\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/JoinRequest\"\n          },\n          \"type\": \"array\"\n        },\n        \"nextCursor\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"totalEstimate\": {\n          \"type\": [\n            \"integer\",\n            \"null\"\n          ]\n        }\n      },\n      \"required\": [\n        \"items\"\n      ],\n      \"title\": \"VTC Join-Requests List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"JoinRequest\":{\"$anchor\":\"joinRequest\",\"additionalProperties\":false,\"description\":\"One application to join a Verifiable Trust Community.\",\"properties\":{\"applicantDid\":{\"description\":\"DID of the applicant.\",\"minLength\":1,\"type\":\"string\"},\"attributes\":{\"description\":\"What the applicant told the community about themselves in answer to the manifest's `requestedAttributes` — self-asserted, and to be shown as such to whoever reviews the request. Absent when none were asked for or given.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"type\":{\"description\":\"A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^(x:)?[a-z][A-Za-z0-9]*(\\\\.[a-z][A-Za-z0-9]*)*$\",\"type\":\"string\"},\"value\":{\"description\":\"The value the applicant gives. Self-asserted: the applicant's own statement, bound to them by the document proof, and attested by nobody.\"}},\"required\":[\"type\",\"value\"],\"type\":\"object\"},\"maxItems\":32,\"type\":\"array\"},\"decision\":{\"additionalProperties\":false,\"description\":\"Why this request was refused, in terms meant for the applicant rather than the operator. `null` unless the request was rejected.\\n\\nDistinct from `policyDecision`, which records the community's internal verdict: both rejection paths — a policy auto-deny at submit and an admin's later refusal — write this one, so a client reads a single shape instead of reconciling two.\",\"properties\":{\"code\":{\"description\":\"Stable refusal code, safe to branch on.\",\"type\":\"string\"},\"decidedAt\":{\"description\":\"When the decision was taken — not when the poll answering it was produced. On an admin refusal the two diverge by however long the applicant takes to ask.\",\"format\":\"date-time\",\"type\":\"string\"},\"reason\":{\"description\":\"Elaboration in prose, when the decider gave one.\",\"maxLength\":1024,\"type\":[\"string\",\"null\"]}},\"required\":[\"code\",\"decidedAt\"],\"type\":[\"object\",\"null\"]},\"extensions\":{\"description\":\"Opaque community-defined extension bag.\",\"type\":\"object\"},\"id\":{\"description\":\"Stable id of this join request (a UUID).\",\"minLength\":1,\"type\":\"string\"},\"policyDecision\":{\"description\":\"The community policy verdict recorded for this request (opaque here); absent while pending.\",\"type\":\"object\"},\"registryConsent\":{\"description\":\"Whether the applicant consented to trust-registry publication.\",\"type\":\"boolean\"},\"status\":{\"enum\":[\"pending\",\"approved\",\"rejected\",\"withdrawn\",\"deferred\"],\"type\":\"string\"},\"submittedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"vp\":{\"description\":\"The W3C Verifiable Presentation the applicant submitted (opaque here).\",\"type\":\"object\"},\"vpClaims\":{\"description\":\"Canonical projection of `vp`, extracted when the request was submitted and used as the input the community's join policy reads. Carried on the row so an approval does not have to re-extract it, and opaque here: its members are whatever the community's policy asks of an applicant. `null` on a request recorded before a community began extracting one.\",\"type\":[\"object\",\"null\"]}},\"required\":[\"id\",\"applicantDid\",\"vp\",\"submittedAt\",\"status\"],\"title\":\"JoinRequest\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"items\":{\"items\":{\"$ref\":\"#/$defs/JoinRequest\"},\"type\":\"array\"},\"nextCursor\":{\"type\":[\"string\",\"null\"]},\"totalEstimate\":{\"type\":[\"integer\",\"null\"]}},\"required\":[\"items\"],\"title\":\"VTC Join-Requests List — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

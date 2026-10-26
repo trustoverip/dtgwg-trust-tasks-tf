@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,31 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Approve a deferred presentation request. The holder mints the presentation against the verifier's original query and nonce and returns it; the deferral is then terminal.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/credential-exchange/pending/approve/0.1",
-///  "title": "Payload",
-///  "description": "Approve a deferred presentation request. The holder mints the presentation against the verifier's original query and nonce and returns it; the deferral is then terminal.",
-///  "type": "object",
-///  "required": [
-///    "id"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "id": {
-///      "description": "The deferral to approve, as returned by credential-exchange/pending/list.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -183,16 +134,6 @@ impl Payload {
 }
 ///The deferral to approve, as returned by credential-exchange/pending/list.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The deferral to approve, as returned by credential-exchange/pending/list.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadId(::std::string::String);
@@ -252,32 +193,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadId {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "vp_token"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "vp_token": {
-///      "description": "The freshly-minted OID4VP `vp_token`, identical in shape to credential-exchange/present. It is returned rather than only delivered so the approving operator holds exactly what the verifier will receive. Bound to the ORIGINAL query's nonce and audience — which is why an expired deferral cannot be approved.",
-///      "type": [
-///        "string",
-///        "object"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -294,18 +209,6 @@ impl Response {
 }
 ///The freshly-minted OID4VP `vp_token`, identical in shape to credential-exchange/present. It is returned rather than only delivered so the approving operator holds exactly what the verifier will receive. Bound to the ORIGINAL query's nonce and audience — which is why an expired deferral cannot be approved.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The freshly-minted OID4VP `vp_token`, identical in shape to credential-exchange/present. It is returned rather than only delivered so the approving operator holds exactly what the verifier will receive. Bound to the ORIGINAL query's nonce and audience — which is why an expired deferral cannot be approved.",
-///  "type": [
-///    "string",
-///    "object"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged)]
 #[non_exhaustive]
@@ -434,7 +337,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"vp_token\": {\n          \"description\": \"The freshly-minted OID4VP `vp_token`, identical in shape to credential-exchange/present. It is returned rather than only delivered so the approving operator holds exactly what the verifier will receive. Bound to the ORIGINAL query's nonce and audience — which is why an expired deferral cannot be approved.\",\n          \"type\": [\n            \"string\",\n            \"object\"\n          ]\n        }\n      },\n      \"required\": [\n        \"vp_token\"\n      ],\n      \"title\": \"Credential Exchange Pending Approve — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/credential-exchange/pending/approve/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Approve a deferred presentation request. The holder mints the presentation against the verifier's original query and nonce and returns it; the deferral is then terminal.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"id\": {\n      \"description\": \"The deferral to approve, as returned by credential-exchange/pending/list.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"id\"\n  ],\n  \"title\": \"Credential Exchange Pending Approve — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"vp_token\":{\"description\":\"The freshly-minted OID4VP `vp_token`, identical in shape to credential-exchange/present. It is returned rather than only delivered so the approving operator holds exactly what the verifier will receive. Bound to the ORIGINAL query's nonce and audience — which is why an expired deferral cannot be approved.\",\"type\":[\"string\",\"object\"]}},\"required\":[\"vp_token\"],\"title\":\"Credential Exchange Pending Approve — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/credential-exchange/pending/approve/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Approve a deferred presentation request. The holder mints the presentation against the verifier's original query and nonce and returns it; the deferral is then terminal.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"description\":\"The deferral to approve, as returned by credential-exchange/pending/list.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\"],\"title\":\"Credential Exchange Pending Approve — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -444,7 +347,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"vp_token\": {\n          \"description\": \"The freshly-minted OID4VP `vp_token`, identical in shape to credential-exchange/present. It is returned rather than only delivered so the approving operator holds exactly what the verifier will receive. Bound to the ORIGINAL query's nonce and audience — which is why an expired deferral cannot be approved.\",\n          \"type\": [\n            \"string\",\n            \"object\"\n          ]\n        }\n      },\n      \"required\": [\n        \"vp_token\"\n      ],\n      \"title\": \"Credential Exchange Pending Approve — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"vp_token\":{\"description\":\"The freshly-minted OID4VP `vp_token`, identical in shape to credential-exchange/present. It is returned rather than only delivered so the approving operator holds exactly what the verifier will receive. Bound to the ORIGINAL query's nonce and audience — which is why an expired deferral cannot be approved.\",\"type\":[\"string\",\"object\"]}},\"required\":[\"vp_token\"],\"title\":\"Credential Exchange Pending Approve — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

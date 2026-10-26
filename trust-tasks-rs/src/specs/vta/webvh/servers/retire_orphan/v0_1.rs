@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,46 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/webvh/servers/retire-orphan/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "serverId",
-///    "slotId"
-///  ],
-///  "properties": {
-///    "expectedDid": {
-///      "description": "The DID the producer believes the slot serves. When present the agent MUST refuse unless it matches, so a slotId that has been reused since the report was taken cannot retire something else. Absent for a slot that was never published to.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "reason": {
-///      "description": "Operator rationale, recorded in the agent's audit trail. The act has no undo, so why it was done outlives the record of what was done.",
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "serverId": {
-///      "description": "The hosting server holding the orphaned slot, as the agent has it registered.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "slotId": {
-///      "description": "The slot to retire, as reported in a reconcile response's hostOnly. The slot identifier rather than the DID, because a slot reserved but never published to has no DID and is exactly as orphaned.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -212,16 +148,6 @@ impl Payload {
 }
 ///The DID the producer believes the slot serves. When present the agent MUST refuse unless it matches, so a slotId that has been reused since the report was taken cannot retire something else. Absent for a slot that was never published to.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The DID the producer believes the slot serves. When present the agent MUST refuse unless it matches, so a slotId that has been reused since the report was taken cannot retire something else. Absent for a slot that was never published to.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadExpectedDid(::std::string::String);
@@ -281,16 +207,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadExpectedDid {
 }
 ///Operator rationale, recorded in the agent's audit trail. The act has no undo, so why it was done outlives the record of what was done.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Operator rationale, recorded in the agent's audit trail. The act has no undo, so why it was done outlives the record of what was done.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadReason(::std::string::String);
@@ -350,16 +266,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 }
 ///The hosting server holding the orphaned slot, as the agent has it registered.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The hosting server holding the orphaned slot, as the agent has it registered.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadServerId(::std::string::String);
@@ -419,16 +325,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadServerId {
 }
 ///The slot to retire, as reported in a reconcile response's hostOnly. The slot identifier rather than the DID, because a slot reserved but never published to has no DID and is exactly as orphaned.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The slot to retire, as reported in a reconcile response's hostOnly. The slot identifier rather than the DID, because a slot reserved but never published to has no DID and is exactly as orphaned.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadSlotId(::std::string::String);
@@ -488,42 +384,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSlotId {
 }
 ///Success response to vta/webvh/servers/retire-orphan. Type https://trusttasks.org/spec/vta/webvh/servers/retire-orphan/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to vta/webvh/servers/retire-orphan. Type https://trusttasks.org/spec/vta/webvh/servers/retire-orphan/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "retired",
-///    "serverId",
-///    "slotId"
-///  ],
-///  "properties": {
-///    "did": {
-///      "description": "The DID the slot was serving, echoed so the record of what was retired survives the slot's disappearance. Absent where the slot was never published to.",
-///      "type": "string"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "retired": {
-///      "description": "Whether the slot is no longer served. False is reported, not inferred: an agent that could not confirm removal with the host MUST NOT claim it.",
-///      "type": "boolean"
-///    },
-///    "serverId": {
-///      "type": "string"
-///    },
-///    "slotId": {
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -752,7 +612,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/webvh/servers/retire-orphan. Type https://trusttasks.org/spec/vta/webvh/servers/retire-orphan/0.1#response.\",\n      \"properties\": {\n        \"did\": {\n          \"description\": \"The DID the slot was serving, echoed so the record of what was retired survives the slot's disappearance. Absent where the slot was never published to.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"retired\": {\n          \"description\": \"Whether the slot is no longer served. False is reported, not inferred: an agent that could not confirm removal with the host MUST NOT claim it.\",\n          \"type\": \"boolean\"\n        },\n        \"serverId\": {\n          \"type\": \"string\"\n        },\n        \"slotId\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"serverId\",\n        \"slotId\",\n        \"retired\"\n      ],\n      \"title\": \"VTA WebVH Servers Retire Orphan — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/webvh/servers/retire-orphan/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"expectedDid\": {\n      \"description\": \"The DID the producer believes the slot serves. When present the agent MUST refuse unless it matches, so a slotId that has been reused since the report was taken cannot retire something else. Absent for a slot that was never published to.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"reason\": {\n      \"description\": \"Operator rationale, recorded in the agent's audit trail. The act has no undo, so why it was done outlives the record of what was done.\",\n      \"maxLength\": 1024,\n      \"type\": \"string\"\n    },\n    \"serverId\": {\n      \"description\": \"The hosting server holding the orphaned slot, as the agent has it registered.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"slotId\": {\n      \"description\": \"The slot to retire, as reported in a reconcile response's hostOnly. The slot identifier rather than the DID, because a slot reserved but never published to has no DID and is exactly as orphaned.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"serverId\",\n    \"slotId\"\n  ],\n  \"title\": \"VTA WebVH Servers Retire Orphan — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vta/webvh/servers/retire-orphan. Type https://trusttasks.org/spec/vta/webvh/servers/retire-orphan/0.1#response.\",\"properties\":{\"did\":{\"description\":\"The DID the slot was serving, echoed so the record of what was retired survives the slot's disappearance. Absent where the slot was never published to.\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"retired\":{\"description\":\"Whether the slot is no longer served. False is reported, not inferred: an agent that could not confirm removal with the host MUST NOT claim it.\",\"type\":\"boolean\"},\"serverId\":{\"type\":\"string\"},\"slotId\":{\"type\":\"string\"}},\"required\":[\"serverId\",\"slotId\",\"retired\"],\"title\":\"VTA WebVH Servers Retire Orphan — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/webvh/servers/retire-orphan/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"expectedDid\":{\"description\":\"The DID the producer believes the slot serves. When present the agent MUST refuse unless it matches, so a slotId that has been reused since the report was taken cannot retire something else. Absent for a slot that was never published to.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"reason\":{\"description\":\"Operator rationale, recorded in the agent's audit trail. The act has no undo, so why it was done outlives the record of what was done.\",\"maxLength\":1024,\"type\":\"string\"},\"serverId\":{\"description\":\"The hosting server holding the orphaned slot, as the agent has it registered.\",\"minLength\":1,\"type\":\"string\"},\"slotId\":{\"description\":\"The slot to retire, as reported in a reconcile response's hostOnly. The slot identifier rather than the DID, because a slot reserved but never published to has no DID and is exactly as orphaned.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"serverId\",\"slotId\"],\"title\":\"VTA WebVH Servers Retire Orphan — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -762,7 +622,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/webvh/servers/retire-orphan. Type https://trusttasks.org/spec/vta/webvh/servers/retire-orphan/0.1#response.\",\n      \"properties\": {\n        \"did\": {\n          \"description\": \"The DID the slot was serving, echoed so the record of what was retired survives the slot's disappearance. Absent where the slot was never published to.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"retired\": {\n          \"description\": \"Whether the slot is no longer served. False is reported, not inferred: an agent that could not confirm removal with the host MUST NOT claim it.\",\n          \"type\": \"boolean\"\n        },\n        \"serverId\": {\n          \"type\": \"string\"\n        },\n        \"slotId\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"serverId\",\n        \"slotId\",\n        \"retired\"\n      ],\n      \"title\": \"VTA WebVH Servers Retire Orphan — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vta/webvh/servers/retire-orphan. Type https://trusttasks.org/spec/vta/webvh/servers/retire-orphan/0.1#response.\",\"properties\":{\"did\":{\"description\":\"The DID the slot was serving, echoed so the record of what was retired survives the slot's disappearance. Absent where the slot was never published to.\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"retired\":{\"description\":\"Whether the slot is no longer served. False is reported, not inferred: an agent that could not confirm removal with the host MUST NOT claim it.\",\"type\":\"boolean\"},\"serverId\":{\"type\":\"string\"},\"slotId\":{\"type\":\"string\"}},\"required\":[\"serverId\",\"slotId\",\"retired\"],\"title\":\"VTA WebVH Servers Retire Orphan — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

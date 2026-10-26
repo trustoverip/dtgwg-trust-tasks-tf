@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,55 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Produce the signed disclosure a preview described. Consumes a previewId, which is what makes the two calls uncollapsible.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/persona/disclosure/present/1.0",
-///  "title": "Payload",
-///  "description": "Produce the signed disclosure a preview described. Consumes a previewId, which is what makes the two calls uncollapsible.",
-///  "type": "object",
-///  "required": [
-///    "contextId",
-///    "previewId"
-///  ],
-///  "properties": {
-///    "challenge": {
-///      "description": "The verifier's nonce, bound into the proof for freshness so the artifact cannot be replayed to another verifier or at another time.",
-///      "type": "string",
-///      "maxLength": 512
-///    },
-///    "contextId": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "mint": {
-///      "description": "Optionally mint a durable, revocable self-issued credential instead of an ephemeral artifact. Off by default: a presented disclosure is read once and revoking it afterwards is meaningless, so status machinery would be maintenance with no benefit. A holder who wants a counterparty to be able to re-verify — and themselves to be able to revoke — asks for it here and takes on a credential they must now maintain.",
-///      "type": "object",
-///      "properties": {
-///        "durable": {
-///          "default": false,
-///          "type": "boolean"
-///        },
-///        "validUntil": {
-///          "type": "string",
-///          "format": "date-time"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "previewId": {
-///      "description": "From a prior preview. Single-use: presenting consumes it. A producer that wants to disclose twice previews twice, which is correct — the second disclosure is a second decision.",
-///      "$ref": "#/definitions/Ulid"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -215,16 +142,6 @@ impl Payload {
 }
 ///The verifier's nonce, bound into the proof for freshness so the artifact cannot be replayed to another verifier or at another time.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The verifier's nonce, bound into the proof for freshness so the artifact cannot be replayed to another verifier or at another time.",
-///  "type": "string",
-///  "maxLength": 512
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadChallenge(::std::string::String);
@@ -284,15 +201,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadChallenge {
 }
 ///`PayloadContextId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadContextId(::std::string::String);
@@ -352,26 +260,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 }
 ///Optionally mint a durable, revocable self-issued credential instead of an ephemeral artifact. Off by default: a presented disclosure is read once and revoking it afterwards is meaningless, so status machinery would be maintenance with no benefit. A holder who wants a counterparty to be able to re-verify — and themselves to be able to revoke — asks for it here and takes on a credential they must now maintain.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Optionally mint a durable, revocable self-issued credential instead of an ephemeral artifact. Off by default: a presented disclosure is read once and revoking it afterwards is meaningless, so status machinery would be maintenance with no benefit. A holder who wants a counterparty to be able to re-verify — and themselves to be able to revoke — asks for it here and takes on a credential they must now maintain.",
-///  "type": "object",
-///  "properties": {
-///    "durable": {
-///      "default": false,
-///      "type": "boolean"
-///    },
-///    "validUntil": {
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -400,51 +288,6 @@ impl PayloadMint {
 }
 ///Success response to persona/disclosure/present. Type https://trusttasks.org/spec/persona/disclosure/present/1.0#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to persona/disclosure/present. Type https://trusttasks.org/spec/persona/disclosure/present/1.0#response.",
-///  "type": "object",
-///  "required": [
-///    "artifact",
-///    "disclosedAt",
-///    "disclosureId",
-///    "subject"
-///  ],
-///  "properties": {
-///    "artifact": {
-///      "description": "The signed disclosure, in the renderer's format. Opaque to this task: the maintainer signs it, the producer relays it, and neither the schema nor the maintainer reinterprets it once formed.",
-///      "type": "string"
-///    },
-///    "credentialId": {
-///      "description": "Present only when a durable credential was minted. It is in the holder's own vault, appears in their credential list, and can be revoked — which is the obligation they took on by asking for it.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "disclosedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "disclosureId": {
-///      "description": "Names the append-only record this disclosure wrote, so the holder can find it again in their history.",
-///      "$ref": "#/definitions/Ulid"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "subject": {
-///      "description": "The identifier the artifact was issued under — pairwise by default, so this disclosure cannot be joined to another by subject alone.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -475,16 +318,6 @@ impl Response {
 }
 ///Present only when a durable credential was minted. It is in the holder's own vault, appears in their credential list, and can be revoked — which is the obligation they took on by asking for it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Present only when a durable credential was minted. It is in the holder's own vault, appears in their credential list, and can be revoked — which is the obligation they took on by asking for it.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseCredentialId(::std::string::String);
@@ -544,16 +377,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseCredentialId {
 }
 ///The identifier the artifact was issued under — pairwise by default, so this disclosure cannot be joined to another by subject alone.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The identifier the artifact was issued under — pairwise by default, so this disclosure cannot be joined to another by subject alone.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseSubject(::std::string::String);
@@ -613,17 +436,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseSubject {
 }
 ///A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ulid",
-///  "description": "A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.",
-///  "type": "string",
-///  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Ulid(::std::string::String);
@@ -963,7 +775,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/disclosure/present. Type https://trusttasks.org/spec/persona/disclosure/present/1.0#response.\",\n      \"properties\": {\n        \"artifact\": {\n          \"description\": \"The signed disclosure, in the renderer's format. Opaque to this task: the maintainer signs it, the producer relays it, and neither the schema nor the maintainer reinterprets it once formed.\",\n          \"type\": \"string\"\n        },\n        \"credentialId\": {\n          \"description\": \"Present only when a durable credential was minted. It is in the holder's own vault, appears in their credential list, and can be revoked — which is the obligation they took on by asking for it.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"disclosedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"disclosureId\": {\n          \"$ref\": \"#/$defs/Ulid\",\n          \"description\": \"Names the append-only record this disclosure wrote, so the holder can find it again in their history.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"subject\": {\n          \"description\": \"The identifier the artifact was issued under — pairwise by default, so this disclosure cannot be joined to another by subject alone.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"disclosureId\",\n        \"artifact\",\n        \"subject\",\n        \"disclosedAt\"\n      ],\n      \"title\": \"Persona Disclosure Present — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/persona/disclosure/present/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Produce the signed disclosure a preview described. Consumes a previewId, which is what makes the two calls uncollapsible.\",\n  \"properties\": {\n    \"challenge\": {\n      \"description\": \"The verifier's nonce, bound into the proof for freshness so the artifact cannot be replayed to another verifier or at another time.\",\n      \"maxLength\": 512,\n      \"type\": \"string\"\n    },\n    \"contextId\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"mint\": {\n      \"additionalProperties\": false,\n      \"description\": \"Optionally mint a durable, revocable self-issued credential instead of an ephemeral artifact. Off by default: a presented disclosure is read once and revoking it afterwards is meaningless, so status machinery would be maintenance with no benefit. A holder who wants a counterparty to be able to re-verify — and themselves to be able to revoke — asks for it here and takes on a credential they must now maintain.\",\n      \"properties\": {\n        \"durable\": {\n          \"default\": false,\n          \"type\": \"boolean\"\n        },\n        \"validUntil\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"type\": \"object\"\n    },\n    \"previewId\": {\n      \"$ref\": \"#/$defs/Ulid\",\n      \"description\": \"From a prior preview. Single-use: presenting consumes it. A producer that wants to disclose twice previews twice, which is correct — the second disclosure is a second decision.\"\n    }\n  },\n  \"required\": [\n    \"contextId\",\n    \"previewId\"\n  ],\n  \"title\": \"Persona Disclosure Present — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to persona/disclosure/present. Type https://trusttasks.org/spec/persona/disclosure/present/1.0#response.\",\"properties\":{\"artifact\":{\"description\":\"The signed disclosure, in the renderer's format. Opaque to this task: the maintainer signs it, the producer relays it, and neither the schema nor the maintainer reinterprets it once formed.\",\"type\":\"string\"},\"credentialId\":{\"description\":\"Present only when a durable credential was minted. It is in the holder's own vault, appears in their credential list, and can be revoked — which is the obligation they took on by asking for it.\",\"minLength\":1,\"type\":\"string\"},\"disclosedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"disclosureId\":{\"$ref\":\"#/$defs/Ulid\",\"description\":\"Names the append-only record this disclosure wrote, so the holder can find it again in their history.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"subject\":{\"description\":\"The identifier the artifact was issued under — pairwise by default, so this disclosure cannot be joined to another by subject alone.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"disclosureId\",\"artifact\",\"subject\",\"disclosedAt\"],\"title\":\"Persona Disclosure Present — response payload\",\"type\":\"object\"},\"Ulid\":{\"description\":\"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\"pattern\":\"^[0-9A-HJKMNP-TV-Z]{26}$\",\"title\":\"Ulid\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/persona/disclosure/present/1.0\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Produce the signed disclosure a preview described. Consumes a previewId, which is what makes the two calls uncollapsible.\",\"properties\":{\"challenge\":{\"description\":\"The verifier's nonce, bound into the proof for freshness so the artifact cannot be replayed to another verifier or at another time.\",\"maxLength\":512,\"type\":\"string\"},\"contextId\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"mint\":{\"additionalProperties\":false,\"description\":\"Optionally mint a durable, revocable self-issued credential instead of an ephemeral artifact. Off by default: a presented disclosure is read once and revoking it afterwards is meaningless, so status machinery would be maintenance with no benefit. A holder who wants a counterparty to be able to re-verify — and themselves to be able to revoke — asks for it here and takes on a credential they must now maintain.\",\"properties\":{\"durable\":{\"default\":false,\"type\":\"boolean\"},\"validUntil\":{\"format\":\"date-time\",\"type\":\"string\"}},\"type\":\"object\"},\"previewId\":{\"$ref\":\"#/$defs/Ulid\",\"description\":\"From a prior preview. Single-use: presenting consumes it. A producer that wants to disclose twice previews twice, which is correct — the second disclosure is a second decision.\"}},\"required\":[\"contextId\",\"previewId\"],\"title\":\"Persona Disclosure Present — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -973,7 +785,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/disclosure/present. Type https://trusttasks.org/spec/persona/disclosure/present/1.0#response.\",\n      \"properties\": {\n        \"artifact\": {\n          \"description\": \"The signed disclosure, in the renderer's format. Opaque to this task: the maintainer signs it, the producer relays it, and neither the schema nor the maintainer reinterprets it once formed.\",\n          \"type\": \"string\"\n        },\n        \"credentialId\": {\n          \"description\": \"Present only when a durable credential was minted. It is in the holder's own vault, appears in their credential list, and can be revoked — which is the obligation they took on by asking for it.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"disclosedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"disclosureId\": {\n          \"$ref\": \"#/$defs/Ulid\",\n          \"description\": \"Names the append-only record this disclosure wrote, so the holder can find it again in their history.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"subject\": {\n          \"description\": \"The identifier the artifact was issued under — pairwise by default, so this disclosure cannot be joined to another by subject alone.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"disclosureId\",\n        \"artifact\",\n        \"subject\",\n        \"disclosedAt\"\n      ],\n      \"title\": \"Persona Disclosure Present — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to persona/disclosure/present. Type https://trusttasks.org/spec/persona/disclosure/present/1.0#response.\",\"properties\":{\"artifact\":{\"description\":\"The signed disclosure, in the renderer's format. Opaque to this task: the maintainer signs it, the producer relays it, and neither the schema nor the maintainer reinterprets it once formed.\",\"type\":\"string\"},\"credentialId\":{\"description\":\"Present only when a durable credential was minted. It is in the holder's own vault, appears in their credential list, and can be revoked — which is the obligation they took on by asking for it.\",\"minLength\":1,\"type\":\"string\"},\"disclosedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"disclosureId\":{\"$ref\":\"#/$defs/Ulid\",\"description\":\"Names the append-only record this disclosure wrote, so the holder can find it again in their history.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"subject\":{\"description\":\"The identifier the artifact was issued under — pairwise by default, so this disclosure cannot be joined to another by subject alone.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"disclosureId\",\"artifact\",\"subject\",\"disclosedAt\"],\"title\":\"Persona Disclosure Present — response payload\",\"type\":\"object\"},\"Ulid\":{\"description\":\"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\"pattern\":\"^[0-9A-HJKMNP-TV-Z]{26}$\",\"title\":\"Ulid\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

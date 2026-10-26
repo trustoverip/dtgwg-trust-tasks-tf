@@ -35,21 +35,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -71,15 +56,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -143,29 +119,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A member asks another member to issue them a Verifiable Relationship Credential. Everything here is a hint: the issuing member decides, and declines with a trust-task-error carrying `vtc/relationships/request:declined` rather than a bespoke rejection message.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/relationships/request/0.1",
-///  "title": "Payload",
-///  "description": "A member asks another member to issue them a Verifiable Relationship Credential. Everything here is a hint: the issuing member decides, and declines with a trust-task-error carrying `vtc/relationships/request:declined` rather than a bespoke rejection message.",
-///  "type": "object",
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "reason": {
-///      "description": "Why the requester is asking, in their own words, for the issuing member to weigh. A hint and not a term — the issuing member is under no obligation to honour it, and MUST NOT treat its absence as a defect. Free text reaching a human, so a producer SHOULD keep it to what it is willing to have quoted back.",
-///      "type": "string",
-///      "maxLength": 500,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -192,17 +145,6 @@ impl Payload {
 }
 ///Why the requester is asking, in their own words, for the issuing member to weigh. A hint and not a term — the issuing member is under no obligation to honour it, and MUST NOT treat its absence as a defect. Free text reaching a human, so a producer SHOULD keep it to what it is willing to have quoted back.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Why the requester is asking, in their own words, for the issuing member to weigh. A hint and not a term — the issuing member is under no obligation to honour it, and MUST NOT treat its absence as a defect. Free text reaching a human, so a producer SHOULD keep it to what it is willing to have quoted back.",
-///  "type": "string",
-///  "maxLength": 500,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadReason(::std::string::String);
@@ -265,35 +207,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 }
 ///The issued credential. Returned only where the issuing member agreed; a decline is a trust-task-error, not a response with an empty field.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The issued credential. Returned only where the issuing member agreed; a decline is a trust-task-error, not a response with an empty field.",
-///  "type": "object",
-///  "required": [
-///    "vrc"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "vrc": {
-///      "description": "A signed W3C Verifiable Relationship Credential (opaque here). Its issuer MUST be the issuing member — the party that signed this response — and its credentialSubject.id MUST name the requester. The same shape `vtc/relationships/publish` accepts, so a requester can lodge it with the community unchanged.",
-///      "type": "object"
-///    },
-///    "vrcSha256": {
-///      "description": "SHA-256 of the returned VRC, for out-of-band integrity checks. Matches the digest `vtc/relationships/publish` reports once the credential is lodged, so the two can be tied together without re-hashing.",
-///      "type": "string",
-///      "pattern": "^[0-9a-f]{64}$"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -318,16 +231,6 @@ impl Response {
 }
 ///SHA-256 of the returned VRC, for out-of-band integrity checks. Matches the digest `vtc/relationships/publish` reports once the credential is lodged, so the two can be tied together without re-hashing.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "SHA-256 of the returned VRC, for out-of-band integrity checks. Matches the digest `vtc/relationships/publish` reports once the credential is lodged, so the two can be tied together without re-hashing.",
-///  "type": "string",
-///  "pattern": "^[0-9a-f]{64}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseVrcSha256(::std::string::String);
@@ -525,7 +428,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The issued credential. Returned only where the issuing member agreed; a decline is a trust-task-error, not a response with an empty field.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"vrc\": {\n          \"description\": \"A signed W3C Verifiable Relationship Credential (opaque here). Its issuer MUST be the issuing member — the party that signed this response — and its credentialSubject.id MUST name the requester. The same shape `vtc/relationships/publish` accepts, so a requester can lodge it with the community unchanged.\",\n          \"type\": \"object\"\n        },\n        \"vrcSha256\": {\n          \"description\": \"SHA-256 of the returned VRC, for out-of-band integrity checks. Matches the digest `vtc/relationships/publish` reports once the credential is lodged, so the two can be tied together without re-hashing.\",\n          \"pattern\": \"^[0-9a-f]{64}$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"vrc\"\n      ],\n      \"title\": \"VTC Relationships Request — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/relationships/request/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A member asks another member to issue them a Verifiable Relationship Credential. Everything here is a hint: the issuing member decides, and declines with a trust-task-error carrying `vtc/relationships/request:declined` rather than a bespoke rejection message.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"reason\": {\n      \"description\": \"Why the requester is asking, in their own words, for the issuing member to weigh. A hint and not a term — the issuing member is under no obligation to honour it, and MUST NOT treat its absence as a defect. Free text reaching a human, so a producer SHOULD keep it to what it is willing to have quoted back.\",\n      \"maxLength\": 500,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"title\": \"VTC Relationships Request — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The issued credential. Returned only where the issuing member agreed; a decline is a trust-task-error, not a response with an empty field.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"vrc\":{\"description\":\"A signed W3C Verifiable Relationship Credential (opaque here). Its issuer MUST be the issuing member — the party that signed this response — and its credentialSubject.id MUST name the requester. The same shape `vtc/relationships/publish` accepts, so a requester can lodge it with the community unchanged.\",\"type\":\"object\"},\"vrcSha256\":{\"description\":\"SHA-256 of the returned VRC, for out-of-band integrity checks. Matches the digest `vtc/relationships/publish` reports once the credential is lodged, so the two can be tied together without re-hashing.\",\"pattern\":\"^[0-9a-f]{64}$\",\"type\":\"string\"}},\"required\":[\"vrc\"],\"title\":\"VTC Relationships Request — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/relationships/request/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A member asks another member to issue them a Verifiable Relationship Credential. Everything here is a hint: the issuing member decides, and declines with a trust-task-error carrying `vtc/relationships/request:declined` rather than a bespoke rejection message.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"reason\":{\"description\":\"Why the requester is asking, in their own words, for the issuing member to weigh. A hint and not a term — the issuing member is under no obligation to honour it, and MUST NOT treat its absence as a defect. Free text reaching a human, so a producer SHOULD keep it to what it is willing to have quoted back.\",\"maxLength\":500,\"minLength\":1,\"type\":\"string\"}},\"title\":\"VTC Relationships Request — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -535,7 +438,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The issued credential. Returned only where the issuing member agreed; a decline is a trust-task-error, not a response with an empty field.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"vrc\": {\n          \"description\": \"A signed W3C Verifiable Relationship Credential (opaque here). Its issuer MUST be the issuing member — the party that signed this response — and its credentialSubject.id MUST name the requester. The same shape `vtc/relationships/publish` accepts, so a requester can lodge it with the community unchanged.\",\n          \"type\": \"object\"\n        },\n        \"vrcSha256\": {\n          \"description\": \"SHA-256 of the returned VRC, for out-of-band integrity checks. Matches the digest `vtc/relationships/publish` reports once the credential is lodged, so the two can be tied together without re-hashing.\",\n          \"pattern\": \"^[0-9a-f]{64}$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"vrc\"\n      ],\n      \"title\": \"VTC Relationships Request — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The issued credential. Returned only where the issuing member agreed; a decline is a trust-task-error, not a response with an empty field.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"vrc\":{\"description\":\"A signed W3C Verifiable Relationship Credential (opaque here). Its issuer MUST be the issuing member — the party that signed this response — and its credentialSubject.id MUST name the requester. The same shape `vtc/relationships/publish` accepts, so a requester can lodge it with the community unchanged.\",\"type\":\"object\"},\"vrcSha256\":{\"description\":\"SHA-256 of the returned VRC, for out-of-band integrity checks. Matches the digest `vtc/relationships/publish` reports once the credential is lodged, so the two can be tied together without re-hashing.\",\"pattern\":\"^[0-9a-f]{64}$\",\"type\":\"string\"}},\"required\":[\"vrc\"],\"title\":\"VTC Relationships Request — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

@@ -34,44 +34,6 @@ pub mod error {
 }
 ///`EndorsementType`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "EndorsementType",
-///  "type": "object",
-///  "required": [
-///    "typeUri"
-///  ],
-///  "properties": {
-///    "claimSchema": {
-///      "description": "Optional JSON Schema a statement's `credentialSubject.object.value` must satisfy (opaque here) — for a registry predicate, the object schema its profile publishes.",
-///      "type": "object"
-///    },
-///    "createdAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "createdByDid": {
-///      "description": "The member who registered this endorsement type. An endorsement vocabulary is community-defined and shapes what every later endorsement can claim, so who introduced a type is audit-relevant in a way its creation time alone is not.",
-///      "type": "string"
-///    },
-///    "description": {
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "typeUri": {
-///      "description": "The predicate IRI the community accepts, compared as an exact string. Always an absolute IRI: a DTG VSC predicate registry IRI (e.g. `https://registry.trustoverip.org/dtg/vsc/vetted/1`) or a community-namespace IRI defined in the registry's predicate definition format. The four core predicates — endorses/1, witnessed/1, vetted/1 and presented/1 under `https://registry.trustoverip.org/dtg/vsc/` — are seeded when the community starts. The reserved value `role:vetter`, which names the vetter-role record vtc/endorsements/* keeps beside statements, is never registered.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "endorsementType"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -109,15 +71,6 @@ impl EndorsementType {
 }
 ///`EndorsementTypeDescription`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct EndorsementTypeDescription(::std::string::String);
@@ -177,17 +130,6 @@ impl<'de> ::serde::Deserialize<'de> for EndorsementTypeDescription {
 }
 ///The predicate IRI the community accepts, compared as an exact string. Always an absolute IRI: a DTG VSC predicate registry IRI (e.g. `https://registry.trustoverip.org/dtg/vsc/vetted/1`) or a community-namespace IRI defined in the registry's predicate definition format. The four core predicates — endorses/1, witnessed/1, vetted/1 and presented/1 under `https://registry.trustoverip.org/dtg/vsc/` — are seeded when the community starts. The reserved value `role:vetter`, which names the vetter-role record vtc/endorsements/* keeps beside statements, is never registered.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The predicate IRI the community accepts, compared as an exact string. Always an absolute IRI: a DTG VSC predicate registry IRI (e.g. `https://registry.trustoverip.org/dtg/vsc/vetted/1`) or a community-namespace IRI defined in the registry's predicate definition format. The four core predicates — endorses/1, witnessed/1, vetted/1 and presented/1 under `https://registry.trustoverip.org/dtg/vsc/` — are seeded when the community starts. The reserved value `role:vetter`, which names the vetter-role record vtc/endorsements/* keeps beside statements, is never registered.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct EndorsementTypeTypeUri(::std::string::String);
@@ -250,21 +192,6 @@ impl<'de> ::serde::Deserialize<'de> for EndorsementTypeTypeUri {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -286,15 +213,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -358,39 +276,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/endorsement-types/register/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "typeUri"
-///  ],
-///  "properties": {
-///    "claimSchema": {
-///      "description": "Optional JSON Schema a statement's `credentialSubject.object.value` must satisfy (opaque here).",
-///      "type": "object"
-///    },
-///    "description": {
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "typeUri": {
-///      "description": "The predicate IRI to accept, an absolute IRI: a DTG VSC predicate registry IRI or a community-namespace IRI. The reserved value `role:vetter` is refused with `reserved`, and a value that is not an absolute IRI with `invalidUri`.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -417,15 +302,6 @@ impl Payload {
 }
 ///`PayloadDescription`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadDescription(::std::string::String);
@@ -485,17 +361,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDescription {
 }
 ///The predicate IRI to accept, an absolute IRI: a DTG VSC predicate registry IRI or a community-namespace IRI. The reserved value `role:vetter` is refused with `reserved`, and a value that is not an absolute IRI with `invalidUri`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The predicate IRI to accept, an absolute IRI: a DTG VSC predicate registry IRI or a community-namespace IRI. The reserved value `role:vetter` is refused with `reserved`, and a value that is not an absolute IRI with `invalidUri`.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadTypeUri(::std::string::String);
@@ -558,28 +423,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadTypeUri {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "endorsementType"
-///  ],
-///  "properties": {
-///    "endorsementType": {
-///      "$ref": "#/definitions/EndorsementType"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -855,7 +698,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"EndorsementType\": {\n      \"$anchor\": \"endorsementType\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"claimSchema\": {\n          \"description\": \"Optional JSON Schema a statement's `credentialSubject.object.value` must satisfy (opaque here) — for a registry predicate, the object schema its profile publishes.\",\n          \"type\": \"object\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"createdByDid\": {\n          \"description\": \"The member who registered this endorsement type. An endorsement vocabulary is community-defined and shapes what every later endorsement can claim, so who introduced a type is audit-relevant in a way its creation time alone is not.\",\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"typeUri\": {\n          \"description\": \"The predicate IRI the community accepts, compared as an exact string. Always an absolute IRI: a DTG VSC predicate registry IRI (e.g. `https://registry.trustoverip.org/dtg/vsc/vetted/1`) or a community-namespace IRI defined in the registry's predicate definition format. The four core predicates — endorses/1, witnessed/1, vetted/1 and presented/1 under `https://registry.trustoverip.org/dtg/vsc/` — are seeded when the community starts. The reserved value `role:vetter`, which names the vetter-role record vtc/endorsements/* keeps beside statements, is never registered.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"typeUri\"\n      ],\n      \"title\": \"EndorsementType\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"endorsementType\": {\n          \"$ref\": \"#/$defs/EndorsementType\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"endorsementType\"\n      ],\n      \"title\": \"VTC Endorsement-Types Register — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/endorsement-types/register/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"claimSchema\": {\n      \"description\": \"Optional JSON Schema a statement's `credentialSubject.object.value` must satisfy (opaque here).\",\n      \"type\": \"object\"\n    },\n    \"description\": {\n      \"maxLength\": 1024,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"typeUri\": {\n      \"description\": \"The predicate IRI to accept, an absolute IRI: a DTG VSC predicate registry IRI or a community-namespace IRI. The reserved value `role:vetter` is refused with `reserved`, and a value that is not an absolute IRI with `invalidUri`.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"typeUri\"\n  ],\n  \"title\": \"VTC Endorsement-Types Register — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"EndorsementType\":{\"$anchor\":\"endorsementType\",\"additionalProperties\":false,\"properties\":{\"claimSchema\":{\"description\":\"Optional JSON Schema a statement's `credentialSubject.object.value` must satisfy (opaque here) — for a registry predicate, the object schema its profile publishes.\",\"type\":\"object\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"createdByDid\":{\"description\":\"The member who registered this endorsement type. An endorsement vocabulary is community-defined and shapes what every later endorsement can claim, so who introduced a type is audit-relevant in a way its creation time alone is not.\",\"type\":\"string\"},\"description\":{\"maxLength\":1024,\"type\":\"string\"},\"typeUri\":{\"description\":\"The predicate IRI the community accepts, compared as an exact string. Always an absolute IRI: a DTG VSC predicate registry IRI (e.g. `https://registry.trustoverip.org/dtg/vsc/vetted/1`) or a community-namespace IRI defined in the registry's predicate definition format. The four core predicates — endorses/1, witnessed/1, vetted/1 and presented/1 under `https://registry.trustoverip.org/dtg/vsc/` — are seeded when the community starts. The reserved value `role:vetter`, which names the vetter-role record vtc/endorsements/* keeps beside statements, is never registered.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"typeUri\"],\"title\":\"EndorsementType\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"endorsementType\":{\"$ref\":\"#/$defs/EndorsementType\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"endorsementType\"],\"title\":\"VTC Endorsement-Types Register — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/endorsement-types/register/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"claimSchema\":{\"description\":\"Optional JSON Schema a statement's `credentialSubject.object.value` must satisfy (opaque here).\",\"type\":\"object\"},\"description\":{\"maxLength\":1024,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"typeUri\":{\"description\":\"The predicate IRI to accept, an absolute IRI: a DTG VSC predicate registry IRI or a community-namespace IRI. The reserved value `role:vetter` is refused with `reserved`, and a value that is not an absolute IRI with `invalidUri`.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"typeUri\"],\"title\":\"VTC Endorsement-Types Register — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -865,7 +708,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"EndorsementType\": {\n      \"$anchor\": \"endorsementType\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"claimSchema\": {\n          \"description\": \"Optional JSON Schema a statement's `credentialSubject.object.value` must satisfy (opaque here) — for a registry predicate, the object schema its profile publishes.\",\n          \"type\": \"object\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"createdByDid\": {\n          \"description\": \"The member who registered this endorsement type. An endorsement vocabulary is community-defined and shapes what every later endorsement can claim, so who introduced a type is audit-relevant in a way its creation time alone is not.\",\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"typeUri\": {\n          \"description\": \"The predicate IRI the community accepts, compared as an exact string. Always an absolute IRI: a DTG VSC predicate registry IRI (e.g. `https://registry.trustoverip.org/dtg/vsc/vetted/1`) or a community-namespace IRI defined in the registry's predicate definition format. The four core predicates — endorses/1, witnessed/1, vetted/1 and presented/1 under `https://registry.trustoverip.org/dtg/vsc/` — are seeded when the community starts. The reserved value `role:vetter`, which names the vetter-role record vtc/endorsements/* keeps beside statements, is never registered.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"typeUri\"\n      ],\n      \"title\": \"EndorsementType\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"endorsementType\": {\n          \"$ref\": \"#/$defs/EndorsementType\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"endorsementType\"\n      ],\n      \"title\": \"VTC Endorsement-Types Register — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"EndorsementType\":{\"$anchor\":\"endorsementType\",\"additionalProperties\":false,\"properties\":{\"claimSchema\":{\"description\":\"Optional JSON Schema a statement's `credentialSubject.object.value` must satisfy (opaque here) — for a registry predicate, the object schema its profile publishes.\",\"type\":\"object\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"createdByDid\":{\"description\":\"The member who registered this endorsement type. An endorsement vocabulary is community-defined and shapes what every later endorsement can claim, so who introduced a type is audit-relevant in a way its creation time alone is not.\",\"type\":\"string\"},\"description\":{\"maxLength\":1024,\"type\":\"string\"},\"typeUri\":{\"description\":\"The predicate IRI the community accepts, compared as an exact string. Always an absolute IRI: a DTG VSC predicate registry IRI (e.g. `https://registry.trustoverip.org/dtg/vsc/vetted/1`) or a community-namespace IRI defined in the registry's predicate definition format. The four core predicates — endorses/1, witnessed/1, vetted/1 and presented/1 under `https://registry.trustoverip.org/dtg/vsc/` — are seeded when the community starts. The reserved value `role:vetter`, which names the vetter-role record vtc/endorsements/* keeps beside statements, is never registered.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"typeUri\"],\"title\":\"EndorsementType\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"endorsementType\":{\"$ref\":\"#/$defs/EndorsementType\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"endorsementType\"],\"title\":\"VTC Endorsement-Types Register — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

@@ -35,21 +35,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -71,15 +56,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -143,45 +119,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Asks an agent running in a trusted execution environment to release its seed mnemonic, once, sealed to a key only the producer holds. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/attestation/mnemonic-export/1.0",
-///  "title": "Payload",
-///  "description": "Asks an agent running in a trusted execution environment to release its seed mnemonic, once, sealed to a key only the producer holds. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "clientDid",
-///    "nonce"
-///  ],
-///  "properties": {
-///    "clientDid": {
-///      "description": "The Ed25519 did:key the mnemonic is sealed to, by its X25519 counterpart, so only the holder of this key's private half can open the answer. Over an end-to-end channel, a key generated for this one export on the machine that will hold the backup, and discarded after. On the signed first-boot path over a hop-by-hop channel, exactly the document's issuer: the key that signed the request.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "pattern": "^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$"
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "label": {
-///      "description": "Operator-visible label for the request. Never sealed into the answer and never treated as an instruction.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "nonce": {
-///      "description": "Sixteen random bytes, base64url without padding. It becomes the sealed bundle's identifier, and the recipient binds it into its attestation quote, so an answer cannot be replayed to a different request.",
-///      "type": "string",
-///      "pattern": "^[A-Za-z0-9_-]{22}$"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -206,17 +143,6 @@ impl Payload {
 }
 ///The Ed25519 did:key the mnemonic is sealed to, by its X25519 counterpart, so only the holder of this key's private half can open the answer. Over an end-to-end channel, a key generated for this one export on the machine that will hold the backup, and discarded after. On the signed first-boot path over a hop-by-hop channel, exactly the document's issuer: the key that signed the request.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The Ed25519 did:key the mnemonic is sealed to, by its X25519 counterpart, so only the holder of this key's private half can open the answer. Over an end-to-end channel, a key generated for this one export on the machine that will hold the backup, and discarded after. On the signed first-boot path over a hop-by-hop channel, exactly the document's issuer: the key that signed the request.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "pattern": "^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadClientDid(::std::string::String);
@@ -283,17 +209,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadClientDid {
 }
 ///Operator-visible label for the request. Never sealed into the answer and never treated as an instruction.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Operator-visible label for the request. Never sealed into the answer and never treated as an instruction.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadLabel(::std::string::String);
@@ -356,16 +271,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadLabel {
 }
 ///Sixteen random bytes, base64url without padding. It becomes the sealed bundle's identifier, and the recipient binds it into its attestation quote, so an answer cannot be replayed to a different request.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Sixteen random bytes, base64url without padding. It becomes the sealed bundle's identifier, and the recipient binds it into its attestation quote, so an answer cannot be replayed to a different request.",
-///  "type": "string",
-///  "pattern": "^[A-Za-z0-9_-]{22}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadNonce(::std::string::String);
@@ -427,44 +332,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadNonce {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "bundle",
-///    "digest",
-///    "windowRemainingSecs"
-///  ],
-///  "properties": {
-///    "bundle": {
-///      "description": "The ASCII-armored sealed bundle. It carries the mnemonic sealed to clientDid under a producer assertion whose attestation quote binds the client key, the nonce and the recipient's own sealing key.",
-///      "type": "string",
-///      "maxLength": 65536,
-///      "minLength": 1
-///    },
-///    "digest": {
-///      "description": "SHA-256 of the bundle, lowercase hex. The producer confirms it out of band before opening, so a substituted bundle is caught before any key is applied to it.",
-///      "type": "string",
-///      "pattern": "^[0-9a-f]{64}$"
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "windowRemainingSecs": {
-///      "description": "Seconds that were left in the export window when the mnemonic was released. Informational: the window is spent either way.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -488,17 +355,6 @@ impl Response {
 }
 ///The ASCII-armored sealed bundle. It carries the mnemonic sealed to clientDid under a producer assertion whose attestation quote binds the client key, the nonce and the recipient's own sealing key.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The ASCII-armored sealed bundle. It carries the mnemonic sealed to clientDid under a producer assertion whose attestation quote binds the client key, the nonce and the recipient's own sealing key.",
-///  "type": "string",
-///  "maxLength": 65536,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseBundle(::std::string::String);
@@ -561,16 +417,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseBundle {
 }
 ///SHA-256 of the bundle, lowercase hex. The producer confirms it out of band before opening, so a substituted bundle is caught before any key is applied to it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "SHA-256 of the bundle, lowercase hex. The producer confirms it out of band before opening, so a substituted bundle is caught before any key is applied to it.",
-///  "type": "string",
-///  "pattern": "^[0-9a-f]{64}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseDigest(::std::string::String);
@@ -805,7 +651,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"bundle\": {\n          \"description\": \"The ASCII-armored sealed bundle. It carries the mnemonic sealed to clientDid under a producer assertion whose attestation quote binds the client key, the nonce and the recipient's own sealing key.\",\n          \"maxLength\": 65536,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"digest\": {\n          \"description\": \"SHA-256 of the bundle, lowercase hex. The producer confirms it out of band before opening, so a substituted bundle is caught before any key is applied to it.\",\n          \"pattern\": \"^[0-9a-f]{64}$\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"windowRemainingSecs\": {\n          \"description\": \"Seconds that were left in the export window when the mnemonic was released. Informational: the window is spent either way.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"bundle\",\n        \"digest\",\n        \"windowRemainingSecs\"\n      ],\n      \"title\": \"VTA Attestation Mnemonic Export — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/attestation/mnemonic-export/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Asks an agent running in a trusted execution environment to release its seed mnemonic, once, sealed to a key only the producer holds. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"clientDid\": {\n      \"description\": \"The Ed25519 did:key the mnemonic is sealed to, by its X25519 counterpart, so only the holder of this key's private half can open the answer. Over an end-to-end channel, a key generated for this one export on the machine that will hold the backup, and discarded after. On the signed first-boot path over a hop-by-hop channel, exactly the document's issuer: the key that signed the request.\",\n      \"maxLength\": 128,\n      \"pattern\": \"^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"label\": {\n      \"description\": \"Operator-visible label for the request. Never sealed into the answer and never treated as an instruction.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"nonce\": {\n      \"description\": \"Sixteen random bytes, base64url without padding. It becomes the sealed bundle's identifier, and the recipient binds it into its attestation quote, so an answer cannot be replayed to a different request.\",\n      \"pattern\": \"^[A-Za-z0-9_-]{22}$\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"clientDid\",\n    \"nonce\"\n  ],\n  \"title\": \"VTA Attestation — Mnemonic Export — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"bundle\":{\"description\":\"The ASCII-armored sealed bundle. It carries the mnemonic sealed to clientDid under a producer assertion whose attestation quote binds the client key, the nonce and the recipient's own sealing key.\",\"maxLength\":65536,\"minLength\":1,\"type\":\"string\"},\"digest\":{\"description\":\"SHA-256 of the bundle, lowercase hex. The producer confirms it out of band before opening, so a substituted bundle is caught before any key is applied to it.\",\"pattern\":\"^[0-9a-f]{64}$\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"windowRemainingSecs\":{\"description\":\"Seconds that were left in the export window when the mnemonic was released. Informational: the window is spent either way.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"bundle\",\"digest\",\"windowRemainingSecs\"],\"title\":\"VTA Attestation Mnemonic Export — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/attestation/mnemonic-export/1.0\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Asks an agent running in a trusted execution environment to release its seed mnemonic, once, sealed to a key only the producer holds. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"clientDid\":{\"description\":\"The Ed25519 did:key the mnemonic is sealed to, by its X25519 counterpart, so only the holder of this key's private half can open the answer. Over an end-to-end channel, a key generated for this one export on the machine that will hold the backup, and discarded after. On the signed first-boot path over a hop-by-hop channel, exactly the document's issuer: the key that signed the request.\",\"maxLength\":128,\"pattern\":\"^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"label\":{\"description\":\"Operator-visible label for the request. Never sealed into the answer and never treated as an instruction.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"nonce\":{\"description\":\"Sixteen random bytes, base64url without padding. It becomes the sealed bundle's identifier, and the recipient binds it into its attestation quote, so an answer cannot be replayed to a different request.\",\"pattern\":\"^[A-Za-z0-9_-]{22}$\",\"type\":\"string\"}},\"required\":[\"clientDid\",\"nonce\"],\"title\":\"VTA Attestation — Mnemonic Export — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -815,7 +661,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"bundle\": {\n          \"description\": \"The ASCII-armored sealed bundle. It carries the mnemonic sealed to clientDid under a producer assertion whose attestation quote binds the client key, the nonce and the recipient's own sealing key.\",\n          \"maxLength\": 65536,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"digest\": {\n          \"description\": \"SHA-256 of the bundle, lowercase hex. The producer confirms it out of band before opening, so a substituted bundle is caught before any key is applied to it.\",\n          \"pattern\": \"^[0-9a-f]{64}$\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"windowRemainingSecs\": {\n          \"description\": \"Seconds that were left in the export window when the mnemonic was released. Informational: the window is spent either way.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"bundle\",\n        \"digest\",\n        \"windowRemainingSecs\"\n      ],\n      \"title\": \"VTA Attestation Mnemonic Export — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"bundle\":{\"description\":\"The ASCII-armored sealed bundle. It carries the mnemonic sealed to clientDid under a producer assertion whose attestation quote binds the client key, the nonce and the recipient's own sealing key.\",\"maxLength\":65536,\"minLength\":1,\"type\":\"string\"},\"digest\":{\"description\":\"SHA-256 of the bundle, lowercase hex. The producer confirms it out of band before opening, so a substituted bundle is caught before any key is applied to it.\",\"pattern\":\"^[0-9a-f]{64}$\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"windowRemainingSecs\":{\"description\":\"Seconds that were left in the export window when the mnemonic was released. Informational: the window is spent either way.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"bundle\",\"digest\",\"windowRemainingSecs\"],\"title\":\"VTA Attestation Mnemonic Export — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

@@ -35,18 +35,6 @@ pub mod error {
 }
 ///Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "CredentialId",
-///  "description": "Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.",
-///  "type": "string",
-///  "minLength": 1,
-///  "$anchor": "credentialId"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CredentialId(::std::string::String);
@@ -106,16 +94,6 @@ impl<'de> ::serde::Deserialize<'de> for CredentialId {
 }
 ///`Did`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:[a-z0-9]+:.+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Did(::std::string::String);
@@ -180,21 +158,6 @@ impl<'de> ::serde::Deserialize<'de> for Did {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -216,15 +179,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -288,20 +242,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Derived at read time. `revoked` takes precedence over `expired`: a credential revoked before its window closed is revoked, and reporting it as merely expired would hide that somebody acted.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Derived at read time. `revoked` takes precedence over `expired`: a credential revoked before its window closed is revoked, and reporting it as merely expired would hide that somebody acted.",
-///  "type": "string",
-///  "enum": [
-///    "active",
-///    "expired",
-///    "revoked"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -367,61 +307,6 @@ impl ::std::convert::TryFrom<::std::string::String> for IssuedCredentialStatus {
 }
 ///A body-free projection of an issuance record. Carries no claim content by construction — see the specification's rationale for why a list does not return credentials.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "IssuedCredentialSummary",
-///  "description": "A body-free projection of an issuance record. Carries no claim content by construction — see the specification's rationale for why a list does not return credentials.",
-///  "type": "object",
-///  "required": [
-///    "credentialId",
-///    "expiresAt",
-///    "holder",
-///    "issuedAt",
-///    "status"
-///  ],
-///  "properties": {
-///    "credentialId": {
-///      "description": "The id `vta/credentials/revoke` is keyed on.",
-///      "$ref": "#/definitions/CredentialId"
-///    },
-///    "credentialType": {
-///      "description": "The type tag beyond `VerifiableCredential`, when the credential carries one.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "expiresAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "holder": {
-///      "description": "Who the credential was issued to.",
-///      "$ref": "#/definitions/Did"
-///    },
-///    "issuedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "revocationReason": {
-///      "description": "Free text recorded at revocation. Disclosed to every caller entitled to this list — see Security & Privacy.",
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "revokedAt": {
-///      "description": "Present iff `status` is `revoked`.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "status": {
-///      "$ref": "#/definitions/IssuedCredentialStatus"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -465,17 +350,6 @@ impl IssuedCredentialSummary {
 }
 ///The type tag beyond `VerifiableCredential`, when the credential carries one.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The type tag beyond `VerifiableCredential`, when the credential carries one.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct IssuedCredentialSummaryCredentialType(::std::string::String);
@@ -538,16 +412,6 @@ impl<'de> ::serde::Deserialize<'de> for IssuedCredentialSummaryCredentialType {
 }
 ///Free text recorded at revocation. Disclosed to every caller entitled to this list — see Security & Privacy.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Free text recorded at revocation. Disclosed to every caller entitled to this list — see Security & Privacy.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct IssuedCredentialSummaryRevocationReason(::std::string::String);
@@ -607,50 +471,6 @@ impl<'de> ::serde::Deserialize<'de> for IssuedCredentialSummaryRevocationReason 
 }
 ///Enumerate the credentials an agent has issued, as metadata. Every filter is optional and those present are AND-combined.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/credentials/list/0.1",
-///  "title": "Payload",
-///  "description": "Enumerate the credentials an agent has issued, as metadata. Every filter is optional and those present are AND-combined.",
-///  "type": "object",
-///  "properties": {
-///    "credentialType": {
-///      "description": "Only credentials carrying this type tag beyond `VerifiableCredential`.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "cursor": {
-///      "description": "Continue a previous page. Opaque — consumers must not construct or parse one.",
-///      "type": "string",
-///      "maxLength": 4096,
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "holder": {
-///      "description": "Only credentials issued to this DID.",
-///      "$ref": "#/definitions/Did"
-///    },
-///    "pageSize": {
-///      "description": "Maximum records to return. The agent MAY return fewer and caps this value.",
-///      "type": "integer",
-///      "maximum": 1000.0,
-///      "minimum": 1.0
-///    },
-///    "status": {
-///      "description": "Only credentials in this state. Derived by the agent at read time, never stored.",
-///      "$ref": "#/definitions/IssuedCredentialStatus"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -702,17 +522,6 @@ impl Payload {
 }
 ///Only credentials carrying this type tag beyond `VerifiableCredential`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Only credentials carrying this type tag beyond `VerifiableCredential`.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCredentialType(::std::string::String);
@@ -775,17 +584,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCredentialType {
 }
 ///Continue a previous page. Opaque — consumers must not construct or parse one.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Continue a previous page. Opaque — consumers must not construct or parse one.",
-///  "type": "string",
-///  "maxLength": 4096,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCursor(::std::string::String);
@@ -848,44 +646,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCursor {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "credentials",
-///    "truncated"
-///  ],
-///  "properties": {
-///    "credentials": {
-///      "description": "One summary per matching credential. Empty when nothing matched — a successful answer, not an error.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/IssuedCredentialSummary"
-///      }
-///    },
-///    "cursor": {
-///      "description": "Pass to the next request to continue. Absent when the page is the last.",
-///      "type": "string",
-///      "maxLength": 4096,
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "truncated": {
-///      "description": "The agent stopped early. A consumer must not read a truncated page as a complete account of what was issued.",
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -909,17 +669,6 @@ impl Response {
 }
 ///Pass to the next request to continue. Absent when the page is the last.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Pass to the next request to continue. Absent when the page is the last.",
-///  "type": "string",
-///  "maxLength": 4096,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseCursor(::std::string::String);
@@ -1348,14 +1097,14 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/credentials/list/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CredentialId\": {\n      \"$anchor\": \"credentialId\",\n      \"description\": \"Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.\",\n      \"minLength\": 1,\n      \"title\": \"CredentialId\",\n      \"type\": \"string\"\n    },\n    \"Did\": {\n      \"maxLength\": 2048,\n      \"pattern\": \"^did:[a-z0-9]+:.+$\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"IssuedCredentialStatus\": {\n      \"description\": \"Derived at read time. `revoked` takes precedence over `expired`: a credential revoked before its window closed is revoked, and reporting it as merely expired would hide that somebody acted.\",\n      \"enum\": [\n        \"active\",\n        \"expired\",\n        \"revoked\"\n      ],\n      \"type\": \"string\"\n    },\n    \"IssuedCredentialSummary\": {\n      \"additionalProperties\": false,\n      \"description\": \"A body-free projection of an issuance record. Carries no claim content by construction — see the specification's rationale for why a list does not return credentials.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"$ref\": \"#/$defs/CredentialId\",\n          \"description\": \"The id `vta/credentials/revoke` is keyed on.\"\n        },\n        \"credentialType\": {\n          \"description\": \"The type tag beyond `VerifiableCredential`, when the credential carries one.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"expiresAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"holder\": {\n          \"$ref\": \"#/$defs/Did\",\n          \"description\": \"Who the credential was issued to.\"\n        },\n        \"issuedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"revocationReason\": {\n          \"description\": \"Free text recorded at revocation. Disclosed to every caller entitled to this list — see Security & Privacy.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"revokedAt\": {\n          \"description\": \"Present iff `status` is `revoked`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"$ref\": \"#/$defs/IssuedCredentialStatus\"\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"holder\",\n        \"issuedAt\",\n        \"expiresAt\",\n        \"status\"\n      ],\n      \"title\": \"IssuedCredentialSummary\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"credentials\": {\n          \"description\": \"One summary per matching credential. Empty when nothing matched — a successful answer, not an error.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/IssuedCredentialSummary\"\n          },\n          \"type\": \"array\"\n        },\n        \"cursor\": {\n          \"description\": \"Pass to the next request to continue. Absent when the page is the last.\",\n          \"maxLength\": 4096,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"truncated\": {\n          \"description\": \"The agent stopped early. A consumer must not read a truncated page as a complete account of what was issued.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"credentials\",\n        \"truncated\"\n      ],\n      \"title\": \"VTA Credentials List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/credentials/list/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Enumerate the credentials an agent has issued, as metadata. Every filter is optional and those present are AND-combined.\",\n  \"properties\": {\n    \"credentialType\": {\n      \"description\": \"Only credentials carrying this type tag beyond `VerifiableCredential`.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"cursor\": {\n      \"description\": \"Continue a previous page. Opaque — consumers must not construct or parse one.\",\n      \"maxLength\": 4096,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"holder\": {\n      \"$ref\": \"#/$defs/Did\",\n      \"description\": \"Only credentials issued to this DID.\"\n    },\n    \"pageSize\": {\n      \"description\": \"Maximum records to return. The agent MAY return fewer and caps this value.\",\n      \"maximum\": 1000,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"status\": {\n      \"$ref\": \"#/$defs/IssuedCredentialStatus\",\n      \"description\": \"Only credentials in this state. Derived by the agent at read time, never stored.\"\n    }\n  },\n  \"title\": \"VTA Credentials — List\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"CredentialId\":{\"$anchor\":\"credentialId\",\"description\":\"Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.\",\"minLength\":1,\"title\":\"CredentialId\",\"type\":\"string\"},\"Did\":{\"maxLength\":2048,\"pattern\":\"^did:[a-z0-9]+:.+$\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"IssuedCredentialStatus\":{\"description\":\"Derived at read time. `revoked` takes precedence over `expired`: a credential revoked before its window closed is revoked, and reporting it as merely expired would hide that somebody acted.\",\"enum\":[\"active\",\"expired\",\"revoked\"],\"type\":\"string\"},\"IssuedCredentialSummary\":{\"additionalProperties\":false,\"description\":\"A body-free projection of an issuance record. Carries no claim content by construction — see the specification's rationale for why a list does not return credentials.\",\"properties\":{\"credentialId\":{\"$ref\":\"#/$defs/CredentialId\",\"description\":\"The id `vta/credentials/revoke` is keyed on.\"},\"credentialType\":{\"description\":\"The type tag beyond `VerifiableCredential`, when the credential carries one.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"holder\":{\"$ref\":\"#/$defs/Did\",\"description\":\"Who the credential was issued to.\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"revocationReason\":{\"description\":\"Free text recorded at revocation. Disclosed to every caller entitled to this list — see Security & Privacy.\",\"maxLength\":1024,\"type\":\"string\"},\"revokedAt\":{\"description\":\"Present iff `status` is `revoked`.\",\"format\":\"date-time\",\"type\":\"string\"},\"status\":{\"$ref\":\"#/$defs/IssuedCredentialStatus\"}},\"required\":[\"credentialId\",\"holder\",\"issuedAt\",\"expiresAt\",\"status\"],\"title\":\"IssuedCredentialSummary\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"credentials\":{\"description\":\"One summary per matching credential. Empty when nothing matched — a successful answer, not an error.\",\"items\":{\"$ref\":\"#/$defs/IssuedCredentialSummary\"},\"type\":\"array\"},\"cursor\":{\"description\":\"Pass to the next request to continue. Absent when the page is the last.\",\"maxLength\":4096,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"truncated\":{\"description\":\"The agent stopped early. A consumer must not read a truncated page as a complete account of what was issued.\",\"type\":\"boolean\"}},\"required\":[\"credentials\",\"truncated\"],\"title\":\"VTA Credentials List — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/credentials/list/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Enumerate the credentials an agent has issued, as metadata. Every filter is optional and those present are AND-combined.\",\"properties\":{\"credentialType\":{\"description\":\"Only credentials carrying this type tag beyond `VerifiableCredential`.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"cursor\":{\"description\":\"Continue a previous page. Opaque — consumers must not construct or parse one.\",\"maxLength\":4096,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"holder\":{\"$ref\":\"#/$defs/Did\",\"description\":\"Only credentials issued to this DID.\"},\"pageSize\":{\"description\":\"Maximum records to return. The agent MAY return fewer and caps this value.\",\"maximum\":1000,\"minimum\":1,\"type\":\"integer\"},\"status\":{\"$ref\":\"#/$defs/IssuedCredentialStatus\",\"description\":\"Only credentials in this state. Derived by the agent at read time, never stored.\"}},\"title\":\"VTA Credentials — List\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/credentials/list/0.1#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CredentialId\": {\n      \"$anchor\": \"credentialId\",\n      \"description\": \"Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.\",\n      \"minLength\": 1,\n      \"title\": \"CredentialId\",\n      \"type\": \"string\"\n    },\n    \"Did\": {\n      \"maxLength\": 2048,\n      \"pattern\": \"^did:[a-z0-9]+:.+$\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"IssuedCredentialStatus\": {\n      \"description\": \"Derived at read time. `revoked` takes precedence over `expired`: a credential revoked before its window closed is revoked, and reporting it as merely expired would hide that somebody acted.\",\n      \"enum\": [\n        \"active\",\n        \"expired\",\n        \"revoked\"\n      ],\n      \"type\": \"string\"\n    },\n    \"IssuedCredentialSummary\": {\n      \"additionalProperties\": false,\n      \"description\": \"A body-free projection of an issuance record. Carries no claim content by construction — see the specification's rationale for why a list does not return credentials.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"$ref\": \"#/$defs/CredentialId\",\n          \"description\": \"The id `vta/credentials/revoke` is keyed on.\"\n        },\n        \"credentialType\": {\n          \"description\": \"The type tag beyond `VerifiableCredential`, when the credential carries one.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"expiresAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"holder\": {\n          \"$ref\": \"#/$defs/Did\",\n          \"description\": \"Who the credential was issued to.\"\n        },\n        \"issuedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"revocationReason\": {\n          \"description\": \"Free text recorded at revocation. Disclosed to every caller entitled to this list — see Security & Privacy.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"revokedAt\": {\n          \"description\": \"Present iff `status` is `revoked`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"$ref\": \"#/$defs/IssuedCredentialStatus\"\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"holder\",\n        \"issuedAt\",\n        \"expiresAt\",\n        \"status\"\n      ],\n      \"title\": \"IssuedCredentialSummary\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"credentials\": {\n          \"description\": \"One summary per matching credential. Empty when nothing matched — a successful answer, not an error.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/IssuedCredentialSummary\"\n          },\n          \"type\": \"array\"\n        },\n        \"cursor\": {\n          \"description\": \"Pass to the next request to continue. Absent when the page is the last.\",\n          \"maxLength\": 4096,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"truncated\": {\n          \"description\": \"The agent stopped early. A consumer must not read a truncated page as a complete account of what was issued.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"credentials\",\n        \"truncated\"\n      ],\n      \"title\": \"VTA Credentials List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"CredentialId\":{\"$anchor\":\"credentialId\",\"description\":\"Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.\",\"minLength\":1,\"title\":\"CredentialId\",\"type\":\"string\"},\"Did\":{\"maxLength\":2048,\"pattern\":\"^did:[a-z0-9]+:.+$\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"IssuedCredentialStatus\":{\"description\":\"Derived at read time. `revoked` takes precedence over `expired`: a credential revoked before its window closed is revoked, and reporting it as merely expired would hide that somebody acted.\",\"enum\":[\"active\",\"expired\",\"revoked\"],\"type\":\"string\"},\"IssuedCredentialSummary\":{\"additionalProperties\":false,\"description\":\"A body-free projection of an issuance record. Carries no claim content by construction — see the specification's rationale for why a list does not return credentials.\",\"properties\":{\"credentialId\":{\"$ref\":\"#/$defs/CredentialId\",\"description\":\"The id `vta/credentials/revoke` is keyed on.\"},\"credentialType\":{\"description\":\"The type tag beyond `VerifiableCredential`, when the credential carries one.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"holder\":{\"$ref\":\"#/$defs/Did\",\"description\":\"Who the credential was issued to.\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"revocationReason\":{\"description\":\"Free text recorded at revocation. Disclosed to every caller entitled to this list — see Security & Privacy.\",\"maxLength\":1024,\"type\":\"string\"},\"revokedAt\":{\"description\":\"Present iff `status` is `revoked`.\",\"format\":\"date-time\",\"type\":\"string\"},\"status\":{\"$ref\":\"#/$defs/IssuedCredentialStatus\"}},\"required\":[\"credentialId\",\"holder\",\"issuedAt\",\"expiresAt\",\"status\"],\"title\":\"IssuedCredentialSummary\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"credentials\":{\"description\":\"One summary per matching credential. Empty when nothing matched — a successful answer, not an error.\",\"items\":{\"$ref\":\"#/$defs/IssuedCredentialSummary\"},\"type\":\"array\"},\"cursor\":{\"description\":\"Pass to the next request to continue. Absent when the page is the last.\",\"maxLength\":4096,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"truncated\":{\"description\":\"The agent stopped early. A consumer must not read a truncated page as a complete account of what was issued.\",\"type\":\"boolean\"}},\"required\":[\"credentials\",\"truncated\"],\"title\":\"VTA Credentials List — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

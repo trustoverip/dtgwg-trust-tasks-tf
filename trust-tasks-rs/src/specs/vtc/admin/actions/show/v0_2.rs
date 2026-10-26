@@ -35,189 +35,6 @@ pub mod error {
 }
 ///One parked administrative operation, as the caller is entitled to see it. The same action reads differently to different callers only in `challenge` and `callerRole`, which are per-caller.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Action",
-///  "description": "One parked administrative operation, as the caller is entitled to see it. The same action reads differently to different callers only in `challenge` and `callerRole`, which are per-caller.",
-///  "type": "object",
-///  "required": [
-///    "actionId",
-///    "approvals",
-///    "callerRole",
-///    "category",
-///    "createdAt",
-///    "kind",
-///    "payload",
-///    "payloadDigest",
-///    "requester",
-///    "status",
-///    "summary",
-///    "typeUri"
-///  ],
-///  "properties": {
-///    "actionId": {
-///      "$ref": "#/definitions/ActionId"
-///    },
-///    "approvals": {
-///      "description": "The decisions in favour recorded so far — approvals for `approval` and `queue`, acknowledgements for `acknowledge` — one entry per distinct subject, in the order recorded. Empty while none has landed, and always empty for `coolingOff`, which takes no decisions.",
-///      "type": "array",
-///      "items": {
-///        "type": "object",
-///        "required": [
-///          "at",
-///          "subject"
-///        ],
-///        "properties": {
-///          "at": {
-///            "description": "When the decision was recorded.",
-///            "type": "string",
-///            "format": "date-time"
-///          },
-///          "subject": {
-///            "description": "VID of the approver or acknowledger, as proven by the decision's own proof.",
-///            "type": "string",
-///            "maxLength": 2048,
-///            "minLength": 1
-///          }
-///        },
-///        "additionalProperties": false
-///      }
-///    },
-///    "approversRemaining": {
-///      "description": "How many further distinct decisions the action needs while `open` — approvals for `approval`, acknowledgements for `acknowledge`. Lets a console say 'one more' without disclosing the eligible set. Absent for `coolingOff`, which waits on time, not on decisions.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "callerRole": {
-///      "description": "The caller's relation to this action. `approver` — an eligible approver (whether or not already decided). `requester` — the party whose operation was parked. `acknowledger` — an administrator expected to acknowledge it. `subject` — the party a `coolingOff` operation acts on, shown it so that they learn of it before it lands; a subject can neither decide nor cancel it. `observer` — none of these; seen only through the audit-read capability on a `history` or `all` view.",
-///      "type": "string",
-///      "enum": [
-///        "approver",
-///        "requester",
-///        "acknowledger",
-///        "subject",
-///        "observer"
-///      ]
-///    },
-///    "cancellableBy": {
-///      "description": "Who may withdraw the action with `vtc/admin/actions/cancel` while it is `open`. Present on every open `coolingOff` action, where it is `requester`: the operation lands unless its requester stops it, and nobody else — the subject included — can. A closed set so that a console can offer a cancel control without inferring it; future values would widen who may cancel and need a new version.",
-///      "type": "string",
-///      "enum": [
-///        "requester"
-///      ]
-///    },
-///    "category": {
-///      "description": "`approval` — eligible approvers approve or decline, N-of-M; the operation executes when the threshold is met. `acknowledge` — an operation that already happened (an operator's offline or break-glass write) which every remaining administrator must acknowledge; there is nothing to approve or decline. `queue` — an existing human decision (for example a join review) surfaced in the same list, with a threshold of one. `coolingOff` — an operation with no eligible third party to consent, which lands by itself at `landsAt` unless its requester cancels it first; nobody approves, declines or acknowledges it.",
-///      "type": "string",
-///      "enum": [
-///        "approval",
-///        "acknowledge",
-///        "queue",
-///        "coolingOff"
-///      ]
-///    },
-///    "challenge": {
-///      "description": "Present ONLY on an action the CALLER may decide now — an `approval` or `queue` action on which the caller is an eligible approver who has not yet decided. Never present on `acknowledge` or `coolingOff`. Per-approver: two approvers are shown different challenges for the same action. Echoed verbatim in `task-consent/decision`'s `challenge`, which binds that decision to this approver and this action. Absent for everyone else, including the requester.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 16
-///    },
-///    "closedAt": {
-///      "description": "When the action left `open`. Present exactly when `status` is not `open`.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "closedReason": {
-///      "description": "Why the action closed. Present exactly when `status` is not `open`. `invalidated` — the community closed it because something it depended on stopped holding before the threshold or `landsAt` (an approver or the requester lost standing, the target state moved); `failedRecheck` — the threshold was met or `landsAt` reached but the execution-time re-check refused; `landedAfterCoolingOff` — a `coolingOff` action reached `landsAt` uncancelled and its operation executed (`status: completed`).",
-///      "type": "string",
-///      "enum": [
-///        "thresholdMet",
-///        "declined",
-///        "expired",
-///        "cancelledByRequester",
-///        "invalidated",
-///        "failedRecheck",
-///        "acknowledged",
-///        "landedAfterCoolingOff"
-///      ]
-///    },
-///    "createdAt": {
-///      "description": "When the operation was parked.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "expiresAt": {
-///      "description": "When an open action lapses. ALWAYS present for `approval`, whose open life is bounded (72 hours by default; the community configures it between 15 minutes and 14 days). Absent for an `acknowledge` or `queue` action that does not expire, and ALWAYS absent for `coolingOff`, which does not lapse but lands — see `landsAt`.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "kind": {
-///      "description": "The community's name for what kind of operation is parked, dotted and lowerCamelCase (`acl.grant.authority`, `member.join.review`). Selects the summary template. The set is OPEN: a renderer that does not recognise a kind still renders `summary` from its fields.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1,
-///      "pattern": "^[a-z][a-zA-Z0-9.]*$"
-///    },
-///    "landsAt": {
-///      "description": "When a `coolingOff` action lands: the instant from which the community executes the parked operation, after its execution-time re-check, unless the requester cancelled first. Present exactly when `category` is `coolingOff`. It is a deadline for the requester's cancellation, not for anyone's approval, and it is fixed when the action is parked: neither the requester nor the subject can move it.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "payload": {
-///      "description": "The exact payload of the parked operation — the object `payloadDigest` is computed over and the one the community will execute. Carried so an approver can recompute the digest and re-derive every summary field from it rather than trusting the rendering (VTI-APV-013). Deliberately an open object: its shape is governed by the specification `typeUri` names, and a digest is checked over members exactly as received.",
-///      "type": "object"
-///    },
-///    "payloadDigest": {
-///      "description": "Digest of `payload`, taken over its RFC 8785 (JCS) canonicalization. The community re-derives it from the payload it is about to execute and refuses on mismatch. The digest an approver signs over is the challenge-salted one of `task-consent/decision`, not this value; this one lets the approver check that `payload` is what was parked.",
-///      "$ref": "#/definitions/DigestMultibase"
-///    },
-///    "requester": {
-///      "description": "VID of the party whose operation was parked. For `acknowledge`, the operator whose offline write is being acknowledged, where the community can attribute one. For `coolingOff`, the administrator whose operation will land — the only party who may cancel it.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1
-///    },
-///    "requesterOpenActions": {
-///      "description": "How many open actions the requester currently has at the community, this one included. For consent-fatigue display: an approver shown the twentieth request from one requester today should be able to see that it is the twentieth.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "status": {
-///      "description": "`open` — awaiting decisions, or for `coolingOff` awaiting `landsAt`. `completed` — the threshold was met and the operation executed, a `coolingOff` operation landed, or, for `acknowledge`, every administrator acknowledged. `declined` — an eligible approver denied it. `expired` — it lapsed at `expiresAt`. `cancelled` — the requester withdrew it, or the community invalidated it (see `closedReason`). `failed` — the threshold was met or `landsAt` reached but the re-check at execution refused it, or execution itself failed; the operation did not take effect.",
-///      "type": "string",
-///      "enum": [
-///        "open",
-///        "completed",
-///        "declined",
-///        "expired",
-///        "cancelled",
-///        "failed"
-///      ]
-///    },
-///    "summary": {
-///      "$ref": "#/definitions/Summary"
-///    },
-///    "threshold": {
-///      "description": "The number of distinct approvals the operation needs. Present for `approval`; absent otherwise (a `queue` decision is one decision by construction, `acknowledge` needs every remaining administrator, and `coolingOff` needs no approval at all).",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "typeUri": {
-///      "description": "The Type URI of the parked operation — the Trust Task the community will execute when the action completes (for `coolingOff`, when it lands). Together with `payload` it is exactly what will run. For `acknowledge`, the Type URI of the operation that already took effect; an operator's offline write, which is a command on the community's host and has no Trust Task of its own, is named by the record type `https://trusttasks.org/spec/vtc/operator/offline-write/0.1`, and `payload` is then that record.",
-///      "type": "string",
-///      "format": "uri",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -314,32 +131,6 @@ impl Action {
 }
 ///`ActionApprovalsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "at",
-///    "subject"
-///  ],
-///  "properties": {
-///    "at": {
-///      "description": "When the decision was recorded.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "subject": {
-///      "description": "VID of the approver or acknowledger, as proven by the decision's own proof.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -356,17 +147,6 @@ impl ActionApprovalsItem {
 }
 ///VID of the approver or acknowledger, as proven by the decision's own proof.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "VID of the approver or acknowledger, as proven by the decision's own proof.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ActionApprovalsItemSubject(::std::string::String);
@@ -429,22 +209,6 @@ impl<'de> ::serde::Deserialize<'de> for ActionApprovalsItemSubject {
 }
 ///The caller's relation to this action. `approver` — an eligible approver (whether or not already decided). `requester` — the party whose operation was parked. `acknowledger` — an administrator expected to acknowledge it. `subject` — the party a `coolingOff` operation acts on, shown it so that they learn of it before it lands; a subject can neither decide nor cancel it. `observer` — none of these; seen only through the audit-read capability on a `history` or `all` view.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The caller's relation to this action. `approver` — an eligible approver (whether or not already decided). `requester` — the party whose operation was parked. `acknowledger` — an administrator expected to acknowledge it. `subject` — the party a `coolingOff` operation acts on, shown it so that they learn of it before it lands; a subject can neither decide nor cancel it. `observer` — none of these; seen only through the audit-read capability on a `history` or `all` view.",
-///  "type": "string",
-///  "enum": [
-///    "approver",
-///    "requester",
-///    "acknowledger",
-///    "subject",
-///    "observer"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -518,18 +282,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ActionCallerRole {
 }
 ///Who may withdraw the action with `vtc/admin/actions/cancel` while it is `open`. Present on every open `coolingOff` action, where it is `requester`: the operation lands unless its requester stops it, and nobody else — the subject included — can. A closed set so that a console can offer a cancel control without inferring it; future values would widen who may cancel and need a new version.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Who may withdraw the action with `vtc/admin/actions/cancel` while it is `open`. Present on every open `coolingOff` action, where it is `requester`: the operation lands unless its requester stops it, and nobody else — the subject included — can. A closed set so that a console can offer a cancel control without inferring it; future values would widen who may cancel and need a new version.",
-///  "type": "string",
-///  "enum": [
-///    "requester"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -587,21 +339,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ActionCancellableBy {
 }
 ///`approval` — eligible approvers approve or decline, N-of-M; the operation executes when the threshold is met. `acknowledge` — an operation that already happened (an operator's offline or break-glass write) which every remaining administrator must acknowledge; there is nothing to approve or decline. `queue` — an existing human decision (for example a join review) surfaced in the same list, with a threshold of one. `coolingOff` — an operation with no eligible third party to consent, which lands by itself at `landsAt` unless its requester cancels it first; nobody approves, declines or acknowledges it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`approval` — eligible approvers approve or decline, N-of-M; the operation executes when the threshold is met. `acknowledge` — an operation that already happened (an operator's offline or break-glass write) which every remaining administrator must acknowledge; there is nothing to approve or decline. `queue` — an existing human decision (for example a join review) surfaced in the same list, with a threshold of one. `coolingOff` — an operation with no eligible third party to consent, which lands by itself at `landsAt` unless its requester cancels it first; nobody approves, declines or acknowledges it.",
-///  "type": "string",
-///  "enum": [
-///    "approval",
-///    "acknowledge",
-///    "queue",
-///    "coolingOff"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -671,17 +408,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ActionCategory {
 }
 ///Present ONLY on an action the CALLER may decide now — an `approval` or `queue` action on which the caller is an eligible approver who has not yet decided. Never present on `acknowledge` or `coolingOff`. Per-approver: two approvers are shown different challenges for the same action. Echoed verbatim in `task-consent/decision`'s `challenge`, which binds that decision to this approver and this action. Absent for everyone else, including the requester.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Present ONLY on an action the CALLER may decide now — an `approval` or `queue` action on which the caller is an eligible approver who has not yet decided. Never present on `acknowledge` or `coolingOff`. Per-approver: two approvers are shown different challenges for the same action. Echoed verbatim in `task-consent/decision`'s `challenge`, which binds that decision to this approver and this action. Absent for everyone else, including the requester.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 16
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ActionChallenge(::std::string::String);
@@ -744,25 +470,6 @@ impl<'de> ::serde::Deserialize<'de> for ActionChallenge {
 }
 ///Why the action closed. Present exactly when `status` is not `open`. `invalidated` — the community closed it because something it depended on stopped holding before the threshold or `landsAt` (an approver or the requester lost standing, the target state moved); `failedRecheck` — the threshold was met or `landsAt` reached but the execution-time re-check refused; `landedAfterCoolingOff` — a `coolingOff` action reached `landsAt` uncancelled and its operation executed (`status: completed`).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Why the action closed. Present exactly when `status` is not `open`. `invalidated` — the community closed it because something it depended on stopped holding before the threshold or `landsAt` (an approver or the requester lost standing, the target state moved); `failedRecheck` — the threshold was met or `landsAt` reached but the execution-time re-check refused; `landedAfterCoolingOff` — a `coolingOff` action reached `landsAt` uncancelled and its operation executed (`status: completed`).",
-///  "type": "string",
-///  "enum": [
-///    "thresholdMet",
-///    "declined",
-///    "expired",
-///    "cancelledByRequester",
-///    "invalidated",
-///    "failedRecheck",
-///    "acknowledged",
-///    "landedAfterCoolingOff"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -848,19 +555,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ActionClosedReason {
 }
 ///Opaque, community-minted identifier of one action. A consumer MUST NOT parse or order it; it is compared for equality only. Long enough to be unguessable, because a show of an id the caller may not see is answered `notFound` and an enumerable id would turn that answer into an oracle.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ActionId",
-///  "description": "Opaque, community-minted identifier of one action. A consumer MUST NOT parse or order it; it is compared for equality only. Long enough to be unguessable, because a show of an id the caller may not see is answered `notFound` and an enumerable id would turn that answer into an oracle.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 16,
-///  "pattern": "^[A-Za-z0-9._~:-]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ActionId(::std::string::String);
@@ -928,18 +622,6 @@ impl<'de> ::serde::Deserialize<'de> for ActionId {
 }
 ///The community's name for what kind of operation is parked, dotted and lowerCamelCase (`acl.grant.authority`, `member.join.review`). Selects the summary template. The set is OPEN: a renderer that does not recognise a kind still renders `summary` from its fields.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The community's name for what kind of operation is parked, dotted and lowerCamelCase (`acl.grant.authority`, `member.join.review`). Selects the summary template. The set is OPEN: a renderer that does not recognise a kind still renders `summary` from its fields.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1,
-///  "pattern": "^[a-z][a-zA-Z0-9.]*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ActionKind(::std::string::String);
@@ -1007,17 +689,6 @@ impl<'de> ::serde::Deserialize<'de> for ActionKind {
 }
 ///VID of the party whose operation was parked. For `acknowledge`, the operator whose offline write is being acknowledged, where the community can attribute one. For `coolingOff`, the administrator whose operation will land — the only party who may cancel it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "VID of the party whose operation was parked. For `acknowledge`, the operator whose offline write is being acknowledged, where the community can attribute one. For `coolingOff`, the administrator whose operation will land — the only party who may cancel it.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ActionRequester(::std::string::String);
@@ -1080,23 +751,6 @@ impl<'de> ::serde::Deserialize<'de> for ActionRequester {
 }
 ///`open` — awaiting decisions, or for `coolingOff` awaiting `landsAt`. `completed` — the threshold was met and the operation executed, a `coolingOff` operation landed, or, for `acknowledge`, every administrator acknowledged. `declined` — an eligible approver denied it. `expired` — it lapsed at `expiresAt`. `cancelled` — the requester withdrew it, or the community invalidated it (see `closedReason`). `failed` — the threshold was met or `landsAt` reached but the re-check at execution refused it, or execution itself failed; the operation did not take effect.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`open` — awaiting decisions, or for `coolingOff` awaiting `landsAt`. `completed` — the threshold was met and the operation executed, a `coolingOff` operation landed, or, for `acknowledge`, every administrator acknowledged. `declined` — an eligible approver denied it. `expired` — it lapsed at `expiresAt`. `cancelled` — the requester withdrew it, or the community invalidated it (see `closedReason`). `failed` — the threshold was met or `landsAt` reached but the re-check at execution refused it, or execution itself failed; the operation did not take effect.",
-///  "type": "string",
-///  "enum": [
-///    "open",
-///    "completed",
-///    "declined",
-///    "expired",
-///    "cancelled",
-///    "failed"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1181,21 +835,6 @@ This definition constrains the *encoding only*. What the digest is computed over
 
 Restricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that "interoperability is not guaranteed between implementations using such values", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DigestMultibase",
-///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-///  "examples": [
-///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-///  ],
-///  "type": "string",
-///  "minLength": 16,
-///  "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DigestMultibase(::std::string::String);
@@ -1264,21 +903,6 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -1300,15 +924,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -1372,44 +987,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///One displayed value, with where it comes from and how to render it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Field",
-///  "description": "One displayed value, with where it comes from and how to render it.",
-///  "type": "object",
-///  "required": [
-///    "format",
-///    "pointer",
-///    "value"
-///  ],
-///  "properties": {
-///    "format": {
-///      "description": "How to render the value. `did` — a DID, shown in full or with a verified display name, never truncated to a prefix that two DIDs share. `capabilityList` — an array of capability names. `duration` — an ISO 8601 duration. `datetime` — an RFC 3339 date-time. `text` — anything else, rendered as literal text.",
-///      "type": "string",
-///      "enum": [
-///        "did",
-///        "capabilityList",
-///        "duration",
-///        "datetime",
-///        "text"
-///      ]
-///    },
-///    "pointer": {
-///      "description": "RFC 6901 JSON Pointer into the action's `payload`. The empty string addresses the whole payload.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "pattern": "^(/([^~/]|~[01])*)*$"
-///    },
-///    "value": {
-///      "description": "The value found at `pointer` when the community rendered the summary. A renderer re-derives it from `payload` and refuses to render the action on any mismatch; it is carried so that a mismatch is detectable, not so that it can be trusted."
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1428,22 +1005,6 @@ impl Field {
 }
 ///How to render the value. `did` — a DID, shown in full or with a verified display name, never truncated to a prefix that two DIDs share. `capabilityList` — an array of capability names. `duration` — an ISO 8601 duration. `datetime` — an RFC 3339 date-time. `text` — anything else, rendered as literal text.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "How to render the value. `did` — a DID, shown in full or with a verified display name, never truncated to a prefix that two DIDs share. `capabilityList` — an array of capability names. `duration` — an ISO 8601 duration. `datetime` — an RFC 3339 date-time. `text` — anything else, rendered as literal text.",
-///  "type": "string",
-///  "enum": [
-///    "did",
-///    "capabilityList",
-///    "duration",
-///    "datetime",
-///    "text"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1517,17 +1078,6 @@ impl ::std::convert::TryFrom<::std::string::String> for FieldFormat {
 }
 ///RFC 6901 JSON Pointer into the action's `payload`. The empty string addresses the whole payload.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "RFC 6901 JSON Pointer into the action's `payload`. The empty string addresses the whole payload.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "pattern": "^(/([^~/]|~[01])*)*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct FieldPointer(::std::string::String);
@@ -1592,30 +1142,6 @@ impl<'de> ::serde::Deserialize<'de> for FieldPointer {
 }
 ///Fetch one administrative action by its identifier — the read a requester follows after the community answers a gated operation with trust-task-next-step (continuation `proceed`, hint {actionId}). The enumeration sibling is vtc/admin/actions/list/0.2. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/admin/actions/show/0.2",
-///  "title": "Payload",
-///  "description": "Fetch one administrative action by its identifier — the read a requester follows after the community answers a gated operation with trust-task-next-step (continuation `proceed`, hint {actionId}). The enumeration sibling is vtc/admin/actions/list/0.2. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "actionId"
-///  ],
-///  "properties": {
-///    "actionId": {
-///      "description": "The action to fetch — from a next-step hint, a list entry, or a notification.",
-///      "$ref": "#/definitions/ActionId"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1634,29 +1160,6 @@ impl Payload {
 }
 ///The action as the caller is entitled to see it. Failures use trust-task-error, not this shape.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The action as the caller is entitled to see it. Failures use trust-task-error, not this shape.",
-///  "type": "object",
-///  "required": [
-///    "action"
-///  ],
-///  "properties": {
-///    "action": {
-///      "$ref": "#/definitions/Action"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1673,50 +1176,6 @@ impl Response {
 }
 ///What an approver is shown, rendered from the summary template for the action's `kind`. Title and effect are the template's prose; the fields are the payload values that prose is about, each located by pointer so a renderer can verify it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Summary",
-///  "description": "What an approver is shown, rendered from the summary template for the action's `kind`. Title and effect are the template's prose; the fields are the payload values that prose is about, each located by pointer so a renderer can verify it.",
-///  "type": "object",
-///  "required": [
-///    "fields",
-///    "templateDigest",
-///    "title"
-///  ],
-///  "properties": {
-///    "effect": {
-///      "description": "One or two sentences from the template saying what executing the operation will do.",
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "fields": {
-///      "description": "Named values the template displays, keyed by a lowerCamelCase field name. Each locates its value in `payload` by JSON Pointer.",
-///      "type": "object",
-///      "additionalProperties": {
-///        "$ref": "#/definitions/Field"
-///      },
-///      "propertyNames": {
-///        "maxLength": 64,
-///        "pattern": "^[a-z][a-zA-Z0-9]*$"
-///      }
-///    },
-///    "templateDigest": {
-///      "description": "Digest of the summary template this summary was rendered from, over its RFC 8785 (JCS) canonicalization. Pinned per `kind`: a renderer that holds the template for a kind refuses a summary naming a different digest, so the community cannot change what approvers are shown for a kind without that change being visible.",
-///      "$ref": "#/definitions/DigestMultibase"
-///    },
-///    "title": {
-///      "description": "One-line heading from the template. Prose only: a renderer MUST NOT present the action from this text without the fields.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1739,16 +1198,6 @@ impl Summary {
 }
 ///One or two sentences from the template saying what executing the operation will do.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "One or two sentences from the template saying what executing the operation will do.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SummaryEffect(::std::string::String);
@@ -1808,16 +1257,6 @@ impl<'de> ::serde::Deserialize<'de> for SummaryEffect {
 }
 ///`SummaryFieldsKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 64,
-///  "pattern": "^[a-z][a-zA-Z0-9]*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SummaryFieldsKey(::std::string::String);
@@ -1882,17 +1321,6 @@ impl<'de> ::serde::Deserialize<'de> for SummaryFieldsKey {
 }
 ///One-line heading from the template. Prose only: a renderer MUST NOT present the action from this text without the fields.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "One-line heading from the template. Prose only: a renderer MUST NOT present the action from this text without the fields.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SummaryTitle(::std::string::String);
@@ -2643,7 +2071,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Action\": {\n      \"additionalProperties\": false,\n      \"description\": \"One parked administrative operation, as the caller is entitled to see it. The same action reads differently to different callers only in `challenge` and `callerRole`, which are per-caller.\",\n      \"properties\": {\n        \"actionId\": {\n          \"$ref\": \"#/$defs/ActionId\"\n        },\n        \"approvals\": {\n          \"description\": \"The decisions in favour recorded so far — approvals for `approval` and `queue`, acknowledgements for `acknowledge` — one entry per distinct subject, in the order recorded. Empty while none has landed, and always empty for `coolingOff`, which takes no decisions.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"at\": {\n                \"description\": \"When the decision was recorded.\",\n                \"format\": \"date-time\",\n                \"type\": \"string\"\n              },\n              \"subject\": {\n                \"description\": \"VID of the approver or acknowledger, as proven by the decision's own proof.\",\n                \"maxLength\": 2048,\n                \"minLength\": 1,\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"subject\",\n              \"at\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        },\n        \"approversRemaining\": {\n          \"description\": \"How many further distinct decisions the action needs while `open` — approvals for `approval`, acknowledgements for `acknowledge`. Lets a console say 'one more' without disclosing the eligible set. Absent for `coolingOff`, which waits on time, not on decisions.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"callerRole\": {\n          \"description\": \"The caller's relation to this action. `approver` — an eligible approver (whether or not already decided). `requester` — the party whose operation was parked. `acknowledger` — an administrator expected to acknowledge it. `subject` — the party a `coolingOff` operation acts on, shown it so that they learn of it before it lands; a subject can neither decide nor cancel it. `observer` — none of these; seen only through the audit-read capability on a `history` or `all` view.\",\n          \"enum\": [\n            \"approver\",\n            \"requester\",\n            \"acknowledger\",\n            \"subject\",\n            \"observer\"\n          ],\n          \"type\": \"string\"\n        },\n        \"cancellableBy\": {\n          \"description\": \"Who may withdraw the action with `vtc/admin/actions/cancel` while it is `open`. Present on every open `coolingOff` action, where it is `requester`: the operation lands unless its requester stops it, and nobody else — the subject included — can. A closed set so that a console can offer a cancel control without inferring it; future values would widen who may cancel and need a new version.\",\n          \"enum\": [\n            \"requester\"\n          ],\n          \"type\": \"string\"\n        },\n        \"category\": {\n          \"description\": \"`approval` — eligible approvers approve or decline, N-of-M; the operation executes when the threshold is met. `acknowledge` — an operation that already happened (an operator's offline or break-glass write) which every remaining administrator must acknowledge; there is nothing to approve or decline. `queue` — an existing human decision (for example a join review) surfaced in the same list, with a threshold of one. `coolingOff` — an operation with no eligible third party to consent, which lands by itself at `landsAt` unless its requester cancels it first; nobody approves, declines or acknowledges it.\",\n          \"enum\": [\n            \"approval\",\n            \"acknowledge\",\n            \"queue\",\n            \"coolingOff\"\n          ],\n          \"type\": \"string\"\n        },\n        \"challenge\": {\n          \"description\": \"Present ONLY on an action the CALLER may decide now — an `approval` or `queue` action on which the caller is an eligible approver who has not yet decided. Never present on `acknowledge` or `coolingOff`. Per-approver: two approvers are shown different challenges for the same action. Echoed verbatim in `task-consent/decision`'s `challenge`, which binds that decision to this approver and this action. Absent for everyone else, including the requester.\",\n          \"maxLength\": 256,\n          \"minLength\": 16,\n          \"type\": \"string\"\n        },\n        \"closedAt\": {\n          \"description\": \"When the action left `open`. Present exactly when `status` is not `open`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"closedReason\": {\n          \"description\": \"Why the action closed. Present exactly when `status` is not `open`. `invalidated` — the community closed it because something it depended on stopped holding before the threshold or `landsAt` (an approver or the requester lost standing, the target state moved); `failedRecheck` — the threshold was met or `landsAt` reached but the execution-time re-check refused; `landedAfterCoolingOff` — a `coolingOff` action reached `landsAt` uncancelled and its operation executed (`status: completed`).\",\n          \"enum\": [\n            \"thresholdMet\",\n            \"declined\",\n            \"expired\",\n            \"cancelledByRequester\",\n            \"invalidated\",\n            \"failedRecheck\",\n            \"acknowledged\",\n            \"landedAfterCoolingOff\"\n          ],\n          \"type\": \"string\"\n        },\n        \"createdAt\": {\n          \"description\": \"When the operation was parked.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When an open action lapses. ALWAYS present for `approval`, whose open life is bounded (72 hours by default; the community configures it between 15 minutes and 14 days). Absent for an `acknowledge` or `queue` action that does not expire, and ALWAYS absent for `coolingOff`, which does not lapse but lands — see `landsAt`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"kind\": {\n          \"description\": \"The community's name for what kind of operation is parked, dotted and lowerCamelCase (`acl.grant.authority`, `member.join.review`). Selects the summary template. The set is OPEN: a renderer that does not recognise a kind still renders `summary` from its fields.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"pattern\": \"^[a-z][a-zA-Z0-9.]*$\",\n          \"type\": \"string\"\n        },\n        \"landsAt\": {\n          \"description\": \"When a `coolingOff` action lands: the instant from which the community executes the parked operation, after its execution-time re-check, unless the requester cancelled first. Present exactly when `category` is `coolingOff`. It is a deadline for the requester's cancellation, not for anyone's approval, and it is fixed when the action is parked: neither the requester nor the subject can move it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"payload\": {\n          \"description\": \"The exact payload of the parked operation — the object `payloadDigest` is computed over and the one the community will execute. Carried so an approver can recompute the digest and re-derive every summary field from it rather than trusting the rendering (VTI-APV-013). Deliberately an open object: its shape is governed by the specification `typeUri` names, and a digest is checked over members exactly as received.\",\n          \"type\": \"object\"\n        },\n        \"payloadDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"Digest of `payload`, taken over its RFC 8785 (JCS) canonicalization. The community re-derives it from the payload it is about to execute and refuses on mismatch. The digest an approver signs over is the challenge-salted one of `task-consent/decision`, not this value; this one lets the approver check that `payload` is what was parked.\"\n        },\n        \"requester\": {\n          \"description\": \"VID of the party whose operation was parked. For `acknowledge`, the operator whose offline write is being acknowledged, where the community can attribute one. For `coolingOff`, the administrator whose operation will land — the only party who may cancel it.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"requesterOpenActions\": {\n          \"description\": \"How many open actions the requester currently has at the community, this one included. For consent-fatigue display: an approver shown the twentieth request from one requester today should be able to see that it is the twentieth.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"status\": {\n          \"description\": \"`open` — awaiting decisions, or for `coolingOff` awaiting `landsAt`. `completed` — the threshold was met and the operation executed, a `coolingOff` operation landed, or, for `acknowledge`, every administrator acknowledged. `declined` — an eligible approver denied it. `expired` — it lapsed at `expiresAt`. `cancelled` — the requester withdrew it, or the community invalidated it (see `closedReason`). `failed` — the threshold was met or `landsAt` reached but the re-check at execution refused it, or execution itself failed; the operation did not take effect.\",\n          \"enum\": [\n            \"open\",\n            \"completed\",\n            \"declined\",\n            \"expired\",\n            \"cancelled\",\n            \"failed\"\n          ],\n          \"type\": \"string\"\n        },\n        \"summary\": {\n          \"$ref\": \"#/$defs/Summary\"\n        },\n        \"threshold\": {\n          \"description\": \"The number of distinct approvals the operation needs. Present for `approval`; absent otherwise (a `queue` decision is one decision by construction, `acknowledge` needs every remaining administrator, and `coolingOff` needs no approval at all).\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"typeUri\": {\n          \"description\": \"The Type URI of the parked operation — the Trust Task the community will execute when the action completes (for `coolingOff`, when it lands). Together with `payload` it is exactly what will run. For `acknowledge`, the Type URI of the operation that already took effect; an operator's offline write, which is a command on the community's host and has no Trust Task of its own, is named by the record type `https://trusttasks.org/spec/vtc/operator/offline-write/0.1`, and `payload` is then that record.\",\n          \"format\": \"uri\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"actionId\",\n        \"category\",\n        \"kind\",\n        \"typeUri\",\n        \"requester\",\n        \"status\",\n        \"createdAt\",\n        \"approvals\",\n        \"summary\",\n        \"payload\",\n        \"payloadDigest\",\n        \"callerRole\"\n      ],\n      \"title\": \"Action\",\n      \"type\": \"object\"\n    },\n    \"ActionId\": {\n      \"description\": \"Opaque, community-minted identifier of one action. A consumer MUST NOT parse or order it; it is compared for equality only. Long enough to be unguessable, because a show of an id the caller may not see is answered `notFound` and an enumerable id would turn that answer into an oracle.\",\n      \"maxLength\": 128,\n      \"minLength\": 16,\n      \"pattern\": \"^[A-Za-z0-9._~:-]+$\",\n      \"title\": \"ActionId\",\n      \"type\": \"string\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Field\": {\n      \"additionalProperties\": false,\n      \"description\": \"One displayed value, with where it comes from and how to render it.\",\n      \"properties\": {\n        \"format\": {\n          \"description\": \"How to render the value. `did` — a DID, shown in full or with a verified display name, never truncated to a prefix that two DIDs share. `capabilityList` — an array of capability names. `duration` — an ISO 8601 duration. `datetime` — an RFC 3339 date-time. `text` — anything else, rendered as literal text.\",\n          \"enum\": [\n            \"did\",\n            \"capabilityList\",\n            \"duration\",\n            \"datetime\",\n            \"text\"\n          ],\n          \"type\": \"string\"\n        },\n        \"pointer\": {\n          \"description\": \"RFC 6901 JSON Pointer into the action's `payload`. The empty string addresses the whole payload.\",\n          \"maxLength\": 512,\n          \"pattern\": \"^(/([^~/]|~[01])*)*$\",\n          \"type\": \"string\"\n        },\n        \"value\": {\n          \"description\": \"The value found at `pointer` when the community rendered the summary. A renderer re-derives it from `payload` and refuses to render the action on any mismatch; it is carried so that a mismatch is detectable, not so that it can be trusted.\"\n        }\n      },\n      \"required\": [\n        \"pointer\",\n        \"format\",\n        \"value\"\n      ],\n      \"title\": \"Field\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The action as the caller is entitled to see it. Failures use trust-task-error, not this shape.\",\n      \"properties\": {\n        \"action\": {\n          \"$ref\": \"#/$defs/Action\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"action\"\n      ],\n      \"title\": \"VTC Admin Actions — Show — response payload\",\n      \"type\": \"object\"\n    },\n    \"Summary\": {\n      \"additionalProperties\": false,\n      \"description\": \"What an approver is shown, rendered from the summary template for the action's `kind`. Title and effect are the template's prose; the fields are the payload values that prose is about, each located by pointer so a renderer can verify it.\",\n      \"properties\": {\n        \"effect\": {\n          \"description\": \"One or two sentences from the template saying what executing the operation will do.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"fields\": {\n          \"additionalProperties\": {\n            \"$ref\": \"#/$defs/Field\"\n          },\n          \"description\": \"Named values the template displays, keyed by a lowerCamelCase field name. Each locates its value in `payload` by JSON Pointer.\",\n          \"propertyNames\": {\n            \"maxLength\": 64,\n            \"pattern\": \"^[a-z][a-zA-Z0-9]*$\"\n          },\n          \"type\": \"object\"\n        },\n        \"templateDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"Digest of the summary template this summary was rendered from, over its RFC 8785 (JCS) canonicalization. Pinned per `kind`: a renderer that holds the template for a kind refuses a summary naming a different digest, so the community cannot change what approvers are shown for a kind without that change being visible.\"\n        },\n        \"title\": {\n          \"description\": \"One-line heading from the template. Prose only: a renderer MUST NOT present the action from this text without the fields.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"title\",\n        \"fields\",\n        \"templateDigest\"\n      ],\n      \"title\": \"Summary\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/admin/actions/show/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Fetch one administrative action by its identifier — the read a requester follows after the community answers a gated operation with trust-task-next-step (continuation `proceed`, hint {actionId}). The enumeration sibling is vtc/admin/actions/list/0.2. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"actionId\": {\n      \"$ref\": \"#/$defs/ActionId\",\n      \"description\": \"The action to fetch — from a next-step hint, a list entry, or a notification.\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"required\": [\n    \"actionId\"\n  ],\n  \"title\": \"VTC Admin Actions — Show — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Action\":{\"additionalProperties\":false,\"description\":\"One parked administrative operation, as the caller is entitled to see it. The same action reads differently to different callers only in `challenge` and `callerRole`, which are per-caller.\",\"properties\":{\"actionId\":{\"$ref\":\"#/$defs/ActionId\"},\"approvals\":{\"description\":\"The decisions in favour recorded so far — approvals for `approval` and `queue`, acknowledgements for `acknowledge` — one entry per distinct subject, in the order recorded. Empty while none has landed, and always empty for `coolingOff`, which takes no decisions.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"at\":{\"description\":\"When the decision was recorded.\",\"format\":\"date-time\",\"type\":\"string\"},\"subject\":{\"description\":\"VID of the approver or acknowledger, as proven by the decision's own proof.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"subject\",\"at\"],\"type\":\"object\"},\"type\":\"array\"},\"approversRemaining\":{\"description\":\"How many further distinct decisions the action needs while `open` — approvals for `approval`, acknowledgements for `acknowledge`. Lets a console say 'one more' without disclosing the eligible set. Absent for `coolingOff`, which waits on time, not on decisions.\",\"minimum\":0,\"type\":\"integer\"},\"callerRole\":{\"description\":\"The caller's relation to this action. `approver` — an eligible approver (whether or not already decided). `requester` — the party whose operation was parked. `acknowledger` — an administrator expected to acknowledge it. `subject` — the party a `coolingOff` operation acts on, shown it so that they learn of it before it lands; a subject can neither decide nor cancel it. `observer` — none of these; seen only through the audit-read capability on a `history` or `all` view.\",\"enum\":[\"approver\",\"requester\",\"acknowledger\",\"subject\",\"observer\"],\"type\":\"string\"},\"cancellableBy\":{\"description\":\"Who may withdraw the action with `vtc/admin/actions/cancel` while it is `open`. Present on every open `coolingOff` action, where it is `requester`: the operation lands unless its requester stops it, and nobody else — the subject included — can. A closed set so that a console can offer a cancel control without inferring it; future values would widen who may cancel and need a new version.\",\"enum\":[\"requester\"],\"type\":\"string\"},\"category\":{\"description\":\"`approval` — eligible approvers approve or decline, N-of-M; the operation executes when the threshold is met. `acknowledge` — an operation that already happened (an operator's offline or break-glass write) which every remaining administrator must acknowledge; there is nothing to approve or decline. `queue` — an existing human decision (for example a join review) surfaced in the same list, with a threshold of one. `coolingOff` — an operation with no eligible third party to consent, which lands by itself at `landsAt` unless its requester cancels it first; nobody approves, declines or acknowledges it.\",\"enum\":[\"approval\",\"acknowledge\",\"queue\",\"coolingOff\"],\"type\":\"string\"},\"challenge\":{\"description\":\"Present ONLY on an action the CALLER may decide now — an `approval` or `queue` action on which the caller is an eligible approver who has not yet decided. Never present on `acknowledge` or `coolingOff`. Per-approver: two approvers are shown different challenges for the same action. Echoed verbatim in `task-consent/decision`'s `challenge`, which binds that decision to this approver and this action. Absent for everyone else, including the requester.\",\"maxLength\":256,\"minLength\":16,\"type\":\"string\"},\"closedAt\":{\"description\":\"When the action left `open`. Present exactly when `status` is not `open`.\",\"format\":\"date-time\",\"type\":\"string\"},\"closedReason\":{\"description\":\"Why the action closed. Present exactly when `status` is not `open`. `invalidated` — the community closed it because something it depended on stopped holding before the threshold or `landsAt` (an approver or the requester lost standing, the target state moved); `failedRecheck` — the threshold was met or `landsAt` reached but the execution-time re-check refused; `landedAfterCoolingOff` — a `coolingOff` action reached `landsAt` uncancelled and its operation executed (`status: completed`).\",\"enum\":[\"thresholdMet\",\"declined\",\"expired\",\"cancelledByRequester\",\"invalidated\",\"failedRecheck\",\"acknowledged\",\"landedAfterCoolingOff\"],\"type\":\"string\"},\"createdAt\":{\"description\":\"When the operation was parked.\",\"format\":\"date-time\",\"type\":\"string\"},\"expiresAt\":{\"description\":\"When an open action lapses. ALWAYS present for `approval`, whose open life is bounded (72 hours by default; the community configures it between 15 minutes and 14 days). Absent for an `acknowledge` or `queue` action that does not expire, and ALWAYS absent for `coolingOff`, which does not lapse but lands — see `landsAt`.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"kind\":{\"description\":\"The community's name for what kind of operation is parked, dotted and lowerCamelCase (`acl.grant.authority`, `member.join.review`). Selects the summary template. The set is OPEN: a renderer that does not recognise a kind still renders `summary` from its fields.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[a-z][a-zA-Z0-9.]*$\",\"type\":\"string\"},\"landsAt\":{\"description\":\"When a `coolingOff` action lands: the instant from which the community executes the parked operation, after its execution-time re-check, unless the requester cancelled first. Present exactly when `category` is `coolingOff`. It is a deadline for the requester's cancellation, not for anyone's approval, and it is fixed when the action is parked: neither the requester nor the subject can move it.\",\"format\":\"date-time\",\"type\":\"string\"},\"payload\":{\"description\":\"The exact payload of the parked operation — the object `payloadDigest` is computed over and the one the community will execute. Carried so an approver can recompute the digest and re-derive every summary field from it rather than trusting the rendering (VTI-APV-013). Deliberately an open object: its shape is governed by the specification `typeUri` names, and a digest is checked over members exactly as received.\",\"type\":\"object\"},\"payloadDigest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Digest of `payload`, taken over its RFC 8785 (JCS) canonicalization. The community re-derives it from the payload it is about to execute and refuses on mismatch. The digest an approver signs over is the challenge-salted one of `task-consent/decision`, not this value; this one lets the approver check that `payload` is what was parked.\"},\"requester\":{\"description\":\"VID of the party whose operation was parked. For `acknowledge`, the operator whose offline write is being acknowledged, where the community can attribute one. For `coolingOff`, the administrator whose operation will land — the only party who may cancel it.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"requesterOpenActions\":{\"description\":\"How many open actions the requester currently has at the community, this one included. For consent-fatigue display: an approver shown the twentieth request from one requester today should be able to see that it is the twentieth.\",\"minimum\":0,\"type\":\"integer\"},\"status\":{\"description\":\"`open` — awaiting decisions, or for `coolingOff` awaiting `landsAt`. `completed` — the threshold was met and the operation executed, a `coolingOff` operation landed, or, for `acknowledge`, every administrator acknowledged. `declined` — an eligible approver denied it. `expired` — it lapsed at `expiresAt`. `cancelled` — the requester withdrew it, or the community invalidated it (see `closedReason`). `failed` — the threshold was met or `landsAt` reached but the re-check at execution refused it, or execution itself failed; the operation did not take effect.\",\"enum\":[\"open\",\"completed\",\"declined\",\"expired\",\"cancelled\",\"failed\"],\"type\":\"string\"},\"summary\":{\"$ref\":\"#/$defs/Summary\"},\"threshold\":{\"description\":\"The number of distinct approvals the operation needs. Present for `approval`; absent otherwise (a `queue` decision is one decision by construction, `acknowledge` needs every remaining administrator, and `coolingOff` needs no approval at all).\",\"minimum\":1,\"type\":\"integer\"},\"typeUri\":{\"description\":\"The Type URI of the parked operation — the Trust Task the community will execute when the action completes (for `coolingOff`, when it lands). Together with `payload` it is exactly what will run. For `acknowledge`, the Type URI of the operation that already took effect; an operator's offline write, which is a command on the community's host and has no Trust Task of its own, is named by the record type `https://trusttasks.org/spec/vtc/operator/offline-write/0.1`, and `payload` is then that record.\",\"format\":\"uri\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"actionId\",\"category\",\"kind\",\"typeUri\",\"requester\",\"status\",\"createdAt\",\"approvals\",\"summary\",\"payload\",\"payloadDigest\",\"callerRole\"],\"title\":\"Action\",\"type\":\"object\"},\"ActionId\":{\"description\":\"Opaque, community-minted identifier of one action. A consumer MUST NOT parse or order it; it is compared for equality only. Long enough to be unguessable, because a show of an id the caller may not see is answered `notFound` and an enumerable id would turn that answer into an oracle.\",\"maxLength\":128,\"minLength\":16,\"pattern\":\"^[A-Za-z0-9._~:-]+$\",\"title\":\"ActionId\",\"type\":\"string\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Field\":{\"additionalProperties\":false,\"description\":\"One displayed value, with where it comes from and how to render it.\",\"properties\":{\"format\":{\"description\":\"How to render the value. `did` — a DID, shown in full or with a verified display name, never truncated to a prefix that two DIDs share. `capabilityList` — an array of capability names. `duration` — an ISO 8601 duration. `datetime` — an RFC 3339 date-time. `text` — anything else, rendered as literal text.\",\"enum\":[\"did\",\"capabilityList\",\"duration\",\"datetime\",\"text\"],\"type\":\"string\"},\"pointer\":{\"description\":\"RFC 6901 JSON Pointer into the action's `payload`. The empty string addresses the whole payload.\",\"maxLength\":512,\"pattern\":\"^(/([^~/]|~[01])*)*$\",\"type\":\"string\"},\"value\":{\"description\":\"The value found at `pointer` when the community rendered the summary. A renderer re-derives it from `payload` and refuses to render the action on any mismatch; it is carried so that a mismatch is detectable, not so that it can be trusted.\"}},\"required\":[\"pointer\",\"format\",\"value\"],\"title\":\"Field\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The action as the caller is entitled to see it. Failures use trust-task-error, not this shape.\",\"properties\":{\"action\":{\"$ref\":\"#/$defs/Action\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"action\"],\"title\":\"VTC Admin Actions — Show — response payload\",\"type\":\"object\"},\"Summary\":{\"additionalProperties\":false,\"description\":\"What an approver is shown, rendered from the summary template for the action's `kind`. Title and effect are the template's prose; the fields are the payload values that prose is about, each located by pointer so a renderer can verify it.\",\"properties\":{\"effect\":{\"description\":\"One or two sentences from the template saying what executing the operation will do.\",\"maxLength\":1024,\"type\":\"string\"},\"fields\":{\"additionalProperties\":{\"$ref\":\"#/$defs/Field\"},\"description\":\"Named values the template displays, keyed by a lowerCamelCase field name. Each locates its value in `payload` by JSON Pointer.\",\"propertyNames\":{\"maxLength\":64,\"pattern\":\"^[a-z][a-zA-Z0-9]*$\"},\"type\":\"object\"},\"templateDigest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Digest of the summary template this summary was rendered from, over its RFC 8785 (JCS) canonicalization. Pinned per `kind`: a renderer that holds the template for a kind refuses a summary naming a different digest, so the community cannot change what approvers are shown for a kind without that change being visible.\"},\"title\":{\"description\":\"One-line heading from the template. Prose only: a renderer MUST NOT present the action from this text without the fields.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"title\",\"fields\",\"templateDigest\"],\"title\":\"Summary\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/admin/actions/show/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Fetch one administrative action by its identifier — the read a requester follows after the community answers a gated operation with trust-task-next-step (continuation `proceed`, hint {actionId}). The enumeration sibling is vtc/admin/actions/list/0.2. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"actionId\":{\"$ref\":\"#/$defs/ActionId\",\"description\":\"The action to fetch — from a next-step hint, a list entry, or a notification.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"actionId\"],\"title\":\"VTC Admin Actions — Show — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -2652,7 +2080,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Action\": {\n      \"additionalProperties\": false,\n      \"description\": \"One parked administrative operation, as the caller is entitled to see it. The same action reads differently to different callers only in `challenge` and `callerRole`, which are per-caller.\",\n      \"properties\": {\n        \"actionId\": {\n          \"$ref\": \"#/$defs/ActionId\"\n        },\n        \"approvals\": {\n          \"description\": \"The decisions in favour recorded so far — approvals for `approval` and `queue`, acknowledgements for `acknowledge` — one entry per distinct subject, in the order recorded. Empty while none has landed, and always empty for `coolingOff`, which takes no decisions.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"at\": {\n                \"description\": \"When the decision was recorded.\",\n                \"format\": \"date-time\",\n                \"type\": \"string\"\n              },\n              \"subject\": {\n                \"description\": \"VID of the approver or acknowledger, as proven by the decision's own proof.\",\n                \"maxLength\": 2048,\n                \"minLength\": 1,\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"subject\",\n              \"at\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        },\n        \"approversRemaining\": {\n          \"description\": \"How many further distinct decisions the action needs while `open` — approvals for `approval`, acknowledgements for `acknowledge`. Lets a console say 'one more' without disclosing the eligible set. Absent for `coolingOff`, which waits on time, not on decisions.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"callerRole\": {\n          \"description\": \"The caller's relation to this action. `approver` — an eligible approver (whether or not already decided). `requester` — the party whose operation was parked. `acknowledger` — an administrator expected to acknowledge it. `subject` — the party a `coolingOff` operation acts on, shown it so that they learn of it before it lands; a subject can neither decide nor cancel it. `observer` — none of these; seen only through the audit-read capability on a `history` or `all` view.\",\n          \"enum\": [\n            \"approver\",\n            \"requester\",\n            \"acknowledger\",\n            \"subject\",\n            \"observer\"\n          ],\n          \"type\": \"string\"\n        },\n        \"cancellableBy\": {\n          \"description\": \"Who may withdraw the action with `vtc/admin/actions/cancel` while it is `open`. Present on every open `coolingOff` action, where it is `requester`: the operation lands unless its requester stops it, and nobody else — the subject included — can. A closed set so that a console can offer a cancel control without inferring it; future values would widen who may cancel and need a new version.\",\n          \"enum\": [\n            \"requester\"\n          ],\n          \"type\": \"string\"\n        },\n        \"category\": {\n          \"description\": \"`approval` — eligible approvers approve or decline, N-of-M; the operation executes when the threshold is met. `acknowledge` — an operation that already happened (an operator's offline or break-glass write) which every remaining administrator must acknowledge; there is nothing to approve or decline. `queue` — an existing human decision (for example a join review) surfaced in the same list, with a threshold of one. `coolingOff` — an operation with no eligible third party to consent, which lands by itself at `landsAt` unless its requester cancels it first; nobody approves, declines or acknowledges it.\",\n          \"enum\": [\n            \"approval\",\n            \"acknowledge\",\n            \"queue\",\n            \"coolingOff\"\n          ],\n          \"type\": \"string\"\n        },\n        \"challenge\": {\n          \"description\": \"Present ONLY on an action the CALLER may decide now — an `approval` or `queue` action on which the caller is an eligible approver who has not yet decided. Never present on `acknowledge` or `coolingOff`. Per-approver: two approvers are shown different challenges for the same action. Echoed verbatim in `task-consent/decision`'s `challenge`, which binds that decision to this approver and this action. Absent for everyone else, including the requester.\",\n          \"maxLength\": 256,\n          \"minLength\": 16,\n          \"type\": \"string\"\n        },\n        \"closedAt\": {\n          \"description\": \"When the action left `open`. Present exactly when `status` is not `open`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"closedReason\": {\n          \"description\": \"Why the action closed. Present exactly when `status` is not `open`. `invalidated` — the community closed it because something it depended on stopped holding before the threshold or `landsAt` (an approver or the requester lost standing, the target state moved); `failedRecheck` — the threshold was met or `landsAt` reached but the execution-time re-check refused; `landedAfterCoolingOff` — a `coolingOff` action reached `landsAt` uncancelled and its operation executed (`status: completed`).\",\n          \"enum\": [\n            \"thresholdMet\",\n            \"declined\",\n            \"expired\",\n            \"cancelledByRequester\",\n            \"invalidated\",\n            \"failedRecheck\",\n            \"acknowledged\",\n            \"landedAfterCoolingOff\"\n          ],\n          \"type\": \"string\"\n        },\n        \"createdAt\": {\n          \"description\": \"When the operation was parked.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When an open action lapses. ALWAYS present for `approval`, whose open life is bounded (72 hours by default; the community configures it between 15 minutes and 14 days). Absent for an `acknowledge` or `queue` action that does not expire, and ALWAYS absent for `coolingOff`, which does not lapse but lands — see `landsAt`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"kind\": {\n          \"description\": \"The community's name for what kind of operation is parked, dotted and lowerCamelCase (`acl.grant.authority`, `member.join.review`). Selects the summary template. The set is OPEN: a renderer that does not recognise a kind still renders `summary` from its fields.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"pattern\": \"^[a-z][a-zA-Z0-9.]*$\",\n          \"type\": \"string\"\n        },\n        \"landsAt\": {\n          \"description\": \"When a `coolingOff` action lands: the instant from which the community executes the parked operation, after its execution-time re-check, unless the requester cancelled first. Present exactly when `category` is `coolingOff`. It is a deadline for the requester's cancellation, not for anyone's approval, and it is fixed when the action is parked: neither the requester nor the subject can move it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"payload\": {\n          \"description\": \"The exact payload of the parked operation — the object `payloadDigest` is computed over and the one the community will execute. Carried so an approver can recompute the digest and re-derive every summary field from it rather than trusting the rendering (VTI-APV-013). Deliberately an open object: its shape is governed by the specification `typeUri` names, and a digest is checked over members exactly as received.\",\n          \"type\": \"object\"\n        },\n        \"payloadDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"Digest of `payload`, taken over its RFC 8785 (JCS) canonicalization. The community re-derives it from the payload it is about to execute and refuses on mismatch. The digest an approver signs over is the challenge-salted one of `task-consent/decision`, not this value; this one lets the approver check that `payload` is what was parked.\"\n        },\n        \"requester\": {\n          \"description\": \"VID of the party whose operation was parked. For `acknowledge`, the operator whose offline write is being acknowledged, where the community can attribute one. For `coolingOff`, the administrator whose operation will land — the only party who may cancel it.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"requesterOpenActions\": {\n          \"description\": \"How many open actions the requester currently has at the community, this one included. For consent-fatigue display: an approver shown the twentieth request from one requester today should be able to see that it is the twentieth.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"status\": {\n          \"description\": \"`open` — awaiting decisions, or for `coolingOff` awaiting `landsAt`. `completed` — the threshold was met and the operation executed, a `coolingOff` operation landed, or, for `acknowledge`, every administrator acknowledged. `declined` — an eligible approver denied it. `expired` — it lapsed at `expiresAt`. `cancelled` — the requester withdrew it, or the community invalidated it (see `closedReason`). `failed` — the threshold was met or `landsAt` reached but the re-check at execution refused it, or execution itself failed; the operation did not take effect.\",\n          \"enum\": [\n            \"open\",\n            \"completed\",\n            \"declined\",\n            \"expired\",\n            \"cancelled\",\n            \"failed\"\n          ],\n          \"type\": \"string\"\n        },\n        \"summary\": {\n          \"$ref\": \"#/$defs/Summary\"\n        },\n        \"threshold\": {\n          \"description\": \"The number of distinct approvals the operation needs. Present for `approval`; absent otherwise (a `queue` decision is one decision by construction, `acknowledge` needs every remaining administrator, and `coolingOff` needs no approval at all).\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"typeUri\": {\n          \"description\": \"The Type URI of the parked operation — the Trust Task the community will execute when the action completes (for `coolingOff`, when it lands). Together with `payload` it is exactly what will run. For `acknowledge`, the Type URI of the operation that already took effect; an operator's offline write, which is a command on the community's host and has no Trust Task of its own, is named by the record type `https://trusttasks.org/spec/vtc/operator/offline-write/0.1`, and `payload` is then that record.\",\n          \"format\": \"uri\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"actionId\",\n        \"category\",\n        \"kind\",\n        \"typeUri\",\n        \"requester\",\n        \"status\",\n        \"createdAt\",\n        \"approvals\",\n        \"summary\",\n        \"payload\",\n        \"payloadDigest\",\n        \"callerRole\"\n      ],\n      \"title\": \"Action\",\n      \"type\": \"object\"\n    },\n    \"ActionId\": {\n      \"description\": \"Opaque, community-minted identifier of one action. A consumer MUST NOT parse or order it; it is compared for equality only. Long enough to be unguessable, because a show of an id the caller may not see is answered `notFound` and an enumerable id would turn that answer into an oracle.\",\n      \"maxLength\": 128,\n      \"minLength\": 16,\n      \"pattern\": \"^[A-Za-z0-9._~:-]+$\",\n      \"title\": \"ActionId\",\n      \"type\": \"string\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Field\": {\n      \"additionalProperties\": false,\n      \"description\": \"One displayed value, with where it comes from and how to render it.\",\n      \"properties\": {\n        \"format\": {\n          \"description\": \"How to render the value. `did` — a DID, shown in full or with a verified display name, never truncated to a prefix that two DIDs share. `capabilityList` — an array of capability names. `duration` — an ISO 8601 duration. `datetime` — an RFC 3339 date-time. `text` — anything else, rendered as literal text.\",\n          \"enum\": [\n            \"did\",\n            \"capabilityList\",\n            \"duration\",\n            \"datetime\",\n            \"text\"\n          ],\n          \"type\": \"string\"\n        },\n        \"pointer\": {\n          \"description\": \"RFC 6901 JSON Pointer into the action's `payload`. The empty string addresses the whole payload.\",\n          \"maxLength\": 512,\n          \"pattern\": \"^(/([^~/]|~[01])*)*$\",\n          \"type\": \"string\"\n        },\n        \"value\": {\n          \"description\": \"The value found at `pointer` when the community rendered the summary. A renderer re-derives it from `payload` and refuses to render the action on any mismatch; it is carried so that a mismatch is detectable, not so that it can be trusted.\"\n        }\n      },\n      \"required\": [\n        \"pointer\",\n        \"format\",\n        \"value\"\n      ],\n      \"title\": \"Field\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The action as the caller is entitled to see it. Failures use trust-task-error, not this shape.\",\n      \"properties\": {\n        \"action\": {\n          \"$ref\": \"#/$defs/Action\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"action\"\n      ],\n      \"title\": \"VTC Admin Actions — Show — response payload\",\n      \"type\": \"object\"\n    },\n    \"Summary\": {\n      \"additionalProperties\": false,\n      \"description\": \"What an approver is shown, rendered from the summary template for the action's `kind`. Title and effect are the template's prose; the fields are the payload values that prose is about, each located by pointer so a renderer can verify it.\",\n      \"properties\": {\n        \"effect\": {\n          \"description\": \"One or two sentences from the template saying what executing the operation will do.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"fields\": {\n          \"additionalProperties\": {\n            \"$ref\": \"#/$defs/Field\"\n          },\n          \"description\": \"Named values the template displays, keyed by a lowerCamelCase field name. Each locates its value in `payload` by JSON Pointer.\",\n          \"propertyNames\": {\n            \"maxLength\": 64,\n            \"pattern\": \"^[a-z][a-zA-Z0-9]*$\"\n          },\n          \"type\": \"object\"\n        },\n        \"templateDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"Digest of the summary template this summary was rendered from, over its RFC 8785 (JCS) canonicalization. Pinned per `kind`: a renderer that holds the template for a kind refuses a summary naming a different digest, so the community cannot change what approvers are shown for a kind without that change being visible.\"\n        },\n        \"title\": {\n          \"description\": \"One-line heading from the template. Prose only: a renderer MUST NOT present the action from this text without the fields.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"title\",\n        \"fields\",\n        \"templateDigest\"\n      ],\n      \"title\": \"Summary\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Action\":{\"additionalProperties\":false,\"description\":\"One parked administrative operation, as the caller is entitled to see it. The same action reads differently to different callers only in `challenge` and `callerRole`, which are per-caller.\",\"properties\":{\"actionId\":{\"$ref\":\"#/$defs/ActionId\"},\"approvals\":{\"description\":\"The decisions in favour recorded so far — approvals for `approval` and `queue`, acknowledgements for `acknowledge` — one entry per distinct subject, in the order recorded. Empty while none has landed, and always empty for `coolingOff`, which takes no decisions.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"at\":{\"description\":\"When the decision was recorded.\",\"format\":\"date-time\",\"type\":\"string\"},\"subject\":{\"description\":\"VID of the approver or acknowledger, as proven by the decision's own proof.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"subject\",\"at\"],\"type\":\"object\"},\"type\":\"array\"},\"approversRemaining\":{\"description\":\"How many further distinct decisions the action needs while `open` — approvals for `approval`, acknowledgements for `acknowledge`. Lets a console say 'one more' without disclosing the eligible set. Absent for `coolingOff`, which waits on time, not on decisions.\",\"minimum\":0,\"type\":\"integer\"},\"callerRole\":{\"description\":\"The caller's relation to this action. `approver` — an eligible approver (whether or not already decided). `requester` — the party whose operation was parked. `acknowledger` — an administrator expected to acknowledge it. `subject` — the party a `coolingOff` operation acts on, shown it so that they learn of it before it lands; a subject can neither decide nor cancel it. `observer` — none of these; seen only through the audit-read capability on a `history` or `all` view.\",\"enum\":[\"approver\",\"requester\",\"acknowledger\",\"subject\",\"observer\"],\"type\":\"string\"},\"cancellableBy\":{\"description\":\"Who may withdraw the action with `vtc/admin/actions/cancel` while it is `open`. Present on every open `coolingOff` action, where it is `requester`: the operation lands unless its requester stops it, and nobody else — the subject included — can. A closed set so that a console can offer a cancel control without inferring it; future values would widen who may cancel and need a new version.\",\"enum\":[\"requester\"],\"type\":\"string\"},\"category\":{\"description\":\"`approval` — eligible approvers approve or decline, N-of-M; the operation executes when the threshold is met. `acknowledge` — an operation that already happened (an operator's offline or break-glass write) which every remaining administrator must acknowledge; there is nothing to approve or decline. `queue` — an existing human decision (for example a join review) surfaced in the same list, with a threshold of one. `coolingOff` — an operation with no eligible third party to consent, which lands by itself at `landsAt` unless its requester cancels it first; nobody approves, declines or acknowledges it.\",\"enum\":[\"approval\",\"acknowledge\",\"queue\",\"coolingOff\"],\"type\":\"string\"},\"challenge\":{\"description\":\"Present ONLY on an action the CALLER may decide now — an `approval` or `queue` action on which the caller is an eligible approver who has not yet decided. Never present on `acknowledge` or `coolingOff`. Per-approver: two approvers are shown different challenges for the same action. Echoed verbatim in `task-consent/decision`'s `challenge`, which binds that decision to this approver and this action. Absent for everyone else, including the requester.\",\"maxLength\":256,\"minLength\":16,\"type\":\"string\"},\"closedAt\":{\"description\":\"When the action left `open`. Present exactly when `status` is not `open`.\",\"format\":\"date-time\",\"type\":\"string\"},\"closedReason\":{\"description\":\"Why the action closed. Present exactly when `status` is not `open`. `invalidated` — the community closed it because something it depended on stopped holding before the threshold or `landsAt` (an approver or the requester lost standing, the target state moved); `failedRecheck` — the threshold was met or `landsAt` reached but the execution-time re-check refused; `landedAfterCoolingOff` — a `coolingOff` action reached `landsAt` uncancelled and its operation executed (`status: completed`).\",\"enum\":[\"thresholdMet\",\"declined\",\"expired\",\"cancelledByRequester\",\"invalidated\",\"failedRecheck\",\"acknowledged\",\"landedAfterCoolingOff\"],\"type\":\"string\"},\"createdAt\":{\"description\":\"When the operation was parked.\",\"format\":\"date-time\",\"type\":\"string\"},\"expiresAt\":{\"description\":\"When an open action lapses. ALWAYS present for `approval`, whose open life is bounded (72 hours by default; the community configures it between 15 minutes and 14 days). Absent for an `acknowledge` or `queue` action that does not expire, and ALWAYS absent for `coolingOff`, which does not lapse but lands — see `landsAt`.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"kind\":{\"description\":\"The community's name for what kind of operation is parked, dotted and lowerCamelCase (`acl.grant.authority`, `member.join.review`). Selects the summary template. The set is OPEN: a renderer that does not recognise a kind still renders `summary` from its fields.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[a-z][a-zA-Z0-9.]*$\",\"type\":\"string\"},\"landsAt\":{\"description\":\"When a `coolingOff` action lands: the instant from which the community executes the parked operation, after its execution-time re-check, unless the requester cancelled first. Present exactly when `category` is `coolingOff`. It is a deadline for the requester's cancellation, not for anyone's approval, and it is fixed when the action is parked: neither the requester nor the subject can move it.\",\"format\":\"date-time\",\"type\":\"string\"},\"payload\":{\"description\":\"The exact payload of the parked operation — the object `payloadDigest` is computed over and the one the community will execute. Carried so an approver can recompute the digest and re-derive every summary field from it rather than trusting the rendering (VTI-APV-013). Deliberately an open object: its shape is governed by the specification `typeUri` names, and a digest is checked over members exactly as received.\",\"type\":\"object\"},\"payloadDigest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Digest of `payload`, taken over its RFC 8785 (JCS) canonicalization. The community re-derives it from the payload it is about to execute and refuses on mismatch. The digest an approver signs over is the challenge-salted one of `task-consent/decision`, not this value; this one lets the approver check that `payload` is what was parked.\"},\"requester\":{\"description\":\"VID of the party whose operation was parked. For `acknowledge`, the operator whose offline write is being acknowledged, where the community can attribute one. For `coolingOff`, the administrator whose operation will land — the only party who may cancel it.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"requesterOpenActions\":{\"description\":\"How many open actions the requester currently has at the community, this one included. For consent-fatigue display: an approver shown the twentieth request from one requester today should be able to see that it is the twentieth.\",\"minimum\":0,\"type\":\"integer\"},\"status\":{\"description\":\"`open` — awaiting decisions, or for `coolingOff` awaiting `landsAt`. `completed` — the threshold was met and the operation executed, a `coolingOff` operation landed, or, for `acknowledge`, every administrator acknowledged. `declined` — an eligible approver denied it. `expired` — it lapsed at `expiresAt`. `cancelled` — the requester withdrew it, or the community invalidated it (see `closedReason`). `failed` — the threshold was met or `landsAt` reached but the re-check at execution refused it, or execution itself failed; the operation did not take effect.\",\"enum\":[\"open\",\"completed\",\"declined\",\"expired\",\"cancelled\",\"failed\"],\"type\":\"string\"},\"summary\":{\"$ref\":\"#/$defs/Summary\"},\"threshold\":{\"description\":\"The number of distinct approvals the operation needs. Present for `approval`; absent otherwise (a `queue` decision is one decision by construction, `acknowledge` needs every remaining administrator, and `coolingOff` needs no approval at all).\",\"minimum\":1,\"type\":\"integer\"},\"typeUri\":{\"description\":\"The Type URI of the parked operation — the Trust Task the community will execute when the action completes (for `coolingOff`, when it lands). Together with `payload` it is exactly what will run. For `acknowledge`, the Type URI of the operation that already took effect; an operator's offline write, which is a command on the community's host and has no Trust Task of its own, is named by the record type `https://trusttasks.org/spec/vtc/operator/offline-write/0.1`, and `payload` is then that record.\",\"format\":\"uri\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"actionId\",\"category\",\"kind\",\"typeUri\",\"requester\",\"status\",\"createdAt\",\"approvals\",\"summary\",\"payload\",\"payloadDigest\",\"callerRole\"],\"title\":\"Action\",\"type\":\"object\"},\"ActionId\":{\"description\":\"Opaque, community-minted identifier of one action. A consumer MUST NOT parse or order it; it is compared for equality only. Long enough to be unguessable, because a show of an id the caller may not see is answered `notFound` and an enumerable id would turn that answer into an oracle.\",\"maxLength\":128,\"minLength\":16,\"pattern\":\"^[A-Za-z0-9._~:-]+$\",\"title\":\"ActionId\",\"type\":\"string\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Field\":{\"additionalProperties\":false,\"description\":\"One displayed value, with where it comes from and how to render it.\",\"properties\":{\"format\":{\"description\":\"How to render the value. `did` — a DID, shown in full or with a verified display name, never truncated to a prefix that two DIDs share. `capabilityList` — an array of capability names. `duration` — an ISO 8601 duration. `datetime` — an RFC 3339 date-time. `text` — anything else, rendered as literal text.\",\"enum\":[\"did\",\"capabilityList\",\"duration\",\"datetime\",\"text\"],\"type\":\"string\"},\"pointer\":{\"description\":\"RFC 6901 JSON Pointer into the action's `payload`. The empty string addresses the whole payload.\",\"maxLength\":512,\"pattern\":\"^(/([^~/]|~[01])*)*$\",\"type\":\"string\"},\"value\":{\"description\":\"The value found at `pointer` when the community rendered the summary. A renderer re-derives it from `payload` and refuses to render the action on any mismatch; it is carried so that a mismatch is detectable, not so that it can be trusted.\"}},\"required\":[\"pointer\",\"format\",\"value\"],\"title\":\"Field\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The action as the caller is entitled to see it. Failures use trust-task-error, not this shape.\",\"properties\":{\"action\":{\"$ref\":\"#/$defs/Action\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"action\"],\"title\":\"VTC Admin Actions — Show — response payload\",\"type\":\"object\"},\"Summary\":{\"additionalProperties\":false,\"description\":\"What an approver is shown, rendered from the summary template for the action's `kind`. Title and effect are the template's prose; the fields are the payload values that prose is about, each located by pointer so a renderer can verify it.\",\"properties\":{\"effect\":{\"description\":\"One or two sentences from the template saying what executing the operation will do.\",\"maxLength\":1024,\"type\":\"string\"},\"fields\":{\"additionalProperties\":{\"$ref\":\"#/$defs/Field\"},\"description\":\"Named values the template displays, keyed by a lowerCamelCase field name. Each locates its value in `payload` by JSON Pointer.\",\"propertyNames\":{\"maxLength\":64,\"pattern\":\"^[a-z][a-zA-Z0-9]*$\"},\"type\":\"object\"},\"templateDigest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Digest of the summary template this summary was rendered from, over its RFC 8785 (JCS) canonicalization. Pinned per `kind`: a renderer that holds the template for a kind refuses a summary naming a different digest, so the community cannot change what approvers are shown for a kind without that change being visible.\"},\"title\":{\"description\":\"One-line heading from the template. Prose only: a renderer MUST NOT present the action from this text without the fields.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"title\",\"fields\",\"templateDigest\"],\"title\":\"Summary\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

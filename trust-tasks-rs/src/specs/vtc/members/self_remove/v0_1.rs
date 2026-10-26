@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,32 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/members/self-remove/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "properties": {
-///    "disposition": {
-///      "description": "How the caller's record is handled on removal. Omitted = the community's policy default.",
-///      "type": "string",
-///      "enum": [
-///        "purge",
-///        "tombstone",
-///        "historical",
-///        "policydefault"
-///      ]
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -193,21 +143,6 @@ impl Payload {
 }
 ///How the caller's record is handled on removal. Omitted = the community's policy default.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "How the caller's record is handled on removal. Omitted = the community's policy default.",
-///  "type": "string",
-///  "enum": [
-///    "purge",
-///    "tombstone",
-///    "historical",
-///    "policydefault"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -277,44 +212,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadDisposition {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "did",
-///    "disposition",
-///    "removed"
-///  ],
-///  "properties": {
-///    "did": {
-///      "description": "The removed member (the caller).",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "disposition": {
-///      "description": "The disposition actually applied (policydefault resolved to a concrete one).",
-///      "type": "string",
-///      "enum": [
-///        "purge",
-///        "tombstone",
-///        "historical"
-///      ]
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "removed": {
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -334,16 +231,6 @@ impl Response {
 }
 ///The removed member (the caller).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The removed member (the caller).",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseDid(::std::string::String);
@@ -403,20 +290,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseDid {
 }
 ///The disposition actually applied (policydefault resolved to a concrete one).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The disposition actually applied (policydefault resolved to a concrete one).",
-///  "type": "string",
-///  "enum": [
-///    "purge",
-///    "tombstone",
-///    "historical"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -624,7 +497,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"did\": {\n          \"description\": \"The removed member (the caller).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"disposition\": {\n          \"description\": \"The disposition actually applied (policydefault resolved to a concrete one).\",\n          \"enum\": [\n            \"purge\",\n            \"tombstone\",\n            \"historical\"\n          ],\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"removed\": {\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"disposition\",\n        \"removed\"\n      ],\n      \"title\": \"VTC Members Self-Remove — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/members/self-remove/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"disposition\": {\n      \"description\": \"How the caller's record is handled on removal. Omitted = the community's policy default.\",\n      \"enum\": [\n        \"purge\",\n        \"tombstone\",\n        \"historical\",\n        \"policydefault\"\n      ],\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"title\": \"VTC Members Self-Remove — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"did\":{\"description\":\"The removed member (the caller).\",\"minLength\":1,\"type\":\"string\"},\"disposition\":{\"description\":\"The disposition actually applied (policydefault resolved to a concrete one).\",\"enum\":[\"purge\",\"tombstone\",\"historical\"],\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"removed\":{\"type\":\"boolean\"}},\"required\":[\"did\",\"disposition\",\"removed\"],\"title\":\"VTC Members Self-Remove — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/members/self-remove/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"disposition\":{\"description\":\"How the caller's record is handled on removal. Omitted = the community's policy default.\",\"enum\":[\"purge\",\"tombstone\",\"historical\",\"policydefault\"],\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"title\":\"VTC Members Self-Remove — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -634,7 +507,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"did\": {\n          \"description\": \"The removed member (the caller).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"disposition\": {\n          \"description\": \"The disposition actually applied (policydefault resolved to a concrete one).\",\n          \"enum\": [\n            \"purge\",\n            \"tombstone\",\n            \"historical\"\n          ],\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"removed\": {\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"disposition\",\n        \"removed\"\n      ],\n      \"title\": \"VTC Members Self-Remove — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"did\":{\"description\":\"The removed member (the caller).\",\"minLength\":1,\"type\":\"string\"},\"disposition\":{\"description\":\"The disposition actually applied (policydefault resolved to a concrete one).\",\"enum\":[\"purge\",\"tombstone\",\"historical\"],\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"removed\":{\"type\":\"boolean\"}},\"required\":[\"did\",\"disposition\",\"removed\"],\"title\":\"VTC Members Self-Remove — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

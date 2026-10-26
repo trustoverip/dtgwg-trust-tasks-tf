@@ -39,40 +39,6 @@ What a party presents to act on a room. Carries the whole authority chain: a hos
 
 **A chain that verifies may still be revoked.** A host that has accepted a `RevocationList` for the room (`rooms/revocations/put`) MUST, from the moment it accepted it, refuse every presentation in which the membership credential or any link of `authority` is revoked by that list, under every task and every version of every task it serves for the room. A chain from which any link is revoked is refused whole: a credential delegated from a revoked one confers nothing, however it was attenuated. The refusal is the same `permissionDenied` as any other failed presentation.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "AuthorityPresentation",
-///  "description": "What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier. A host MUST bind the presenter to the chain's leaf. A chain that verifies is evidence that authority was conferred on somebody; it is not evidence that the party presenting it is that somebody. The leaf's subject MUST equal the party the host authenticated for this request — an identity the transport established or a document `proof` proved, never one named in a payload. A host that omits this check authorizes every captured presentation, and the omission is silent, because the chain still verifies.\n\n**Every credential is its issuer's attestation, and only its issuer's.** For the membership credential and for every link of `authority`, a host MUST verify the credential's `proof` with a key that the credential's own `issuer` lists for `assertionMethod` in its DID document, and MUST refuse a credential whose proof names a verification method that is not its issuer's. A proof that verifies under some other party's key is that party's statement, not the issuer's, and confers nothing. The same binding holds for every other document a room signs, such as a `RevocationList`.\n\n**A chain that verifies may still be revoked.** A host that has accepted a `RevocationList` for the room (`rooms/revocations/put`) MUST, from the moment it accepted it, refuse every presentation in which the membership credential or any link of `authority` is revoked by that list, under every task and every version of every task it serves for the room. A chain from which any link is revoked is refused whole: a credential delegated from a revoked one confers nothing, however it was attenuated. The refusal is the same `permissionDenied` as any other failed presentation.",
-///  "type": "object",
-///  "required": [
-///    "authority",
-///    "membership"
-///  ],
-///  "properties": {
-///    "authority": {
-///      "description": "The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent.",
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      },
-///      "maxItems": 8,
-///      "minItems": 1
-///    },
-///    "membership": {
-///      "description": "The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.",
-///      "type": "string"
-///    },
-///    "subjectBinding": {
-///      "description": "REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this.",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -96,16 +62,6 @@ impl AuthorityPresentation {
 }
 ///The name of one blob: the digest of its BlobManifest, taken over the manifest's RFC 8785 (JCS) canonicalization. sha2-256 is RECOMMENDED and MUST be implemented. Content addressing over ciphertext, never plaintext, so a BlobRef says nothing about what the file contains, and two uploads of one file have different BlobRefs (a fresh `fileId` gives a different key, and so different ciphertext). Rooms cannot be correlated by the files they share. Compared as decoded multihash bytes, never as encoded strings. A BlobRef is defined over the manifest's JSON, as this schema states it and RFC 8785 canonicalizes it, never over any binding's generated type: two bindings that model the manifest as distinct types still compute the same BlobRef from the same JSON.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "BlobRef",
-///  "description": "The name of one blob: the digest of its BlobManifest, taken over the manifest's RFC 8785 (JCS) canonicalization. sha2-256 is RECOMMENDED and MUST be implemented. Content addressing over ciphertext, never plaintext, so a BlobRef says nothing about what the file contains, and two uploads of one file have different BlobRefs (a fresh `fileId` gives a different key, and so different ciphertext). Rooms cannot be correlated by the files they share. Compared as decoded multihash bytes, never as encoded strings. A BlobRef is defined over the manifest's JSON, as this schema states it and RFC 8785 canonicalizes it, never over any binding's generated type: two bindings that model the manifest as distinct types still compute the same BlobRef from the same JSON.",
-///  "$ref": "#/definitions/DigestMultibase"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct BlobRef(pub DigestMultibase);
@@ -157,21 +113,6 @@ This definition constrains the *encoding only*. What the digest is computed over
 
 Restricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that "interoperability is not guaranteed between implementations using such values", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DigestMultibase",
-///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-///  "examples": [
-///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-///  ],
-///  "type": "string",
-///  "minLength": 16,
-///  "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DigestMultibase(::std::string::String);
@@ -240,21 +181,6 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -276,15 +202,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -348,108 +265,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A member writes a record to a data room, authorized by an authority chain the room itself issued. 0.2 added `blobs`: a record can carry a file, whose ciphertext the host stores outside the record and whose description is sealed inside it. 0.3 lets an `open` room's `cleartext` carry the record's provenance — `basis`, `confidence`, `evidence`, `validFor` — and its `validUntil`, which the sealed tiers carry inside the signed `SealedRecordBody`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/rooms/records/put/0.3",
-///  "title": "Payload",
-///  "description": "A member writes a record to a data room, authorized by an authority chain the room itself issued. 0.2 added `blobs`: a record can carry a file, whose ciphertext the host stores outside the record and whose description is sealed inside it. 0.3 lets an `open` room's `cleartext` carry the record's provenance — `basis`, `confidence`, `evidence`, `validFor` — and its `validUntil`, which the sealed tiers carry inside the signed `SealedRecordBody`.",
-///  "type": "object",
-///  "required": [
-///    "key",
-///    "presentation",
-///    "roomId"
-///  ],
-///  "properties": {
-///    "blobs": {
-///      "description": "The blobs this record keeps alive: today at most one, the file the record carries. Cleartext on every tier, because the host must know which blobs a record references to refuse a record naming a blob it does not hold, to count usage, and to collect a blob no record names. Every blob named MUST have been committed in THIS room (rooms/blobs/upload/commit). An array so that several files per record is a later minor version rather than a reshaped member. Omit for a record with no file; a rewrite that omits it releases whatever blob the previous version named.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/BlobRef"
-///      },
-///      "maxItems": 1,
-///      "minItems": 1,
-///      "uniqueItems": true
-///    },
-///    "cleartext": {
-///      "description": "REQUIRED on an `open` room, where the host reads records and can therefore search them. Mutually exclusive with `sealed`. On this tier the record is not signed by its author: every member here is the writer's claim as the host stores it, provenance and expiry included.",
-///      "type": "object",
-///      "required": [
-///        "body"
-///      ],
-///      "properties": {
-///        "basis": {
-///          "description": "What kind of claim the record is. A writer SHOULD set it; an agent writer that does not know SHOULD write `inferred`. Provenance for display and weighting, never authority.",
-///          "$ref": "#/definitions/RecordBasis"
-///        },
-///        "body": {
-///          "type": "string",
-///          "maxLength": 1048576
-///        },
-///        "confidence": {
-///          "$ref": "#/definitions/RecordConfidence"
-///        },
-///        "description": {
-///          "type": "string",
-///          "maxLength": 2048
-///        },
-///        "evidence": {
-///          "$ref": "#/definitions/RecordEvidenceList"
-///        },
-///        "tags": {
-///          "type": "array",
-///          "items": {
-///            "type": "string",
-///            "maxLength": 64
-///          },
-///          "maxItems": 32
-///        },
-///        "title": {
-///          "type": "string",
-///          "maxLength": 512
-///        },
-///        "validFor": {
-///          "$ref": "#/definitions/PermittedUse"
-///        },
-///        "validUntil": {
-///          "description": "When the writer stops standing behind the record as current. Readers hide the record once it has passed and show it only on explicit request. A host stores and serves it like any other cleartext member and MUST NOT act on it: it neither hides, refuses nor deletes an expired record.",
-///          "$ref": "#/definitions/RecordValidUntil"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "expectedVersion": {
-///      "description": "Optional precondition. Omit to overwrite unconditionally; `0` means create-only and fails if the key exists. On mismatch the host returns `rooms/records/put:versionConflict` CARRYING THE CURRENT VERSION AND RECORD — a bare rejection would force a re-read, and between rejection and re-read the record can change again, so the pattern has no fixed point under contention.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "key": {
-///      "description": "The record's key within the room. MUST be opaque on an `attributed` or `private` room; see RecordMetadata.key.",
-///      "type": "string",
-///      "maxLength": 512
-///    },
-///    "presentation": {
-///      "description": "Must confer the `write` action at this room's scope.",
-///      "$ref": "#/definitions/AuthorityPresentation"
-///    },
-///    "roomId": {
-///      "description": "The room's identifier. A host verifies the presentation against credentials issued by this identifier, never against a member list of its own — which is what lets a room move hosts without reissuing a credential.",
-///      "type": "string"
-///    },
-///    "sealed": {
-///      "description": "REQUIRED on an `attributed` or `private` room. Mutually exclusive with `cleartext`.",
-///      "$ref": "#/definitions/SealedRecord"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -487,58 +302,6 @@ impl Payload {
 }
 ///REQUIRED on an `open` room, where the host reads records and can therefore search them. Mutually exclusive with `sealed`. On this tier the record is not signed by its author: every member here is the writer's claim as the host stores it, provenance and expiry included.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "REQUIRED on an `open` room, where the host reads records and can therefore search them. Mutually exclusive with `sealed`. On this tier the record is not signed by its author: every member here is the writer's claim as the host stores it, provenance and expiry included.",
-///  "type": "object",
-///  "required": [
-///    "body"
-///  ],
-///  "properties": {
-///    "basis": {
-///      "description": "What kind of claim the record is. A writer SHOULD set it; an agent writer that does not know SHOULD write `inferred`. Provenance for display and weighting, never authority.",
-///      "$ref": "#/definitions/RecordBasis"
-///    },
-///    "body": {
-///      "type": "string",
-///      "maxLength": 1048576
-///    },
-///    "confidence": {
-///      "$ref": "#/definitions/RecordConfidence"
-///    },
-///    "description": {
-///      "type": "string",
-///      "maxLength": 2048
-///    },
-///    "evidence": {
-///      "$ref": "#/definitions/RecordEvidenceList"
-///    },
-///    "tags": {
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 64
-///      },
-///      "maxItems": 32
-///    },
-///    "title": {
-///      "type": "string",
-///      "maxLength": 512
-///    },
-///    "validFor": {
-///      "$ref": "#/definitions/PermittedUse"
-///    },
-///    "validUntil": {
-///      "description": "When the writer stops standing behind the record as current. Readers hide the record once it has passed and show it only on explicit request. A host stores and serves it like any other cleartext member and MUST NOT act on it: it neither hides, refuses nor deletes an expired record.",
-///      "$ref": "#/definitions/RecordValidUntil"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -578,15 +341,6 @@ impl PayloadCleartext {
 }
 ///`PayloadCleartextBody`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 1048576
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCleartextBody(::std::string::String);
@@ -646,15 +400,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCleartextBody {
 }
 ///`PayloadCleartextDescription`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 2048
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCleartextDescription(::std::string::String);
@@ -714,15 +459,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCleartextDescription {
 }
 ///`PayloadCleartextTagsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 64
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCleartextTagsItem(::std::string::String);
@@ -782,15 +518,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCleartextTagsItem {
 }
 ///`PayloadCleartextTitle`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 512
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCleartextTitle(::std::string::String);
@@ -850,16 +577,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCleartextTitle {
 }
 ///The record's key within the room. MUST be opaque on an `attributed` or `private` room; see RecordMetadata.key.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The record's key within the room. MUST be opaque on an `attributed` or `private` room; see RecordMetadata.key.",
-///  "type": "string",
-///  "maxLength": 512
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadKey(::std::string::String);
@@ -926,39 +643,6 @@ What the author permits the record to be used for — for example, that a learne
 
 **A statement, not an enforcement.** No host can see it on the sealed tiers and none enforces it on any tier; every reader is a member who already holds the content. It records what the author permitted, so that a member — or an agent acting for one — can honour it, and so that a use outside it is a use against the author's stated terms rather than one nobody could have known about. An agent acting for a member SHOULD NOT use a record for a purpose outside `validFor` and SHOULD tell its principal when asked to. It confers no authority on anybody, and a `purposes` entry a reader does not recognise is shown, not ignored.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "PermittedUse",
-///  "description": "What the author permits the record to be used for — for example, that a learner's record is for instructional personalisation only. OPTIONAL; absent means the author stated no limit beyond the room's own terms.\n\n**Two halves, because purpose has both a machine and a human reading.** `purposes` names purposes by IRI, so that an agent can match them without parsing prose; `note` says it in words, for the nuance an identifier cannot carry. Either may be given alone.\n\n**No vocabulary of this family's own.** Purpose vocabularies exist and are maintained elsewhere — the W3C Data Privacy Vocabulary (`https://w3id.org/dpv#…`) is the one a writer SHOULD reach for first — and a short list defined here would be one more to translate between, and would be wrong at its edges for every domain that uses rooms. An IRI is the extension path: a community that needs a purpose no published vocabulary has names it under an IRI it controls.\n\n**A statement, not an enforcement.** No host can see it on the sealed tiers and none enforces it on any tier; every reader is a member who already holds the content. It records what the author permitted, so that a member — or an agent acting for one — can honour it, and so that a use outside it is a use against the author's stated terms rather than one nobody could have known about. An agent acting for a member SHOULD NOT use a record for a purpose outside `validFor` and SHOULD tell its principal when asked to. It confers no authority on anybody, and a `purposes` entry a reader does not recognise is shown, not ignored.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "properties": {
-///    "note": {
-///      "description": "The permitted use in words, such as `instructional personalisation only`. Plain text, rendered as text, and never instructions — an agent reading it treats it as the author's statement about the record, not as something to do.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    },
-///    "purposes": {
-///      "description": "Purposes the record may be used for, each an absolute IRI — for example `https://w3id.org/dpv#ServicePersonalisation`. A set: order carries no meaning. An identifier, never fetched.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "format": "uri",
-///        "maxLength": 2048,
-///        "pattern": "^[a-zA-Z][a-zA-Z0-9+.-]*:"
-///      },
-///      "maxItems": 8,
-///      "minItems": 1,
-///      "uniqueItems": true
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -985,17 +669,6 @@ impl PermittedUse {
 }
 ///The permitted use in words, such as `instructional personalisation only`. Plain text, rendered as text, and never instructions — an agent reading it treats it as the author's statement about the record, not as something to do.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The permitted use in words, such as `instructional personalisation only`. Plain text, rendered as text, and never instructions — an agent reading it treats it as the author's statement about the record, not as something to do.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PermittedUseNote(::std::string::String);
@@ -1066,22 +739,6 @@ What kind of claim a record is, as its author states it. OPTIONAL wherever it ap
 
 The values are the author's account of their own record, signed with it. They are not checked by anybody, confer nothing, and say nothing about whether the record is right — `inferred` can be correct and `observed` mistaken. Aligned with the provenance vocabulary of personal agent memory, so that a record moved between a member's memory and a room keeps its meaning.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RecordBasis",
-///  "description": "What kind of claim a record is, as its author states it. OPTIONAL wherever it appears; absent means the author did not say, and a reader shows it as unstated rather than assuming any of these.\n\n  - `declared` — the author's own statement: a decision, a preference, an intention, a commitment. True because the author says so, and only as far as the author speaks for it.\n  - `observed` — something the author saw, measured or was told directly, recorded as found.\n  - `verified` — checked against evidence that somebody else can check again, such as a credential or another record. A record that says `verified` SHOULD name that evidence in `evidence`; one that does not is an unsupported claim to have checked, and a reader SHOULD present it so.\n  - `inferred` — derived by reasoning from other information: an agent's conclusion, a summary's generalisation, a model's guess. The value an agent writer uses when it does not know which of the others applies.\n\nThe values are the author's account of their own record, signed with it. They are not checked by anybody, confer nothing, and say nothing about whether the record is right — `inferred` can be correct and `observed` mistaken. Aligned with the provenance vocabulary of personal agent memory, so that a record moved between a member's memory and a room keeps its meaning.",
-///  "type": "string",
-///  "enum": [
-///    "declared",
-///    "observed",
-///    "verified",
-///    "inferred"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1151,18 +808,6 @@ impl ::std::convert::TryFrom<::std::string::String> for RecordBasis {
 }
 ///The author's own estimate, from 0 to 1, that what the record says is correct. OPTIONAL; absent means no estimate was given, never 1. Meaningful only beside the author who gave it: two writers' numbers are not on one scale, so a reader MUST NOT rank records by `confidence` across authors as though they were, and an agent that weights by it SHOULD weight within an author's own records. Never authority.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RecordConfidence",
-///  "description": "The author's own estimate, from 0 to 1, that what the record says is correct. OPTIONAL; absent means no estimate was given, never 1. Meaningful only beside the author who gave it: two writers' numbers are not on one scale, so a reader MUST NOT rank records by `confidence` across authors as though they were, and an agent that weights by it SHOULD weight within an author's own records. Never authority.",
-///  "type": "number",
-///  "maximum": 1.0,
-///  "minimum": 0.0
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct RecordConfidence(pub f64);
@@ -1213,23 +858,6 @@ One thing a record cites in its support, discriminated by `kind`.
 
 **A reference, never a locator, and never proof.** A reader MUST NOT fetch, resolve or dereference a `credentialId` because a record names it, and MUST NOT read a record of another room on the strength of a citation: the rule that a room's identifiers are identifiers and not addresses (`AuthorityPresentation`) applies here for the same reasons — fetching would signal to whoever answers which member read which record, and when. A reader MAY show a cited record of the same room that it already holds or reads anyway, and MAY match a cited credential against ones its member already holds. What the citation proves is only that the author cited it; whether the evidence exists, says what the author claims, or supports the record is for whoever follows it up to judge.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RecordEvidence",
-///  "description": "One thing a record cites in its support, discriminated by `kind`.\n\n  - `record` names a record of a room by its key, and optionally the version cited and the room. Absent `roomId` means the record's own room.\n  - `credential` names a credential by its `id`, and optionally a digest of the credential as cited.\n\n**A reference, never a locator, and never proof.** A reader MUST NOT fetch, resolve or dereference a `credentialId` because a record names it, and MUST NOT read a record of another room on the strength of a citation: the rule that a room's identifiers are identifiers and not addresses (`AuthorityPresentation`) applies here for the same reasons — fetching would signal to whoever answers which member read which record, and when. A reader MAY show a cited record of the same room that it already holds or reads anyway, and MAY match a cited credential against ones its member already holds. What the citation proves is only that the author cited it; whether the evidence exists, says what the author claims, or supports the record is for whoever follows it up to judge.",
-///  "oneOf": [
-///    {
-///      "$ref": "#/definitions/RecordEvidenceRecord"
-///    },
-///    {
-///      "$ref": "#/definitions/RecordEvidenceCredential"
-///    }
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged)]
 #[non_exhaustive]
@@ -1249,36 +877,6 @@ impl ::std::convert::From<RecordEvidenceCredential> for RecordEvidence {
 }
 ///Cites a credential.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RecordEvidenceCredential",
-///  "description": "Cites a credential.",
-///  "type": "object",
-///  "required": [
-///    "credentialId",
-///    "kind"
-///  ],
-///  "properties": {
-///    "credentialId": {
-///      "description": "The credential's `id`. An identifier: never fetched because a record names it.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1
-///    },
-///    "digest": {
-///      "description": "OPTIONAL. A digest of the credential as cited — the SHA-256 multihash of its RFC 8785 (JCS) canonicalization, `proof` included — so a reader holding a credential with this `id` can tell whether it is the one the author meant.",
-///      "$ref": "#/definitions/DigestMultibase"
-///    },
-///    "kind": {
-///      "const": "credential"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1298,17 +896,6 @@ impl RecordEvidenceCredential {
 }
 ///The credential's `id`. An identifier: never fetched because a record names it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The credential's `id`. An identifier: never fetched because a record names it.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RecordEvidenceCredentialCredentialId(::std::string::String);
@@ -1371,21 +958,6 @@ impl<'de> ::serde::Deserialize<'de> for RecordEvidenceCredentialCredentialId {
 }
 ///What the author offers in support of the record: other records and credentials, by reference. OPTIONAL; absent means none was named, and an empty array is not a permitted spelling of that. Order carries no meaning. Bounded so that a reader's cost of showing a record's support is bounded too.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RecordEvidenceList",
-///  "description": "What the author offers in support of the record: other records and credentials, by reference. OPTIONAL; absent means none was named, and an empty array is not a permitted spelling of that. Order carries no meaning. Bounded so that a reader's cost of showing a record's support is bounded too.",
-///  "type": "array",
-///  "items": {
-///    "$ref": "#/definitions/RecordEvidence"
-///  },
-///  "maxItems": 32,
-///  "minItems": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct RecordEvidenceList(pub ::std::vec::Vec<RecordEvidence>);
@@ -1407,43 +979,6 @@ impl ::std::convert::From<::std::vec::Vec<RecordEvidence>> for RecordEvidenceLis
 }
 ///Cites a record of a room.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RecordEvidenceRecord",
-///  "description": "Cites a record of a room.",
-///  "type": "object",
-///  "required": [
-///    "key",
-///    "kind"
-///  ],
-///  "properties": {
-///    "key": {
-///      "description": "The cited record's key, as in `rooms/records/put`. Opaque on the sealed tiers, like every key there.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    },
-///    "kind": {
-///      "const": "record"
-///    },
-///    "roomId": {
-///      "description": "The cited record's room. Absent means the citing record's own room. A citation into another room tells the reader that room's identifier, so a writer SHOULD NOT cite into a room the citing room's readers are not meant to learn of.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    },
-///    "version": {
-///      "description": "The version cited. OPTIONAL; present, it pins the citation to what the record said then, since a record can be rewritten under the same key. A reader that shows a later version SHOULD say that it is not the one cited.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1469,17 +1004,6 @@ impl RecordEvidenceRecord {
 }
 ///The cited record's key, as in `rooms/records/put`. Opaque on the sealed tiers, like every key there.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The cited record's key, as in `rooms/records/put`. Opaque on the sealed tiers, like every key there.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RecordEvidenceRecordKey(::std::string::String);
@@ -1542,17 +1066,6 @@ impl<'de> ::serde::Deserialize<'de> for RecordEvidenceRecordKey {
 }
 ///The cited record's room. Absent means the citing record's own room. A citation into another room tells the reader that room's identifier, so a writer SHOULD NOT cite into a room the citing room's readers are not meant to learn of.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The cited record's room. Absent means the citing record's own room. A citation into another room tells the reader that room's identifier, so a writer SHOULD NOT cite into a room the citing room's readers are not meant to learn of.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RecordEvidenceRecordRoomId(::std::string::String);
@@ -1617,17 +1130,6 @@ impl<'de> ::serde::Deserialize<'de> for RecordEvidenceRecordRoomId {
 }
 ///The instant after which the record's author no longer stands behind it as current. OPTIONAL; absent means the record does not expire. A reader hides a record whose `validUntil` has passed from default listings, search and recall, and shows it only on explicit request (`SealedRecordBody`, **Expiry**). No host enforces it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RecordValidUntil",
-///  "description": "The instant after which the record's author no longer stands behind it as current. OPTIONAL; absent means the record does not expire. A reader hides a record whose `validUntil` has passed from default listings, search and recall, and shows it only on explicit request (`SealedRecordBody`, **Expiry**). No host enforces it.",
-///  "type": "string",
-///  "format": "date-time"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct RecordValidUntil(pub ::chrono::DateTime<::chrono::offset::Utc>);
@@ -1672,42 +1174,6 @@ impl ::std::fmt::Display for RecordValidUntil {
 }
 ///Success response to rooms/records/put. Type https://trusttasks.org/spec/rooms/records/put/0.3#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to rooms/records/put. Type https://trusttasks.org/spec/rooms/records/put/0.3#response.",
-///  "type": "object",
-///  "required": [
-///    "key",
-///    "version"
-///  ],
-///  "properties": {
-///    "epoch": {
-///      "description": "The epoch the record was stored under.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "key": {
-///      "description": "The stored record's key.",
-///      "type": "string",
-///      "maxLength": 512
-///    },
-///    "version": {
-///      "description": "The version assigned, monotonic per room.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1729,16 +1195,6 @@ impl Response {
 }
 ///The stored record's key.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The stored record's key.",
-///  "type": "string",
-///  "maxLength": 512
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseKey(::std::string::String);
@@ -1798,42 +1254,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseKey {
 }
 ///A record as a host stores it on an `attributed` or `private` room. Title, description, body, author and tags are sealed together in one blob rather than separately: splitting them would let a host learn the shape of the material from ciphertext lengths, for no benefit, since a reader decrypts the whole record either way.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "SealedRecord",
-///  "description": "A record as a host stores it on an `attributed` or `private` room. Title, description, body, author and tags are sealed together in one blob rather than separately: splitting them would let a host learn the shape of the material from ciphertext lengths, for no benefit, since a reader decrypts the whole record either way.",
-///  "type": "object",
-///  "required": [
-///    "ciphertext",
-///    "epoch",
-///    "nonce"
-///  ],
-///  "properties": {
-///    "ciphertext": {
-///      "description": "The sealed record, base64url. Bound by AEAD associated data to `roomId`, `key`, the version it was sealed at, and `epoch`, so a host that relocates it to another key, version, epoch or room produces a mismatch and the open fails. The record cannot be moved undetected even though the host holds every byte of it. The version it was sealed at is `version` below where present, and the record's own `version` otherwise.",
-///      "type": "string"
-///    },
-///    "epoch": {
-///      "description": "The key epoch this record was sealed under. Cleartext because the host must serve the right ciphertext, and bound into the associated data so that relabelling it fails authentication rather than causing a reader to try the wrong key.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "nonce": {
-///      "description": "AEAD nonce, base64url.",
-///      "type": "string"
-///    },
-///    "version": {
-///      "description": "The version this ciphertext was sealed at, where that is no longer the record's own `version`. A record's version moves when it is curated (`rooms/records/curate`, which MUST assign a new one so that every `sinceVersion` watermark sees the change), but a curation other than a retraction keeps the body — and the body is bound, by the AEAD and by its author's signature (`SealedRecordBody`), to the version it was written at. Without this member a curated record would be opened at a version it was never sealed for, and would not open for anyone.\n\nA host MUST record the version a body was sealed at when it stores it, MUST NOT change it while that body is kept — a curation alters a record's standing, never its sealed content — and MUST include it whenever it differs from the record's `version`. It is absent where the two are equal, which is every record that has not been curated since it was written, so the members a record carries are unchanged until a curation needs this one. It is part of `sealed`, and so of the record the data commitment covers (`CommittedRecord`): a host cannot change it without changing the root.\n\nA reader opens and verifies the body at this version, and MUST refuse a record whose `sealed.version` is greater than its own `version` — a body cannot have been sealed for a version the room had not reached. A host that pairs a newer version with an older body of the same key is rolling the record back; that is a change to the committed record like any other, visible to the comparisons `CommittedRecord` exists for.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -2648,7 +2068,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AuthorityPresentation\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier. A host MUST bind the presenter to the chain's leaf. A chain that verifies is evidence that authority was conferred on somebody; it is not evidence that the party presenting it is that somebody. The leaf's subject MUST equal the party the host authenticated for this request — an identity the transport established or a document `proof` proved, never one named in a payload. A host that omits this check authorizes every captured presentation, and the omission is silent, because the chain still verifies.\\n\\n**Every credential is its issuer's attestation, and only its issuer's.** For the membership credential and for every link of `authority`, a host MUST verify the credential's `proof` with a key that the credential's own `issuer` lists for `assertionMethod` in its DID document, and MUST refuse a credential whose proof names a verification method that is not its issuer's. A proof that verifies under some other party's key is that party's statement, not the issuer's, and confers nothing. The same binding holds for every other document a room signs, such as a `RevocationList`.\\n\\n**A chain that verifies may still be revoked.** A host that has accepted a `RevocationList` for the room (`rooms/revocations/put`) MUST, from the moment it accepted it, refuse every presentation in which the membership credential or any link of `authority` is revoked by that list, under every task and every version of every task it serves for the room. A chain from which any link is revoked is refused whole: a credential delegated from a revoked one confers nothing, however it was attenuated. The refusal is the same `permissionDenied` as any other failed presentation.\",\n      \"properties\": {\n        \"authority\": {\n          \"description\": \"The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"maxItems\": 8,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"membership\": {\n          \"description\": \"The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.\",\n          \"type\": \"string\"\n        },\n        \"subjectBinding\": {\n          \"description\": \"REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"membership\",\n        \"authority\"\n      ],\n      \"title\": \"AuthorityPresentation\",\n      \"type\": \"object\"\n    },\n    \"BlobRef\": {\n      \"$ref\": \"#/$defs/DigestMultibase\",\n      \"description\": \"The name of one blob: the digest of its BlobManifest, taken over the manifest's RFC 8785 (JCS) canonicalization. sha2-256 is RECOMMENDED and MUST be implemented. Content addressing over ciphertext, never plaintext, so a BlobRef says nothing about what the file contains, and two uploads of one file have different BlobRefs (a fresh `fileId` gives a different key, and so different ciphertext). Rooms cannot be correlated by the files they share. Compared as decoded multihash bytes, never as encoded strings. A BlobRef is defined over the manifest's JSON, as this schema states it and RFC 8785 canonicalizes it, never over any binding's generated type: two bindings that model the manifest as distinct types still compute the same BlobRef from the same JSON.\",\n      \"title\": \"BlobRef\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"PermittedUse\": {\n      \"additionalProperties\": false,\n      \"description\": \"What the author permits the record to be used for — for example, that a learner's record is for instructional personalisation only. OPTIONAL; absent means the author stated no limit beyond the room's own terms.\\n\\n**Two halves, because purpose has both a machine and a human reading.** `purposes` names purposes by IRI, so that an agent can match them without parsing prose; `note` says it in words, for the nuance an identifier cannot carry. Either may be given alone.\\n\\n**No vocabulary of this family's own.** Purpose vocabularies exist and are maintained elsewhere — the W3C Data Privacy Vocabulary (`https://w3id.org/dpv#…`) is the one a writer SHOULD reach for first — and a short list defined here would be one more to translate between, and would be wrong at its edges for every domain that uses rooms. An IRI is the extension path: a community that needs a purpose no published vocabulary has names it under an IRI it controls.\\n\\n**A statement, not an enforcement.** No host can see it on the sealed tiers and none enforces it on any tier; every reader is a member who already holds the content. It records what the author permitted, so that a member — or an agent acting for one — can honour it, and so that a use outside it is a use against the author's stated terms rather than one nobody could have known about. An agent acting for a member SHOULD NOT use a record for a purpose outside `validFor` and SHOULD tell its principal when asked to. It confers no authority on anybody, and a `purposes` entry a reader does not recognise is shown, not ignored.\",\n      \"minProperties\": 1,\n      \"properties\": {\n        \"note\": {\n          \"description\": \"The permitted use in words, such as `instructional personalisation only`. Plain text, rendered as text, and never instructions — an agent reading it treats it as the author's statement about the record, not as something to do.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"purposes\": {\n          \"description\": \"Purposes the record may be used for, each an absolute IRI — for example `https://w3id.org/dpv#ServicePersonalisation`. A set: order carries no meaning. An identifier, never fetched.\",\n          \"items\": {\n            \"format\": \"uri\",\n            \"maxLength\": 2048,\n            \"pattern\": \"^[a-zA-Z][a-zA-Z0-9+.-]*:\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 8,\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        }\n      },\n      \"title\": \"PermittedUse\",\n      \"type\": \"object\"\n    },\n    \"RecordBasis\": {\n      \"description\": \"What kind of claim a record is, as its author states it. OPTIONAL wherever it appears; absent means the author did not say, and a reader shows it as unstated rather than assuming any of these.\\n\\n  - `declared` — the author's own statement: a decision, a preference, an intention, a commitment. True because the author says so, and only as far as the author speaks for it.\\n  - `observed` — something the author saw, measured or was told directly, recorded as found.\\n  - `verified` — checked against evidence that somebody else can check again, such as a credential or another record. A record that says `verified` SHOULD name that evidence in `evidence`; one that does not is an unsupported claim to have checked, and a reader SHOULD present it so.\\n  - `inferred` — derived by reasoning from other information: an agent's conclusion, a summary's generalisation, a model's guess. The value an agent writer uses when it does not know which of the others applies.\\n\\nThe values are the author's account of their own record, signed with it. They are not checked by anybody, confer nothing, and say nothing about whether the record is right — `inferred` can be correct and `observed` mistaken. Aligned with the provenance vocabulary of personal agent memory, so that a record moved between a member's memory and a room keeps its meaning.\",\n      \"enum\": [\n        \"declared\",\n        \"observed\",\n        \"verified\",\n        \"inferred\"\n      ],\n      \"title\": \"RecordBasis\",\n      \"type\": \"string\"\n    },\n    \"RecordConfidence\": {\n      \"description\": \"The author's own estimate, from 0 to 1, that what the record says is correct. OPTIONAL; absent means no estimate was given, never 1. Meaningful only beside the author who gave it: two writers' numbers are not on one scale, so a reader MUST NOT rank records by `confidence` across authors as though they were, and an agent that weights by it SHOULD weight within an author's own records. Never authority.\",\n      \"maximum\": 1,\n      \"minimum\": 0,\n      \"title\": \"RecordConfidence\",\n      \"type\": \"number\"\n    },\n    \"RecordEvidence\": {\n      \"description\": \"One thing a record cites in its support, discriminated by `kind`.\\n\\n  - `record` names a record of a room by its key, and optionally the version cited and the room. Absent `roomId` means the record's own room.\\n  - `credential` names a credential by its `id`, and optionally a digest of the credential as cited.\\n\\n**A reference, never a locator, and never proof.** A reader MUST NOT fetch, resolve or dereference a `credentialId` because a record names it, and MUST NOT read a record of another room on the strength of a citation: the rule that a room's identifiers are identifiers and not addresses (`AuthorityPresentation`) applies here for the same reasons — fetching would signal to whoever answers which member read which record, and when. A reader MAY show a cited record of the same room that it already holds or reads anyway, and MAY match a cited credential against ones its member already holds. What the citation proves is only that the author cited it; whether the evidence exists, says what the author claims, or supports the record is for whoever follows it up to judge.\",\n      \"oneOf\": [\n        {\n          \"$ref\": \"#/$defs/RecordEvidenceRecord\"\n        },\n        {\n          \"$ref\": \"#/$defs/RecordEvidenceCredential\"\n        }\n      ],\n      \"title\": \"RecordEvidence\"\n    },\n    \"RecordEvidenceCredential\": {\n      \"additionalProperties\": false,\n      \"description\": \"Cites a credential.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"description\": \"The credential's `id`. An identifier: never fetched because a record names it.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"digest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"OPTIONAL. A digest of the credential as cited — the SHA-256 multihash of its RFC 8785 (JCS) canonicalization, `proof` included — so a reader holding a credential with this `id` can tell whether it is the one the author meant.\"\n        },\n        \"kind\": {\n          \"const\": \"credential\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"credentialId\"\n      ],\n      \"title\": \"RecordEvidenceCredential\",\n      \"type\": \"object\"\n    },\n    \"RecordEvidenceList\": {\n      \"description\": \"What the author offers in support of the record: other records and credentials, by reference. OPTIONAL; absent means none was named, and an empty array is not a permitted spelling of that. Order carries no meaning. Bounded so that a reader's cost of showing a record's support is bounded too.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/RecordEvidence\"\n      },\n      \"maxItems\": 32,\n      \"minItems\": 1,\n      \"title\": \"RecordEvidenceList\",\n      \"type\": \"array\"\n    },\n    \"RecordEvidenceRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"Cites a record of a room.\",\n      \"properties\": {\n        \"key\": {\n          \"description\": \"The cited record's key, as in `rooms/records/put`. Opaque on the sealed tiers, like every key there.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"kind\": {\n          \"const\": \"record\"\n        },\n        \"roomId\": {\n          \"description\": \"The cited record's room. Absent means the citing record's own room. A citation into another room tells the reader that room's identifier, so a writer SHOULD NOT cite into a room the citing room's readers are not meant to learn of.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"description\": \"The version cited. OPTIONAL; present, it pins the citation to what the record said then, since a record can be rewritten under the same key. A reader that shows a later version SHOULD say that it is not the one cited.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"key\"\n      ],\n      \"title\": \"RecordEvidenceRecord\",\n      \"type\": \"object\"\n    },\n    \"RecordValidUntil\": {\n      \"description\": \"The instant after which the record's author no longer stands behind it as current. OPTIONAL; absent means the record does not expire. A reader hides a record whose `validUntil` has passed from default listings, search and recall, and shows it only on explicit request (`SealedRecordBody`, **Expiry**). No host enforces it.\",\n      \"format\": \"date-time\",\n      \"title\": \"RecordValidUntil\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/records/put. Type https://trusttasks.org/spec/rooms/records/put/0.3#response.\",\n      \"properties\": {\n        \"epoch\": {\n          \"description\": \"The epoch the record was stored under.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"key\": {\n          \"description\": \"The stored record's key.\",\n          \"maxLength\": 512,\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"description\": \"The version assigned, monotonic per room.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"key\",\n        \"version\"\n      ],\n      \"title\": \"Rooms Records Put — response payload\",\n      \"type\": \"object\"\n    },\n    \"SealedRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"A record as a host stores it on an `attributed` or `private` room. Title, description, body, author and tags are sealed together in one blob rather than separately: splitting them would let a host learn the shape of the material from ciphertext lengths, for no benefit, since a reader decrypts the whole record either way.\",\n      \"properties\": {\n        \"ciphertext\": {\n          \"description\": \"The sealed record, base64url. Bound by AEAD associated data to `roomId`, `key`, the version it was sealed at, and `epoch`, so a host that relocates it to another key, version, epoch or room produces a mismatch and the open fails. The record cannot be moved undetected even though the host holds every byte of it. The version it was sealed at is `version` below where present, and the record's own `version` otherwise.\",\n          \"type\": \"string\"\n        },\n        \"epoch\": {\n          \"description\": \"The key epoch this record was sealed under. Cleartext because the host must serve the right ciphertext, and bound into the associated data so that relabelling it fails authentication rather than causing a reader to try the wrong key.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"nonce\": {\n          \"description\": \"AEAD nonce, base64url.\",\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"description\": \"The version this ciphertext was sealed at, where that is no longer the record's own `version`. A record's version moves when it is curated (`rooms/records/curate`, which MUST assign a new one so that every `sinceVersion` watermark sees the change), but a curation other than a retraction keeps the body — and the body is bound, by the AEAD and by its author's signature (`SealedRecordBody`), to the version it was written at. Without this member a curated record would be opened at a version it was never sealed for, and would not open for anyone.\\n\\nA host MUST record the version a body was sealed at when it stores it, MUST NOT change it while that body is kept — a curation alters a record's standing, never its sealed content — and MUST include it whenever it differs from the record's `version`. It is absent where the two are equal, which is every record that has not been curated since it was written, so the members a record carries are unchanged until a curation needs this one. It is part of `sealed`, and so of the record the data commitment covers (`CommittedRecord`): a host cannot change it without changing the root.\\n\\nA reader opens and verifies the body at this version, and MUST refuse a record whose `sealed.version` is greater than its own `version` — a body cannot have been sealed for a version the room had not reached. A host that pairs a newer version with an older body of the same key is rolling the record back; that is a change to the committed record like any other, visible to the comparisons `CommittedRecord` exists for.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"ciphertext\",\n        \"nonce\",\n        \"epoch\"\n      ],\n      \"title\": \"SealedRecord\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/rooms/records/put/0.3\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A member writes a record to a data room, authorized by an authority chain the room itself issued. 0.2 added `blobs`: a record can carry a file, whose ciphertext the host stores outside the record and whose description is sealed inside it. 0.3 lets an `open` room's `cleartext` carry the record's provenance — `basis`, `confidence`, `evidence`, `validFor` — and its `validUntil`, which the sealed tiers carry inside the signed `SealedRecordBody`.\",\n  \"properties\": {\n    \"blobs\": {\n      \"description\": \"The blobs this record keeps alive: today at most one, the file the record carries. Cleartext on every tier, because the host must know which blobs a record references to refuse a record naming a blob it does not hold, to count usage, and to collect a blob no record names. Every blob named MUST have been committed in THIS room (rooms/blobs/upload/commit). An array so that several files per record is a later minor version rather than a reshaped member. Omit for a record with no file; a rewrite that omits it releases whatever blob the previous version named.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/BlobRef\"\n      },\n      \"maxItems\": 1,\n      \"minItems\": 1,\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    },\n    \"cleartext\": {\n      \"additionalProperties\": false,\n      \"description\": \"REQUIRED on an `open` room, where the host reads records and can therefore search them. Mutually exclusive with `sealed`. On this tier the record is not signed by its author: every member here is the writer's claim as the host stores it, provenance and expiry included.\",\n      \"properties\": {\n        \"basis\": {\n          \"$ref\": \"#/$defs/RecordBasis\",\n          \"description\": \"What kind of claim the record is. A writer SHOULD set it; an agent writer that does not know SHOULD write `inferred`. Provenance for display and weighting, never authority.\"\n        },\n        \"body\": {\n          \"maxLength\": 1048576,\n          \"type\": \"string\"\n        },\n        \"confidence\": {\n          \"$ref\": \"#/$defs/RecordConfidence\"\n        },\n        \"description\": {\n          \"maxLength\": 2048,\n          \"type\": \"string\"\n        },\n        \"evidence\": {\n          \"$ref\": \"#/$defs/RecordEvidenceList\"\n        },\n        \"tags\": {\n          \"items\": {\n            \"maxLength\": 64,\n            \"type\": \"string\"\n          },\n          \"maxItems\": 32,\n          \"type\": \"array\"\n        },\n        \"title\": {\n          \"maxLength\": 512,\n          \"type\": \"string\"\n        },\n        \"validFor\": {\n          \"$ref\": \"#/$defs/PermittedUse\"\n        },\n        \"validUntil\": {\n          \"$ref\": \"#/$defs/RecordValidUntil\",\n          \"description\": \"When the writer stops standing behind the record as current. Readers hide the record once it has passed and show it only on explicit request. A host stores and serves it like any other cleartext member and MUST NOT act on it: it neither hides, refuses nor deletes an expired record.\"\n        }\n      },\n      \"required\": [\n        \"body\"\n      ],\n      \"type\": \"object\"\n    },\n    \"expectedVersion\": {\n      \"description\": \"Optional precondition. Omit to overwrite unconditionally; `0` means create-only and fails if the key exists. On mismatch the host returns `rooms/records/put:versionConflict` CARRYING THE CURRENT VERSION AND RECORD — a bare rejection would force a re-read, and between rejection and re-read the record can change again, so the pattern has no fixed point under contention.\",\n      \"minimum\": 0,\n      \"type\": \"integer\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"key\": {\n      \"description\": \"The record's key within the room. MUST be opaque on an `attributed` or `private` room; see RecordMetadata.key.\",\n      \"maxLength\": 512,\n      \"type\": \"string\"\n    },\n    \"presentation\": {\n      \"$ref\": \"#/$defs/AuthorityPresentation\",\n      \"description\": \"Must confer the `write` action at this room's scope.\"\n    },\n    \"roomId\": {\n      \"description\": \"The room's identifier. A host verifies the presentation against credentials issued by this identifier, never against a member list of its own — which is what lets a room move hosts without reissuing a credential.\",\n      \"type\": \"string\"\n    },\n    \"sealed\": {\n      \"$ref\": \"#/$defs/SealedRecord\",\n      \"description\": \"REQUIRED on an `attributed` or `private` room. Mutually exclusive with `cleartext`.\"\n    }\n  },\n  \"required\": [\n    \"roomId\",\n    \"key\",\n    \"presentation\"\n  ],\n  \"title\": \"Rooms Records Put — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"AuthorityPresentation\":{\"additionalProperties\":false,\"description\":\"What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier. A host MUST bind the presenter to the chain's leaf. A chain that verifies is evidence that authority was conferred on somebody; it is not evidence that the party presenting it is that somebody. The leaf's subject MUST equal the party the host authenticated for this request — an identity the transport established or a document `proof` proved, never one named in a payload. A host that omits this check authorizes every captured presentation, and the omission is silent, because the chain still verifies.\\n\\n**Every credential is its issuer's attestation, and only its issuer's.** For the membership credential and for every link of `authority`, a host MUST verify the credential's `proof` with a key that the credential's own `issuer` lists for `assertionMethod` in its DID document, and MUST refuse a credential whose proof names a verification method that is not its issuer's. A proof that verifies under some other party's key is that party's statement, not the issuer's, and confers nothing. The same binding holds for every other document a room signs, such as a `RevocationList`.\\n\\n**A chain that verifies may still be revoked.** A host that has accepted a `RevocationList` for the room (`rooms/revocations/put`) MUST, from the moment it accepted it, refuse every presentation in which the membership credential or any link of `authority` is revoked by that list, under every task and every version of every task it serves for the room. A chain from which any link is revoked is refused whole: a credential delegated from a revoked one confers nothing, however it was attenuated. The refusal is the same `permissionDenied` as any other failed presentation.\",\"properties\":{\"authority\":{\"description\":\"The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent.\",\"items\":{\"type\":\"string\"},\"maxItems\":8,\"minItems\":1,\"type\":\"array\"},\"membership\":{\"description\":\"The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.\",\"type\":\"string\"},\"subjectBinding\":{\"description\":\"REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this.\",\"type\":\"string\"}},\"required\":[\"membership\",\"authority\"],\"title\":\"AuthorityPresentation\",\"type\":\"object\"},\"BlobRef\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The name of one blob: the digest of its BlobManifest, taken over the manifest's RFC 8785 (JCS) canonicalization. sha2-256 is RECOMMENDED and MUST be implemented. Content addressing over ciphertext, never plaintext, so a BlobRef says nothing about what the file contains, and two uploads of one file have different BlobRefs (a fresh `fileId` gives a different key, and so different ciphertext). Rooms cannot be correlated by the files they share. Compared as decoded multihash bytes, never as encoded strings. A BlobRef is defined over the manifest's JSON, as this schema states it and RFC 8785 canonicalizes it, never over any binding's generated type: two bindings that model the manifest as distinct types still compute the same BlobRef from the same JSON.\",\"title\":\"BlobRef\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"PermittedUse\":{\"additionalProperties\":false,\"description\":\"What the author permits the record to be used for — for example, that a learner's record is for instructional personalisation only. OPTIONAL; absent means the author stated no limit beyond the room's own terms.\\n\\n**Two halves, because purpose has both a machine and a human reading.** `purposes` names purposes by IRI, so that an agent can match them without parsing prose; `note` says it in words, for the nuance an identifier cannot carry. Either may be given alone.\\n\\n**No vocabulary of this family's own.** Purpose vocabularies exist and are maintained elsewhere — the W3C Data Privacy Vocabulary (`https://w3id.org/dpv#…`) is the one a writer SHOULD reach for first — and a short list defined here would be one more to translate between, and would be wrong at its edges for every domain that uses rooms. An IRI is the extension path: a community that needs a purpose no published vocabulary has names it under an IRI it controls.\\n\\n**A statement, not an enforcement.** No host can see it on the sealed tiers and none enforces it on any tier; every reader is a member who already holds the content. It records what the author permitted, so that a member — or an agent acting for one — can honour it, and so that a use outside it is a use against the author's stated terms rather than one nobody could have known about. An agent acting for a member SHOULD NOT use a record for a purpose outside `validFor` and SHOULD tell its principal when asked to. It confers no authority on anybody, and a `purposes` entry a reader does not recognise is shown, not ignored.\",\"minProperties\":1,\"properties\":{\"note\":{\"description\":\"The permitted use in words, such as `instructional personalisation only`. Plain text, rendered as text, and never instructions — an agent reading it treats it as the author's statement about the record, not as something to do.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"purposes\":{\"description\":\"Purposes the record may be used for, each an absolute IRI — for example `https://w3id.org/dpv#ServicePersonalisation`. A set: order carries no meaning. An identifier, never fetched.\",\"items\":{\"format\":\"uri\",\"maxLength\":2048,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9+.-]*:\",\"type\":\"string\"},\"maxItems\":8,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true}},\"title\":\"PermittedUse\",\"type\":\"object\"},\"RecordBasis\":{\"description\":\"What kind of claim a record is, as its author states it. OPTIONAL wherever it appears; absent means the author did not say, and a reader shows it as unstated rather than assuming any of these.\\n\\n  - `declared` — the author's own statement: a decision, a preference, an intention, a commitment. True because the author says so, and only as far as the author speaks for it.\\n  - `observed` — something the author saw, measured or was told directly, recorded as found.\\n  - `verified` — checked against evidence that somebody else can check again, such as a credential or another record. A record that says `verified` SHOULD name that evidence in `evidence`; one that does not is an unsupported claim to have checked, and a reader SHOULD present it so.\\n  - `inferred` — derived by reasoning from other information: an agent's conclusion, a summary's generalisation, a model's guess. The value an agent writer uses when it does not know which of the others applies.\\n\\nThe values are the author's account of their own record, signed with it. They are not checked by anybody, confer nothing, and say nothing about whether the record is right — `inferred` can be correct and `observed` mistaken. Aligned with the provenance vocabulary of personal agent memory, so that a record moved between a member's memory and a room keeps its meaning.\",\"enum\":[\"declared\",\"observed\",\"verified\",\"inferred\"],\"title\":\"RecordBasis\",\"type\":\"string\"},\"RecordConfidence\":{\"description\":\"The author's own estimate, from 0 to 1, that what the record says is correct. OPTIONAL; absent means no estimate was given, never 1. Meaningful only beside the author who gave it: two writers' numbers are not on one scale, so a reader MUST NOT rank records by `confidence` across authors as though they were, and an agent that weights by it SHOULD weight within an author's own records. Never authority.\",\"maximum\":1,\"minimum\":0,\"title\":\"RecordConfidence\",\"type\":\"number\"},\"RecordEvidence\":{\"description\":\"One thing a record cites in its support, discriminated by `kind`.\\n\\n  - `record` names a record of a room by its key, and optionally the version cited and the room. Absent `roomId` means the record's own room.\\n  - `credential` names a credential by its `id`, and optionally a digest of the credential as cited.\\n\\n**A reference, never a locator, and never proof.** A reader MUST NOT fetch, resolve or dereference a `credentialId` because a record names it, and MUST NOT read a record of another room on the strength of a citation: the rule that a room's identifiers are identifiers and not addresses (`AuthorityPresentation`) applies here for the same reasons — fetching would signal to whoever answers which member read which record, and when. A reader MAY show a cited record of the same room that it already holds or reads anyway, and MAY match a cited credential against ones its member already holds. What the citation proves is only that the author cited it; whether the evidence exists, says what the author claims, or supports the record is for whoever follows it up to judge.\",\"oneOf\":[{\"$ref\":\"#/$defs/RecordEvidenceRecord\"},{\"$ref\":\"#/$defs/RecordEvidenceCredential\"}],\"title\":\"RecordEvidence\"},\"RecordEvidenceCredential\":{\"additionalProperties\":false,\"description\":\"Cites a credential.\",\"properties\":{\"credentialId\":{\"description\":\"The credential's `id`. An identifier: never fetched because a record names it.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"digest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"OPTIONAL. A digest of the credential as cited — the SHA-256 multihash of its RFC 8785 (JCS) canonicalization, `proof` included — so a reader holding a credential with this `id` can tell whether it is the one the author meant.\"},\"kind\":{\"const\":\"credential\"}},\"required\":[\"kind\",\"credentialId\"],\"title\":\"RecordEvidenceCredential\",\"type\":\"object\"},\"RecordEvidenceList\":{\"description\":\"What the author offers in support of the record: other records and credentials, by reference. OPTIONAL; absent means none was named, and an empty array is not a permitted spelling of that. Order carries no meaning. Bounded so that a reader's cost of showing a record's support is bounded too.\",\"items\":{\"$ref\":\"#/$defs/RecordEvidence\"},\"maxItems\":32,\"minItems\":1,\"title\":\"RecordEvidenceList\",\"type\":\"array\"},\"RecordEvidenceRecord\":{\"additionalProperties\":false,\"description\":\"Cites a record of a room.\",\"properties\":{\"key\":{\"description\":\"The cited record's key, as in `rooms/records/put`. Opaque on the sealed tiers, like every key there.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"kind\":{\"const\":\"record\"},\"roomId\":{\"description\":\"The cited record's room. Absent means the citing record's own room. A citation into another room tells the reader that room's identifier, so a writer SHOULD NOT cite into a room the citing room's readers are not meant to learn of.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"version\":{\"description\":\"The version cited. OPTIONAL; present, it pins the citation to what the record said then, since a record can be rewritten under the same key. A reader that shows a later version SHOULD say that it is not the one cited.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"kind\",\"key\"],\"title\":\"RecordEvidenceRecord\",\"type\":\"object\"},\"RecordValidUntil\":{\"description\":\"The instant after which the record's author no longer stands behind it as current. OPTIONAL; absent means the record does not expire. A reader hides a record whose `validUntil` has passed from default listings, search and recall, and shows it only on explicit request (`SealedRecordBody`, **Expiry**). No host enforces it.\",\"format\":\"date-time\",\"title\":\"RecordValidUntil\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/records/put. Type https://trusttasks.org/spec/rooms/records/put/0.3#response.\",\"properties\":{\"epoch\":{\"description\":\"The epoch the record was stored under.\",\"minimum\":1,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"key\":{\"description\":\"The stored record's key.\",\"maxLength\":512,\"type\":\"string\"},\"version\":{\"description\":\"The version assigned, monotonic per room.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"key\",\"version\"],\"title\":\"Rooms Records Put — response payload\",\"type\":\"object\"},\"SealedRecord\":{\"additionalProperties\":false,\"description\":\"A record as a host stores it on an `attributed` or `private` room. Title, description, body, author and tags are sealed together in one blob rather than separately: splitting them would let a host learn the shape of the material from ciphertext lengths, for no benefit, since a reader decrypts the whole record either way.\",\"properties\":{\"ciphertext\":{\"description\":\"The sealed record, base64url. Bound by AEAD associated data to `roomId`, `key`, the version it was sealed at, and `epoch`, so a host that relocates it to another key, version, epoch or room produces a mismatch and the open fails. The record cannot be moved undetected even though the host holds every byte of it. The version it was sealed at is `version` below where present, and the record's own `version` otherwise.\",\"type\":\"string\"},\"epoch\":{\"description\":\"The key epoch this record was sealed under. Cleartext because the host must serve the right ciphertext, and bound into the associated data so that relabelling it fails authentication rather than causing a reader to try the wrong key.\",\"minimum\":1,\"type\":\"integer\"},\"nonce\":{\"description\":\"AEAD nonce, base64url.\",\"type\":\"string\"},\"version\":{\"description\":\"The version this ciphertext was sealed at, where that is no longer the record's own `version`. A record's version moves when it is curated (`rooms/records/curate`, which MUST assign a new one so that every `sinceVersion` watermark sees the change), but a curation other than a retraction keeps the body — and the body is bound, by the AEAD and by its author's signature (`SealedRecordBody`), to the version it was written at. Without this member a curated record would be opened at a version it was never sealed for, and would not open for anyone.\\n\\nA host MUST record the version a body was sealed at when it stores it, MUST NOT change it while that body is kept — a curation alters a record's standing, never its sealed content — and MUST include it whenever it differs from the record's `version`. It is absent where the two are equal, which is every record that has not been curated since it was written, so the members a record carries are unchanged until a curation needs this one. It is part of `sealed`, and so of the record the data commitment covers (`CommittedRecord`): a host cannot change it without changing the root.\\n\\nA reader opens and verifies the body at this version, and MUST refuse a record whose `sealed.version` is greater than its own `version` — a body cannot have been sealed for a version the room had not reached. A host that pairs a newer version with an older body of the same key is rolling the record back; that is a change to the committed record like any other, visible to the comparisons `CommittedRecord` exists for.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"ciphertext\",\"nonce\",\"epoch\"],\"title\":\"SealedRecord\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/rooms/records/put/0.3\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A member writes a record to a data room, authorized by an authority chain the room itself issued. 0.2 added `blobs`: a record can carry a file, whose ciphertext the host stores outside the record and whose description is sealed inside it. 0.3 lets an `open` room's `cleartext` carry the record's provenance — `basis`, `confidence`, `evidence`, `validFor` — and its `validUntil`, which the sealed tiers carry inside the signed `SealedRecordBody`.\",\"properties\":{\"blobs\":{\"description\":\"The blobs this record keeps alive: today at most one, the file the record carries. Cleartext on every tier, because the host must know which blobs a record references to refuse a record naming a blob it does not hold, to count usage, and to collect a blob no record names. Every blob named MUST have been committed in THIS room (rooms/blobs/upload/commit). An array so that several files per record is a later minor version rather than a reshaped member. Omit for a record with no file; a rewrite that omits it releases whatever blob the previous version named.\",\"items\":{\"$ref\":\"#/$defs/BlobRef\"},\"maxItems\":1,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"cleartext\":{\"additionalProperties\":false,\"description\":\"REQUIRED on an `open` room, where the host reads records and can therefore search them. Mutually exclusive with `sealed`. On this tier the record is not signed by its author: every member here is the writer's claim as the host stores it, provenance and expiry included.\",\"properties\":{\"basis\":{\"$ref\":\"#/$defs/RecordBasis\",\"description\":\"What kind of claim the record is. A writer SHOULD set it; an agent writer that does not know SHOULD write `inferred`. Provenance for display and weighting, never authority.\"},\"body\":{\"maxLength\":1048576,\"type\":\"string\"},\"confidence\":{\"$ref\":\"#/$defs/RecordConfidence\"},\"description\":{\"maxLength\":2048,\"type\":\"string\"},\"evidence\":{\"$ref\":\"#/$defs/RecordEvidenceList\"},\"tags\":{\"items\":{\"maxLength\":64,\"type\":\"string\"},\"maxItems\":32,\"type\":\"array\"},\"title\":{\"maxLength\":512,\"type\":\"string\"},\"validFor\":{\"$ref\":\"#/$defs/PermittedUse\"},\"validUntil\":{\"$ref\":\"#/$defs/RecordValidUntil\",\"description\":\"When the writer stops standing behind the record as current. Readers hide the record once it has passed and show it only on explicit request. A host stores and serves it like any other cleartext member and MUST NOT act on it: it neither hides, refuses nor deletes an expired record.\"}},\"required\":[\"body\"],\"type\":\"object\"},\"expectedVersion\":{\"description\":\"Optional precondition. Omit to overwrite unconditionally; `0` means create-only and fails if the key exists. On mismatch the host returns `rooms/records/put:versionConflict` CARRYING THE CURRENT VERSION AND RECORD — a bare rejection would force a re-read, and between rejection and re-read the record can change again, so the pattern has no fixed point under contention.\",\"minimum\":0,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"key\":{\"description\":\"The record's key within the room. MUST be opaque on an `attributed` or `private` room; see RecordMetadata.key.\",\"maxLength\":512,\"type\":\"string\"},\"presentation\":{\"$ref\":\"#/$defs/AuthorityPresentation\",\"description\":\"Must confer the `write` action at this room's scope.\"},\"roomId\":{\"description\":\"The room's identifier. A host verifies the presentation against credentials issued by this identifier, never against a member list of its own — which is what lets a room move hosts without reissuing a credential.\",\"type\":\"string\"},\"sealed\":{\"$ref\":\"#/$defs/SealedRecord\",\"description\":\"REQUIRED on an `attributed` or `private` room. Mutually exclusive with `cleartext`.\"}},\"required\":[\"roomId\",\"key\",\"presentation\"],\"title\":\"Rooms Records Put — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -2657,7 +2077,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AuthorityPresentation\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier. A host MUST bind the presenter to the chain's leaf. A chain that verifies is evidence that authority was conferred on somebody; it is not evidence that the party presenting it is that somebody. The leaf's subject MUST equal the party the host authenticated for this request — an identity the transport established or a document `proof` proved, never one named in a payload. A host that omits this check authorizes every captured presentation, and the omission is silent, because the chain still verifies.\\n\\n**Every credential is its issuer's attestation, and only its issuer's.** For the membership credential and for every link of `authority`, a host MUST verify the credential's `proof` with a key that the credential's own `issuer` lists for `assertionMethod` in its DID document, and MUST refuse a credential whose proof names a verification method that is not its issuer's. A proof that verifies under some other party's key is that party's statement, not the issuer's, and confers nothing. The same binding holds for every other document a room signs, such as a `RevocationList`.\\n\\n**A chain that verifies may still be revoked.** A host that has accepted a `RevocationList` for the room (`rooms/revocations/put`) MUST, from the moment it accepted it, refuse every presentation in which the membership credential or any link of `authority` is revoked by that list, under every task and every version of every task it serves for the room. A chain from which any link is revoked is refused whole: a credential delegated from a revoked one confers nothing, however it was attenuated. The refusal is the same `permissionDenied` as any other failed presentation.\",\n      \"properties\": {\n        \"authority\": {\n          \"description\": \"The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"maxItems\": 8,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"membership\": {\n          \"description\": \"The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.\",\n          \"type\": \"string\"\n        },\n        \"subjectBinding\": {\n          \"description\": \"REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"membership\",\n        \"authority\"\n      ],\n      \"title\": \"AuthorityPresentation\",\n      \"type\": \"object\"\n    },\n    \"BlobRef\": {\n      \"$ref\": \"#/$defs/DigestMultibase\",\n      \"description\": \"The name of one blob: the digest of its BlobManifest, taken over the manifest's RFC 8785 (JCS) canonicalization. sha2-256 is RECOMMENDED and MUST be implemented. Content addressing over ciphertext, never plaintext, so a BlobRef says nothing about what the file contains, and two uploads of one file have different BlobRefs (a fresh `fileId` gives a different key, and so different ciphertext). Rooms cannot be correlated by the files they share. Compared as decoded multihash bytes, never as encoded strings. A BlobRef is defined over the manifest's JSON, as this schema states it and RFC 8785 canonicalizes it, never over any binding's generated type: two bindings that model the manifest as distinct types still compute the same BlobRef from the same JSON.\",\n      \"title\": \"BlobRef\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"PermittedUse\": {\n      \"additionalProperties\": false,\n      \"description\": \"What the author permits the record to be used for — for example, that a learner's record is for instructional personalisation only. OPTIONAL; absent means the author stated no limit beyond the room's own terms.\\n\\n**Two halves, because purpose has both a machine and a human reading.** `purposes` names purposes by IRI, so that an agent can match them without parsing prose; `note` says it in words, for the nuance an identifier cannot carry. Either may be given alone.\\n\\n**No vocabulary of this family's own.** Purpose vocabularies exist and are maintained elsewhere — the W3C Data Privacy Vocabulary (`https://w3id.org/dpv#…`) is the one a writer SHOULD reach for first — and a short list defined here would be one more to translate between, and would be wrong at its edges for every domain that uses rooms. An IRI is the extension path: a community that needs a purpose no published vocabulary has names it under an IRI it controls.\\n\\n**A statement, not an enforcement.** No host can see it on the sealed tiers and none enforces it on any tier; every reader is a member who already holds the content. It records what the author permitted, so that a member — or an agent acting for one — can honour it, and so that a use outside it is a use against the author's stated terms rather than one nobody could have known about. An agent acting for a member SHOULD NOT use a record for a purpose outside `validFor` and SHOULD tell its principal when asked to. It confers no authority on anybody, and a `purposes` entry a reader does not recognise is shown, not ignored.\",\n      \"minProperties\": 1,\n      \"properties\": {\n        \"note\": {\n          \"description\": \"The permitted use in words, such as `instructional personalisation only`. Plain text, rendered as text, and never instructions — an agent reading it treats it as the author's statement about the record, not as something to do.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"purposes\": {\n          \"description\": \"Purposes the record may be used for, each an absolute IRI — for example `https://w3id.org/dpv#ServicePersonalisation`. A set: order carries no meaning. An identifier, never fetched.\",\n          \"items\": {\n            \"format\": \"uri\",\n            \"maxLength\": 2048,\n            \"pattern\": \"^[a-zA-Z][a-zA-Z0-9+.-]*:\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 8,\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        }\n      },\n      \"title\": \"PermittedUse\",\n      \"type\": \"object\"\n    },\n    \"RecordBasis\": {\n      \"description\": \"What kind of claim a record is, as its author states it. OPTIONAL wherever it appears; absent means the author did not say, and a reader shows it as unstated rather than assuming any of these.\\n\\n  - `declared` — the author's own statement: a decision, a preference, an intention, a commitment. True because the author says so, and only as far as the author speaks for it.\\n  - `observed` — something the author saw, measured or was told directly, recorded as found.\\n  - `verified` — checked against evidence that somebody else can check again, such as a credential or another record. A record that says `verified` SHOULD name that evidence in `evidence`; one that does not is an unsupported claim to have checked, and a reader SHOULD present it so.\\n  - `inferred` — derived by reasoning from other information: an agent's conclusion, a summary's generalisation, a model's guess. The value an agent writer uses when it does not know which of the others applies.\\n\\nThe values are the author's account of their own record, signed with it. They are not checked by anybody, confer nothing, and say nothing about whether the record is right — `inferred` can be correct and `observed` mistaken. Aligned with the provenance vocabulary of personal agent memory, so that a record moved between a member's memory and a room keeps its meaning.\",\n      \"enum\": [\n        \"declared\",\n        \"observed\",\n        \"verified\",\n        \"inferred\"\n      ],\n      \"title\": \"RecordBasis\",\n      \"type\": \"string\"\n    },\n    \"RecordConfidence\": {\n      \"description\": \"The author's own estimate, from 0 to 1, that what the record says is correct. OPTIONAL; absent means no estimate was given, never 1. Meaningful only beside the author who gave it: two writers' numbers are not on one scale, so a reader MUST NOT rank records by `confidence` across authors as though they were, and an agent that weights by it SHOULD weight within an author's own records. Never authority.\",\n      \"maximum\": 1,\n      \"minimum\": 0,\n      \"title\": \"RecordConfidence\",\n      \"type\": \"number\"\n    },\n    \"RecordEvidence\": {\n      \"description\": \"One thing a record cites in its support, discriminated by `kind`.\\n\\n  - `record` names a record of a room by its key, and optionally the version cited and the room. Absent `roomId` means the record's own room.\\n  - `credential` names a credential by its `id`, and optionally a digest of the credential as cited.\\n\\n**A reference, never a locator, and never proof.** A reader MUST NOT fetch, resolve or dereference a `credentialId` because a record names it, and MUST NOT read a record of another room on the strength of a citation: the rule that a room's identifiers are identifiers and not addresses (`AuthorityPresentation`) applies here for the same reasons — fetching would signal to whoever answers which member read which record, and when. A reader MAY show a cited record of the same room that it already holds or reads anyway, and MAY match a cited credential against ones its member already holds. What the citation proves is only that the author cited it; whether the evidence exists, says what the author claims, or supports the record is for whoever follows it up to judge.\",\n      \"oneOf\": [\n        {\n          \"$ref\": \"#/$defs/RecordEvidenceRecord\"\n        },\n        {\n          \"$ref\": \"#/$defs/RecordEvidenceCredential\"\n        }\n      ],\n      \"title\": \"RecordEvidence\"\n    },\n    \"RecordEvidenceCredential\": {\n      \"additionalProperties\": false,\n      \"description\": \"Cites a credential.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"description\": \"The credential's `id`. An identifier: never fetched because a record names it.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"digest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"OPTIONAL. A digest of the credential as cited — the SHA-256 multihash of its RFC 8785 (JCS) canonicalization, `proof` included — so a reader holding a credential with this `id` can tell whether it is the one the author meant.\"\n        },\n        \"kind\": {\n          \"const\": \"credential\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"credentialId\"\n      ],\n      \"title\": \"RecordEvidenceCredential\",\n      \"type\": \"object\"\n    },\n    \"RecordEvidenceList\": {\n      \"description\": \"What the author offers in support of the record: other records and credentials, by reference. OPTIONAL; absent means none was named, and an empty array is not a permitted spelling of that. Order carries no meaning. Bounded so that a reader's cost of showing a record's support is bounded too.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/RecordEvidence\"\n      },\n      \"maxItems\": 32,\n      \"minItems\": 1,\n      \"title\": \"RecordEvidenceList\",\n      \"type\": \"array\"\n    },\n    \"RecordEvidenceRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"Cites a record of a room.\",\n      \"properties\": {\n        \"key\": {\n          \"description\": \"The cited record's key, as in `rooms/records/put`. Opaque on the sealed tiers, like every key there.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"kind\": {\n          \"const\": \"record\"\n        },\n        \"roomId\": {\n          \"description\": \"The cited record's room. Absent means the citing record's own room. A citation into another room tells the reader that room's identifier, so a writer SHOULD NOT cite into a room the citing room's readers are not meant to learn of.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"description\": \"The version cited. OPTIONAL; present, it pins the citation to what the record said then, since a record can be rewritten under the same key. A reader that shows a later version SHOULD say that it is not the one cited.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"key\"\n      ],\n      \"title\": \"RecordEvidenceRecord\",\n      \"type\": \"object\"\n    },\n    \"RecordValidUntil\": {\n      \"description\": \"The instant after which the record's author no longer stands behind it as current. OPTIONAL; absent means the record does not expire. A reader hides a record whose `validUntil` has passed from default listings, search and recall, and shows it only on explicit request (`SealedRecordBody`, **Expiry**). No host enforces it.\",\n      \"format\": \"date-time\",\n      \"title\": \"RecordValidUntil\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/records/put. Type https://trusttasks.org/spec/rooms/records/put/0.3#response.\",\n      \"properties\": {\n        \"epoch\": {\n          \"description\": \"The epoch the record was stored under.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"key\": {\n          \"description\": \"The stored record's key.\",\n          \"maxLength\": 512,\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"description\": \"The version assigned, monotonic per room.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"key\",\n        \"version\"\n      ],\n      \"title\": \"Rooms Records Put — response payload\",\n      \"type\": \"object\"\n    },\n    \"SealedRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"A record as a host stores it on an `attributed` or `private` room. Title, description, body, author and tags are sealed together in one blob rather than separately: splitting them would let a host learn the shape of the material from ciphertext lengths, for no benefit, since a reader decrypts the whole record either way.\",\n      \"properties\": {\n        \"ciphertext\": {\n          \"description\": \"The sealed record, base64url. Bound by AEAD associated data to `roomId`, `key`, the version it was sealed at, and `epoch`, so a host that relocates it to another key, version, epoch or room produces a mismatch and the open fails. The record cannot be moved undetected even though the host holds every byte of it. The version it was sealed at is `version` below where present, and the record's own `version` otherwise.\",\n          \"type\": \"string\"\n        },\n        \"epoch\": {\n          \"description\": \"The key epoch this record was sealed under. Cleartext because the host must serve the right ciphertext, and bound into the associated data so that relabelling it fails authentication rather than causing a reader to try the wrong key.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"nonce\": {\n          \"description\": \"AEAD nonce, base64url.\",\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"description\": \"The version this ciphertext was sealed at, where that is no longer the record's own `version`. A record's version moves when it is curated (`rooms/records/curate`, which MUST assign a new one so that every `sinceVersion` watermark sees the change), but a curation other than a retraction keeps the body — and the body is bound, by the AEAD and by its author's signature (`SealedRecordBody`), to the version it was written at. Without this member a curated record would be opened at a version it was never sealed for, and would not open for anyone.\\n\\nA host MUST record the version a body was sealed at when it stores it, MUST NOT change it while that body is kept — a curation alters a record's standing, never its sealed content — and MUST include it whenever it differs from the record's `version`. It is absent where the two are equal, which is every record that has not been curated since it was written, so the members a record carries are unchanged until a curation needs this one. It is part of `sealed`, and so of the record the data commitment covers (`CommittedRecord`): a host cannot change it without changing the root.\\n\\nA reader opens and verifies the body at this version, and MUST refuse a record whose `sealed.version` is greater than its own `version` — a body cannot have been sealed for a version the room had not reached. A host that pairs a newer version with an older body of the same key is rolling the record back; that is a change to the committed record like any other, visible to the comparisons `CommittedRecord` exists for.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"ciphertext\",\n        \"nonce\",\n        \"epoch\"\n      ],\n      \"title\": \"SealedRecord\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"AuthorityPresentation\":{\"additionalProperties\":false,\"description\":\"What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier. A host MUST bind the presenter to the chain's leaf. A chain that verifies is evidence that authority was conferred on somebody; it is not evidence that the party presenting it is that somebody. The leaf's subject MUST equal the party the host authenticated for this request — an identity the transport established or a document `proof` proved, never one named in a payload. A host that omits this check authorizes every captured presentation, and the omission is silent, because the chain still verifies.\\n\\n**Every credential is its issuer's attestation, and only its issuer's.** For the membership credential and for every link of `authority`, a host MUST verify the credential's `proof` with a key that the credential's own `issuer` lists for `assertionMethod` in its DID document, and MUST refuse a credential whose proof names a verification method that is not its issuer's. A proof that verifies under some other party's key is that party's statement, not the issuer's, and confers nothing. The same binding holds for every other document a room signs, such as a `RevocationList`.\\n\\n**A chain that verifies may still be revoked.** A host that has accepted a `RevocationList` for the room (`rooms/revocations/put`) MUST, from the moment it accepted it, refuse every presentation in which the membership credential or any link of `authority` is revoked by that list, under every task and every version of every task it serves for the room. A chain from which any link is revoked is refused whole: a credential delegated from a revoked one confers nothing, however it was attenuated. The refusal is the same `permissionDenied` as any other failed presentation.\",\"properties\":{\"authority\":{\"description\":\"The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent.\",\"items\":{\"type\":\"string\"},\"maxItems\":8,\"minItems\":1,\"type\":\"array\"},\"membership\":{\"description\":\"The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.\",\"type\":\"string\"},\"subjectBinding\":{\"description\":\"REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this.\",\"type\":\"string\"}},\"required\":[\"membership\",\"authority\"],\"title\":\"AuthorityPresentation\",\"type\":\"object\"},\"BlobRef\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The name of one blob: the digest of its BlobManifest, taken over the manifest's RFC 8785 (JCS) canonicalization. sha2-256 is RECOMMENDED and MUST be implemented. Content addressing over ciphertext, never plaintext, so a BlobRef says nothing about what the file contains, and two uploads of one file have different BlobRefs (a fresh `fileId` gives a different key, and so different ciphertext). Rooms cannot be correlated by the files they share. Compared as decoded multihash bytes, never as encoded strings. A BlobRef is defined over the manifest's JSON, as this schema states it and RFC 8785 canonicalizes it, never over any binding's generated type: two bindings that model the manifest as distinct types still compute the same BlobRef from the same JSON.\",\"title\":\"BlobRef\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"PermittedUse\":{\"additionalProperties\":false,\"description\":\"What the author permits the record to be used for — for example, that a learner's record is for instructional personalisation only. OPTIONAL; absent means the author stated no limit beyond the room's own terms.\\n\\n**Two halves, because purpose has both a machine and a human reading.** `purposes` names purposes by IRI, so that an agent can match them without parsing prose; `note` says it in words, for the nuance an identifier cannot carry. Either may be given alone.\\n\\n**No vocabulary of this family's own.** Purpose vocabularies exist and are maintained elsewhere — the W3C Data Privacy Vocabulary (`https://w3id.org/dpv#…`) is the one a writer SHOULD reach for first — and a short list defined here would be one more to translate between, and would be wrong at its edges for every domain that uses rooms. An IRI is the extension path: a community that needs a purpose no published vocabulary has names it under an IRI it controls.\\n\\n**A statement, not an enforcement.** No host can see it on the sealed tiers and none enforces it on any tier; every reader is a member who already holds the content. It records what the author permitted, so that a member — or an agent acting for one — can honour it, and so that a use outside it is a use against the author's stated terms rather than one nobody could have known about. An agent acting for a member SHOULD NOT use a record for a purpose outside `validFor` and SHOULD tell its principal when asked to. It confers no authority on anybody, and a `purposes` entry a reader does not recognise is shown, not ignored.\",\"minProperties\":1,\"properties\":{\"note\":{\"description\":\"The permitted use in words, such as `instructional personalisation only`. Plain text, rendered as text, and never instructions — an agent reading it treats it as the author's statement about the record, not as something to do.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"purposes\":{\"description\":\"Purposes the record may be used for, each an absolute IRI — for example `https://w3id.org/dpv#ServicePersonalisation`. A set: order carries no meaning. An identifier, never fetched.\",\"items\":{\"format\":\"uri\",\"maxLength\":2048,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9+.-]*:\",\"type\":\"string\"},\"maxItems\":8,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true}},\"title\":\"PermittedUse\",\"type\":\"object\"},\"RecordBasis\":{\"description\":\"What kind of claim a record is, as its author states it. OPTIONAL wherever it appears; absent means the author did not say, and a reader shows it as unstated rather than assuming any of these.\\n\\n  - `declared` — the author's own statement: a decision, a preference, an intention, a commitment. True because the author says so, and only as far as the author speaks for it.\\n  - `observed` — something the author saw, measured or was told directly, recorded as found.\\n  - `verified` — checked against evidence that somebody else can check again, such as a credential or another record. A record that says `verified` SHOULD name that evidence in `evidence`; one that does not is an unsupported claim to have checked, and a reader SHOULD present it so.\\n  - `inferred` — derived by reasoning from other information: an agent's conclusion, a summary's generalisation, a model's guess. The value an agent writer uses when it does not know which of the others applies.\\n\\nThe values are the author's account of their own record, signed with it. They are not checked by anybody, confer nothing, and say nothing about whether the record is right — `inferred` can be correct and `observed` mistaken. Aligned with the provenance vocabulary of personal agent memory, so that a record moved between a member's memory and a room keeps its meaning.\",\"enum\":[\"declared\",\"observed\",\"verified\",\"inferred\"],\"title\":\"RecordBasis\",\"type\":\"string\"},\"RecordConfidence\":{\"description\":\"The author's own estimate, from 0 to 1, that what the record says is correct. OPTIONAL; absent means no estimate was given, never 1. Meaningful only beside the author who gave it: two writers' numbers are not on one scale, so a reader MUST NOT rank records by `confidence` across authors as though they were, and an agent that weights by it SHOULD weight within an author's own records. Never authority.\",\"maximum\":1,\"minimum\":0,\"title\":\"RecordConfidence\",\"type\":\"number\"},\"RecordEvidence\":{\"description\":\"One thing a record cites in its support, discriminated by `kind`.\\n\\n  - `record` names a record of a room by its key, and optionally the version cited and the room. Absent `roomId` means the record's own room.\\n  - `credential` names a credential by its `id`, and optionally a digest of the credential as cited.\\n\\n**A reference, never a locator, and never proof.** A reader MUST NOT fetch, resolve or dereference a `credentialId` because a record names it, and MUST NOT read a record of another room on the strength of a citation: the rule that a room's identifiers are identifiers and not addresses (`AuthorityPresentation`) applies here for the same reasons — fetching would signal to whoever answers which member read which record, and when. A reader MAY show a cited record of the same room that it already holds or reads anyway, and MAY match a cited credential against ones its member already holds. What the citation proves is only that the author cited it; whether the evidence exists, says what the author claims, or supports the record is for whoever follows it up to judge.\",\"oneOf\":[{\"$ref\":\"#/$defs/RecordEvidenceRecord\"},{\"$ref\":\"#/$defs/RecordEvidenceCredential\"}],\"title\":\"RecordEvidence\"},\"RecordEvidenceCredential\":{\"additionalProperties\":false,\"description\":\"Cites a credential.\",\"properties\":{\"credentialId\":{\"description\":\"The credential's `id`. An identifier: never fetched because a record names it.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"digest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"OPTIONAL. A digest of the credential as cited — the SHA-256 multihash of its RFC 8785 (JCS) canonicalization, `proof` included — so a reader holding a credential with this `id` can tell whether it is the one the author meant.\"},\"kind\":{\"const\":\"credential\"}},\"required\":[\"kind\",\"credentialId\"],\"title\":\"RecordEvidenceCredential\",\"type\":\"object\"},\"RecordEvidenceList\":{\"description\":\"What the author offers in support of the record: other records and credentials, by reference. OPTIONAL; absent means none was named, and an empty array is not a permitted spelling of that. Order carries no meaning. Bounded so that a reader's cost of showing a record's support is bounded too.\",\"items\":{\"$ref\":\"#/$defs/RecordEvidence\"},\"maxItems\":32,\"minItems\":1,\"title\":\"RecordEvidenceList\",\"type\":\"array\"},\"RecordEvidenceRecord\":{\"additionalProperties\":false,\"description\":\"Cites a record of a room.\",\"properties\":{\"key\":{\"description\":\"The cited record's key, as in `rooms/records/put`. Opaque on the sealed tiers, like every key there.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"kind\":{\"const\":\"record\"},\"roomId\":{\"description\":\"The cited record's room. Absent means the citing record's own room. A citation into another room tells the reader that room's identifier, so a writer SHOULD NOT cite into a room the citing room's readers are not meant to learn of.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"version\":{\"description\":\"The version cited. OPTIONAL; present, it pins the citation to what the record said then, since a record can be rewritten under the same key. A reader that shows a later version SHOULD say that it is not the one cited.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"kind\",\"key\"],\"title\":\"RecordEvidenceRecord\",\"type\":\"object\"},\"RecordValidUntil\":{\"description\":\"The instant after which the record's author no longer stands behind it as current. OPTIONAL; absent means the record does not expire. A reader hides a record whose `validUntil` has passed from default listings, search and recall, and shows it only on explicit request (`SealedRecordBody`, **Expiry**). No host enforces it.\",\"format\":\"date-time\",\"title\":\"RecordValidUntil\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/records/put. Type https://trusttasks.org/spec/rooms/records/put/0.3#response.\",\"properties\":{\"epoch\":{\"description\":\"The epoch the record was stored under.\",\"minimum\":1,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"key\":{\"description\":\"The stored record's key.\",\"maxLength\":512,\"type\":\"string\"},\"version\":{\"description\":\"The version assigned, monotonic per room.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"key\",\"version\"],\"title\":\"Rooms Records Put — response payload\",\"type\":\"object\"},\"SealedRecord\":{\"additionalProperties\":false,\"description\":\"A record as a host stores it on an `attributed` or `private` room. Title, description, body, author and tags are sealed together in one blob rather than separately: splitting them would let a host learn the shape of the material from ciphertext lengths, for no benefit, since a reader decrypts the whole record either way.\",\"properties\":{\"ciphertext\":{\"description\":\"The sealed record, base64url. Bound by AEAD associated data to `roomId`, `key`, the version it was sealed at, and `epoch`, so a host that relocates it to another key, version, epoch or room produces a mismatch and the open fails. The record cannot be moved undetected even though the host holds every byte of it. The version it was sealed at is `version` below where present, and the record's own `version` otherwise.\",\"type\":\"string\"},\"epoch\":{\"description\":\"The key epoch this record was sealed under. Cleartext because the host must serve the right ciphertext, and bound into the associated data so that relabelling it fails authentication rather than causing a reader to try the wrong key.\",\"minimum\":1,\"type\":\"integer\"},\"nonce\":{\"description\":\"AEAD nonce, base64url.\",\"type\":\"string\"},\"version\":{\"description\":\"The version this ciphertext was sealed at, where that is no longer the record's own `version`. A record's version moves when it is curated (`rooms/records/curate`, which MUST assign a new one so that every `sinceVersion` watermark sees the change), but a curation other than a retraction keeps the body — and the body is bound, by the AEAD and by its author's signature (`SealedRecordBody`), to the version it was written at. Without this member a curated record would be opened at a version it was never sealed for, and would not open for anyone.\\n\\nA host MUST record the version a body was sealed at when it stores it, MUST NOT change it while that body is kept — a curation alters a record's standing, never its sealed content — and MUST include it whenever it differs from the record's `version`. It is absent where the two are equal, which is every record that has not been curated since it was written, so the members a record carries are unchanged until a curation needs this one. It is part of `sealed`, and so of the record the data commitment covers (`CommittedRecord`): a host cannot change it without changing the root.\\n\\nA reader opens and verifies the body at this version, and MUST refuse a record whose `sealed.version` is greater than its own `version` — a body cannot have been sealed for a version the room had not reached. A host that pairs a newer version with an older body of the same key is rolling the record back; that is a change to the committed record like any other, visible to the comparisons `CommittedRecord` exists for.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"ciphertext\",\"nonce\",\"epoch\"],\"title\":\"SealedRecord\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

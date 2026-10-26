@@ -35,21 +35,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -71,15 +56,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -143,23 +119,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/messaging/admin/config/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -183,37 +142,6 @@ impl Payload {
 }
 ///The success response to a messaging/admin/config request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/admin/config/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The success response to a messaging/admin/config request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/admin/config/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "config",
-///    "version"
-///  ],
-///  "properties": {
-///    "config": {
-///      "description": "The mediator's current configuration as a JSON object. The exact members are mediator-implementation-specific and opaque to this specification.",
-///      "type": "object",
-///      "additionalProperties": true
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "version": {
-///      "description": "The mediator software version.",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -344,7 +272,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/messaging/admin/config/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a messaging/admin/config request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/admin/config/0.1#response.\",\n      \"properties\": {\n        \"config\": {\n          \"additionalProperties\": true,\n          \"description\": \"The mediator's current configuration as a JSON object. The exact members are mediator-implementation-specific and opaque to this specification.\",\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"version\": {\n          \"description\": \"The mediator software version.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"version\",\n        \"config\"\n      ],\n      \"title\": \"Messaging Get Configuration — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/messaging/admin/config/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    }\n  },\n  \"title\": \"Messaging Get Configuration — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a messaging/admin/config request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/admin/config/0.1#response.\",\"properties\":{\"config\":{\"additionalProperties\":true,\"description\":\"The mediator's current configuration as a JSON object. The exact members are mediator-implementation-specific and opaque to this specification.\",\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"version\":{\"description\":\"The mediator software version.\",\"type\":\"string\"}},\"required\":[\"version\",\"config\"],\"title\":\"Messaging Get Configuration — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/messaging/admin/config/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"title\":\"Messaging Get Configuration — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -352,7 +280,7 @@ impl crate::Payload for Response {
         "https://trusttasks.org/spec/messaging/admin/config/0.1#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a messaging/admin/config request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/admin/config/0.1#response.\",\n      \"properties\": {\n        \"config\": {\n          \"additionalProperties\": true,\n          \"description\": \"The mediator's current configuration as a JSON object. The exact members are mediator-implementation-specific and opaque to this specification.\",\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"version\": {\n          \"description\": \"The mediator software version.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"version\",\n        \"config\"\n      ],\n      \"title\": \"Messaging Get Configuration — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a messaging/admin/config request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/admin/config/0.1#response.\",\"properties\":{\"config\":{\"additionalProperties\":true,\"description\":\"The mediator's current configuration as a JSON object. The exact members are mediator-implementation-specific and opaque to this specification.\",\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"version\":{\"description\":\"The mediator software version.\",\"type\":\"string\"}},\"required\":[\"version\",\"config\"],\"title\":\"Messaging Get Configuration — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

@@ -34,40 +34,6 @@ pub mod error {
 }
 ///OPTIONAL. How the community asks to be shown to a prospective applicant: a name, an accent colour and a logo. Presentation only, self-asserted and unverified — `communityDid` identifies the community, never `branding`. Not part of any criterion, so not covered by a `requirementsDigest`. Every member is optional.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "CommunityBranding",
-///  "description": "OPTIONAL. How the community asks to be shown to a prospective applicant: a name, an accent colour and a logo. Presentation only, self-asserted and unverified — `communityDid` identifies the community, never `branding`. Not part of any criterion, so not covered by a `requirementsDigest`. Every member is optional.",
-///  "type": "object",
-///  "properties": {
-///    "accentColor": {
-///      "description": "An sRGB colour as `#rrggbb`, compared case-insensitively. A community SHOULD write it in lower case.",
-///      "type": "string",
-///      "pattern": "^#[0-9a-fA-F]{6}$"
-///    },
-///    "displayName": {
-///      "description": "The community's name as it asks to be shown.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "logoUrl": {
-///      "description": "An https URL of the community's logo. Fetched by the client, so an untrusted image from wherever it points.",
-///      "type": "string",
-///      "format": "uri",
-///      "maxLength": 2048,
-///      "pattern": "^https://"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -113,16 +79,6 @@ impl CommunityBranding {
 }
 ///An sRGB colour as `#rrggbb`, compared case-insensitively. A community SHOULD write it in lower case.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "An sRGB colour as `#rrggbb`, compared case-insensitively. A community SHOULD write it in lower case.",
-///  "type": "string",
-///  "pattern": "^#[0-9a-fA-F]{6}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CommunityBrandingAccentColor(::std::string::String);
@@ -184,17 +140,6 @@ impl<'de> ::serde::Deserialize<'de> for CommunityBrandingAccentColor {
 }
 ///The community's name as it asks to be shown.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The community's name as it asks to be shown.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CommunityBrandingDisplayName(::std::string::String);
@@ -257,21 +202,6 @@ impl<'de> ::serde::Deserialize<'de> for CommunityBrandingDisplayName {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -293,15 +223,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -365,23 +286,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///An empty request: the community has one such setting. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/community/branding/show/0.1",
-///  "title": "Payload",
-///  "description": "An empty request: the community has one such setting. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -403,28 +307,6 @@ impl Payload {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "branding"
-///  ],
-///  "properties": {
-///    "branding": {
-///      "$ref": "#/definitions/CommunityBranding"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -622,7 +504,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/community/branding/show/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CommunityBranding\": {\n      \"additionalProperties\": false,\n      \"description\": \"OPTIONAL. How the community asks to be shown to a prospective applicant: a name, an accent colour and a logo. Presentation only, self-asserted and unverified — `communityDid` identifies the community, never `branding`. Not part of any criterion, so not covered by a `requirementsDigest`. Every member is optional.\",\n      \"properties\": {\n        \"accentColor\": {\n          \"description\": \"An sRGB colour as `#rrggbb`, compared case-insensitively. A community SHOULD write it in lower case.\",\n          \"pattern\": \"^#[0-9a-fA-F]{6}$\",\n          \"type\": \"string\"\n        },\n        \"displayName\": {\n          \"description\": \"The community's name as it asks to be shown.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"logoUrl\": {\n          \"description\": \"An https URL of the community's logo. Fetched by the client, so an untrusted image from wherever it points.\",\n          \"format\": \"uri\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^https://\",\n          \"type\": \"string\"\n        }\n      },\n      \"title\": \"CommunityBranding\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"branding\": {\n          \"$ref\": \"#/$defs/CommunityBranding\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"branding\"\n      ],\n      \"title\": \"VTC Community — Branding — Show — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/community/branding/show/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An empty request: the community has one such setting. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"title\": \"VTC Community — Branding — Show — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"CommunityBranding\":{\"additionalProperties\":false,\"description\":\"OPTIONAL. How the community asks to be shown to a prospective applicant: a name, an accent colour and a logo. Presentation only, self-asserted and unverified — `communityDid` identifies the community, never `branding`. Not part of any criterion, so not covered by a `requirementsDigest`. Every member is optional.\",\"properties\":{\"accentColor\":{\"description\":\"An sRGB colour as `#rrggbb`, compared case-insensitively. A community SHOULD write it in lower case.\",\"pattern\":\"^#[0-9a-fA-F]{6}$\",\"type\":\"string\"},\"displayName\":{\"description\":\"The community's name as it asks to be shown.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"logoUrl\":{\"description\":\"An https URL of the community's logo. Fetched by the client, so an untrusted image from wherever it points.\",\"format\":\"uri\",\"maxLength\":2048,\"pattern\":\"^https://\",\"type\":\"string\"}},\"title\":\"CommunityBranding\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"branding\":{\"$ref\":\"#/$defs/CommunityBranding\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"branding\"],\"title\":\"VTC Community — Branding — Show — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/community/branding/show/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"An empty request: the community has one such setting. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"title\":\"VTC Community — Branding — Show — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -630,7 +512,7 @@ impl crate::Payload for Response {
         "https://trusttasks.org/spec/vtc/community/branding/show/0.1#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CommunityBranding\": {\n      \"additionalProperties\": false,\n      \"description\": \"OPTIONAL. How the community asks to be shown to a prospective applicant: a name, an accent colour and a logo. Presentation only, self-asserted and unverified — `communityDid` identifies the community, never `branding`. Not part of any criterion, so not covered by a `requirementsDigest`. Every member is optional.\",\n      \"properties\": {\n        \"accentColor\": {\n          \"description\": \"An sRGB colour as `#rrggbb`, compared case-insensitively. A community SHOULD write it in lower case.\",\n          \"pattern\": \"^#[0-9a-fA-F]{6}$\",\n          \"type\": \"string\"\n        },\n        \"displayName\": {\n          \"description\": \"The community's name as it asks to be shown.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"logoUrl\": {\n          \"description\": \"An https URL of the community's logo. Fetched by the client, so an untrusted image from wherever it points.\",\n          \"format\": \"uri\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^https://\",\n          \"type\": \"string\"\n        }\n      },\n      \"title\": \"CommunityBranding\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"branding\": {\n          \"$ref\": \"#/$defs/CommunityBranding\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"branding\"\n      ],\n      \"title\": \"VTC Community — Branding — Show — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"CommunityBranding\":{\"additionalProperties\":false,\"description\":\"OPTIONAL. How the community asks to be shown to a prospective applicant: a name, an accent colour and a logo. Presentation only, self-asserted and unverified — `communityDid` identifies the community, never `branding`. Not part of any criterion, so not covered by a `requirementsDigest`. Every member is optional.\",\"properties\":{\"accentColor\":{\"description\":\"An sRGB colour as `#rrggbb`, compared case-insensitively. A community SHOULD write it in lower case.\",\"pattern\":\"^#[0-9a-fA-F]{6}$\",\"type\":\"string\"},\"displayName\":{\"description\":\"The community's name as it asks to be shown.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"logoUrl\":{\"description\":\"An https URL of the community's logo. Fetched by the client, so an untrusted image from wherever it points.\",\"format\":\"uri\",\"maxLength\":2048,\"pattern\":\"^https://\",\"type\":\"string\"}},\"title\":\"CommunityBranding\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"branding\":{\"$ref\":\"#/$defs/CommunityBranding\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"branding\"],\"title\":\"VTC Community — Branding — Show — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

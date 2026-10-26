@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,30 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///The lock holder delivers the member's signed decision on an out-of-band request by carrying a signed auth/oob/grant document. Issued and signed by the lock key `K_a`. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, parentThreadId, proof) are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/auth/oob/respond/0.3",
-///  "title": "Payload",
-///  "description": "The lock holder delivers the member's signed decision on an out-of-band request by carrying a signed auth/oob/grant document. Issued and signed by the lock key `K_a`. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, parentThreadId, proof) are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "grant"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "grant": {
-///      "description": "A complete, signed auth/oob/grant/0.3 Trust Task document, issued by the identified DID and signed by its VTA for `assertionMethod`. The service verifies it as a document in its own right — envelope, proof and payload against that specification's schema — over the members exactly as received: its proof covers every member, so it is deliberately an open object here rather than a typed one a binding could narrow.",
-///      "type": "object"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -182,34 +134,6 @@ impl Payload {
 }
 ///The outcome the service recorded. It never contains session material: authority goes to the starter key, through auth/oob/redeem only.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The outcome the service recorded. It never contains session material: authority goes to the starter key, through auth/oob/redeem only.",
-///  "type": "object",
-///  "required": [
-///    "status"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "status": {
-///      "description": "`approved` when the grant approved and every check passed; `declined` when the grant declined.",
-///      "type": "string",
-///      "enum": [
-///        "approved",
-///        "declined"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -226,19 +150,6 @@ impl Response {
 }
 ///`approved` when the grant approved and every check passed; `declined` when the grant declined.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`approved` when the grant approved and every check passed; `declined` when the grant declined.",
-///  "type": "string",
-///  "enum": [
-///    "approved",
-///    "declined"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -416,7 +327,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The outcome the service recorded. It never contains session material: authority goes to the starter key, through auth/oob/redeem only.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"status\": {\n          \"description\": \"`approved` when the grant approved and every check passed; `declined` when the grant declined.\",\n          \"enum\": [\n            \"approved\",\n            \"declined\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\"\n      ],\n      \"title\": \"Auth — OOB Respond — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/oob/respond/0.3\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"The lock holder delivers the member's signed decision on an out-of-band request by carrying a signed auth/oob/grant document. Issued and signed by the lock key `K_a`. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, parentThreadId, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"grant\": {\n      \"description\": \"A complete, signed auth/oob/grant/0.3 Trust Task document, issued by the identified DID and signed by its VTA for `assertionMethod`. The service verifies it as a document in its own right — envelope, proof and payload against that specification's schema — over the members exactly as received: its proof covers every member, so it is deliberately an open object here rather than a typed one a binding could narrow.\",\n      \"type\": \"object\"\n    }\n  },\n  \"required\": [\n    \"grant\"\n  ],\n  \"title\": \"Auth — OOB Respond — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The outcome the service recorded. It never contains session material: authority goes to the starter key, through auth/oob/redeem only.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"status\":{\"description\":\"`approved` when the grant approved and every check passed; `declined` when the grant declined.\",\"enum\":[\"approved\",\"declined\"],\"type\":\"string\"}},\"required\":[\"status\"],\"title\":\"Auth — OOB Respond — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/auth/oob/respond/0.3\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The lock holder delivers the member's signed decision on an out-of-band request by carrying a signed auth/oob/grant document. Issued and signed by the lock key `K_a`. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, parentThreadId, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"grant\":{\"description\":\"A complete, signed auth/oob/grant/0.3 Trust Task document, issued by the identified DID and signed by its VTA for `assertionMethod`. The service verifies it as a document in its own right — envelope, proof and payload against that specification's schema — over the members exactly as received: its proof covers every member, so it is deliberately an open object here rather than a typed one a binding could narrow.\",\"type\":\"object\"}},\"required\":[\"grant\"],\"title\":\"Auth — OOB Respond — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -425,7 +336,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The outcome the service recorded. It never contains session material: authority goes to the starter key, through auth/oob/redeem only.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"status\": {\n          \"description\": \"`approved` when the grant approved and every check passed; `declined` when the grant declined.\",\n          \"enum\": [\n            \"approved\",\n            \"declined\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\"\n      ],\n      \"title\": \"Auth — OOB Respond — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The outcome the service recorded. It never contains session material: authority goes to the starter key, through auth/oob/redeem only.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"status\":{\"description\":\"`approved` when the grant approved and every check passed; `declined` when the grant declined.\",\"enum\":[\"approved\",\"declined\"],\"type\":\"string\"}},\"required\":[\"status\"],\"title\":\"Auth — OOB Respond — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

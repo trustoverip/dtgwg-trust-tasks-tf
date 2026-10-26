@@ -35,21 +35,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -71,15 +56,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -143,36 +119,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A community administrator, a namespace admin, or (for one repository) its owner has the VTC send its bridge the complete forge roles of one repository, or of every repository in a namespace, again — so the forge comes to match the VTC's rights under the role map the bridge now applies. No right changes.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/git-ns/roles/reproject/0.1",
-///  "title": "Payload",
-///  "description": "A community administrator, a namespace admin, or (for one repository) its owner has the VTC send its bridge the complete forge roles of one repository, or of every repository in a namespace, again — so the forge comes to match the VTC's rights under the role map the bridge now applies. No right changes.",
-///  "type": "object",
-///  "required": [
-///    "resource"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "reason": {
-///      "description": "Why, in the caller's words. Kept with the audit record.",
-///      "type": "string",
-///      "maxLength": 1024,
-///      "minLength": 1
-///    },
-///    "resource": {
-///      "description": "A namespace (`<forge>/<owner>`): every active or orphaned repository in it. A repository (`<forge>/<owner>/<repo>`): that repository only.",
-///      "$ref": "#/definitions/Resource"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -193,17 +139,6 @@ impl Payload {
 }
 ///Why, in the caller's words. Kept with the audit record.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Why, in the caller's words. Kept with the audit record.",
-///  "type": "string",
-///  "maxLength": 1024,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadReason(::std::string::String);
@@ -266,18 +201,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 }
 ///A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo>`, lowercase.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RepoResource",
-///  "description": "A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo>`, lowercase.",
-///  "type": "string",
-///  "maxLength": 455,
-///  "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,99}/[a-z0-9_-][a-z0-9._-]{0,99}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RepoResource(::std::string::String);
@@ -351,18 +274,6 @@ impl<'de> ::serde::Deserialize<'de> for RepoResource {
 }
 ///A forge-qualified resource: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo>` for one repository, all lowercase — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Resource",
-///  "description": "A forge-qualified resource: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo>` for one repository, all lowercase — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.",
-///  "type": "string",
-///  "maxLength": 455,
-///  "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+(?:/[a-z0-9_-][a-z0-9._-]{0,99}){1,2}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Resource(::std::string::String);
@@ -436,35 +347,6 @@ impl<'de> ::serde::Deserialize<'de> for Resource {
 }
 ///The repositories the VTC queued a projectRoles job for.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The repositories the VTC queued a projectRoles job for.",
-///  "type": "object",
-///  "required": [
-///    "repos"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "repos": {
-///      "description": "Each repository a projectRoles job was queued for, with its complete desiredRoles. Empty: the namespace has no active or orphaned repository.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/RepoResource"
-///      },
-///      "maxItems": 10000,
-///      "uniqueItems": true
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -610,7 +492,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"RepoResource\": {\n      \"description\": \"A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo>`, lowercase.\",\n      \"maxLength\": 455,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,99}/[a-z0-9_-][a-z0-9._-]{0,99}$\",\n      \"title\": \"RepoResource\",\n      \"type\": \"string\"\n    },\n    \"Resource\": {\n      \"description\": \"A forge-qualified resource: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo>` for one repository, all lowercase — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.\",\n      \"maxLength\": 455,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+(?:/[a-z0-9_-][a-z0-9._-]{0,99}){1,2}$\",\n      \"title\": \"Resource\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The repositories the VTC queued a projectRoles job for.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"repos\": {\n          \"description\": \"Each repository a projectRoles job was queued for, with its complete desiredRoles. Empty: the namespace has no active or orphaned repository.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/RepoResource\"\n          },\n          \"maxItems\": 10000,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        }\n      },\n      \"required\": [\n        \"repos\"\n      ],\n      \"title\": \"Git Namespaces — Re-project Roles — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/git-ns/roles/reproject/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A community administrator, a namespace admin, or (for one repository) its owner has the VTC send its bridge the complete forge roles of one repository, or of every repository in a namespace, again — so the forge comes to match the VTC's rights under the role map the bridge now applies. No right changes.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"reason\": {\n      \"description\": \"Why, in the caller's words. Kept with the audit record.\",\n      \"maxLength\": 1024,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"resource\": {\n      \"$ref\": \"#/$defs/Resource\",\n      \"description\": \"A namespace (`<forge>/<owner>`): every active or orphaned repository in it. A repository (`<forge>/<owner>/<repo>`): that repository only.\"\n    }\n  },\n  \"required\": [\n    \"resource\"\n  ],\n  \"title\": \"Git Namespaces — Re-project Roles — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"RepoResource\":{\"description\":\"A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo>`, lowercase.\",\"maxLength\":455,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,99}/[a-z0-9_-][a-z0-9._-]{0,99}$\",\"title\":\"RepoResource\",\"type\":\"string\"},\"Resource\":{\"description\":\"A forge-qualified resource: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo>` for one repository, all lowercase — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.\",\"maxLength\":455,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+(?:/[a-z0-9_-][a-z0-9._-]{0,99}){1,2}$\",\"title\":\"Resource\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The repositories the VTC queued a projectRoles job for.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"repos\":{\"description\":\"Each repository a projectRoles job was queued for, with its complete desiredRoles. Empty: the namespace has no active or orphaned repository.\",\"items\":{\"$ref\":\"#/$defs/RepoResource\"},\"maxItems\":10000,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"repos\"],\"title\":\"Git Namespaces — Re-project Roles — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/git-ns/roles/reproject/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A community administrator, a namespace admin, or (for one repository) its owner has the VTC send its bridge the complete forge roles of one repository, or of every repository in a namespace, again — so the forge comes to match the VTC's rights under the role map the bridge now applies. No right changes.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"reason\":{\"description\":\"Why, in the caller's words. Kept with the audit record.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"},\"resource\":{\"$ref\":\"#/$defs/Resource\",\"description\":\"A namespace (`<forge>/<owner>`): every active or orphaned repository in it. A repository (`<forge>/<owner>/<repo>`): that repository only.\"}},\"required\":[\"resource\"],\"title\":\"Git Namespaces — Re-project Roles — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -620,7 +502,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"RepoResource\": {\n      \"description\": \"A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo>`, lowercase.\",\n      \"maxLength\": 455,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,99}/[a-z0-9_-][a-z0-9._-]{0,99}$\",\n      \"title\": \"RepoResource\",\n      \"type\": \"string\"\n    },\n    \"Resource\": {\n      \"description\": \"A forge-qualified resource: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo>` for one repository, all lowercase — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.\",\n      \"maxLength\": 455,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+(?:/[a-z0-9_-][a-z0-9._-]{0,99}){1,2}$\",\n      \"title\": \"Resource\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The repositories the VTC queued a projectRoles job for.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"repos\": {\n          \"description\": \"Each repository a projectRoles job was queued for, with its complete desiredRoles. Empty: the namespace has no active or orphaned repository.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/RepoResource\"\n          },\n          \"maxItems\": 10000,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        }\n      },\n      \"required\": [\n        \"repos\"\n      ],\n      \"title\": \"Git Namespaces — Re-project Roles — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"RepoResource\":{\"description\":\"A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo>`, lowercase.\",\"maxLength\":455,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,99}/[a-z0-9_-][a-z0-9._-]{0,99}$\",\"title\":\"RepoResource\",\"type\":\"string\"},\"Resource\":{\"description\":\"A forge-qualified resource: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo>` for one repository, all lowercase — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.\",\"maxLength\":455,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+(?:/[a-z0-9_-][a-z0-9._-]{0,99}){1,2}$\",\"title\":\"Resource\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The repositories the VTC queued a projectRoles job for.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"repos\":{\"description\":\"Each repository a projectRoles job was queued for, with its complete desiredRoles. Empty: the namespace has no active or orphaned repository.\",\"items\":{\"$ref\":\"#/$defs/RepoResource\"},\"maxItems\":10000,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"repos\"],\"title\":\"Git Namespaces — Re-project Roles — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

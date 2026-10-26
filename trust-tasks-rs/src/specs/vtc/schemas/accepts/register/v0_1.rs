@@ -35,48 +35,6 @@ pub mod error {
 }
 ///A named required-evidence criterion: the DCQL query a ceremony runs to decide whether a holder's presented credentials satisfy the community, and the peer identity vetting it requires. What vtc/join-requests/manifest/0.2 publishes to applicants as a `Criterion` is derived from this.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "AcceptsCriterion",
-///  "description": "A named required-evidence criterion: the DCQL query a ceremony runs to decide whether a holder's presented credentials satisfy the community, and the peer identity vetting it requires. What vtc/join-requests/manifest/0.2 publishes to applicants as a `Criterion` is derived from this.",
-///  "type": "object",
-///  "required": [
-///    "createdAt",
-///    "createdByDid",
-///    "id",
-///    "query"
-///  ],
-///  "properties": {
-///    "createdAt": {
-///      "description": "When this criterion was last registered. Registering an existing id replaces it.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "createdByDid": {
-///      "description": "The administrator who last registered the criterion.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    },
-///    "description": {
-///      "$ref": "#/definitions/CriterionDescription"
-///    },
-///    "id": {
-///      "$ref": "#/definitions/AcceptsCriterionId"
-///    },
-///    "query": {
-///      "$ref": "#/definitions/DcqlQuery"
-///    },
-///    "vetting": {
-///      "$ref": "#/definitions/VettingRequirements"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -101,17 +59,6 @@ impl AcceptsCriterion {
 }
 ///The administrator who last registered the criterion.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The administrator who last registered the criterion.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct AcceptsCriterionCreatedByDid(::std::string::String);
@@ -176,18 +123,6 @@ impl<'de> ::serde::Deserialize<'de> for AcceptsCriterionCreatedByDid {
 }
 ///An Accepts criterion's identifier, chosen by the registering administrator — a ceremony purpose or a named manifest criterion, e.g. `membership`. Compared as an exact string after surrounding whitespace is trimmed. Bounded at 128 characters, the bound vtc/join-requests/manifest/0.2 places on the criterion `id` it publishes.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "AcceptsCriterionId",
-///  "description": "An Accepts criterion's identifier, chosen by the registering administrator — a ceremony purpose or a named manifest criterion, e.g. `membership`. Compared as an exact string after surrounding whitespace is trimmed. Bounded at 128 characters, the bound vtc/join-requests/manifest/0.2 places on the criterion `id` it publishes.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct AcceptsCriterionId(::std::string::String);
@@ -255,19 +190,6 @@ The token is the maintainer's own; no external vocabulary is primary. External v
 
 The `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ClaimType",
-///  "description": "The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\n\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\n\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1,
-///  "pattern": "^(x:)?[a-z][a-zA-Z0-9]*(\\.[a-z][a-zA-Z0-9]*)*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ClaimType(::std::string::String);
@@ -339,17 +261,6 @@ impl<'de> ::serde::Deserialize<'de> for ClaimType {
 }
 ///Plain-language summary of the criterion, written by the registering administrator. Published to prospective applicants in the join manifest, and used as the `purpose` of the credential-exchange/query a join sends when it is present — so it is read by applicants and their agents, not only by administrators. Untrusted as a statement of the rule: where it and `query` or `vetting` disagree, those govern.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "CriterionDescription",
-///  "description": "Plain-language summary of the criterion, written by the registering administrator. Published to prospective applicants in the join manifest, and used as the `purpose` of the credential-exchange/query a join sends when it is present — so it is read by applicants and their agents, not only by administrators. Untrusted as a statement of the rule: where it and `query` or `vetting` disagree, those govern.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CriterionDescription(::std::string::String);
@@ -409,17 +320,6 @@ impl<'de> ::serde::Deserialize<'de> for CriterionDescription {
 }
 ///An OpenID for Verifiable Presentations DCQL query, carried verbatim: per-credential `format`, `meta` type selector (`vct_values`) and requested `claims`. Defined by OID4VP and not re-specified here; snake_case member names are DCQL's own. The community parses it as DCQL and checks every type it references against the registry.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DcqlQuery",
-///  "description": "An OpenID for Verifiable Presentations DCQL query, carried verbatim: per-credential `format`, `meta` type selector (`vct_values`) and requested `claims`. Defined by OID4VP and not re-specified here; snake_case member names are DCQL's own. The community parses it as DCQL and checks every type it references against the registry.",
-///  "type": "object",
-///  "additionalProperties": true
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct DcqlQuery(pub ::serde_json::Map<::std::string::String, ::serde_json::Value>);
@@ -445,18 +345,6 @@ impl ::std::convert::From<::serde_json::Map<::std::string::String, ::serde_json:
 }
 ///An ISO 8601 duration in weeks, days, hours, minutes and seconds only (e.g. `P120D`, `P2W`, `P1DT12H`, `PT15M`). Years and months are refused: their length depends on the calendar, and an age limit that means different things on different days is not a limit.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Duration",
-///  "description": "An ISO 8601 duration in weeks, days, hours, minutes and seconds only (e.g. `P120D`, `P2W`, `P1DT12H`, `PT15M`). Years and months are refused: their length depends on the calendar, and an age limit that means different things on different days is not a limit.",
-///  "type": "string",
-///  "maxLength": 32,
-///  "pattern": "^P(([0-9]+W)?([0-9]+D)?T([0-9]+H([0-9]+M)?([0-9]+S)?|[0-9]+M([0-9]+S)?|[0-9]+S)|[0-9]+W([0-9]+D)?|[0-9]+D)$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Duration(::std::string::String);
@@ -530,21 +418,6 @@ impl<'de> ::serde::Deserialize<'de> for Duration {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -571,27 +444,6 @@ Every entry MUST be an immediate key of the sibling `ext` object at the same lev
 
 A producer marks a namespace only where the document's meaning depends on it. Marking one that merely carries a hint or an annotation turns every consumer that has not implemented it into a failure where it would otherwise have interoperated. JSON Schema cannot check either of those rules: that an entry names a present namespace is checkable only against the sibling `ext`, and whether a namespace is load-bearing is not a schema question at all. Both are consumer-side checks.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ExtCritical",
-///  "description": "Names the `ext` namespaces a consumer MUST understand or refuse, per SPEC.md §4.5.1.\n\nEvery entry MUST be an immediate key of the sibling `ext` object at the same level; an entry naming an absent namespace is non-conforming and the consumer rejects the document with `malformedRequest`. A consumer that does not recognize a namespace named here MUST NOT process the document as though the namespace were absent, and rejects it with `unsupportedExtension` — the exception to the rule that unrecognized namespaces are ignored.\n\nA producer marks a namespace only where the document's meaning depends on it. Marking one that merely carries a hint or an annotation turns every consumer that has not implemented it into a failure where it would otherwise have interoperated. JSON Schema cannot check either of those rules: that an entry names a present namespace is checkable only against the sibling `ext`, and whether a namespace is load-bearing is not a schema question at all. Both are consumer-side checks.",
-///  "examples": [
-///    [
-///      "org.openvtc.hidden-vetting"
-///    ]
-///  ],
-///  "type": "array",
-///  "items": {
-///    "type": "string",
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  },
-///  "minItems": 1,
-///  "uniqueItems": true
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct ExtCritical(pub Vec<ExtCriticalItem>);
@@ -613,15 +465,6 @@ impl ::std::convert::From<Vec<ExtCriticalItem>> for ExtCritical {
 }
 ///`ExtCriticalItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtCriticalItem(::std::string::String);
@@ -685,15 +528,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtCriticalItem {
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -757,39 +591,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Register a named Accepts criterion, or replace the one registered under the same id. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/schemas/accepts/register/0.1",
-///  "title": "Payload",
-///  "description": "Register a named Accepts criterion, or replace the one registered under the same id. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "id",
-///    "query"
-///  ],
-///  "properties": {
-///    "description": {
-///      "$ref": "#/definitions/CriterionDescription"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "id": {
-///      "$ref": "#/definitions/AcceptsCriterionId"
-///    },
-///    "query": {
-///      "$ref": "#/definitions/DcqlQuery"
-///    },
-///    "vetting": {
-///      "$ref": "#/definitions/VettingRequirements"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -811,28 +612,6 @@ impl Payload {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "criterion"
-///  ],
-///  "properties": {
-///    "criterion": {
-///      "$ref": "#/definitions/AcceptsCriterion"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -849,19 +628,6 @@ impl Response {
 }
 ///A class of documentation, named in lowerCamelCase. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `nationalId`, `driverLicence`, and `none` — the vetter will attest without a document, which is the `priorAcquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "VettingDocumentation",
-///  "description": "A class of documentation, named in lowerCamelCase. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `nationalId`, `driverLicence`, and `none` — the vetter will attest without a document, which is the `priorAcquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1,
-///  "pattern": "^[a-z][a-zA-Z0-9]*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct VettingDocumentation(::std::string::String);
@@ -929,21 +695,6 @@ impl<'de> ::serde::Deserialize<'de> for VettingDocumentation {
 }
 ///How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "VettingMethod",
-///  "description": "How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy.",
-///  "type": "string",
-///  "enum": [
-///    "inPerson",
-///    "video",
-///    "priorAcquaintance"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1009,23 +760,6 @@ impl ::std::convert::TryFrom<::std::string::String> for VettingMethod {
 }
 ///The vetter's own declaration of how they relate to the applicant. Declared, not verified: it exists so community policy can cap how much evidence comes from people close to the applicant, and a false declaration is the vetter's attributable act.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "VettingRelationship",
-///  "description": "The vetter's own declaration of how they relate to the applicant. Declared, not verified: it exists so community policy can cap how much evidence comes from people close to the applicant, and a false declaration is the vetter's attributable act.",
-///  "type": "string",
-///  "enum": [
-///    "none",
-///    "communityColleague",
-///    "sameEmployer",
-///    "family",
-///    "otherPersonal"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1099,158 +833,6 @@ impl ::std::convert::TryFrom<::std::string::String> for VettingRelationship {
 }
 ///What identity-vetting evidence a criterion needs, beyond what a presentation-definition can express: distinct eligible vetters, per-method floors, independence caps. Every number is the community's own policy. This schema supplies no defaults — an absent optional member means the community imposes no constraint of that kind, never that some protocol value applies. Deliberately open: a consumer MUST ignore members it does not recognise, so a community publishing a newer shape does not make an older client unable to read the rest. Durations: `maxStatementAge` — a statement older than this at decision time does not count (absent: no limit beyond the statement's own validity); `decisionSla` — how long after submission the community undertakes to decide, including on a referred application; `requirementsGrace` — how long an application started under an earlier `requirementsDigest` is still evaluated under that version.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "VettingRequirements",
-///  "description": "What identity-vetting evidence a criterion needs, beyond what a presentation-definition can express: distinct eligible vetters, per-method floors, independence caps. Every number is the community's own policy. This schema supplies no defaults — an absent optional member means the community imposes no constraint of that kind, never that some protocol value applies. Deliberately open: a consumer MUST ignore members it does not recognise, so a community publishing a newer shape does not make an older client unable to read the rest. Durations: `maxStatementAge` — a statement older than this at decision time does not count (absent: no limit beyond the statement's own validity); `decisionSla` — how long after submission the community undertakes to decide, including on a referred application; `requirementsGrace` — how long an application started under an earlier `requirementsDigest` is still evaluated under that version.",
-///  "type": "object",
-///  "required": [
-///    "acceptedMethods",
-///    "eligibleVetters",
-///    "minStatements",
-///    "statementType",
-///    "version"
-///  ],
-///  "properties": {
-///    "acceptedDocumentClasses": {
-///      "description": "Documentation a statement must have relied on in order to count. Absent — the expected case — means each vetter decides what documentation they accept, including none for prior acquaintance, and the community counts what they attest.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/VettingDocumentation"
-///      },
-///      "minItems": 1,
-///      "uniqueItems": true
-///    },
-///    "acceptedMethods": {
-///      "description": "Methods whose statements count at all.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/VettingMethod"
-///      },
-///      "minItems": 1,
-///      "uniqueItems": true
-///    },
-///    "decisionSla": {
-///      "$ref": "#/definitions/Duration"
-///    },
-///    "eligibleVetters": {
-///      "description": "How a vetter's eligibility is established.",
-///      "type": "object",
-///      "required": [
-///        "role"
-///      ],
-///      "properties": {
-///        "role": {
-///          "description": "The role a statement's issuer must hold, matched as the action `role:<role>` in a Verifiable Authority Credential (`AuthorityCredential`) the community issued to that issuer, whose `authority.scope` is the community's DID (see `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds such a credential.",
-///          "type": "string",
-///          "maxLength": 128,
-///          "minLength": 1,
-///          "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "extCritical": {
-///      "$ref": "#/definitions/ExtCritical"
-///    },
-///    "governanceFrameworkUrl": {
-///      "description": "Where the community's vetting governance — including the attestation text vetters sign — is published.",
-///      "type": "string",
-///      "format": "uri",
-///      "maxLength": 2048,
-///      "pattern": "^https://"
-///    },
-///    "independence": {
-///      "description": "Caps on how much evidence may come from people close to the applicant. Absent: no caps.",
-///      "type": "object",
-///      "properties": {
-///        "maxByDeclaredRelationship": {
-///          "description": "The most counted statements that may come from vetters declaring each relationship — e.g. `{ \"family\": 0 }`.",
-///          "type": "object",
-///          "additionalProperties": {
-///            "type": "integer",
-///            "minimum": 0.0
-///          },
-///          "propertyNames": {
-///            "$ref": "#/definitions/VettingRelationship"
-///          }
-///        },
-///        "requireConsistentIdentityCommitment": {
-///          "description": "When true, every counted statement must carry the same identity commitment — all vetters verified the same claimed identity. Absent: false.",
-///          "type": "boolean"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "invitation": {
-///      "description": "Whether an invitation credential must accompany the statements at submission (`required`), may (`optional`), or plays no part (`none`). Absent: the presentation-definition alone governs.",
-///      "type": "string",
-///      "enum": [
-///        "required",
-///        "optional",
-///        "none"
-///      ]
-///    },
-///    "maxStatementAge": {
-///      "$ref": "#/definitions/Duration"
-///    },
-///    "minByMethod": {
-///      "description": "Per-method floors within `minStatements` — e.g. `{ \"inPerson\": 1 }`. Every method named MUST also be in `acceptedMethods`. Absent: no method floor.",
-///      "type": "object",
-///      "additionalProperties": {
-///        "type": "integer",
-///        "minimum": 0.0
-///      },
-///      "propertyNames": {
-///        "$ref": "#/definitions/VettingMethod"
-///      }
-///    },
-///    "minStatements": {
-///      "description": "How many counted statements are needed, counting each vetter once however many DIDs they hold.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "optionalClaims": {
-///      "description": "Claim types an applicant MAY add to the card and a vetter MAY verify. They never affect whether a statement counts.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/ClaimType"
-///      },
-///      "uniqueItems": true
-///    },
-///    "requiredClaims": {
-///      "description": "Claim types the applicant's Vetting Card must carry, which the identity commitment is computed over, and which a counted statement must list as verified. Absent: none.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/ClaimType"
-///      },
-///      "uniqueItems": true
-///    },
-///    "requirementsGrace": {
-///      "$ref": "#/definitions/Duration"
-///    },
-///    "statementType": {
-///      "description": "The predicate IRI a counted vetting statement carries in `credentialSubject.predicate` — `https://registry.trustoverip.org/dtg/vsc/vetted/1`, the DTG VSC registry's identity-vetting predicate, or a predicate in a namespace the community controls — registered as one the community accepts via vtc/endorsement-types/register. A statement under any other predicate does not count.",
-///      "type": "string",
-///      "format": "uri",
-///      "maxLength": 512,
-///      "minLength": 1
-///    },
-///    "version": {
-///      "description": "Version of this requirements object's shape. `0.1` for the members defined here.",
-///      "type": "string",
-///      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
-///    }
-///  },
-///  "additionalProperties": true
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
 pub struct VettingRequirements {
@@ -1341,28 +923,6 @@ impl VettingRequirements {
 }
 ///How a vetter's eligibility is established.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "How a vetter's eligibility is established.",
-///  "type": "object",
-///  "required": [
-///    "role"
-///  ],
-///  "properties": {
-///    "role": {
-///      "description": "The role a statement's issuer must hold, matched as the action `role:<role>` in a Verifiable Authority Credential (`AuthorityCredential`) the community issued to that issuer, whose `authority.scope` is the community's DID (see `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds such a credential.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1,
-///      "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1377,18 +937,6 @@ impl VettingRequirementsEligibleVetters {
 }
 ///The role a statement's issuer must hold, matched as the action `role:<role>` in a Verifiable Authority Credential (`AuthorityCredential`) the community issued to that issuer, whose `authority.scope` is the community's DID (see `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds such a credential.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The role a statement's issuer must hold, matched as the action `role:<role>` in a Verifiable Authority Credential (`AuthorityCredential`) the community issued to that issuer, whose `authority.scope` is the community's DID (see `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds such a credential.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1,
-///  "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct VettingRequirementsEligibleVettersRole(::std::string::String);
@@ -1458,33 +1006,6 @@ impl<'de> ::serde::Deserialize<'de> for VettingRequirementsEligibleVettersRole {
 }
 ///Caps on how much evidence may come from people close to the applicant. Absent: no caps.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Caps on how much evidence may come from people close to the applicant. Absent: no caps.",
-///  "type": "object",
-///  "properties": {
-///    "maxByDeclaredRelationship": {
-///      "description": "The most counted statements that may come from vetters declaring each relationship — e.g. `{ \"family\": 0 }`.",
-///      "type": "object",
-///      "additionalProperties": {
-///        "type": "integer",
-///        "minimum": 0.0
-///      },
-///      "propertyNames": {
-///        "$ref": "#/definitions/VettingRelationship"
-///      }
-///    },
-///    "requireConsistentIdentityCommitment": {
-///      "description": "When true, every counted statement must carry the same identity commitment — all vetters verified the same claimed identity. Absent: false.",
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1519,20 +1040,6 @@ impl VettingRequirementsIndependence {
 }
 ///Whether an invitation credential must accompany the statements at submission (`required`), may (`optional`), or plays no part (`none`). Absent: the presentation-definition alone governs.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Whether an invitation credential must accompany the statements at submission (`required`), may (`optional`), or plays no part (`none`). Absent: the presentation-definition alone governs.",
-///  "type": "string",
-///  "enum": [
-///    "required",
-///    "optional",
-///    "none"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1598,16 +1105,6 @@ impl ::std::convert::TryFrom<::std::string::String> for VettingRequirementsInvit
 }
 ///Version of this requirements object's shape. `0.1` for the members defined here.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Version of this requirements object's shape. `0.1` for the members defined here.",
-///  "type": "string",
-///  "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct VettingRequirementsVersion(::std::string::String);
@@ -2356,7 +1853,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AcceptsCriterion\": {\n      \"additionalProperties\": false,\n      \"description\": \"A named required-evidence criterion: the DCQL query a ceremony runs to decide whether a holder's presented credentials satisfy the community, and the peer identity vetting it requires. What vtc/join-requests/manifest/0.2 publishes to applicants as a `Criterion` is derived from this.\",\n      \"properties\": {\n        \"createdAt\": {\n          \"description\": \"When this criterion was last registered. Registering an existing id replaces it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"createdByDid\": {\n          \"description\": \"The administrator who last registered the criterion.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"$ref\": \"#/$defs/CriterionDescription\"\n        },\n        \"id\": {\n          \"$ref\": \"#/$defs/AcceptsCriterionId\"\n        },\n        \"query\": {\n          \"$ref\": \"#/$defs/DcqlQuery\"\n        },\n        \"vetting\": {\n          \"$ref\": \"#/$defs/VettingRequirements\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"query\",\n        \"createdAt\",\n        \"createdByDid\"\n      ],\n      \"title\": \"AcceptsCriterion\",\n      \"type\": \"object\"\n    },\n    \"AcceptsCriterionId\": {\n      \"description\": \"An Accepts criterion's identifier, chosen by the registering administrator — a ceremony purpose or a named manifest criterion, e.g. `membership`. Compared as an exact string after surrounding whitespace is trimmed. Bounded at 128 characters, the bound vtc/join-requests/manifest/0.2 places on the criterion `id` it publishes.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"title\": \"AcceptsCriterionId\",\n      \"type\": \"string\"\n    },\n    \"ClaimType\": {\n      \"description\": \"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\n      \"title\": \"ClaimType\",\n      \"type\": \"string\"\n    },\n    \"CriterionDescription\": {\n      \"description\": \"Plain-language summary of the criterion, written by the registering administrator. Published to prospective applicants in the join manifest, and used as the `purpose` of the credential-exchange/query a join sends when it is present — so it is read by applicants and their agents, not only by administrators. Untrusted as a statement of the rule: where it and `query` or `vetting` disagree, those govern.\",\n      \"maxLength\": 1024,\n      \"title\": \"CriterionDescription\",\n      \"type\": \"string\"\n    },\n    \"DcqlQuery\": {\n      \"additionalProperties\": true,\n      \"description\": \"An OpenID for Verifiable Presentations DCQL query, carried verbatim: per-credential `format`, `meta` type selector (`vct_values`) and requested `claims`. Defined by OID4VP and not re-specified here; snake_case member names are DCQL's own. The community parses it as DCQL and checks every type it references against the registry.\",\n      \"title\": \"DcqlQuery\",\n      \"type\": \"object\"\n    },\n    \"Duration\": {\n      \"description\": \"An ISO 8601 duration in weeks, days, hours, minutes and seconds only (e.g. `P120D`, `P2W`, `P1DT12H`, `PT15M`). Years and months are refused: their length depends on the calendar, and an age limit that means different things on different days is not a limit.\",\n      \"maxLength\": 32,\n      \"pattern\": \"^P(([0-9]+W)?([0-9]+D)?T([0-9]+H([0-9]+M)?([0-9]+S)?|[0-9]+M([0-9]+S)?|[0-9]+S)|[0-9]+W([0-9]+D)?|[0-9]+D)$\",\n      \"title\": \"Duration\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ExtCritical\": {\n      \"description\": \"Names the `ext` namespaces a consumer MUST understand or refuse, per SPEC.md §4.5.1.\\n\\nEvery entry MUST be an immediate key of the sibling `ext` object at the same level; an entry naming an absent namespace is non-conforming and the consumer rejects the document with `malformedRequest`. A consumer that does not recognize a namespace named here MUST NOT process the document as though the namespace were absent, and rejects it with `unsupportedExtension` — the exception to the rule that unrecognized namespaces are ignored.\\n\\nA producer marks a namespace only where the document's meaning depends on it. Marking one that merely carries a hint or an annotation turns every consumer that has not implemented it into a failure where it would otherwise have interoperated. JSON Schema cannot check either of those rules: that an entry names a present namespace is checkable only against the sibling `ext`, and whether a namespace is load-bearing is not a schema question at all. Both are consumer-side checks.\",\n      \"examples\": [\n        [\n          \"org.openvtc.hidden-vetting\"\n        ]\n      ],\n      \"items\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\",\n        \"type\": \"string\"\n      },\n      \"minItems\": 1,\n      \"title\": \"ExtCritical\",\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"criterion\": {\n          \"$ref\": \"#/$defs/AcceptsCriterion\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"criterion\"\n      ],\n      \"title\": \"VTC Schemas — Accepts — Register — response payload\",\n      \"type\": \"object\"\n    },\n    \"VettingDocumentation\": {\n      \"description\": \"A class of documentation, named in lowerCamelCase. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `nationalId`, `driverLicence`, and `none` — the vetter will attest without a document, which is the `priorAcquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z][a-zA-Z0-9]*$\",\n      \"title\": \"VettingDocumentation\",\n      \"type\": \"string\"\n    },\n    \"VettingMethod\": {\n      \"description\": \"How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy.\",\n      \"enum\": [\n        \"inPerson\",\n        \"video\",\n        \"priorAcquaintance\"\n      ],\n      \"title\": \"VettingMethod\",\n      \"type\": \"string\"\n    },\n    \"VettingRelationship\": {\n      \"description\": \"The vetter's own declaration of how they relate to the applicant. Declared, not verified: it exists so community policy can cap how much evidence comes from people close to the applicant, and a false declaration is the vetter's attributable act.\",\n      \"enum\": [\n        \"none\",\n        \"communityColleague\",\n        \"sameEmployer\",\n        \"family\",\n        \"otherPersonal\"\n      ],\n      \"title\": \"VettingRelationship\",\n      \"type\": \"string\"\n    },\n    \"VettingRequirements\": {\n      \"additionalProperties\": true,\n      \"description\": \"What identity-vetting evidence a criterion needs, beyond what a presentation-definition can express: distinct eligible vetters, per-method floors, independence caps. Every number is the community's own policy. This schema supplies no defaults — an absent optional member means the community imposes no constraint of that kind, never that some protocol value applies. Deliberately open: a consumer MUST ignore members it does not recognise, so a community publishing a newer shape does not make an older client unable to read the rest. Durations: `maxStatementAge` — a statement older than this at decision time does not count (absent: no limit beyond the statement's own validity); `decisionSla` — how long after submission the community undertakes to decide, including on a referred application; `requirementsGrace` — how long an application started under an earlier `requirementsDigest` is still evaluated under that version.\",\n      \"properties\": {\n        \"acceptedDocumentClasses\": {\n          \"description\": \"Documentation a statement must have relied on in order to count. Absent — the expected case — means each vetter decides what documentation they accept, including none for prior acquaintance, and the community counts what they attest.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/VettingDocumentation\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"acceptedMethods\": {\n          \"description\": \"Methods whose statements count at all.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/VettingMethod\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"decisionSla\": {\n          \"$ref\": \"#/$defs/Duration\"\n        },\n        \"eligibleVetters\": {\n          \"additionalProperties\": false,\n          \"description\": \"How a vetter's eligibility is established.\",\n          \"properties\": {\n            \"role\": {\n              \"description\": \"The role a statement's issuer must hold, matched as the action `role:<role>` in a Verifiable Authority Credential (`AuthorityCredential`) the community issued to that issuer, whose `authority.scope` is the community's DID (see `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds such a credential.\",\n              \"maxLength\": 128,\n              \"minLength\": 1,\n              \"pattern\": \"^[a-zA-Z][a-zA-Z0-9_-]*$\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"role\"\n          ],\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"extCritical\": {\n          \"$ref\": \"#/$defs/ExtCritical\"\n        },\n        \"governanceFrameworkUrl\": {\n          \"description\": \"Where the community's vetting governance — including the attestation text vetters sign — is published.\",\n          \"format\": \"uri\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^https://\",\n          \"type\": \"string\"\n        },\n        \"independence\": {\n          \"additionalProperties\": false,\n          \"description\": \"Caps on how much evidence may come from people close to the applicant. Absent: no caps.\",\n          \"properties\": {\n            \"maxByDeclaredRelationship\": {\n              \"additionalProperties\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"description\": \"The most counted statements that may come from vetters declaring each relationship — e.g. `{ \\\"family\\\": 0 }`.\",\n              \"propertyNames\": {\n                \"$ref\": \"#/$defs/VettingRelationship\"\n              },\n              \"type\": \"object\"\n            },\n            \"requireConsistentIdentityCommitment\": {\n              \"description\": \"When true, every counted statement must carry the same identity commitment — all vetters verified the same claimed identity. Absent: false.\",\n              \"type\": \"boolean\"\n            }\n          },\n          \"type\": \"object\"\n        },\n        \"invitation\": {\n          \"description\": \"Whether an invitation credential must accompany the statements at submission (`required`), may (`optional`), or plays no part (`none`). Absent: the presentation-definition alone governs.\",\n          \"enum\": [\n            \"required\",\n            \"optional\",\n            \"none\"\n          ],\n          \"type\": \"string\"\n        },\n        \"maxStatementAge\": {\n          \"$ref\": \"#/$defs/Duration\"\n        },\n        \"minByMethod\": {\n          \"additionalProperties\": {\n            \"minimum\": 0,\n            \"type\": \"integer\"\n          },\n          \"description\": \"Per-method floors within `minStatements` — e.g. `{ \\\"inPerson\\\": 1 }`. Every method named MUST also be in `acceptedMethods`. Absent: no method floor.\",\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/VettingMethod\"\n          },\n          \"type\": \"object\"\n        },\n        \"minStatements\": {\n          \"description\": \"How many counted statements are needed, counting each vetter once however many DIDs they hold.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"optionalClaims\": {\n          \"description\": \"Claim types an applicant MAY add to the card and a vetter MAY verify. They never affect whether a statement counts.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/ClaimType\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"requiredClaims\": {\n          \"description\": \"Claim types the applicant's Vetting Card must carry, which the identity commitment is computed over, and which a counted statement must list as verified. Absent: none.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/ClaimType\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"requirementsGrace\": {\n          \"$ref\": \"#/$defs/Duration\"\n        },\n        \"statementType\": {\n          \"description\": \"The predicate IRI a counted vetting statement carries in `credentialSubject.predicate` — `https://registry.trustoverip.org/dtg/vsc/vetted/1`, the DTG VSC registry's identity-vetting predicate, or a predicate in a namespace the community controls — registered as one the community accepts via vtc/endorsement-types/register. A statement under any other predicate does not count.\",\n          \"format\": \"uri\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"description\": \"Version of this requirements object's shape. `0.1` for the members defined here.\",\n          \"pattern\": \"^(0|[1-9][0-9]*)\\\\.(0|[1-9][0-9]*)$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"version\",\n        \"statementType\",\n        \"minStatements\",\n        \"acceptedMethods\",\n        \"eligibleVetters\"\n      ],\n      \"title\": \"VettingRequirements\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/schemas/accepts/register/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Register a named Accepts criterion, or replace the one registered under the same id. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"description\": {\n      \"$ref\": \"#/$defs/CriterionDescription\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"id\": {\n      \"$ref\": \"#/$defs/AcceptsCriterionId\"\n    },\n    \"query\": {\n      \"$ref\": \"#/$defs/DcqlQuery\"\n    },\n    \"vetting\": {\n      \"$ref\": \"#/$defs/VettingRequirements\"\n    }\n  },\n  \"required\": [\n    \"id\",\n    \"query\"\n  ],\n  \"title\": \"VTC Schemas — Accepts — Register — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"AcceptsCriterion\":{\"additionalProperties\":false,\"description\":\"A named required-evidence criterion: the DCQL query a ceremony runs to decide whether a holder's presented credentials satisfy the community, and the peer identity vetting it requires. What vtc/join-requests/manifest/0.2 publishes to applicants as a `Criterion` is derived from this.\",\"properties\":{\"createdAt\":{\"description\":\"When this criterion was last registered. Registering an existing id replaces it.\",\"format\":\"date-time\",\"type\":\"string\"},\"createdByDid\":{\"description\":\"The administrator who last registered the criterion.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"description\":{\"$ref\":\"#/$defs/CriterionDescription\"},\"id\":{\"$ref\":\"#/$defs/AcceptsCriterionId\"},\"query\":{\"$ref\":\"#/$defs/DcqlQuery\"},\"vetting\":{\"$ref\":\"#/$defs/VettingRequirements\"}},\"required\":[\"id\",\"query\",\"createdAt\",\"createdByDid\"],\"title\":\"AcceptsCriterion\",\"type\":\"object\"},\"AcceptsCriterionId\":{\"description\":\"An Accepts criterion's identifier, chosen by the registering administrator — a ceremony purpose or a named manifest criterion, e.g. `membership`. Compared as an exact string after surrounding whitespace is trimmed. Bounded at 128 characters, the bound vtc/join-requests/manifest/0.2 places on the criterion `id` it publishes.\",\"maxLength\":128,\"minLength\":1,\"title\":\"AcceptsCriterionId\",\"type\":\"string\"},\"ClaimType\":{\"description\":\"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\"title\":\"ClaimType\",\"type\":\"string\"},\"CriterionDescription\":{\"description\":\"Plain-language summary of the criterion, written by the registering administrator. Published to prospective applicants in the join manifest, and used as the `purpose` of the credential-exchange/query a join sends when it is present — so it is read by applicants and their agents, not only by administrators. Untrusted as a statement of the rule: where it and `query` or `vetting` disagree, those govern.\",\"maxLength\":1024,\"title\":\"CriterionDescription\",\"type\":\"string\"},\"DcqlQuery\":{\"additionalProperties\":true,\"description\":\"An OpenID for Verifiable Presentations DCQL query, carried verbatim: per-credential `format`, `meta` type selector (`vct_values`) and requested `claims`. Defined by OID4VP and not re-specified here; snake_case member names are DCQL's own. The community parses it as DCQL and checks every type it references against the registry.\",\"title\":\"DcqlQuery\",\"type\":\"object\"},\"Duration\":{\"description\":\"An ISO 8601 duration in weeks, days, hours, minutes and seconds only (e.g. `P120D`, `P2W`, `P1DT12H`, `PT15M`). Years and months are refused: their length depends on the calendar, and an age limit that means different things on different days is not a limit.\",\"maxLength\":32,\"pattern\":\"^P(([0-9]+W)?([0-9]+D)?T([0-9]+H([0-9]+M)?([0-9]+S)?|[0-9]+M([0-9]+S)?|[0-9]+S)|[0-9]+W([0-9]+D)?|[0-9]+D)$\",\"title\":\"Duration\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ExtCritical\":{\"description\":\"Names the `ext` namespaces a consumer MUST understand or refuse, per SPEC.md §4.5.1.\\n\\nEvery entry MUST be an immediate key of the sibling `ext` object at the same level; an entry naming an absent namespace is non-conforming and the consumer rejects the document with `malformedRequest`. A consumer that does not recognize a namespace named here MUST NOT process the document as though the namespace were absent, and rejects it with `unsupportedExtension` — the exception to the rule that unrecognized namespaces are ignored.\\n\\nA producer marks a namespace only where the document's meaning depends on it. Marking one that merely carries a hint or an annotation turns every consumer that has not implemented it into a failure where it would otherwise have interoperated. JSON Schema cannot check either of those rules: that an entry names a present namespace is checkable only against the sibling `ext`, and whether a namespace is load-bearing is not a schema question at all. Both are consumer-side checks.\",\"examples\":[[\"org.openvtc.hidden-vetting\"]],\"items\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\",\"type\":\"string\"},\"minItems\":1,\"title\":\"ExtCritical\",\"type\":\"array\",\"uniqueItems\":true},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"criterion\":{\"$ref\":\"#/$defs/AcceptsCriterion\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"criterion\"],\"title\":\"VTC Schemas — Accepts — Register — response payload\",\"type\":\"object\"},\"VettingDocumentation\":{\"description\":\"A class of documentation, named in lowerCamelCase. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `nationalId`, `driverLicence`, and `none` — the vetter will attest without a document, which is the `priorAcquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z][a-zA-Z0-9]*$\",\"title\":\"VettingDocumentation\",\"type\":\"string\"},\"VettingMethod\":{\"description\":\"How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy.\",\"enum\":[\"inPerson\",\"video\",\"priorAcquaintance\"],\"title\":\"VettingMethod\",\"type\":\"string\"},\"VettingRelationship\":{\"description\":\"The vetter's own declaration of how they relate to the applicant. Declared, not verified: it exists so community policy can cap how much evidence comes from people close to the applicant, and a false declaration is the vetter's attributable act.\",\"enum\":[\"none\",\"communityColleague\",\"sameEmployer\",\"family\",\"otherPersonal\"],\"title\":\"VettingRelationship\",\"type\":\"string\"},\"VettingRequirements\":{\"additionalProperties\":true,\"description\":\"What identity-vetting evidence a criterion needs, beyond what a presentation-definition can express: distinct eligible vetters, per-method floors, independence caps. Every number is the community's own policy. This schema supplies no defaults — an absent optional member means the community imposes no constraint of that kind, never that some protocol value applies. Deliberately open: a consumer MUST ignore members it does not recognise, so a community publishing a newer shape does not make an older client unable to read the rest. Durations: `maxStatementAge` — a statement older than this at decision time does not count (absent: no limit beyond the statement's own validity); `decisionSla` — how long after submission the community undertakes to decide, including on a referred application; `requirementsGrace` — how long an application started under an earlier `requirementsDigest` is still evaluated under that version.\",\"properties\":{\"acceptedDocumentClasses\":{\"description\":\"Documentation a statement must have relied on in order to count. Absent — the expected case — means each vetter decides what documentation they accept, including none for prior acquaintance, and the community counts what they attest.\",\"items\":{\"$ref\":\"#/$defs/VettingDocumentation\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"acceptedMethods\":{\"description\":\"Methods whose statements count at all.\",\"items\":{\"$ref\":\"#/$defs/VettingMethod\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"decisionSla\":{\"$ref\":\"#/$defs/Duration\"},\"eligibleVetters\":{\"additionalProperties\":false,\"description\":\"How a vetter's eligibility is established.\",\"properties\":{\"role\":{\"description\":\"The role a statement's issuer must hold, matched as the action `role:<role>` in a Verifiable Authority Credential (`AuthorityCredential`) the community issued to that issuer, whose `authority.scope` is the community's DID (see `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds such a credential.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9_-]*$\",\"type\":\"string\"}},\"required\":[\"role\"],\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"extCritical\":{\"$ref\":\"#/$defs/ExtCritical\"},\"governanceFrameworkUrl\":{\"description\":\"Where the community's vetting governance — including the attestation text vetters sign — is published.\",\"format\":\"uri\",\"maxLength\":2048,\"pattern\":\"^https://\",\"type\":\"string\"},\"independence\":{\"additionalProperties\":false,\"description\":\"Caps on how much evidence may come from people close to the applicant. Absent: no caps.\",\"properties\":{\"maxByDeclaredRelationship\":{\"additionalProperties\":{\"minimum\":0,\"type\":\"integer\"},\"description\":\"The most counted statements that may come from vetters declaring each relationship — e.g. `{ \\\"family\\\": 0 }`.\",\"propertyNames\":{\"$ref\":\"#/$defs/VettingRelationship\"},\"type\":\"object\"},\"requireConsistentIdentityCommitment\":{\"description\":\"When true, every counted statement must carry the same identity commitment — all vetters verified the same claimed identity. Absent: false.\",\"type\":\"boolean\"}},\"type\":\"object\"},\"invitation\":{\"description\":\"Whether an invitation credential must accompany the statements at submission (`required`), may (`optional`), or plays no part (`none`). Absent: the presentation-definition alone governs.\",\"enum\":[\"required\",\"optional\",\"none\"],\"type\":\"string\"},\"maxStatementAge\":{\"$ref\":\"#/$defs/Duration\"},\"minByMethod\":{\"additionalProperties\":{\"minimum\":0,\"type\":\"integer\"},\"description\":\"Per-method floors within `minStatements` — e.g. `{ \\\"inPerson\\\": 1 }`. Every method named MUST also be in `acceptedMethods`. Absent: no method floor.\",\"propertyNames\":{\"$ref\":\"#/$defs/VettingMethod\"},\"type\":\"object\"},\"minStatements\":{\"description\":\"How many counted statements are needed, counting each vetter once however many DIDs they hold.\",\"minimum\":1,\"type\":\"integer\"},\"optionalClaims\":{\"description\":\"Claim types an applicant MAY add to the card and a vetter MAY verify. They never affect whether a statement counts.\",\"items\":{\"$ref\":\"#/$defs/ClaimType\"},\"type\":\"array\",\"uniqueItems\":true},\"requiredClaims\":{\"description\":\"Claim types the applicant's Vetting Card must carry, which the identity commitment is computed over, and which a counted statement must list as verified. Absent: none.\",\"items\":{\"$ref\":\"#/$defs/ClaimType\"},\"type\":\"array\",\"uniqueItems\":true},\"requirementsGrace\":{\"$ref\":\"#/$defs/Duration\"},\"statementType\":{\"description\":\"The predicate IRI a counted vetting statement carries in `credentialSubject.predicate` — `https://registry.trustoverip.org/dtg/vsc/vetted/1`, the DTG VSC registry's identity-vetting predicate, or a predicate in a namespace the community controls — registered as one the community accepts via vtc/endorsement-types/register. A statement under any other predicate does not count.\",\"format\":\"uri\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"version\":{\"description\":\"Version of this requirements object's shape. `0.1` for the members defined here.\",\"pattern\":\"^(0|[1-9][0-9]*)\\\\.(0|[1-9][0-9]*)$\",\"type\":\"string\"}},\"required\":[\"version\",\"statementType\",\"minStatements\",\"acceptedMethods\",\"eligibleVetters\"],\"title\":\"VettingRequirements\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/schemas/accepts/register/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Register a named Accepts criterion, or replace the one registered under the same id. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"description\":{\"$ref\":\"#/$defs/CriterionDescription\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"$ref\":\"#/$defs/AcceptsCriterionId\"},\"query\":{\"$ref\":\"#/$defs/DcqlQuery\"},\"vetting\":{\"$ref\":\"#/$defs/VettingRequirements\"}},\"required\":[\"id\",\"query\"],\"title\":\"VTC Schemas — Accepts — Register — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -2366,7 +1863,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AcceptsCriterion\": {\n      \"additionalProperties\": false,\n      \"description\": \"A named required-evidence criterion: the DCQL query a ceremony runs to decide whether a holder's presented credentials satisfy the community, and the peer identity vetting it requires. What vtc/join-requests/manifest/0.2 publishes to applicants as a `Criterion` is derived from this.\",\n      \"properties\": {\n        \"createdAt\": {\n          \"description\": \"When this criterion was last registered. Registering an existing id replaces it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"createdByDid\": {\n          \"description\": \"The administrator who last registered the criterion.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"$ref\": \"#/$defs/CriterionDescription\"\n        },\n        \"id\": {\n          \"$ref\": \"#/$defs/AcceptsCriterionId\"\n        },\n        \"query\": {\n          \"$ref\": \"#/$defs/DcqlQuery\"\n        },\n        \"vetting\": {\n          \"$ref\": \"#/$defs/VettingRequirements\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"query\",\n        \"createdAt\",\n        \"createdByDid\"\n      ],\n      \"title\": \"AcceptsCriterion\",\n      \"type\": \"object\"\n    },\n    \"AcceptsCriterionId\": {\n      \"description\": \"An Accepts criterion's identifier, chosen by the registering administrator — a ceremony purpose or a named manifest criterion, e.g. `membership`. Compared as an exact string after surrounding whitespace is trimmed. Bounded at 128 characters, the bound vtc/join-requests/manifest/0.2 places on the criterion `id` it publishes.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"title\": \"AcceptsCriterionId\",\n      \"type\": \"string\"\n    },\n    \"ClaimType\": {\n      \"description\": \"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\n      \"title\": \"ClaimType\",\n      \"type\": \"string\"\n    },\n    \"CriterionDescription\": {\n      \"description\": \"Plain-language summary of the criterion, written by the registering administrator. Published to prospective applicants in the join manifest, and used as the `purpose` of the credential-exchange/query a join sends when it is present — so it is read by applicants and their agents, not only by administrators. Untrusted as a statement of the rule: where it and `query` or `vetting` disagree, those govern.\",\n      \"maxLength\": 1024,\n      \"title\": \"CriterionDescription\",\n      \"type\": \"string\"\n    },\n    \"DcqlQuery\": {\n      \"additionalProperties\": true,\n      \"description\": \"An OpenID for Verifiable Presentations DCQL query, carried verbatim: per-credential `format`, `meta` type selector (`vct_values`) and requested `claims`. Defined by OID4VP and not re-specified here; snake_case member names are DCQL's own. The community parses it as DCQL and checks every type it references against the registry.\",\n      \"title\": \"DcqlQuery\",\n      \"type\": \"object\"\n    },\n    \"Duration\": {\n      \"description\": \"An ISO 8601 duration in weeks, days, hours, minutes and seconds only (e.g. `P120D`, `P2W`, `P1DT12H`, `PT15M`). Years and months are refused: their length depends on the calendar, and an age limit that means different things on different days is not a limit.\",\n      \"maxLength\": 32,\n      \"pattern\": \"^P(([0-9]+W)?([0-9]+D)?T([0-9]+H([0-9]+M)?([0-9]+S)?|[0-9]+M([0-9]+S)?|[0-9]+S)|[0-9]+W([0-9]+D)?|[0-9]+D)$\",\n      \"title\": \"Duration\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ExtCritical\": {\n      \"description\": \"Names the `ext` namespaces a consumer MUST understand or refuse, per SPEC.md §4.5.1.\\n\\nEvery entry MUST be an immediate key of the sibling `ext` object at the same level; an entry naming an absent namespace is non-conforming and the consumer rejects the document with `malformedRequest`. A consumer that does not recognize a namespace named here MUST NOT process the document as though the namespace were absent, and rejects it with `unsupportedExtension` — the exception to the rule that unrecognized namespaces are ignored.\\n\\nA producer marks a namespace only where the document's meaning depends on it. Marking one that merely carries a hint or an annotation turns every consumer that has not implemented it into a failure where it would otherwise have interoperated. JSON Schema cannot check either of those rules: that an entry names a present namespace is checkable only against the sibling `ext`, and whether a namespace is load-bearing is not a schema question at all. Both are consumer-side checks.\",\n      \"examples\": [\n        [\n          \"org.openvtc.hidden-vetting\"\n        ]\n      ],\n      \"items\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\",\n        \"type\": \"string\"\n      },\n      \"minItems\": 1,\n      \"title\": \"ExtCritical\",\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"criterion\": {\n          \"$ref\": \"#/$defs/AcceptsCriterion\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"criterion\"\n      ],\n      \"title\": \"VTC Schemas — Accepts — Register — response payload\",\n      \"type\": \"object\"\n    },\n    \"VettingDocumentation\": {\n      \"description\": \"A class of documentation, named in lowerCamelCase. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `nationalId`, `driverLicence`, and `none` — the vetter will attest without a document, which is the `priorAcquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z][a-zA-Z0-9]*$\",\n      \"title\": \"VettingDocumentation\",\n      \"type\": \"string\"\n    },\n    \"VettingMethod\": {\n      \"description\": \"How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy.\",\n      \"enum\": [\n        \"inPerson\",\n        \"video\",\n        \"priorAcquaintance\"\n      ],\n      \"title\": \"VettingMethod\",\n      \"type\": \"string\"\n    },\n    \"VettingRelationship\": {\n      \"description\": \"The vetter's own declaration of how they relate to the applicant. Declared, not verified: it exists so community policy can cap how much evidence comes from people close to the applicant, and a false declaration is the vetter's attributable act.\",\n      \"enum\": [\n        \"none\",\n        \"communityColleague\",\n        \"sameEmployer\",\n        \"family\",\n        \"otherPersonal\"\n      ],\n      \"title\": \"VettingRelationship\",\n      \"type\": \"string\"\n    },\n    \"VettingRequirements\": {\n      \"additionalProperties\": true,\n      \"description\": \"What identity-vetting evidence a criterion needs, beyond what a presentation-definition can express: distinct eligible vetters, per-method floors, independence caps. Every number is the community's own policy. This schema supplies no defaults — an absent optional member means the community imposes no constraint of that kind, never that some protocol value applies. Deliberately open: a consumer MUST ignore members it does not recognise, so a community publishing a newer shape does not make an older client unable to read the rest. Durations: `maxStatementAge` — a statement older than this at decision time does not count (absent: no limit beyond the statement's own validity); `decisionSla` — how long after submission the community undertakes to decide, including on a referred application; `requirementsGrace` — how long an application started under an earlier `requirementsDigest` is still evaluated under that version.\",\n      \"properties\": {\n        \"acceptedDocumentClasses\": {\n          \"description\": \"Documentation a statement must have relied on in order to count. Absent — the expected case — means each vetter decides what documentation they accept, including none for prior acquaintance, and the community counts what they attest.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/VettingDocumentation\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"acceptedMethods\": {\n          \"description\": \"Methods whose statements count at all.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/VettingMethod\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"decisionSla\": {\n          \"$ref\": \"#/$defs/Duration\"\n        },\n        \"eligibleVetters\": {\n          \"additionalProperties\": false,\n          \"description\": \"How a vetter's eligibility is established.\",\n          \"properties\": {\n            \"role\": {\n              \"description\": \"The role a statement's issuer must hold, matched as the action `role:<role>` in a Verifiable Authority Credential (`AuthorityCredential`) the community issued to that issuer, whose `authority.scope` is the community's DID (see `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds such a credential.\",\n              \"maxLength\": 128,\n              \"minLength\": 1,\n              \"pattern\": \"^[a-zA-Z][a-zA-Z0-9_-]*$\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"role\"\n          ],\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"extCritical\": {\n          \"$ref\": \"#/$defs/ExtCritical\"\n        },\n        \"governanceFrameworkUrl\": {\n          \"description\": \"Where the community's vetting governance — including the attestation text vetters sign — is published.\",\n          \"format\": \"uri\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^https://\",\n          \"type\": \"string\"\n        },\n        \"independence\": {\n          \"additionalProperties\": false,\n          \"description\": \"Caps on how much evidence may come from people close to the applicant. Absent: no caps.\",\n          \"properties\": {\n            \"maxByDeclaredRelationship\": {\n              \"additionalProperties\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"description\": \"The most counted statements that may come from vetters declaring each relationship — e.g. `{ \\\"family\\\": 0 }`.\",\n              \"propertyNames\": {\n                \"$ref\": \"#/$defs/VettingRelationship\"\n              },\n              \"type\": \"object\"\n            },\n            \"requireConsistentIdentityCommitment\": {\n              \"description\": \"When true, every counted statement must carry the same identity commitment — all vetters verified the same claimed identity. Absent: false.\",\n              \"type\": \"boolean\"\n            }\n          },\n          \"type\": \"object\"\n        },\n        \"invitation\": {\n          \"description\": \"Whether an invitation credential must accompany the statements at submission (`required`), may (`optional`), or plays no part (`none`). Absent: the presentation-definition alone governs.\",\n          \"enum\": [\n            \"required\",\n            \"optional\",\n            \"none\"\n          ],\n          \"type\": \"string\"\n        },\n        \"maxStatementAge\": {\n          \"$ref\": \"#/$defs/Duration\"\n        },\n        \"minByMethod\": {\n          \"additionalProperties\": {\n            \"minimum\": 0,\n            \"type\": \"integer\"\n          },\n          \"description\": \"Per-method floors within `minStatements` — e.g. `{ \\\"inPerson\\\": 1 }`. Every method named MUST also be in `acceptedMethods`. Absent: no method floor.\",\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/VettingMethod\"\n          },\n          \"type\": \"object\"\n        },\n        \"minStatements\": {\n          \"description\": \"How many counted statements are needed, counting each vetter once however many DIDs they hold.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"optionalClaims\": {\n          \"description\": \"Claim types an applicant MAY add to the card and a vetter MAY verify. They never affect whether a statement counts.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/ClaimType\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"requiredClaims\": {\n          \"description\": \"Claim types the applicant's Vetting Card must carry, which the identity commitment is computed over, and which a counted statement must list as verified. Absent: none.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/ClaimType\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"requirementsGrace\": {\n          \"$ref\": \"#/$defs/Duration\"\n        },\n        \"statementType\": {\n          \"description\": \"The predicate IRI a counted vetting statement carries in `credentialSubject.predicate` — `https://registry.trustoverip.org/dtg/vsc/vetted/1`, the DTG VSC registry's identity-vetting predicate, or a predicate in a namespace the community controls — registered as one the community accepts via vtc/endorsement-types/register. A statement under any other predicate does not count.\",\n          \"format\": \"uri\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"description\": \"Version of this requirements object's shape. `0.1` for the members defined here.\",\n          \"pattern\": \"^(0|[1-9][0-9]*)\\\\.(0|[1-9][0-9]*)$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"version\",\n        \"statementType\",\n        \"minStatements\",\n        \"acceptedMethods\",\n        \"eligibleVetters\"\n      ],\n      \"title\": \"VettingRequirements\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"AcceptsCriterion\":{\"additionalProperties\":false,\"description\":\"A named required-evidence criterion: the DCQL query a ceremony runs to decide whether a holder's presented credentials satisfy the community, and the peer identity vetting it requires. What vtc/join-requests/manifest/0.2 publishes to applicants as a `Criterion` is derived from this.\",\"properties\":{\"createdAt\":{\"description\":\"When this criterion was last registered. Registering an existing id replaces it.\",\"format\":\"date-time\",\"type\":\"string\"},\"createdByDid\":{\"description\":\"The administrator who last registered the criterion.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"description\":{\"$ref\":\"#/$defs/CriterionDescription\"},\"id\":{\"$ref\":\"#/$defs/AcceptsCriterionId\"},\"query\":{\"$ref\":\"#/$defs/DcqlQuery\"},\"vetting\":{\"$ref\":\"#/$defs/VettingRequirements\"}},\"required\":[\"id\",\"query\",\"createdAt\",\"createdByDid\"],\"title\":\"AcceptsCriterion\",\"type\":\"object\"},\"AcceptsCriterionId\":{\"description\":\"An Accepts criterion's identifier, chosen by the registering administrator — a ceremony purpose or a named manifest criterion, e.g. `membership`. Compared as an exact string after surrounding whitespace is trimmed. Bounded at 128 characters, the bound vtc/join-requests/manifest/0.2 places on the criterion `id` it publishes.\",\"maxLength\":128,\"minLength\":1,\"title\":\"AcceptsCriterionId\",\"type\":\"string\"},\"ClaimType\":{\"description\":\"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\"title\":\"ClaimType\",\"type\":\"string\"},\"CriterionDescription\":{\"description\":\"Plain-language summary of the criterion, written by the registering administrator. Published to prospective applicants in the join manifest, and used as the `purpose` of the credential-exchange/query a join sends when it is present — so it is read by applicants and their agents, not only by administrators. Untrusted as a statement of the rule: where it and `query` or `vetting` disagree, those govern.\",\"maxLength\":1024,\"title\":\"CriterionDescription\",\"type\":\"string\"},\"DcqlQuery\":{\"additionalProperties\":true,\"description\":\"An OpenID for Verifiable Presentations DCQL query, carried verbatim: per-credential `format`, `meta` type selector (`vct_values`) and requested `claims`. Defined by OID4VP and not re-specified here; snake_case member names are DCQL's own. The community parses it as DCQL and checks every type it references against the registry.\",\"title\":\"DcqlQuery\",\"type\":\"object\"},\"Duration\":{\"description\":\"An ISO 8601 duration in weeks, days, hours, minutes and seconds only (e.g. `P120D`, `P2W`, `P1DT12H`, `PT15M`). Years and months are refused: their length depends on the calendar, and an age limit that means different things on different days is not a limit.\",\"maxLength\":32,\"pattern\":\"^P(([0-9]+W)?([0-9]+D)?T([0-9]+H([0-9]+M)?([0-9]+S)?|[0-9]+M([0-9]+S)?|[0-9]+S)|[0-9]+W([0-9]+D)?|[0-9]+D)$\",\"title\":\"Duration\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ExtCritical\":{\"description\":\"Names the `ext` namespaces a consumer MUST understand or refuse, per SPEC.md §4.5.1.\\n\\nEvery entry MUST be an immediate key of the sibling `ext` object at the same level; an entry naming an absent namespace is non-conforming and the consumer rejects the document with `malformedRequest`. A consumer that does not recognize a namespace named here MUST NOT process the document as though the namespace were absent, and rejects it with `unsupportedExtension` — the exception to the rule that unrecognized namespaces are ignored.\\n\\nA producer marks a namespace only where the document's meaning depends on it. Marking one that merely carries a hint or an annotation turns every consumer that has not implemented it into a failure where it would otherwise have interoperated. JSON Schema cannot check either of those rules: that an entry names a present namespace is checkable only against the sibling `ext`, and whether a namespace is load-bearing is not a schema question at all. Both are consumer-side checks.\",\"examples\":[[\"org.openvtc.hidden-vetting\"]],\"items\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\",\"type\":\"string\"},\"minItems\":1,\"title\":\"ExtCritical\",\"type\":\"array\",\"uniqueItems\":true},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"criterion\":{\"$ref\":\"#/$defs/AcceptsCriterion\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"criterion\"],\"title\":\"VTC Schemas — Accepts — Register — response payload\",\"type\":\"object\"},\"VettingDocumentation\":{\"description\":\"A class of documentation, named in lowerCamelCase. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `nationalId`, `driverLicence`, and `none` — the vetter will attest without a document, which is the `priorAcquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z][a-zA-Z0-9]*$\",\"title\":\"VettingDocumentation\",\"type\":\"string\"},\"VettingMethod\":{\"description\":\"How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy.\",\"enum\":[\"inPerson\",\"video\",\"priorAcquaintance\"],\"title\":\"VettingMethod\",\"type\":\"string\"},\"VettingRelationship\":{\"description\":\"The vetter's own declaration of how they relate to the applicant. Declared, not verified: it exists so community policy can cap how much evidence comes from people close to the applicant, and a false declaration is the vetter's attributable act.\",\"enum\":[\"none\",\"communityColleague\",\"sameEmployer\",\"family\",\"otherPersonal\"],\"title\":\"VettingRelationship\",\"type\":\"string\"},\"VettingRequirements\":{\"additionalProperties\":true,\"description\":\"What identity-vetting evidence a criterion needs, beyond what a presentation-definition can express: distinct eligible vetters, per-method floors, independence caps. Every number is the community's own policy. This schema supplies no defaults — an absent optional member means the community imposes no constraint of that kind, never that some protocol value applies. Deliberately open: a consumer MUST ignore members it does not recognise, so a community publishing a newer shape does not make an older client unable to read the rest. Durations: `maxStatementAge` — a statement older than this at decision time does not count (absent: no limit beyond the statement's own validity); `decisionSla` — how long after submission the community undertakes to decide, including on a referred application; `requirementsGrace` — how long an application started under an earlier `requirementsDigest` is still evaluated under that version.\",\"properties\":{\"acceptedDocumentClasses\":{\"description\":\"Documentation a statement must have relied on in order to count. Absent — the expected case — means each vetter decides what documentation they accept, including none for prior acquaintance, and the community counts what they attest.\",\"items\":{\"$ref\":\"#/$defs/VettingDocumentation\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"acceptedMethods\":{\"description\":\"Methods whose statements count at all.\",\"items\":{\"$ref\":\"#/$defs/VettingMethod\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"decisionSla\":{\"$ref\":\"#/$defs/Duration\"},\"eligibleVetters\":{\"additionalProperties\":false,\"description\":\"How a vetter's eligibility is established.\",\"properties\":{\"role\":{\"description\":\"The role a statement's issuer must hold, matched as the action `role:<role>` in a Verifiable Authority Credential (`AuthorityCredential`) the community issued to that issuer, whose `authority.scope` is the community's DID (see `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds such a credential.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9_-]*$\",\"type\":\"string\"}},\"required\":[\"role\"],\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"extCritical\":{\"$ref\":\"#/$defs/ExtCritical\"},\"governanceFrameworkUrl\":{\"description\":\"Where the community's vetting governance — including the attestation text vetters sign — is published.\",\"format\":\"uri\",\"maxLength\":2048,\"pattern\":\"^https://\",\"type\":\"string\"},\"independence\":{\"additionalProperties\":false,\"description\":\"Caps on how much evidence may come from people close to the applicant. Absent: no caps.\",\"properties\":{\"maxByDeclaredRelationship\":{\"additionalProperties\":{\"minimum\":0,\"type\":\"integer\"},\"description\":\"The most counted statements that may come from vetters declaring each relationship — e.g. `{ \\\"family\\\": 0 }`.\",\"propertyNames\":{\"$ref\":\"#/$defs/VettingRelationship\"},\"type\":\"object\"},\"requireConsistentIdentityCommitment\":{\"description\":\"When true, every counted statement must carry the same identity commitment — all vetters verified the same claimed identity. Absent: false.\",\"type\":\"boolean\"}},\"type\":\"object\"},\"invitation\":{\"description\":\"Whether an invitation credential must accompany the statements at submission (`required`), may (`optional`), or plays no part (`none`). Absent: the presentation-definition alone governs.\",\"enum\":[\"required\",\"optional\",\"none\"],\"type\":\"string\"},\"maxStatementAge\":{\"$ref\":\"#/$defs/Duration\"},\"minByMethod\":{\"additionalProperties\":{\"minimum\":0,\"type\":\"integer\"},\"description\":\"Per-method floors within `minStatements` — e.g. `{ \\\"inPerson\\\": 1 }`. Every method named MUST also be in `acceptedMethods`. Absent: no method floor.\",\"propertyNames\":{\"$ref\":\"#/$defs/VettingMethod\"},\"type\":\"object\"},\"minStatements\":{\"description\":\"How many counted statements are needed, counting each vetter once however many DIDs they hold.\",\"minimum\":1,\"type\":\"integer\"},\"optionalClaims\":{\"description\":\"Claim types an applicant MAY add to the card and a vetter MAY verify. They never affect whether a statement counts.\",\"items\":{\"$ref\":\"#/$defs/ClaimType\"},\"type\":\"array\",\"uniqueItems\":true},\"requiredClaims\":{\"description\":\"Claim types the applicant's Vetting Card must carry, which the identity commitment is computed over, and which a counted statement must list as verified. Absent: none.\",\"items\":{\"$ref\":\"#/$defs/ClaimType\"},\"type\":\"array\",\"uniqueItems\":true},\"requirementsGrace\":{\"$ref\":\"#/$defs/Duration\"},\"statementType\":{\"description\":\"The predicate IRI a counted vetting statement carries in `credentialSubject.predicate` — `https://registry.trustoverip.org/dtg/vsc/vetted/1`, the DTG VSC registry's identity-vetting predicate, or a predicate in a namespace the community controls — registered as one the community accepts via vtc/endorsement-types/register. A statement under any other predicate does not count.\",\"format\":\"uri\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"version\":{\"description\":\"Version of this requirements object's shape. `0.1` for the members defined here.\",\"pattern\":\"^(0|[1-9][0-9]*)\\\\.(0|[1-9][0-9]*)$\",\"type\":\"string\"}},\"required\":[\"version\",\"statementType\",\"minStatements\",\"acceptedMethods\",\"eligibleVetters\"],\"title\":\"VettingRequirements\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

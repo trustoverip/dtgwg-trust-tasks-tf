@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,39 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/did-management/stats/get/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "properties": {
-///    "domain": {
-///      "description": "Disambiguates `mnemonic` per the category conventions. Absent means the domain is resolved by the category's chain. MUST NOT be present without `mnemonic`: this task has no per-domain aggregate (did-management/stats/timeseries does).",
-///      "type": "string",
-///      "maxLength": 253,
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "mnemonic": {
-///      "description": "The slot whose counters are read. Absent means the hosting service's server-wide aggregate, which only an administrator may read.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "dependentRequired": {
-///    "domain": [
-///      "mnemonic"
-///    ]
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -204,17 +147,6 @@ impl Payload {
 }
 ///Disambiguates `mnemonic` per the category conventions. Absent means the domain is resolved by the category's chain. MUST NOT be present without `mnemonic`: this task has no per-domain aggregate (did-management/stats/timeseries does).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Disambiguates `mnemonic` per the category conventions. Absent means the domain is resolved by the category's chain. MUST NOT be present without `mnemonic`: this task has no per-domain aggregate (did-management/stats/timeseries does).",
-///  "type": "string",
-///  "maxLength": 253,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadDomain(::std::string::String);
@@ -277,17 +209,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDomain {
 }
 ///The slot whose counters are read. Absent means the hosting service's server-wide aggregate, which only an administrator may read.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The slot whose counters are read. Absent means the hosting service's server-wide aggregate, which only an administrator may read.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadMnemonic(::std::string::String);
@@ -350,53 +271,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadMnemonic {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "totalResolves",
-///    "totalUpdates"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "lastResolvedAt": {
-///      "description": "Absent when the scope has never been resolved.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "lastUpdatedAt": {
-///      "description": "Absent when the scope has never been updated.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "mnemonic": {
-///      "description": "Echo of the slot read. Absent on the server-wide aggregate.",
-///      "type": "string"
-///    },
-///    "totalDids": {
-///      "description": "Slots the hosting service holds. Present only on the server-wide aggregate.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "totalResolves": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "totalUpdates": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -652,7 +526,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"lastResolvedAt\": {\n          \"description\": \"Absent when the scope has never been resolved.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"lastUpdatedAt\": {\n          \"description\": \"Absent when the scope has never been updated.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"mnemonic\": {\n          \"description\": \"Echo of the slot read. Absent on the server-wide aggregate.\",\n          \"type\": \"string\"\n        },\n        \"totalDids\": {\n          \"description\": \"Slots the hosting service holds. Present only on the server-wide aggregate.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"totalResolves\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"totalUpdates\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"totalResolves\",\n        \"totalUpdates\"\n      ],\n      \"title\": \"Stats Get — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/did-management/stats/get/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"dependentRequired\": {\n    \"domain\": [\n      \"mnemonic\"\n    ]\n  },\n  \"properties\": {\n    \"domain\": {\n      \"description\": \"Disambiguates `mnemonic` per the category conventions. Absent means the domain is resolved by the category's chain. MUST NOT be present without `mnemonic`: this task has no per-domain aggregate (did-management/stats/timeseries does).\",\n      \"maxLength\": 253,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"mnemonic\": {\n      \"description\": \"The slot whose counters are read. Absent means the hosting service's server-wide aggregate, which only an administrator may read.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"title\": \"Stats Get — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"lastResolvedAt\":{\"description\":\"Absent when the scope has never been resolved.\",\"format\":\"date-time\",\"type\":\"string\"},\"lastUpdatedAt\":{\"description\":\"Absent when the scope has never been updated.\",\"format\":\"date-time\",\"type\":\"string\"},\"mnemonic\":{\"description\":\"Echo of the slot read. Absent on the server-wide aggregate.\",\"type\":\"string\"},\"totalDids\":{\"description\":\"Slots the hosting service holds. Present only on the server-wide aggregate.\",\"minimum\":0,\"type\":\"integer\"},\"totalResolves\":{\"minimum\":0,\"type\":\"integer\"},\"totalUpdates\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"totalResolves\",\"totalUpdates\"],\"title\":\"Stats Get — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/did-management/stats/get/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"dependentRequired\":{\"domain\":[\"mnemonic\"]},\"properties\":{\"domain\":{\"description\":\"Disambiguates `mnemonic` per the category conventions. Absent means the domain is resolved by the category's chain. MUST NOT be present without `mnemonic`: this task has no per-domain aggregate (did-management/stats/timeseries does).\",\"maxLength\":253,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"mnemonic\":{\"description\":\"The slot whose counters are read. Absent means the hosting service's server-wide aggregate, which only an administrator may read.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"}},\"title\":\"Stats Get — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -661,7 +535,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"lastResolvedAt\": {\n          \"description\": \"Absent when the scope has never been resolved.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"lastUpdatedAt\": {\n          \"description\": \"Absent when the scope has never been updated.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"mnemonic\": {\n          \"description\": \"Echo of the slot read. Absent on the server-wide aggregate.\",\n          \"type\": \"string\"\n        },\n        \"totalDids\": {\n          \"description\": \"Slots the hosting service holds. Present only on the server-wide aggregate.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"totalResolves\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"totalUpdates\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"totalResolves\",\n        \"totalUpdates\"\n      ],\n      \"title\": \"Stats Get — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"lastResolvedAt\":{\"description\":\"Absent when the scope has never been resolved.\",\"format\":\"date-time\",\"type\":\"string\"},\"lastUpdatedAt\":{\"description\":\"Absent when the scope has never been updated.\",\"format\":\"date-time\",\"type\":\"string\"},\"mnemonic\":{\"description\":\"Echo of the slot read. Absent on the server-wide aggregate.\",\"type\":\"string\"},\"totalDids\":{\"description\":\"Slots the hosting service holds. Present only on the server-wide aggregate.\",\"minimum\":0,\"type\":\"integer\"},\"totalResolves\":{\"minimum\":0,\"type\":\"integer\"},\"totalUpdates\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"totalResolves\",\"totalUpdates\"],\"title\":\"Stats Get — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

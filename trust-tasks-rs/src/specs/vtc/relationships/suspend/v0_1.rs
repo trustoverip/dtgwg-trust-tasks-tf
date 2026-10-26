@@ -35,21 +35,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -71,15 +56,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -143,67 +119,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Whether the edge is in force now, and if not, why not — the edge's resolved state, which is not the same thing as the event just recorded: restoring an edge whose `validUntil` passed while it was suspended records the restoration and still resolves `expired`. Exactly the members its `state` names are present.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "InForce",
-///  "description": "Whether the edge is in force now, and if not, why not — the edge's resolved state, which is not the same thing as the event just recorded: restoring an edge whose `validUntil` passed while it was suspended records the restoration and still resolves `expired`. Exactly the members its `state` names are present.",
-///  "type": "object",
-///  "required": [
-///    "state"
-///  ],
-///  "properties": {
-///    "at": {
-///      "description": "Present for `superseded` and `withdrawn`.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "by": {
-///      "description": "Present for `superseded`: the digest of the credential that displaced it.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "reason": {
-///      "description": "Present for `indeterminate`: why the window could not be read. Written by the community.",
-///      "type": "string",
-///      "maxLength": 500,
-///      "minLength": 1
-///    },
-///    "since": {
-///      "description": "Present for `suspended`: when the standing suspension was recorded.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "state": {
-///      "description": "`yes`: inside its window, nothing standing against it. `notYetValid`: its `validFrom` has not arrived. `expired`: its `validUntil` has passed. `suspended`: temporarily ineffective — the only non-`yes` state a lifecycle event can reverse. `superseded`: displaced by a later credential. `withdrawn`: terminal. `indeterminate`: the credential's own window could not be read, so no honest answer is available.",
-///      "type": "string",
-///      "enum": [
-///        "yes",
-///        "notYetValid",
-///        "expired",
-///        "suspended",
-///        "superseded",
-///        "withdrawn",
-///        "indeterminate"
-///      ]
-///    },
-///    "validFrom": {
-///      "description": "Present for `notYetValid`.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "validUntil": {
-///      "description": "Present for `expired`.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -244,17 +159,6 @@ impl InForce {
 }
 ///Present for `superseded`: the digest of the credential that displaced it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Present for `superseded`: the digest of the credential that displaced it.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct InForceBy(::std::string::String);
@@ -317,17 +221,6 @@ impl<'de> ::serde::Deserialize<'de> for InForceBy {
 }
 ///Present for `indeterminate`: why the window could not be read. Written by the community.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Present for `indeterminate`: why the window could not be read. Written by the community.",
-///  "type": "string",
-///  "maxLength": 500,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct InForceReason(::std::string::String);
@@ -390,24 +283,6 @@ impl<'de> ::serde::Deserialize<'de> for InForceReason {
 }
 ///`yes`: inside its window, nothing standing against it. `notYetValid`: its `validFrom` has not arrived. `expired`: its `validUntil` has passed. `suspended`: temporarily ineffective — the only non-`yes` state a lifecycle event can reverse. `superseded`: displaced by a later credential. `withdrawn`: terminal. `indeterminate`: the credential's own window could not be read, so no honest answer is available.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`yes`: inside its window, nothing standing against it. `notYetValid`: its `validFrom` has not arrived. `expired`: its `validUntil` has passed. `suspended`: temporarily ineffective — the only non-`yes` state a lifecycle event can reverse. `superseded`: displaced by a later credential. `withdrawn`: terminal. `indeterminate`: the credential's own window could not be read, so no honest answer is available.",
-///  "type": "string",
-///  "enum": [
-///    "yes",
-///    "notYetValid",
-///    "expired",
-///    "suspended",
-///    "superseded",
-///    "withdrawn",
-///    "indeterminate"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -489,18 +364,6 @@ impl ::std::convert::TryFrom<::std::string::String> for InForceState {
 }
 ///Why the edge was suspended or restored, stored verbatim on the lifecycle event. Free text written by the caller — the edge's issuer or a moderating administrator — and read by the counterparty and by administrators; retained with the edge. Untrusted, attributed to its author wherever rendered, and never read by the community's state machine.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "LifecycleReason",
-///  "description": "Why the edge was suspended or restored, stored verbatim on the lifecycle event. Free text written by the caller — the edge's issuer or a moderating administrator — and read by the counterparty and by administrators; retained with the edge. Untrusted, attributed to its author wherever rendered, and never read by the community's state machine.",
-///  "type": "string",
-///  "maxLength": 500,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct LifecycleReason(::std::string::String);
@@ -563,34 +426,6 @@ impl<'de> ::serde::Deserialize<'de> for LifecycleReason {
 }
 ///Suspend one published relationship edge. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/relationships/suspend/0.1",
-///  "title": "Payload",
-///  "description": "Suspend one published relationship edge. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "id"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "id": {
-///      "description": "The relationship (VRC) id, as vtc/relationships/list returns it.",
-///      "type": "string",
-///      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-///    },
-///    "reason": {
-///      "$ref": "#/definitions/LifecycleReason"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -610,16 +445,6 @@ impl Payload {
 }
 ///The relationship (VRC) id, as vtc/relationships/list returns it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The relationship (VRC) id, as vtc/relationships/list returns it.",
-///  "type": "string",
-///  "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadId(::std::string::String);
@@ -689,34 +514,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadId {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "id",
-///    "state"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "id": {
-///      "description": "Echoed.",
-///      "type": "string",
-///      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-///    },
-///    "state": {
-///      "$ref": "#/definitions/InForce"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -735,16 +532,6 @@ impl Response {
 }
 ///Echoed.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Echoed.",
-///  "type": "string",
-///  "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseId(::std::string::String);
@@ -1101,7 +888,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"InForce\": {\n      \"additionalProperties\": false,\n      \"description\": \"Whether the edge is in force now, and if not, why not — the edge's resolved state, which is not the same thing as the event just recorded: restoring an edge whose `validUntil` passed while it was suspended records the restoration and still resolves `expired`. Exactly the members its `state` names are present.\",\n      \"properties\": {\n        \"at\": {\n          \"description\": \"Present for `superseded` and `withdrawn`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"by\": {\n          \"description\": \"Present for `superseded`: the digest of the credential that displaced it.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"reason\": {\n          \"description\": \"Present for `indeterminate`: why the window could not be read. Written by the community.\",\n          \"maxLength\": 500,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"since\": {\n          \"description\": \"Present for `suspended`: when the standing suspension was recorded.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"state\": {\n          \"description\": \"`yes`: inside its window, nothing standing against it. `notYetValid`: its `validFrom` has not arrived. `expired`: its `validUntil` has passed. `suspended`: temporarily ineffective — the only non-`yes` state a lifecycle event can reverse. `superseded`: displaced by a later credential. `withdrawn`: terminal. `indeterminate`: the credential's own window could not be read, so no honest answer is available.\",\n          \"enum\": [\n            \"yes\",\n            \"notYetValid\",\n            \"expired\",\n            \"suspended\",\n            \"superseded\",\n            \"withdrawn\",\n            \"indeterminate\"\n          ],\n          \"type\": \"string\"\n        },\n        \"validFrom\": {\n          \"description\": \"Present for `notYetValid`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"validUntil\": {\n          \"description\": \"Present for `expired`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"state\"\n      ],\n      \"title\": \"InForce\",\n      \"type\": \"object\"\n    },\n    \"LifecycleReason\": {\n      \"description\": \"Why the edge was suspended or restored, stored verbatim on the lifecycle event. Free text written by the caller — the edge's issuer or a moderating administrator — and read by the counterparty and by administrators; retained with the edge. Untrusted, attributed to its author wherever rendered, and never read by the community's state machine.\",\n      \"maxLength\": 500,\n      \"minLength\": 1,\n      \"title\": \"LifecycleReason\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"description\": \"Echoed.\",\n          \"pattern\": \"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\n          \"type\": \"string\"\n        },\n        \"state\": {\n          \"$ref\": \"#/$defs/InForce\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"state\"\n      ],\n      \"title\": \"VTC Relationships — Suspend — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/relationships/suspend/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Suspend one published relationship edge. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"id\": {\n      \"description\": \"The relationship (VRC) id, as vtc/relationships/list returns it.\",\n      \"pattern\": \"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\n      \"type\": \"string\"\n    },\n    \"reason\": {\n      \"$ref\": \"#/$defs/LifecycleReason\"\n    }\n  },\n  \"required\": [\n    \"id\"\n  ],\n  \"title\": \"VTC Relationships — Suspend — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"InForce\":{\"additionalProperties\":false,\"description\":\"Whether the edge is in force now, and if not, why not — the edge's resolved state, which is not the same thing as the event just recorded: restoring an edge whose `validUntil` passed while it was suspended records the restoration and still resolves `expired`. Exactly the members its `state` names are present.\",\"properties\":{\"at\":{\"description\":\"Present for `superseded` and `withdrawn`.\",\"format\":\"date-time\",\"type\":\"string\"},\"by\":{\"description\":\"Present for `superseded`: the digest of the credential that displaced it.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"reason\":{\"description\":\"Present for `indeterminate`: why the window could not be read. Written by the community.\",\"maxLength\":500,\"minLength\":1,\"type\":\"string\"},\"since\":{\"description\":\"Present for `suspended`: when the standing suspension was recorded.\",\"format\":\"date-time\",\"type\":\"string\"},\"state\":{\"description\":\"`yes`: inside its window, nothing standing against it. `notYetValid`: its `validFrom` has not arrived. `expired`: its `validUntil` has passed. `suspended`: temporarily ineffective — the only non-`yes` state a lifecycle event can reverse. `superseded`: displaced by a later credential. `withdrawn`: terminal. `indeterminate`: the credential's own window could not be read, so no honest answer is available.\",\"enum\":[\"yes\",\"notYetValid\",\"expired\",\"suspended\",\"superseded\",\"withdrawn\",\"indeterminate\"],\"type\":\"string\"},\"validFrom\":{\"description\":\"Present for `notYetValid`.\",\"format\":\"date-time\",\"type\":\"string\"},\"validUntil\":{\"description\":\"Present for `expired`.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"state\"],\"title\":\"InForce\",\"type\":\"object\"},\"LifecycleReason\":{\"description\":\"Why the edge was suspended or restored, stored verbatim on the lifecycle event. Free text written by the caller — the edge's issuer or a moderating administrator — and read by the counterparty and by administrators; retained with the edge. Untrusted, attributed to its author wherever rendered, and never read by the community's state machine.\",\"maxLength\":500,\"minLength\":1,\"title\":\"LifecycleReason\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"description\":\"Echoed.\",\"pattern\":\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/InForce\"}},\"required\":[\"id\",\"state\"],\"title\":\"VTC Relationships — Suspend — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/relationships/suspend/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Suspend one published relationship edge. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"description\":\"The relationship (VRC) id, as vtc/relationships/list returns it.\",\"pattern\":\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":\"string\"},\"reason\":{\"$ref\":\"#/$defs/LifecycleReason\"}},\"required\":[\"id\"],\"title\":\"VTC Relationships — Suspend — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1111,7 +898,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"InForce\": {\n      \"additionalProperties\": false,\n      \"description\": \"Whether the edge is in force now, and if not, why not — the edge's resolved state, which is not the same thing as the event just recorded: restoring an edge whose `validUntil` passed while it was suspended records the restoration and still resolves `expired`. Exactly the members its `state` names are present.\",\n      \"properties\": {\n        \"at\": {\n          \"description\": \"Present for `superseded` and `withdrawn`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"by\": {\n          \"description\": \"Present for `superseded`: the digest of the credential that displaced it.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"reason\": {\n          \"description\": \"Present for `indeterminate`: why the window could not be read. Written by the community.\",\n          \"maxLength\": 500,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"since\": {\n          \"description\": \"Present for `suspended`: when the standing suspension was recorded.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"state\": {\n          \"description\": \"`yes`: inside its window, nothing standing against it. `notYetValid`: its `validFrom` has not arrived. `expired`: its `validUntil` has passed. `suspended`: temporarily ineffective — the only non-`yes` state a lifecycle event can reverse. `superseded`: displaced by a later credential. `withdrawn`: terminal. `indeterminate`: the credential's own window could not be read, so no honest answer is available.\",\n          \"enum\": [\n            \"yes\",\n            \"notYetValid\",\n            \"expired\",\n            \"suspended\",\n            \"superseded\",\n            \"withdrawn\",\n            \"indeterminate\"\n          ],\n          \"type\": \"string\"\n        },\n        \"validFrom\": {\n          \"description\": \"Present for `notYetValid`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"validUntil\": {\n          \"description\": \"Present for `expired`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"state\"\n      ],\n      \"title\": \"InForce\",\n      \"type\": \"object\"\n    },\n    \"LifecycleReason\": {\n      \"description\": \"Why the edge was suspended or restored, stored verbatim on the lifecycle event. Free text written by the caller — the edge's issuer or a moderating administrator — and read by the counterparty and by administrators; retained with the edge. Untrusted, attributed to its author wherever rendered, and never read by the community's state machine.\",\n      \"maxLength\": 500,\n      \"minLength\": 1,\n      \"title\": \"LifecycleReason\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"description\": \"Echoed.\",\n          \"pattern\": \"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\n          \"type\": \"string\"\n        },\n        \"state\": {\n          \"$ref\": \"#/$defs/InForce\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"state\"\n      ],\n      \"title\": \"VTC Relationships — Suspend — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"InForce\":{\"additionalProperties\":false,\"description\":\"Whether the edge is in force now, and if not, why not — the edge's resolved state, which is not the same thing as the event just recorded: restoring an edge whose `validUntil` passed while it was suspended records the restoration and still resolves `expired`. Exactly the members its `state` names are present.\",\"properties\":{\"at\":{\"description\":\"Present for `superseded` and `withdrawn`.\",\"format\":\"date-time\",\"type\":\"string\"},\"by\":{\"description\":\"Present for `superseded`: the digest of the credential that displaced it.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"reason\":{\"description\":\"Present for `indeterminate`: why the window could not be read. Written by the community.\",\"maxLength\":500,\"minLength\":1,\"type\":\"string\"},\"since\":{\"description\":\"Present for `suspended`: when the standing suspension was recorded.\",\"format\":\"date-time\",\"type\":\"string\"},\"state\":{\"description\":\"`yes`: inside its window, nothing standing against it. `notYetValid`: its `validFrom` has not arrived. `expired`: its `validUntil` has passed. `suspended`: temporarily ineffective — the only non-`yes` state a lifecycle event can reverse. `superseded`: displaced by a later credential. `withdrawn`: terminal. `indeterminate`: the credential's own window could not be read, so no honest answer is available.\",\"enum\":[\"yes\",\"notYetValid\",\"expired\",\"suspended\",\"superseded\",\"withdrawn\",\"indeterminate\"],\"type\":\"string\"},\"validFrom\":{\"description\":\"Present for `notYetValid`.\",\"format\":\"date-time\",\"type\":\"string\"},\"validUntil\":{\"description\":\"Present for `expired`.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"state\"],\"title\":\"InForce\",\"type\":\"object\"},\"LifecycleReason\":{\"description\":\"Why the edge was suspended or restored, stored verbatim on the lifecycle event. Free text written by the caller — the edge's issuer or a moderating administrator — and read by the counterparty and by administrators; retained with the edge. Untrusted, attributed to its author wherever rendered, and never read by the community's state machine.\",\"maxLength\":500,\"minLength\":1,\"title\":\"LifecycleReason\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"description\":\"Echoed.\",\"pattern\":\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/InForce\"}},\"required\":[\"id\",\"state\"],\"title\":\"VTC Relationships — Suspend — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

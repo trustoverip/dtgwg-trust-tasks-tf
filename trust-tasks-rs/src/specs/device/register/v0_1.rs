@@ -35,45 +35,6 @@ pub mod error {
 }
 ///Fine-grained capability flag scoped to the device's allowed contexts. See SPEC.md for the full semantics of each. Capability values are additive: a consumer MUST ignore a value it does not recognise rather than reject the binding, and MUST NOT treat an unrecognised value as conferring anything.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Capability",
-///  "description": "Fine-grained capability flag scoped to the device's allowed contexts. See SPEC.md for the full semantics of each. Capability values are additive: a consumer MUST ignore a value it does not recognise rather than reject the binding, and MUST NOT treat an unrecognised value as conferring anything.",
-///  "type": "string",
-///  "enum": [
-///    "vault-read",
-///    "vault-write",
-///    "proxy-login",
-///    "fill-release",
-///    "policy-admin",
-///    "device-admin",
-///    "sign",
-///    "key-mint",
-///    "sign-trust-task",
-///    "credential-write",
-///    "memory-read",
-///    "memory-write",
-///    "room-present",
-///    "room-open",
-///    "key-export",
-///    "sign-sshsig",
-///    "sign-jws",
-///    "sign-csr",
-///    "sign-document",
-///    "external-accounts-manage",
-///    "external-auth-use",
-///    "pcs-vetter",
-///    "pcs-applicant",
-///    "witness-request",
-///    "pcs-voter",
-///    "pcs-trustee",
-///    "credential-present"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -235,61 +196,6 @@ impl ::std::convert::TryFrom<::std::string::String> for Capability {
 }
 ///Discriminator: is this consumer a user-driven Companion or a headless Service?
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ConsumerKind",
-///  "description": "Discriminator: is this consumer a user-driven Companion or a headless Service?",
-///  "oneOf": [
-///    {
-///      "title": "Companion",
-///      "type": "object",
-///      "required": [
-///        "formFactor",
-///        "kind"
-///      ],
-///      "properties": {
-///        "formFactor": {
-///          "type": "string",
-///          "enum": [
-///            "browser",
-///            "mobile",
-///            "desktop"
-///          ]
-///        },
-///        "kind": {
-///          "const": "companion"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "Service",
-///      "type": "object",
-///      "required": [
-///        "kind",
-///        "serviceKind"
-///      ],
-///      "properties": {
-///        "kind": {
-///          "const": "service"
-///        },
-///        "serviceKind": {
-///          "type": "string",
-///          "enum": [
-///            "mediator",
-///            "ai-agent",
-///            "daemon"
-///          ]
-///        }
-///      },
-///      "additionalProperties": false
-///    }
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(tag = "kind", deny_unknown_fields)]
 #[non_exhaustive]
@@ -309,19 +215,6 @@ pub enum ConsumerKind {
 }
 ///`ConsumerKindFormFactor`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "enum": [
-///    "browser",
-///    "mobile",
-///    "desktop"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -387,19 +280,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ConsumerKindFormFactor {
 }
 ///`ConsumerKindServiceKind`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "enum": [
-///    "mediator",
-///    "ai-agent",
-///    "daemon"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -465,128 +345,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ConsumerKindServiceKind 
 }
 ///Producer-supplied attestation at registration time, verifiable by the maintainer against the platform's attestation infrastructure. Tagged union over the discriminator `kind`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DeviceAttestation",
-///  "description": "Producer-supplied attestation at registration time, verifiable by the maintainer against the platform's attestation infrastructure. Tagged union over the discriminator `kind`.",
-///  "oneOf": [
-///    {
-///      "title": "WebAuthnAttestation",
-///      "type": "object",
-///      "required": [
-///        "aaguid",
-///        "kind"
-///      ],
-///      "properties": {
-///        "aaguid": {
-///          "description": "WebAuthn Authenticator AAGUID (UUID).",
-///          "type": "string",
-///          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
-///        },
-///        "attestationStatement": {
-///          "description": "Base64url-encoded WebAuthn attestation statement, when supplied by the platform.",
-///          "type": "string"
-///        },
-///        "kind": {
-///          "const": "webauthn"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "AppleAppAttest",
-///      "type": "object",
-///      "required": [
-///        "attestation",
-///        "keyId",
-///        "kind"
-///      ],
-///      "properties": {
-///        "attestation": {
-///          "type": "string"
-///        },
-///        "keyId": {
-///          "type": "string",
-///          "minLength": 1
-///        },
-///        "kind": {
-///          "const": "apple-app-attest"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "PlayIntegrity",
-///      "type": "object",
-///      "required": [
-///        "kind",
-///        "token"
-///      ],
-///      "properties": {
-///        "kind": {
-///          "const": "play-integrity"
-///        },
-///        "token": {
-///          "type": "string",
-///          "minLength": 1
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "Tpm",
-///      "type": "object",
-///      "required": [
-///        "kind",
-///        "quote"
-///      ],
-///      "properties": {
-///        "kind": {
-///          "const": "tpm"
-///        },
-///        "quote": {
-///          "type": "string"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "NitroEnclave",
-///      "type": "object",
-///      "required": [
-///        "kind",
-///        "quote"
-///      ],
-///      "properties": {
-///        "kind": {
-///          "const": "nitro-enclave"
-///        },
-///        "quote": {
-///          "type": "string"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "NoAttestation",
-///      "description": "No device-level attestation is available. Maintainers MAY still register the device but SHOULD apply stricter policy (shorter session TTL, more frequent step-up).",
-///      "type": "object",
-///      "required": [
-///        "kind"
-///      ],
-///      "properties": {
-///        "kind": {
-///          "const": "none"
-///        }
-///      },
-///      "additionalProperties": false
-///    }
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(tag = "kind", deny_unknown_fields)]
 #[non_exhaustive]
@@ -625,16 +383,6 @@ pub enum DeviceAttestation {
 }
 ///WebAuthn Authenticator AAGUID (UUID).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "WebAuthn Authenticator AAGUID (UUID).",
-///  "type": "string",
-///  "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DeviceAttestationAaguid(::std::string::String);
@@ -704,15 +452,6 @@ impl<'de> ::serde::Deserialize<'de> for DeviceAttestationAaguid {
 }
 ///`DeviceAttestationKeyId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DeviceAttestationKeyId(::std::string::String);
@@ -772,15 +511,6 @@ impl<'de> ::serde::Deserialize<'de> for DeviceAttestationKeyId {
 }
 ///`DeviceAttestationToken`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DeviceAttestationToken(::std::string::String);
@@ -840,89 +570,6 @@ impl<'de> ::serde::Deserialize<'de> for DeviceAttestationToken {
 }
 ///`DeviceBinding`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DeviceBinding",
-///  "type": "object",
-///  "required": [
-///    "consumerDid",
-///    "consumerKind",
-///    "deviceId",
-///    "displayName",
-///    "registeredAt"
-///  ],
-///  "properties": {
-///    "attestation": {
-///      "$ref": "#/definitions/DeviceAttestation"
-///    },
-///    "capabilities": {
-///      "description": "Capability bitset granted to this device (mirrors the ACL-side scope). Returned for inspection; mutated only via acl/change-role or device/disable.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Capability"
-///      },
-///      "uniqueItems": true
-///    },
-///    "consumerDid": {
-///      "description": "The long-term VTA-derived key (DID) the device authenticates with. Established via the ACL-swap pattern at registration.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "consumerKind": {
-///      "$ref": "#/definitions/ConsumerKind"
-///    },
-///    "deviceId": {
-///      "description": "Maintainer-assigned opaque id for this device. Stable across the device's lifetime — never re-used after disable or wipe.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "disabledAt": {
-///      "description": "Present when the device has been disabled (device/disable). Disabled devices cannot authenticate but their record is retained for audit.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "displayName": {
-///      "description": "Human-readable name (e.g. \"Glenn's MacBook — Chrome\", \"iPhone 17\").",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "keyCustody": {
-///      "description": "How the device custodies its private key material (tier + algorithms). Maintainer policy input, mirroring `attestation` — a maintainer MAY apply stricter policy to `software`-tier devices. See docs/design-notes/mobile-key-custody-profile.md.",
-///      "$ref": "#/definitions/KeyCustody"
-///    },
-///    "lastSeenAt": {
-///      "description": "Updated on every device/heartbeat and on any successful auth.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "platform": {
-///      "description": "Free-form platform descriptor (e.g. \"macOS 16 / Chrome 142\", \"iOS 19.1\", \"Android 16\", \"Linux/x86_64\"). Producer-supplied at registration; consumer-supplied updates are accepted on heartbeat.",
-///      "type": "string"
-///    },
-///    "pushCapable": {
-///      "description": "Whether this device has a usable push channel — i.e. it has registered a push token with a push gateway and conveyed the resulting opaque WakeHandle to its VTA via device/set-wake (https://trusttasks.org/binding/push/0.1). Informational visibility for device/list only. The raw platform push token is held ONLY by the gateway; the maintainer/VTA holds the opaque WakeHandle and the VTA-owned trigger allowlist, never the token. Set from the presence of a current WakeHandle for this device.",
-///      "type": "boolean"
-///    },
-///    "registeredAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "wipedAt": {
-///      "description": "Present when a wipe has been issued (device/wipe). Distinct from disabledAt — a wiped device is also disabled, but wipe additionally communicates a wipe-cache instruction that the device may or may not have executed (see device/wipe).",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -993,16 +640,6 @@ impl DeviceBinding {
 }
 ///The long-term VTA-derived key (DID) the device authenticates with. Established via the ACL-swap pattern at registration.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The long-term VTA-derived key (DID) the device authenticates with. Established via the ACL-swap pattern at registration.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DeviceBindingConsumerDid(::std::string::String);
@@ -1062,16 +699,6 @@ impl<'de> ::serde::Deserialize<'de> for DeviceBindingConsumerDid {
 }
 ///Maintainer-assigned opaque id for this device. Stable across the device's lifetime — never re-used after disable or wipe.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Maintainer-assigned opaque id for this device. Stable across the device's lifetime — never re-used after disable or wipe.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DeviceBindingDeviceId(::std::string::String);
@@ -1131,17 +758,6 @@ impl<'de> ::serde::Deserialize<'de> for DeviceBindingDeviceId {
 }
 ///Human-readable name (e.g. "Glenn's MacBook — Chrome", "iPhone 17").
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Human-readable name (e.g. \"Glenn's MacBook — Chrome\", \"iPhone 17\").",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DeviceBindingDisplayName(::std::string::String);
@@ -1204,21 +820,6 @@ impl<'de> ::serde::Deserialize<'de> for DeviceBindingDisplayName {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -1240,15 +841,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -1312,38 +904,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///How a device custodies its private key material — maintainer policy input, mirroring `attestation`. See docs/design-notes/mobile-key-custody-profile.md.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "KeyCustody",
-///  "description": "How a device custodies its private key material — maintainer policy input, mirroring `attestation`. See docs/design-notes/mobile-key-custody-profile.md.",
-///  "type": "object",
-///  "required": [
-///    "tier"
-///  ],
-///  "properties": {
-///    "keyAgreementCurve": {
-///      "description": "Curve of the holder's keyAgreement key, e.g. `P-256` (hardware-custodiable on mobile) or `X25519` (not).",
-///      "type": "string"
-///    },
-///    "signingAlg": {
-///      "description": "JOSE `alg` of the holder's signing key, e.g. `ES256` (hardware-custodiable on mobile) or `EdDSA` (not).",
-///      "type": "string"
-///    },
-///    "tier": {
-///      "description": "`hardware`: the key is non-exportable in the secure keystore (iOS Secure Enclave / Android StrongBox) and every signing / key-agreement operation runs in-chip — achievable only with P-256. `software`: the key is held in app memory during use, stored hardware-wrapped at rest. Maintainers MAY apply stricter policy (shorter sessions, more frequent step-up) to `software`-tier devices.",
-///      "type": "string",
-///      "enum": [
-///        "hardware",
-///        "software"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1372,19 +932,6 @@ impl KeyCustody {
 }
 ///`hardware`: the key is non-exportable in the secure keystore (iOS Secure Enclave / Android StrongBox) and every signing / key-agreement operation runs in-chip — achievable only with P-256. `software`: the key is held in app memory during use, stored hardware-wrapped at rest. Maintainers MAY apply stricter policy (shorter sessions, more frequent step-up) to `software`-tier devices.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`hardware`: the key is non-exportable in the secure keystore (iOS Secure Enclave / Android StrongBox) and every signing / key-agreement operation runs in-chip — achievable only with P-256. `software`: the key is held in app memory during use, stored hardware-wrapped at rest. Maintainers MAY apply stricter policy (shorter sessions, more frequent step-up) to `software`-tier devices.",
-///  "type": "string",
-///  "enum": [
-///    "hardware",
-///    "software"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1446,50 +993,6 @@ impl ::std::convert::TryFrom<::std::string::String> for KeyCustodyTier {
 }
 ///Public discovery surface that wraps the maintainer's existing two-phase enrolment (provision-integration → acl/swap-key). A new Companion or Service hands the maintainer its long-term VTA-derived key, its consumer kind, display name, and an optional device attestation; the maintainer creates the DeviceBinding and returns it. Phase 1 (provision-integration) is assumed to have already happened — this task is the post-bootstrap claim step.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/device/register/0.1",
-///  "title": "Payload",
-///  "description": "Public discovery surface that wraps the maintainer's existing two-phase enrolment (provision-integration → acl/swap-key). A new Companion or Service hands the maintainer its long-term VTA-derived key, its consumer kind, display name, and an optional device attestation; the maintainer creates the DeviceBinding and returns it. Phase 1 (provision-integration) is assumed to have already happened — this task is the post-bootstrap claim step.",
-///  "type": "object",
-///  "required": [
-///    "consumerKind",
-///    "displayName"
-///  ],
-///  "properties": {
-///    "attestation": {
-///      "$ref": "#/definitions/DeviceAttestation"
-///    },
-///    "consumerKind": {
-///      "$ref": "#/definitions/ConsumerKind"
-///    },
-///    "displayName": {
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "hpkePublicKey": {
-///      "description": "X25519 public key (did:key form) the maintainer will use to HPKE-seal sensitive payloads to this device (sealed secrets, session blobs, sync events). REQUIRED — every Companion/Service needs a recipient key.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "keyCustody": {
-///      "description": "OPTIONAL. How the device custodies its private keys (tier + algorithms). RECOMMENDED for mobile Companions. Maintainer policy input — see docs/design-notes/mobile-key-custody-profile.md.",
-///      "$ref": "#/definitions/KeyCustody"
-///    },
-///    "platform": {
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1527,16 +1030,6 @@ impl Payload {
 }
 ///`PayloadDisplayName`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadDisplayName(::std::string::String);
@@ -1599,16 +1092,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDisplayName {
 }
 ///X25519 public key (did:key form) the maintainer will use to HPKE-seal sensitive payloads to this device (sealed secrets, session blobs, sync events). REQUIRED — every Companion/Service needs a recipient key.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "X25519 public key (did:key form) the maintainer will use to HPKE-seal sensitive payloads to this device (sealed secrets, session blobs, sync events). REQUIRED — every Companion/Service needs a recipient key.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadHpkePublicKey(::std::string::String);
@@ -1668,28 +1151,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadHpkePublicKey {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "binding"
-///  ],
-///  "properties": {
-///    "binding": {
-///      "$ref": "#/definitions/DeviceBinding"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -2219,7 +1680,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Capability\": {\n      \"description\": \"Fine-grained capability flag scoped to the device's allowed contexts. See SPEC.md for the full semantics of each. Capability values are additive: a consumer MUST ignore a value it does not recognise rather than reject the binding, and MUST NOT treat an unrecognised value as conferring anything.\",\n      \"enum\": [\n        \"vault-read\",\n        \"vault-write\",\n        \"proxy-login\",\n        \"fill-release\",\n        \"policy-admin\",\n        \"device-admin\",\n        \"sign\",\n        \"key-mint\",\n        \"sign-trust-task\",\n        \"credential-write\",\n        \"memory-read\",\n        \"memory-write\",\n        \"room-present\",\n        \"room-open\",\n        \"key-export\",\n        \"sign-sshsig\",\n        \"sign-jws\",\n        \"sign-csr\",\n        \"sign-document\",\n        \"external-accounts-manage\",\n        \"external-auth-use\",\n        \"pcs-vetter\",\n        \"pcs-applicant\",\n        \"witness-request\",\n        \"pcs-voter\",\n        \"pcs-trustee\",\n        \"credential-present\"\n      ],\n      \"title\": \"Capability\",\n      \"type\": \"string\"\n    },\n    \"ConsumerKind\": {\n      \"description\": \"Discriminator: is this consumer a user-driven Companion or a headless Service?\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"formFactor\": {\n              \"enum\": [\n                \"browser\",\n                \"mobile\",\n                \"desktop\"\n              ],\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"companion\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"formFactor\"\n          ],\n          \"title\": \"Companion\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"service\"\n            },\n            \"serviceKind\": {\n              \"enum\": [\n                \"mediator\",\n                \"ai-agent\",\n                \"daemon\"\n              ],\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"serviceKind\"\n          ],\n          \"title\": \"Service\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"ConsumerKind\"\n    },\n    \"DeviceAttestation\": {\n      \"description\": \"Producer-supplied attestation at registration time, verifiable by the maintainer against the platform's attestation infrastructure. Tagged union over the discriminator `kind`.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"aaguid\": {\n              \"description\": \"WebAuthn Authenticator AAGUID (UUID).\",\n              \"pattern\": \"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$\",\n              \"type\": \"string\"\n            },\n            \"attestationStatement\": {\n              \"description\": \"Base64url-encoded WebAuthn attestation statement, when supplied by the platform.\",\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"webauthn\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"aaguid\"\n          ],\n          \"title\": \"WebAuthnAttestation\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"attestation\": {\n              \"type\": \"string\"\n            },\n            \"keyId\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"apple-app-attest\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"keyId\",\n            \"attestation\"\n          ],\n          \"title\": \"AppleAppAttest\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"play-integrity\"\n            },\n            \"token\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"token\"\n          ],\n          \"title\": \"PlayIntegrity\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"tpm\"\n            },\n            \"quote\": {\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"quote\"\n          ],\n          \"title\": \"Tpm\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"nitro-enclave\"\n            },\n            \"quote\": {\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"quote\"\n          ],\n          \"title\": \"NitroEnclave\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"No device-level attestation is available. Maintainers MAY still register the device but SHOULD apply stricter policy (shorter session TTL, more frequent step-up).\",\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"none\"\n            }\n          },\n          \"required\": [\n            \"kind\"\n          ],\n          \"title\": \"NoAttestation\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"DeviceAttestation\"\n    },\n    \"DeviceBinding\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"attestation\": {\n          \"$ref\": \"#/$defs/DeviceAttestation\"\n        },\n        \"capabilities\": {\n          \"description\": \"Capability bitset granted to this device (mirrors the ACL-side scope). Returned for inspection; mutated only via acl/change-role or device/disable.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Capability\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"consumerDid\": {\n          \"description\": \"The long-term VTA-derived key (DID) the device authenticates with. Established via the ACL-swap pattern at registration.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"consumerKind\": {\n          \"$ref\": \"#/$defs/ConsumerKind\"\n        },\n        \"deviceId\": {\n          \"description\": \"Maintainer-assigned opaque id for this device. Stable across the device's lifetime — never re-used after disable or wipe.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"disabledAt\": {\n          \"description\": \"Present when the device has been disabled (device/disable). Disabled devices cannot authenticate but their record is retained for audit.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"displayName\": {\n          \"description\": \"Human-readable name (e.g. \\\"Glenn's MacBook — Chrome\\\", \\\"iPhone 17\\\").\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"keyCustody\": {\n          \"$ref\": \"#/$defs/KeyCustody\",\n          \"description\": \"How the device custodies its private key material (tier + algorithms). Maintainer policy input, mirroring `attestation` — a maintainer MAY apply stricter policy to `software`-tier devices. See docs/design-notes/mobile-key-custody-profile.md.\"\n        },\n        \"lastSeenAt\": {\n          \"description\": \"Updated on every device/heartbeat and on any successful auth.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"platform\": {\n          \"description\": \"Free-form platform descriptor (e.g. \\\"macOS 16 / Chrome 142\\\", \\\"iOS 19.1\\\", \\\"Android 16\\\", \\\"Linux/x86_64\\\"). Producer-supplied at registration; consumer-supplied updates are accepted on heartbeat.\",\n          \"type\": \"string\"\n        },\n        \"pushCapable\": {\n          \"description\": \"Whether this device has a usable push channel — i.e. it has registered a push token with a push gateway and conveyed the resulting opaque WakeHandle to its VTA via device/set-wake (https://trusttasks.org/binding/push/0.1). Informational visibility for device/list only. The raw platform push token is held ONLY by the gateway; the maintainer/VTA holds the opaque WakeHandle and the VTA-owned trigger allowlist, never the token. Set from the presence of a current WakeHandle for this device.\",\n          \"type\": \"boolean\"\n        },\n        \"registeredAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"wipedAt\": {\n          \"description\": \"Present when a wipe has been issued (device/wipe). Distinct from disabledAt — a wiped device is also disabled, but wipe additionally communicates a wipe-cache instruction that the device may or may not have executed (see device/wipe).\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"deviceId\",\n        \"consumerKind\",\n        \"displayName\",\n        \"registeredAt\",\n        \"consumerDid\"\n      ],\n      \"title\": \"DeviceBinding\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"KeyCustody\": {\n      \"additionalProperties\": false,\n      \"description\": \"How a device custodies its private key material — maintainer policy input, mirroring `attestation`. See docs/design-notes/mobile-key-custody-profile.md.\",\n      \"properties\": {\n        \"keyAgreementCurve\": {\n          \"description\": \"Curve of the holder's keyAgreement key, e.g. `P-256` (hardware-custodiable on mobile) or `X25519` (not).\",\n          \"type\": \"string\"\n        },\n        \"signingAlg\": {\n          \"description\": \"JOSE `alg` of the holder's signing key, e.g. `ES256` (hardware-custodiable on mobile) or `EdDSA` (not).\",\n          \"type\": \"string\"\n        },\n        \"tier\": {\n          \"description\": \"`hardware`: the key is non-exportable in the secure keystore (iOS Secure Enclave / Android StrongBox) and every signing / key-agreement operation runs in-chip — achievable only with P-256. `software`: the key is held in app memory during use, stored hardware-wrapped at rest. Maintainers MAY apply stricter policy (shorter sessions, more frequent step-up) to `software`-tier devices.\",\n          \"enum\": [\n            \"hardware\",\n            \"software\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"tier\"\n      ],\n      \"title\": \"KeyCustody\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"binding\": {\n          \"$ref\": \"#/$defs/DeviceBinding\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"binding\"\n      ],\n      \"title\": \"Device Register — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/device/register/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Public discovery surface that wraps the maintainer's existing two-phase enrolment (provision-integration → acl/swap-key). A new Companion or Service hands the maintainer its long-term VTA-derived key, its consumer kind, display name, and an optional device attestation; the maintainer creates the DeviceBinding and returns it. Phase 1 (provision-integration) is assumed to have already happened — this task is the post-bootstrap claim step.\",\n  \"properties\": {\n    \"attestation\": {\n      \"$ref\": \"#/$defs/DeviceAttestation\"\n    },\n    \"consumerKind\": {\n      \"$ref\": \"#/$defs/ConsumerKind\"\n    },\n    \"displayName\": {\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"hpkePublicKey\": {\n      \"description\": \"X25519 public key (did:key form) the maintainer will use to HPKE-seal sensitive payloads to this device (sealed secrets, session blobs, sync events). REQUIRED — every Companion/Service needs a recipient key.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"keyCustody\": {\n      \"$ref\": \"#/$defs/KeyCustody\",\n      \"description\": \"OPTIONAL. How the device custodies its private keys (tier + algorithms). RECOMMENDED for mobile Companions. Maintainer policy input — see docs/design-notes/mobile-key-custody-profile.md.\"\n    },\n    \"platform\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"consumerKind\",\n    \"displayName\"\n  ],\n  \"title\": \"Device Register — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Capability\":{\"description\":\"Fine-grained capability flag scoped to the device's allowed contexts. See SPEC.md for the full semantics of each. Capability values are additive: a consumer MUST ignore a value it does not recognise rather than reject the binding, and MUST NOT treat an unrecognised value as conferring anything.\",\"enum\":[\"vault-read\",\"vault-write\",\"proxy-login\",\"fill-release\",\"policy-admin\",\"device-admin\",\"sign\",\"key-mint\",\"sign-trust-task\",\"credential-write\",\"memory-read\",\"memory-write\",\"room-present\",\"room-open\",\"key-export\",\"sign-sshsig\",\"sign-jws\",\"sign-csr\",\"sign-document\",\"external-accounts-manage\",\"external-auth-use\",\"pcs-vetter\",\"pcs-applicant\",\"witness-request\",\"pcs-voter\",\"pcs-trustee\",\"credential-present\"],\"title\":\"Capability\",\"type\":\"string\"},\"ConsumerKind\":{\"description\":\"Discriminator: is this consumer a user-driven Companion or a headless Service?\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"formFactor\":{\"enum\":[\"browser\",\"mobile\",\"desktop\"],\"type\":\"string\"},\"kind\":{\"const\":\"companion\"}},\"required\":[\"kind\",\"formFactor\"],\"title\":\"Companion\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"service\"},\"serviceKind\":{\"enum\":[\"mediator\",\"ai-agent\",\"daemon\"],\"type\":\"string\"}},\"required\":[\"kind\",\"serviceKind\"],\"title\":\"Service\",\"type\":\"object\"}],\"title\":\"ConsumerKind\"},\"DeviceAttestation\":{\"description\":\"Producer-supplied attestation at registration time, verifiable by the maintainer against the platform's attestation infrastructure. Tagged union over the discriminator `kind`.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"aaguid\":{\"description\":\"WebAuthn Authenticator AAGUID (UUID).\",\"pattern\":\"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$\",\"type\":\"string\"},\"attestationStatement\":{\"description\":\"Base64url-encoded WebAuthn attestation statement, when supplied by the platform.\",\"type\":\"string\"},\"kind\":{\"const\":\"webauthn\"}},\"required\":[\"kind\",\"aaguid\"],\"title\":\"WebAuthnAttestation\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"attestation\":{\"type\":\"string\"},\"keyId\":{\"minLength\":1,\"type\":\"string\"},\"kind\":{\"const\":\"apple-app-attest\"}},\"required\":[\"kind\",\"keyId\",\"attestation\"],\"title\":\"AppleAppAttest\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"play-integrity\"},\"token\":{\"minLength\":1,\"type\":\"string\"}},\"required\":[\"kind\",\"token\"],\"title\":\"PlayIntegrity\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"tpm\"},\"quote\":{\"type\":\"string\"}},\"required\":[\"kind\",\"quote\"],\"title\":\"Tpm\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"nitro-enclave\"},\"quote\":{\"type\":\"string\"}},\"required\":[\"kind\",\"quote\"],\"title\":\"NitroEnclave\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"No device-level attestation is available. Maintainers MAY still register the device but SHOULD apply stricter policy (shorter session TTL, more frequent step-up).\",\"properties\":{\"kind\":{\"const\":\"none\"}},\"required\":[\"kind\"],\"title\":\"NoAttestation\",\"type\":\"object\"}],\"title\":\"DeviceAttestation\"},\"DeviceBinding\":{\"additionalProperties\":false,\"properties\":{\"attestation\":{\"$ref\":\"#/$defs/DeviceAttestation\"},\"capabilities\":{\"description\":\"Capability bitset granted to this device (mirrors the ACL-side scope). Returned for inspection; mutated only via acl/change-role or device/disable.\",\"items\":{\"$ref\":\"#/$defs/Capability\"},\"type\":\"array\",\"uniqueItems\":true},\"consumerDid\":{\"description\":\"The long-term VTA-derived key (DID) the device authenticates with. Established via the ACL-swap pattern at registration.\",\"minLength\":1,\"type\":\"string\"},\"consumerKind\":{\"$ref\":\"#/$defs/ConsumerKind\"},\"deviceId\":{\"description\":\"Maintainer-assigned opaque id for this device. Stable across the device's lifetime — never re-used after disable or wipe.\",\"minLength\":1,\"type\":\"string\"},\"disabledAt\":{\"description\":\"Present when the device has been disabled (device/disable). Disabled devices cannot authenticate but their record is retained for audit.\",\"format\":\"date-time\",\"type\":\"string\"},\"displayName\":{\"description\":\"Human-readable name (e.g. \\\"Glenn's MacBook — Chrome\\\", \\\"iPhone 17\\\").\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keyCustody\":{\"$ref\":\"#/$defs/KeyCustody\",\"description\":\"How the device custodies its private key material (tier + algorithms). Maintainer policy input, mirroring `attestation` — a maintainer MAY apply stricter policy to `software`-tier devices. See docs/design-notes/mobile-key-custody-profile.md.\"},\"lastSeenAt\":{\"description\":\"Updated on every device/heartbeat and on any successful auth.\",\"format\":\"date-time\",\"type\":\"string\"},\"platform\":{\"description\":\"Free-form platform descriptor (e.g. \\\"macOS 16 / Chrome 142\\\", \\\"iOS 19.1\\\", \\\"Android 16\\\", \\\"Linux/x86_64\\\"). Producer-supplied at registration; consumer-supplied updates are accepted on heartbeat.\",\"type\":\"string\"},\"pushCapable\":{\"description\":\"Whether this device has a usable push channel — i.e. it has registered a push token with a push gateway and conveyed the resulting opaque WakeHandle to its VTA via device/set-wake (https://trusttasks.org/binding/push/0.1). Informational visibility for device/list only. The raw platform push token is held ONLY by the gateway; the maintainer/VTA holds the opaque WakeHandle and the VTA-owned trigger allowlist, never the token. Set from the presence of a current WakeHandle for this device.\",\"type\":\"boolean\"},\"registeredAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"wipedAt\":{\"description\":\"Present when a wipe has been issued (device/wipe). Distinct from disabledAt — a wiped device is also disabled, but wipe additionally communicates a wipe-cache instruction that the device may or may not have executed (see device/wipe).\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"deviceId\",\"consumerKind\",\"displayName\",\"registeredAt\",\"consumerDid\"],\"title\":\"DeviceBinding\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"KeyCustody\":{\"additionalProperties\":false,\"description\":\"How a device custodies its private key material — maintainer policy input, mirroring `attestation`. See docs/design-notes/mobile-key-custody-profile.md.\",\"properties\":{\"keyAgreementCurve\":{\"description\":\"Curve of the holder's keyAgreement key, e.g. `P-256` (hardware-custodiable on mobile) or `X25519` (not).\",\"type\":\"string\"},\"signingAlg\":{\"description\":\"JOSE `alg` of the holder's signing key, e.g. `ES256` (hardware-custodiable on mobile) or `EdDSA` (not).\",\"type\":\"string\"},\"tier\":{\"description\":\"`hardware`: the key is non-exportable in the secure keystore (iOS Secure Enclave / Android StrongBox) and every signing / key-agreement operation runs in-chip — achievable only with P-256. `software`: the key is held in app memory during use, stored hardware-wrapped at rest. Maintainers MAY apply stricter policy (shorter sessions, more frequent step-up) to `software`-tier devices.\",\"enum\":[\"hardware\",\"software\"],\"type\":\"string\"}},\"required\":[\"tier\"],\"title\":\"KeyCustody\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"binding\":{\"$ref\":\"#/$defs/DeviceBinding\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"binding\"],\"title\":\"Device Register — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/device/register/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Public discovery surface that wraps the maintainer's existing two-phase enrolment (provision-integration → acl/swap-key). A new Companion or Service hands the maintainer its long-term VTA-derived key, its consumer kind, display name, and an optional device attestation; the maintainer creates the DeviceBinding and returns it. Phase 1 (provision-integration) is assumed to have already happened — this task is the post-bootstrap claim step.\",\"properties\":{\"attestation\":{\"$ref\":\"#/$defs/DeviceAttestation\"},\"consumerKind\":{\"$ref\":\"#/$defs/ConsumerKind\"},\"displayName\":{\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"hpkePublicKey\":{\"description\":\"X25519 public key (did:key form) the maintainer will use to HPKE-seal sensitive payloads to this device (sealed secrets, session blobs, sync events). REQUIRED — every Companion/Service needs a recipient key.\",\"minLength\":1,\"type\":\"string\"},\"keyCustody\":{\"$ref\":\"#/$defs/KeyCustody\",\"description\":\"OPTIONAL. How the device custodies its private keys (tier + algorithms). RECOMMENDED for mobile Companions. Maintainer policy input — see docs/design-notes/mobile-key-custody-profile.md.\"},\"platform\":{\"type\":\"string\"}},\"required\":[\"consumerKind\",\"displayName\"],\"title\":\"Device Register — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -2228,7 +1689,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Capability\": {\n      \"description\": \"Fine-grained capability flag scoped to the device's allowed contexts. See SPEC.md for the full semantics of each. Capability values are additive: a consumer MUST ignore a value it does not recognise rather than reject the binding, and MUST NOT treat an unrecognised value as conferring anything.\",\n      \"enum\": [\n        \"vault-read\",\n        \"vault-write\",\n        \"proxy-login\",\n        \"fill-release\",\n        \"policy-admin\",\n        \"device-admin\",\n        \"sign\",\n        \"key-mint\",\n        \"sign-trust-task\",\n        \"credential-write\",\n        \"memory-read\",\n        \"memory-write\",\n        \"room-present\",\n        \"room-open\",\n        \"key-export\",\n        \"sign-sshsig\",\n        \"sign-jws\",\n        \"sign-csr\",\n        \"sign-document\",\n        \"external-accounts-manage\",\n        \"external-auth-use\",\n        \"pcs-vetter\",\n        \"pcs-applicant\",\n        \"witness-request\",\n        \"pcs-voter\",\n        \"pcs-trustee\",\n        \"credential-present\"\n      ],\n      \"title\": \"Capability\",\n      \"type\": \"string\"\n    },\n    \"ConsumerKind\": {\n      \"description\": \"Discriminator: is this consumer a user-driven Companion or a headless Service?\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"formFactor\": {\n              \"enum\": [\n                \"browser\",\n                \"mobile\",\n                \"desktop\"\n              ],\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"companion\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"formFactor\"\n          ],\n          \"title\": \"Companion\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"service\"\n            },\n            \"serviceKind\": {\n              \"enum\": [\n                \"mediator\",\n                \"ai-agent\",\n                \"daemon\"\n              ],\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"serviceKind\"\n          ],\n          \"title\": \"Service\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"ConsumerKind\"\n    },\n    \"DeviceAttestation\": {\n      \"description\": \"Producer-supplied attestation at registration time, verifiable by the maintainer against the platform's attestation infrastructure. Tagged union over the discriminator `kind`.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"aaguid\": {\n              \"description\": \"WebAuthn Authenticator AAGUID (UUID).\",\n              \"pattern\": \"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$\",\n              \"type\": \"string\"\n            },\n            \"attestationStatement\": {\n              \"description\": \"Base64url-encoded WebAuthn attestation statement, when supplied by the platform.\",\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"webauthn\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"aaguid\"\n          ],\n          \"title\": \"WebAuthnAttestation\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"attestation\": {\n              \"type\": \"string\"\n            },\n            \"keyId\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"apple-app-attest\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"keyId\",\n            \"attestation\"\n          ],\n          \"title\": \"AppleAppAttest\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"play-integrity\"\n            },\n            \"token\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"token\"\n          ],\n          \"title\": \"PlayIntegrity\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"tpm\"\n            },\n            \"quote\": {\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"quote\"\n          ],\n          \"title\": \"Tpm\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"nitro-enclave\"\n            },\n            \"quote\": {\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"quote\"\n          ],\n          \"title\": \"NitroEnclave\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"No device-level attestation is available. Maintainers MAY still register the device but SHOULD apply stricter policy (shorter session TTL, more frequent step-up).\",\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"none\"\n            }\n          },\n          \"required\": [\n            \"kind\"\n          ],\n          \"title\": \"NoAttestation\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"DeviceAttestation\"\n    },\n    \"DeviceBinding\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"attestation\": {\n          \"$ref\": \"#/$defs/DeviceAttestation\"\n        },\n        \"capabilities\": {\n          \"description\": \"Capability bitset granted to this device (mirrors the ACL-side scope). Returned for inspection; mutated only via acl/change-role or device/disable.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Capability\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"consumerDid\": {\n          \"description\": \"The long-term VTA-derived key (DID) the device authenticates with. Established via the ACL-swap pattern at registration.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"consumerKind\": {\n          \"$ref\": \"#/$defs/ConsumerKind\"\n        },\n        \"deviceId\": {\n          \"description\": \"Maintainer-assigned opaque id for this device. Stable across the device's lifetime — never re-used after disable or wipe.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"disabledAt\": {\n          \"description\": \"Present when the device has been disabled (device/disable). Disabled devices cannot authenticate but their record is retained for audit.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"displayName\": {\n          \"description\": \"Human-readable name (e.g. \\\"Glenn's MacBook — Chrome\\\", \\\"iPhone 17\\\").\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"keyCustody\": {\n          \"$ref\": \"#/$defs/KeyCustody\",\n          \"description\": \"How the device custodies its private key material (tier + algorithms). Maintainer policy input, mirroring `attestation` — a maintainer MAY apply stricter policy to `software`-tier devices. See docs/design-notes/mobile-key-custody-profile.md.\"\n        },\n        \"lastSeenAt\": {\n          \"description\": \"Updated on every device/heartbeat and on any successful auth.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"platform\": {\n          \"description\": \"Free-form platform descriptor (e.g. \\\"macOS 16 / Chrome 142\\\", \\\"iOS 19.1\\\", \\\"Android 16\\\", \\\"Linux/x86_64\\\"). Producer-supplied at registration; consumer-supplied updates are accepted on heartbeat.\",\n          \"type\": \"string\"\n        },\n        \"pushCapable\": {\n          \"description\": \"Whether this device has a usable push channel — i.e. it has registered a push token with a push gateway and conveyed the resulting opaque WakeHandle to its VTA via device/set-wake (https://trusttasks.org/binding/push/0.1). Informational visibility for device/list only. The raw platform push token is held ONLY by the gateway; the maintainer/VTA holds the opaque WakeHandle and the VTA-owned trigger allowlist, never the token. Set from the presence of a current WakeHandle for this device.\",\n          \"type\": \"boolean\"\n        },\n        \"registeredAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"wipedAt\": {\n          \"description\": \"Present when a wipe has been issued (device/wipe). Distinct from disabledAt — a wiped device is also disabled, but wipe additionally communicates a wipe-cache instruction that the device may or may not have executed (see device/wipe).\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"deviceId\",\n        \"consumerKind\",\n        \"displayName\",\n        \"registeredAt\",\n        \"consumerDid\"\n      ],\n      \"title\": \"DeviceBinding\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"KeyCustody\": {\n      \"additionalProperties\": false,\n      \"description\": \"How a device custodies its private key material — maintainer policy input, mirroring `attestation`. See docs/design-notes/mobile-key-custody-profile.md.\",\n      \"properties\": {\n        \"keyAgreementCurve\": {\n          \"description\": \"Curve of the holder's keyAgreement key, e.g. `P-256` (hardware-custodiable on mobile) or `X25519` (not).\",\n          \"type\": \"string\"\n        },\n        \"signingAlg\": {\n          \"description\": \"JOSE `alg` of the holder's signing key, e.g. `ES256` (hardware-custodiable on mobile) or `EdDSA` (not).\",\n          \"type\": \"string\"\n        },\n        \"tier\": {\n          \"description\": \"`hardware`: the key is non-exportable in the secure keystore (iOS Secure Enclave / Android StrongBox) and every signing / key-agreement operation runs in-chip — achievable only with P-256. `software`: the key is held in app memory during use, stored hardware-wrapped at rest. Maintainers MAY apply stricter policy (shorter sessions, more frequent step-up) to `software`-tier devices.\",\n          \"enum\": [\n            \"hardware\",\n            \"software\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"tier\"\n      ],\n      \"title\": \"KeyCustody\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"binding\": {\n          \"$ref\": \"#/$defs/DeviceBinding\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"binding\"\n      ],\n      \"title\": \"Device Register — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Capability\":{\"description\":\"Fine-grained capability flag scoped to the device's allowed contexts. See SPEC.md for the full semantics of each. Capability values are additive: a consumer MUST ignore a value it does not recognise rather than reject the binding, and MUST NOT treat an unrecognised value as conferring anything.\",\"enum\":[\"vault-read\",\"vault-write\",\"proxy-login\",\"fill-release\",\"policy-admin\",\"device-admin\",\"sign\",\"key-mint\",\"sign-trust-task\",\"credential-write\",\"memory-read\",\"memory-write\",\"room-present\",\"room-open\",\"key-export\",\"sign-sshsig\",\"sign-jws\",\"sign-csr\",\"sign-document\",\"external-accounts-manage\",\"external-auth-use\",\"pcs-vetter\",\"pcs-applicant\",\"witness-request\",\"pcs-voter\",\"pcs-trustee\",\"credential-present\"],\"title\":\"Capability\",\"type\":\"string\"},\"ConsumerKind\":{\"description\":\"Discriminator: is this consumer a user-driven Companion or a headless Service?\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"formFactor\":{\"enum\":[\"browser\",\"mobile\",\"desktop\"],\"type\":\"string\"},\"kind\":{\"const\":\"companion\"}},\"required\":[\"kind\",\"formFactor\"],\"title\":\"Companion\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"service\"},\"serviceKind\":{\"enum\":[\"mediator\",\"ai-agent\",\"daemon\"],\"type\":\"string\"}},\"required\":[\"kind\",\"serviceKind\"],\"title\":\"Service\",\"type\":\"object\"}],\"title\":\"ConsumerKind\"},\"DeviceAttestation\":{\"description\":\"Producer-supplied attestation at registration time, verifiable by the maintainer against the platform's attestation infrastructure. Tagged union over the discriminator `kind`.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"aaguid\":{\"description\":\"WebAuthn Authenticator AAGUID (UUID).\",\"pattern\":\"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$\",\"type\":\"string\"},\"attestationStatement\":{\"description\":\"Base64url-encoded WebAuthn attestation statement, when supplied by the platform.\",\"type\":\"string\"},\"kind\":{\"const\":\"webauthn\"}},\"required\":[\"kind\",\"aaguid\"],\"title\":\"WebAuthnAttestation\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"attestation\":{\"type\":\"string\"},\"keyId\":{\"minLength\":1,\"type\":\"string\"},\"kind\":{\"const\":\"apple-app-attest\"}},\"required\":[\"kind\",\"keyId\",\"attestation\"],\"title\":\"AppleAppAttest\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"play-integrity\"},\"token\":{\"minLength\":1,\"type\":\"string\"}},\"required\":[\"kind\",\"token\"],\"title\":\"PlayIntegrity\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"tpm\"},\"quote\":{\"type\":\"string\"}},\"required\":[\"kind\",\"quote\"],\"title\":\"Tpm\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"nitro-enclave\"},\"quote\":{\"type\":\"string\"}},\"required\":[\"kind\",\"quote\"],\"title\":\"NitroEnclave\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"No device-level attestation is available. Maintainers MAY still register the device but SHOULD apply stricter policy (shorter session TTL, more frequent step-up).\",\"properties\":{\"kind\":{\"const\":\"none\"}},\"required\":[\"kind\"],\"title\":\"NoAttestation\",\"type\":\"object\"}],\"title\":\"DeviceAttestation\"},\"DeviceBinding\":{\"additionalProperties\":false,\"properties\":{\"attestation\":{\"$ref\":\"#/$defs/DeviceAttestation\"},\"capabilities\":{\"description\":\"Capability bitset granted to this device (mirrors the ACL-side scope). Returned for inspection; mutated only via acl/change-role or device/disable.\",\"items\":{\"$ref\":\"#/$defs/Capability\"},\"type\":\"array\",\"uniqueItems\":true},\"consumerDid\":{\"description\":\"The long-term VTA-derived key (DID) the device authenticates with. Established via the ACL-swap pattern at registration.\",\"minLength\":1,\"type\":\"string\"},\"consumerKind\":{\"$ref\":\"#/$defs/ConsumerKind\"},\"deviceId\":{\"description\":\"Maintainer-assigned opaque id for this device. Stable across the device's lifetime — never re-used after disable or wipe.\",\"minLength\":1,\"type\":\"string\"},\"disabledAt\":{\"description\":\"Present when the device has been disabled (device/disable). Disabled devices cannot authenticate but their record is retained for audit.\",\"format\":\"date-time\",\"type\":\"string\"},\"displayName\":{\"description\":\"Human-readable name (e.g. \\\"Glenn's MacBook — Chrome\\\", \\\"iPhone 17\\\").\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keyCustody\":{\"$ref\":\"#/$defs/KeyCustody\",\"description\":\"How the device custodies its private key material (tier + algorithms). Maintainer policy input, mirroring `attestation` — a maintainer MAY apply stricter policy to `software`-tier devices. See docs/design-notes/mobile-key-custody-profile.md.\"},\"lastSeenAt\":{\"description\":\"Updated on every device/heartbeat and on any successful auth.\",\"format\":\"date-time\",\"type\":\"string\"},\"platform\":{\"description\":\"Free-form platform descriptor (e.g. \\\"macOS 16 / Chrome 142\\\", \\\"iOS 19.1\\\", \\\"Android 16\\\", \\\"Linux/x86_64\\\"). Producer-supplied at registration; consumer-supplied updates are accepted on heartbeat.\",\"type\":\"string\"},\"pushCapable\":{\"description\":\"Whether this device has a usable push channel — i.e. it has registered a push token with a push gateway and conveyed the resulting opaque WakeHandle to its VTA via device/set-wake (https://trusttasks.org/binding/push/0.1). Informational visibility for device/list only. The raw platform push token is held ONLY by the gateway; the maintainer/VTA holds the opaque WakeHandle and the VTA-owned trigger allowlist, never the token. Set from the presence of a current WakeHandle for this device.\",\"type\":\"boolean\"},\"registeredAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"wipedAt\":{\"description\":\"Present when a wipe has been issued (device/wipe). Distinct from disabledAt — a wiped device is also disabled, but wipe additionally communicates a wipe-cache instruction that the device may or may not have executed (see device/wipe).\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"deviceId\",\"consumerKind\",\"displayName\",\"registeredAt\",\"consumerDid\"],\"title\":\"DeviceBinding\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"KeyCustody\":{\"additionalProperties\":false,\"description\":\"How a device custodies its private key material — maintainer policy input, mirroring `attestation`. See docs/design-notes/mobile-key-custody-profile.md.\",\"properties\":{\"keyAgreementCurve\":{\"description\":\"Curve of the holder's keyAgreement key, e.g. `P-256` (hardware-custodiable on mobile) or `X25519` (not).\",\"type\":\"string\"},\"signingAlg\":{\"description\":\"JOSE `alg` of the holder's signing key, e.g. `ES256` (hardware-custodiable on mobile) or `EdDSA` (not).\",\"type\":\"string\"},\"tier\":{\"description\":\"`hardware`: the key is non-exportable in the secure keystore (iOS Secure Enclave / Android StrongBox) and every signing / key-agreement operation runs in-chip — achievable only with P-256. `software`: the key is held in app memory during use, stored hardware-wrapped at rest. Maintainers MAY apply stricter policy (shorter sessions, more frequent step-up) to `software`-tier devices.\",\"enum\":[\"hardware\",\"software\"],\"type\":\"string\"}},\"required\":[\"tier\"],\"title\":\"KeyCustody\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"binding\":{\"$ref\":\"#/$defs/DeviceBinding\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"binding\"],\"title\":\"Device Register — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

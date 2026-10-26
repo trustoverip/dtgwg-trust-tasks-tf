@@ -34,18 +34,6 @@ pub mod error {
 }
 ///An Accepts criterion's identifier, chosen by the registering administrator — a ceremony purpose or a named manifest criterion, e.g. `membership`. Compared as an exact string after surrounding whitespace is trimmed. Bounded at 128 characters, the bound vtc/join-requests/manifest/0.2 places on the criterion `id` it publishes.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "AcceptsCriterionId",
-///  "description": "An Accepts criterion's identifier, chosen by the registering administrator — a ceremony purpose or a named manifest criterion, e.g. `membership`. Compared as an exact string after surrounding whitespace is trimmed. Bounded at 128 characters, the bound vtc/join-requests/manifest/0.2 places on the criterion `id` it publishes.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct AcceptsCriterionId(::std::string::String);
@@ -108,21 +96,6 @@ impl<'de> ::serde::Deserialize<'de> for AcceptsCriterionId {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -144,15 +117,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -216,29 +180,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Remove one Accepts criterion. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/schemas/accepts/delete/0.1",
-///  "title": "Payload",
-///  "description": "Remove one Accepts criterion. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "id"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "id": {
-///      "$ref": "#/definitions/AcceptsCriterionId"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -254,28 +195,6 @@ impl Payload {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "id"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "id": {
-///      "$ref": "#/definitions/AcceptsCriterionId"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -402,7 +321,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AcceptsCriterionId\": {\n      \"description\": \"An Accepts criterion's identifier, chosen by the registering administrator — a ceremony purpose or a named manifest criterion, e.g. `membership`. Compared as an exact string after surrounding whitespace is trimmed. Bounded at 128 characters, the bound vtc/join-requests/manifest/0.2 places on the criterion `id` it publishes.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"title\": \"AcceptsCriterionId\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"$ref\": \"#/$defs/AcceptsCriterionId\"\n        }\n      },\n      \"required\": [\n        \"id\"\n      ],\n      \"title\": \"VTC Schemas — Accepts — Delete — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/schemas/accepts/delete/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Remove one Accepts criterion. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"id\": {\n      \"$ref\": \"#/$defs/AcceptsCriterionId\"\n    }\n  },\n  \"required\": [\n    \"id\"\n  ],\n  \"title\": \"VTC Schemas — Accepts — Delete — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"AcceptsCriterionId\":{\"description\":\"An Accepts criterion's identifier, chosen by the registering administrator — a ceremony purpose or a named manifest criterion, e.g. `membership`. Compared as an exact string after surrounding whitespace is trimmed. Bounded at 128 characters, the bound vtc/join-requests/manifest/0.2 places on the criterion `id` it publishes.\",\"maxLength\":128,\"minLength\":1,\"title\":\"AcceptsCriterionId\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"$ref\":\"#/$defs/AcceptsCriterionId\"}},\"required\":[\"id\"],\"title\":\"VTC Schemas — Accepts — Delete — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/schemas/accepts/delete/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Remove one Accepts criterion. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"$ref\":\"#/$defs/AcceptsCriterionId\"}},\"required\":[\"id\"],\"title\":\"VTC Schemas — Accepts — Delete — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -412,7 +331,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AcceptsCriterionId\": {\n      \"description\": \"An Accepts criterion's identifier, chosen by the registering administrator — a ceremony purpose or a named manifest criterion, e.g. `membership`. Compared as an exact string after surrounding whitespace is trimmed. Bounded at 128 characters, the bound vtc/join-requests/manifest/0.2 places on the criterion `id` it publishes.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"title\": \"AcceptsCriterionId\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"$ref\": \"#/$defs/AcceptsCriterionId\"\n        }\n      },\n      \"required\": [\n        \"id\"\n      ],\n      \"title\": \"VTC Schemas — Accepts — Delete — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"AcceptsCriterionId\":{\"description\":\"An Accepts criterion's identifier, chosen by the registering administrator — a ceremony purpose or a named manifest criterion, e.g. `membership`. Compared as an exact string after surrounding whitespace is trimmed. Bounded at 128 characters, the bound vtc/join-requests/manifest/0.2 places on the criterion `id` it publishes.\",\"maxLength\":128,\"minLength\":1,\"title\":\"AcceptsCriterionId\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"$ref\":\"#/$defs/AcceptsCriterionId\"}},\"required\":[\"id\"],\"title\":\"VTC Schemas — Accepts — Delete — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

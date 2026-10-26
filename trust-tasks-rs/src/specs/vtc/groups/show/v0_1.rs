@@ -34,30 +34,6 @@ pub mod error {
 }
 ///A dynamic group's membership rule: a member belongs when every condition holds and they have not opted out. The community evaluates it under its `groups` policy and recomputes membership whenever a fact it reads changes, always excluding opted-out entries.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DynamicRule",
-///  "description": "A dynamic group's membership rule: a member belongs when every condition holds and they have not opted out. The community evaluates it under its `groups` policy and recomputes membership whenever a fact it reads changes, always excluding opted-out entries.",
-///  "type": "object",
-///  "required": [
-///    "all"
-///  ],
-///  "properties": {
-///    "all": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/RuleCondition"
-///      },
-///      "maxItems": 16,
-///      "minItems": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -71,17 +47,6 @@ impl DynamicRule {
 }
 ///Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "EntryId",
-///  "description": "Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.",
-///  "type": "string",
-///  "pattern": "^dir_[A-Za-z0-9_-]{16,64}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct EntryId(::std::string::String);
@@ -145,21 +110,6 @@ impl<'de> ::serde::Deserialize<'de> for EntryId {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -181,15 +131,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -253,19 +194,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "FieldKey",
-///  "description": "Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1,
-///  "pattern": "^([a-z][a-z0-9-]*\\.)*[a-z][a-zA-Z0-9]{0,63}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct FieldKey(::std::string::String);
@@ -337,107 +265,6 @@ impl<'de> ::serde::Deserialize<'de> for FieldKey {
 }
 ///A community group, as a caller who may see it sees it. Members a caller may not see are absent: `memberCount` only to those who may see the group's members, `managers` and `credentialAuthorityValidUntil` only to its managers.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Group",
-///  "description": "A community group, as a caller who may see it sees it. Members a caller may not see are absent: `memberCount` only to those who may see the group's members, `managers` and `credentialAuthorityValidUntil` only to its managers.",
-///  "type": "object",
-///  "required": [
-///    "carriesAuthority",
-///    "createdAt",
-///    "groupDid",
-///    "groupId",
-///    "issuesCredentials",
-///    "kind",
-///    "name",
-///    "showMembers",
-///    "visibility"
-///  ],
-///  "properties": {
-///    "carriesAuthority": {
-///      "description": "`true` while the group has a `grants` or `role` binding. Such a group is `static` and `closed` for as long as it does.",
-///      "type": "boolean"
-///    },
-///    "createdAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "createdBy": {
-///      "description": "The creating administrator's directory entry, where they have one.",
-///      "$ref": "#/definitions/EntryId"
-///    },
-///    "credentialAuthorityValidUntil": {
-///      "description": "When the community's authorization credential to the group expires. The community renews it well before.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "description": {
-///      "$ref": "#/definitions/GroupDescription"
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT carry authority.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "groupDid": {
-///      "description": "The group's own DID, minted by the community's VTA for this group alone. It issues the group's membership credentials. Its DID document carries no name or description.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    },
-///    "groupId": {
-///      "$ref": "#/definitions/GroupId"
-///    },
-///    "issuesCredentials": {
-///      "description": "Whether the group's DID issues its members a membership credential. Default true.",
-///      "type": "boolean"
-///    },
-///    "joinPolicy": {
-///      "description": "Present exactly when `kind` is `static`.",
-///      "$ref": "#/definitions/JoinPolicy"
-///    },
-///    "kind": {
-///      "$ref": "#/definitions/GroupKind"
-///    },
-///    "managers": {
-///      "description": "Entries holding `vtc.groups.manage` qualified to this group, read from the access-control list. Informational: managers are appointed by an access-control grant (vtc/groups/managers/add), never by this record.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/EntryId"
-///      },
-///      "maxItems": 256,
-///      "uniqueItems": true
-///    },
-///    "memberCount": {
-///      "description": "Active members. Only to callers who may see the member list.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "name": {
-///      "$ref": "#/definitions/GroupName"
-///    },
-///    "rule": {
-///      "description": "Present exactly when `kind` is `dynamic`.",
-///      "$ref": "#/definitions/DynamicRule"
-///    },
-///    "showMembers": {
-///      "description": "Who may see the group's member list. Separate from `visibility`: a group everyone sees may show its members only to administrators. Never wider than `visibility`.",
-///      "$ref": "#/definitions/GroupAudience"
-///    },
-///    "updatedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "visibility": {
-///      "description": "Who may see that the group exists, and its name and description.",
-///      "$ref": "#/definitions/GroupAudience"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -516,21 +343,6 @@ impl Group {
 }
 ///Who may see something about a group, narrowest first. `admins`: holders of `vtc.groups.manage` for the group (unqualified, or qualified `group:<groupId>`). `groupMembers`: the group's own members, and its managers. `members`: every active member of the community.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "GroupAudience",
-///  "description": "Who may see something about a group, narrowest first. `admins`: holders of `vtc.groups.manage` for the group (unqualified, or qualified `group:<groupId>`). `groupMembers`: the group's own members, and its managers. `members`: every active member of the community.",
-///  "type": "string",
-///  "enum": [
-///    "admins",
-///    "groupMembers",
-///    "members"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -596,18 +408,6 @@ impl ::std::convert::TryFrom<::std::string::String> for GroupAudience {
 }
 ///What the group is for. Plain text; a reader MUST NOT treat it as instructions. Same placement rules as `GroupName`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "GroupDescription",
-///  "description": "What the group is for. Plain text; a reader MUST NOT treat it as instructions. Same placement rules as `GroupName`.",
-///  "type": "string",
-///  "maxLength": 1000,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct GroupDescription(::std::string::String);
@@ -670,17 +470,6 @@ impl<'de> ::serde::Deserialize<'de> for GroupDescription {
 }
 ///The group's own DID, minted by the community's VTA for this group alone. It issues the group's membership credentials. Its DID document carries no name or description.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The group's own DID, minted by the community's VTA for this group alone. It issues the group's membership credentials. Its DID document carries no name or description.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct GroupGroupDid(::std::string::String);
@@ -745,17 +534,6 @@ impl<'de> ::serde::Deserialize<'de> for GroupGroupDid {
 }
 ///Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "GroupId",
-///  "description": "Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.",
-///  "type": "string",
-///  "pattern": "^grp_[A-Za-z0-9_-]{16,64}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct GroupId(::std::string::String);
@@ -819,20 +597,6 @@ impl<'de> ::serde::Deserialize<'de> for GroupId {
 }
 ///`static`: membership is explicit — added, joined, or granted on request. `dynamic`: membership is computed from `rule` over verified facts only; nobody is added by hand, but a member may opt out (vtc/groups/leave), an exclusion the rule cannot override, and undo it (vtc/groups/join). A dynamic group never confers authority. Fixed for the group's life.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "GroupKind",
-///  "description": "`static`: membership is explicit — added, joined, or granted on request. `dynamic`: membership is computed from `rule` over verified facts only; nobody is added by hand, but a member may opt out (vtc/groups/leave), an exclusion the rule cannot override, and undo it (vtc/groups/join). A dynamic group never confers authority. Fixed for the group's life.",
-///  "type": "string",
-///  "enum": [
-///    "static",
-///    "dynamic"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -894,18 +658,6 @@ impl ::std::convert::TryFrom<::std::string::String> for GroupKind {
 }
 ///The group's name, shown to those who may see the group. The community's own record: never in the group's DID document or its credentials' subject beyond the group's DID. Plain text.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "GroupName",
-///  "description": "The group's name, shown to those who may see the group. The community's own record: never in the group's DID document or its credentials' subject beyond the group's DID. Plain text.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct GroupName(::std::string::String);
@@ -968,21 +720,6 @@ impl<'de> ::serde::Deserialize<'de> for GroupName {
 }
 ///How a member enters a static group by themselves. `closed`: only a manager adds them. `request`: a member asks and a manager decides. `open`: a member joins at once, subject to the community's `groups` policy. A group carrying authority is always `closed`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "JoinPolicy",
-///  "description": "How a member enters a static group by themselves. `closed`: only a manager adds them. `request`: a member asks and a manager decides. `open`: a member joins at once, subject to the community's `groups` policy. A group carrying authority is always `closed`.",
-///  "type": "string",
-///  "enum": [
-///    "closed",
-///    "request",
-///    "open"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1048,29 +785,6 @@ impl ::std::convert::TryFrom<::std::string::String> for JoinPolicy {
 }
 ///Read one community group the caller may see: its DID, name, kind, policies and, where permitted, its member count and managers. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/groups/show/0.1",
-///  "title": "Payload",
-///  "description": "Read one community group the caller may see: its DID, name, kind, policies and, where permitted, its member count and managers. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "groupId"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "groupId": {
-///      "$ref": "#/definitions/GroupId"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1087,40 +801,6 @@ impl Payload {
 }
 ///The success response to a vtc/groups/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/show/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The success response to a vtc/groups/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/show/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "group",
-///    "myMembership"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "group": {
-///      "$ref": "#/definitions/Group"
-///    },
-///    "myMembership": {
-///      "type": "string",
-///      "enum": [
-///        "member",
-///        "pending",
-///        "requested",
-///        "optedOut",
-///        "none"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1138,21 +818,6 @@ impl Response {
 }
 ///`ResponseMyMembership`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "enum": [
-///    "member",
-///    "pending",
-///    "requested",
-///    "optedOut",
-///    "none"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1226,67 +891,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseMyMembership {
 }
 ///One test over a verified fact about a member. `fact: role` tests the member's community role; `fact: field` tests an `admin`- or `credential`-sourced directory field named by `field`; `fact: personhood` tests whether a personhood assertion is on file; `fact: joinedAt` tests when they joined. A rule never reads a self-asserted (`member`-sourced) field: a member must not be able to join a group by editing their card.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RuleCondition",
-///  "description": "One test over a verified fact about a member. `fact: role` tests the member's community role; `fact: field` tests an `admin`- or `credential`-sourced directory field named by `field`; `fact: personhood` tests whether a personhood assertion is on file; `fact: joinedAt` tests when they joined. A rule never reads a self-asserted (`member`-sourced) field: a member must not be able to join a group by editing their card.",
-///  "type": "object",
-///  "required": [
-///    "fact",
-///    "op"
-///  ],
-///  "properties": {
-///    "fact": {
-///      "type": "string",
-///      "enum": [
-///        "role",
-///        "field",
-///        "personhood",
-///        "joinedAt"
-///      ]
-///    },
-///    "field": {
-///      "description": "Present exactly when `fact` is `field`.",
-///      "$ref": "#/definitions/FieldKey"
-///    },
-///    "op": {
-///      "description": "`equals` compares with `value`; `oneOf` with any of `values`; `exists` needs neither; `before` and `after` compare a date fact with `value`.",
-///      "type": "string",
-///      "enum": [
-///        "equals",
-///        "oneOf",
-///        "exists",
-///        "before",
-///        "after"
-///      ]
-///    },
-///    "value": {
-///      "anyOf": [
-///        {
-///          "type": "string",
-///          "maxLength": 256
-///        },
-///        {
-///          "type": "boolean"
-///        }
-///      ]
-///    },
-///    "values": {
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 256
-///      },
-///      "maxItems": 64,
-///      "minItems": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1309,20 +913,6 @@ impl RuleCondition {
 }
 ///`RuleConditionFact`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "enum": [
-///    "role",
-///    "field",
-///    "personhood",
-///    "joinedAt"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1392,22 +982,6 @@ impl ::std::convert::TryFrom<::std::string::String> for RuleConditionFact {
 }
 ///`equals` compares with `value`; `oneOf` with any of `values`; `exists` needs neither; `before` and `after` compare a date fact with `value`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`equals` compares with `value`; `oneOf` with any of `values`; `exists` needs neither; `before` and `after` compare a date fact with `value`.",
-///  "type": "string",
-///  "enum": [
-///    "equals",
-///    "oneOf",
-///    "exists",
-///    "before",
-///    "after"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1481,22 +1055,6 @@ impl ::std::convert::TryFrom<::std::string::String> for RuleConditionOp {
 }
 ///`RuleConditionValue`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "anyOf": [
-///    {
-///      "type": "string",
-///      "maxLength": 256
-///    },
-///    {
-///      "type": "boolean"
-///    }
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged)]
 #[non_exhaustive]
@@ -1558,15 +1116,6 @@ impl ::std::convert::From<bool> for RuleConditionValue {
 }
 ///`RuleConditionValueString`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 256
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RuleConditionValueString(::std::string::String);
@@ -1626,15 +1175,6 @@ impl<'de> ::serde::Deserialize<'de> for RuleConditionValueString {
 }
 ///`RuleConditionValuesItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 256
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RuleConditionValuesItem(::std::string::String);
@@ -2251,14 +1791,14 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/groups/show/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DynamicRule\": {\n      \"additionalProperties\": false,\n      \"description\": \"A dynamic group's membership rule: a member belongs when every condition holds and they have not opted out. The community evaluates it under its `groups` policy and recomputes membership whenever a fact it reads changes, always excluding opted-out entries.\",\n      \"properties\": {\n        \"all\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/RuleCondition\"\n          },\n          \"maxItems\": 16,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"all\"\n      ],\n      \"title\": \"DynamicRule\",\n      \"type\": \"object\"\n    },\n    \"EntryId\": {\n      \"description\": \"Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.\",\n      \"pattern\": \"^dir_[A-Za-z0-9_-]{16,64}$\",\n      \"title\": \"EntryId\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"FieldKey\": {\n      \"description\": \"Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^([a-z][a-z0-9-]*\\\\.)*[a-z][a-zA-Z0-9]{0,63}$\",\n      \"title\": \"FieldKey\",\n      \"type\": \"string\"\n    },\n    \"Group\": {\n      \"additionalProperties\": false,\n      \"description\": \"A community group, as a caller who may see it sees it. Members a caller may not see are absent: `memberCount` only to those who may see the group's members, `managers` and `credentialAuthorityValidUntil` only to its managers.\",\n      \"properties\": {\n        \"carriesAuthority\": {\n          \"description\": \"`true` while the group has a `grants` or `role` binding. Such a group is `static` and `closed` for as long as it does.\",\n          \"type\": \"boolean\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"createdBy\": {\n          \"$ref\": \"#/$defs/EntryId\",\n          \"description\": \"The creating administrator's directory entry, where they have one.\"\n        },\n        \"credentialAuthorityValidUntil\": {\n          \"description\": \"When the community's authorization credential to the group expires. The community renews it well before.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"$ref\": \"#/$defs/GroupDescription\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT carry authority.\"\n        },\n        \"groupDid\": {\n          \"description\": \"The group's own DID, minted by the community's VTA for this group alone. It issues the group's membership credentials. Its DID document carries no name or description.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"groupId\": {\n          \"$ref\": \"#/$defs/GroupId\"\n        },\n        \"issuesCredentials\": {\n          \"description\": \"Whether the group's DID issues its members a membership credential. Default true.\",\n          \"type\": \"boolean\"\n        },\n        \"joinPolicy\": {\n          \"$ref\": \"#/$defs/JoinPolicy\",\n          \"description\": \"Present exactly when `kind` is `static`.\"\n        },\n        \"kind\": {\n          \"$ref\": \"#/$defs/GroupKind\"\n        },\n        \"managers\": {\n          \"description\": \"Entries holding `vtc.groups.manage` qualified to this group, read from the access-control list. Informational: managers are appointed by an access-control grant (vtc/groups/managers/add), never by this record.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/EntryId\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"memberCount\": {\n          \"description\": \"Active members. Only to callers who may see the member list.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"name\": {\n          \"$ref\": \"#/$defs/GroupName\"\n        },\n        \"rule\": {\n          \"$ref\": \"#/$defs/DynamicRule\",\n          \"description\": \"Present exactly when `kind` is `dynamic`.\"\n        },\n        \"showMembers\": {\n          \"$ref\": \"#/$defs/GroupAudience\",\n          \"description\": \"Who may see the group's member list. Separate from `visibility`: a group everyone sees may show its members only to administrators. Never wider than `visibility`.\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"visibility\": {\n          \"$ref\": \"#/$defs/GroupAudience\",\n          \"description\": \"Who may see that the group exists, and its name and description.\"\n        }\n      },\n      \"required\": [\n        \"groupId\",\n        \"groupDid\",\n        \"name\",\n        \"kind\",\n        \"visibility\",\n        \"showMembers\",\n        \"issuesCredentials\",\n        \"carriesAuthority\",\n        \"createdAt\"\n      ],\n      \"title\": \"Group\",\n      \"type\": \"object\"\n    },\n    \"GroupAudience\": {\n      \"description\": \"Who may see something about a group, narrowest first. `admins`: holders of `vtc.groups.manage` for the group (unqualified, or qualified `group:<groupId>`). `groupMembers`: the group's own members, and its managers. `members`: every active member of the community.\",\n      \"enum\": [\n        \"admins\",\n        \"groupMembers\",\n        \"members\"\n      ],\n      \"title\": \"GroupAudience\",\n      \"type\": \"string\"\n    },\n    \"GroupDescription\": {\n      \"description\": \"What the group is for. Plain text; a reader MUST NOT treat it as instructions. Same placement rules as `GroupName`.\",\n      \"maxLength\": 1000,\n      \"minLength\": 1,\n      \"title\": \"GroupDescription\",\n      \"type\": \"string\"\n    },\n    \"GroupId\": {\n      \"description\": \"Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.\",\n      \"pattern\": \"^grp_[A-Za-z0-9_-]{16,64}$\",\n      \"title\": \"GroupId\",\n      \"type\": \"string\"\n    },\n    \"GroupKind\": {\n      \"description\": \"`static`: membership is explicit — added, joined, or granted on request. `dynamic`: membership is computed from `rule` over verified facts only; nobody is added by hand, but a member may opt out (vtc/groups/leave), an exclusion the rule cannot override, and undo it (vtc/groups/join). A dynamic group never confers authority. Fixed for the group's life.\",\n      \"enum\": [\n        \"static\",\n        \"dynamic\"\n      ],\n      \"title\": \"GroupKind\",\n      \"type\": \"string\"\n    },\n    \"GroupName\": {\n      \"description\": \"The group's name, shown to those who may see the group. The community's own record: never in the group's DID document or its credentials' subject beyond the group's DID. Plain text.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"title\": \"GroupName\",\n      \"type\": \"string\"\n    },\n    \"JoinPolicy\": {\n      \"description\": \"How a member enters a static group by themselves. `closed`: only a manager adds them. `request`: a member asks and a manager decides. `open`: a member joins at once, subject to the community's `groups` policy. A group carrying authority is always `closed`.\",\n      \"enum\": [\n        \"closed\",\n        \"request\",\n        \"open\"\n      ],\n      \"title\": \"JoinPolicy\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a vtc/groups/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/show/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"group\": {\n          \"$ref\": \"#/$defs/Group\"\n        },\n        \"myMembership\": {\n          \"enum\": [\n            \"member\",\n            \"pending\",\n            \"requested\",\n            \"optedOut\",\n            \"none\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"group\",\n        \"myMembership\"\n      ],\n      \"title\": \"VTC Groups — Show — response payload\",\n      \"type\": \"object\"\n    },\n    \"RuleCondition\": {\n      \"additionalProperties\": false,\n      \"description\": \"One test over a verified fact about a member. `fact: role` tests the member's community role; `fact: field` tests an `admin`- or `credential`-sourced directory field named by `field`; `fact: personhood` tests whether a personhood assertion is on file; `fact: joinedAt` tests when they joined. A rule never reads a self-asserted (`member`-sourced) field: a member must not be able to join a group by editing their card.\",\n      \"properties\": {\n        \"fact\": {\n          \"enum\": [\n            \"role\",\n            \"field\",\n            \"personhood\",\n            \"joinedAt\"\n          ],\n          \"type\": \"string\"\n        },\n        \"field\": {\n          \"$ref\": \"#/$defs/FieldKey\",\n          \"description\": \"Present exactly when `fact` is `field`.\"\n        },\n        \"op\": {\n          \"description\": \"`equals` compares with `value`; `oneOf` with any of `values`; `exists` needs neither; `before` and `after` compare a date fact with `value`.\",\n          \"enum\": [\n            \"equals\",\n            \"oneOf\",\n            \"exists\",\n            \"before\",\n            \"after\"\n          ],\n          \"type\": \"string\"\n        },\n        \"value\": {\n          \"anyOf\": [\n            {\n              \"maxLength\": 256,\n              \"type\": \"string\"\n            },\n            {\n              \"type\": \"boolean\"\n            }\n          ]\n        },\n        \"values\": {\n          \"items\": {\n            \"maxLength\": 256,\n            \"type\": \"string\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"fact\",\n        \"op\"\n      ],\n      \"title\": \"RuleCondition\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/groups/show/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Read one community group the caller may see: its DID, name, kind, policies and, where permitted, its member count and managers. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"groupId\": {\n      \"$ref\": \"#/$defs/GroupId\"\n    }\n  },\n  \"required\": [\n    \"groupId\"\n  ],\n  \"title\": \"VTC Groups — Show — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"DynamicRule\":{\"additionalProperties\":false,\"description\":\"A dynamic group's membership rule: a member belongs when every condition holds and they have not opted out. The community evaluates it under its `groups` policy and recomputes membership whenever a fact it reads changes, always excluding opted-out entries.\",\"properties\":{\"all\":{\"items\":{\"$ref\":\"#/$defs/RuleCondition\"},\"maxItems\":16,\"minItems\":1,\"type\":\"array\"}},\"required\":[\"all\"],\"title\":\"DynamicRule\",\"type\":\"object\"},\"EntryId\":{\"description\":\"Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.\",\"pattern\":\"^dir_[A-Za-z0-9_-]{16,64}$\",\"title\":\"EntryId\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"FieldKey\":{\"description\":\"Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^([a-z][a-z0-9-]*\\\\.)*[a-z][a-zA-Z0-9]{0,63}$\",\"title\":\"FieldKey\",\"type\":\"string\"},\"Group\":{\"additionalProperties\":false,\"description\":\"A community group, as a caller who may see it sees it. Members a caller may not see are absent: `memberCount` only to those who may see the group's members, `managers` and `credentialAuthorityValidUntil` only to its managers.\",\"properties\":{\"carriesAuthority\":{\"description\":\"`true` while the group has a `grants` or `role` binding. Such a group is `static` and `closed` for as long as it does.\",\"type\":\"boolean\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"createdBy\":{\"$ref\":\"#/$defs/EntryId\",\"description\":\"The creating administrator's directory entry, where they have one.\"},\"credentialAuthorityValidUntil\":{\"description\":\"When the community's authorization credential to the group expires. The community renews it well before.\",\"format\":\"date-time\",\"type\":\"string\"},\"description\":{\"$ref\":\"#/$defs/GroupDescription\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT carry authority.\"},\"groupDid\":{\"description\":\"The group's own DID, minted by the community's VTA for this group alone. It issues the group's membership credentials. Its DID document carries no name or description.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"groupId\":{\"$ref\":\"#/$defs/GroupId\"},\"issuesCredentials\":{\"description\":\"Whether the group's DID issues its members a membership credential. Default true.\",\"type\":\"boolean\"},\"joinPolicy\":{\"$ref\":\"#/$defs/JoinPolicy\",\"description\":\"Present exactly when `kind` is `static`.\"},\"kind\":{\"$ref\":\"#/$defs/GroupKind\"},\"managers\":{\"description\":\"Entries holding `vtc.groups.manage` qualified to this group, read from the access-control list. Informational: managers are appointed by an access-control grant (vtc/groups/managers/add), never by this record.\",\"items\":{\"$ref\":\"#/$defs/EntryId\"},\"maxItems\":256,\"type\":\"array\",\"uniqueItems\":true},\"memberCount\":{\"description\":\"Active members. Only to callers who may see the member list.\",\"minimum\":0,\"type\":\"integer\"},\"name\":{\"$ref\":\"#/$defs/GroupName\"},\"rule\":{\"$ref\":\"#/$defs/DynamicRule\",\"description\":\"Present exactly when `kind` is `dynamic`.\"},\"showMembers\":{\"$ref\":\"#/$defs/GroupAudience\",\"description\":\"Who may see the group's member list. Separate from `visibility`: a group everyone sees may show its members only to administrators. Never wider than `visibility`.\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"visibility\":{\"$ref\":\"#/$defs/GroupAudience\",\"description\":\"Who may see that the group exists, and its name and description.\"}},\"required\":[\"groupId\",\"groupDid\",\"name\",\"kind\",\"visibility\",\"showMembers\",\"issuesCredentials\",\"carriesAuthority\",\"createdAt\"],\"title\":\"Group\",\"type\":\"object\"},\"GroupAudience\":{\"description\":\"Who may see something about a group, narrowest first. `admins`: holders of `vtc.groups.manage` for the group (unqualified, or qualified `group:<groupId>`). `groupMembers`: the group's own members, and its managers. `members`: every active member of the community.\",\"enum\":[\"admins\",\"groupMembers\",\"members\"],\"title\":\"GroupAudience\",\"type\":\"string\"},\"GroupDescription\":{\"description\":\"What the group is for. Plain text; a reader MUST NOT treat it as instructions. Same placement rules as `GroupName`.\",\"maxLength\":1000,\"minLength\":1,\"title\":\"GroupDescription\",\"type\":\"string\"},\"GroupId\":{\"description\":\"Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.\",\"pattern\":\"^grp_[A-Za-z0-9_-]{16,64}$\",\"title\":\"GroupId\",\"type\":\"string\"},\"GroupKind\":{\"description\":\"`static`: membership is explicit — added, joined, or granted on request. `dynamic`: membership is computed from `rule` over verified facts only; nobody is added by hand, but a member may opt out (vtc/groups/leave), an exclusion the rule cannot override, and undo it (vtc/groups/join). A dynamic group never confers authority. Fixed for the group's life.\",\"enum\":[\"static\",\"dynamic\"],\"title\":\"GroupKind\",\"type\":\"string\"},\"GroupName\":{\"description\":\"The group's name, shown to those who may see the group. The community's own record: never in the group's DID document or its credentials' subject beyond the group's DID. Plain text.\",\"maxLength\":128,\"minLength\":1,\"title\":\"GroupName\",\"type\":\"string\"},\"JoinPolicy\":{\"description\":\"How a member enters a static group by themselves. `closed`: only a manager adds them. `request`: a member asks and a manager decides. `open`: a member joins at once, subject to the community's `groups` policy. A group carrying authority is always `closed`.\",\"enum\":[\"closed\",\"request\",\"open\"],\"title\":\"JoinPolicy\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/groups/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/show/0.1#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"group\":{\"$ref\":\"#/$defs/Group\"},\"myMembership\":{\"enum\":[\"member\",\"pending\",\"requested\",\"optedOut\",\"none\"],\"type\":\"string\"}},\"required\":[\"group\",\"myMembership\"],\"title\":\"VTC Groups — Show — response payload\",\"type\":\"object\"},\"RuleCondition\":{\"additionalProperties\":false,\"description\":\"One test over a verified fact about a member. `fact: role` tests the member's community role; `fact: field` tests an `admin`- or `credential`-sourced directory field named by `field`; `fact: personhood` tests whether a personhood assertion is on file; `fact: joinedAt` tests when they joined. A rule never reads a self-asserted (`member`-sourced) field: a member must not be able to join a group by editing their card.\",\"properties\":{\"fact\":{\"enum\":[\"role\",\"field\",\"personhood\",\"joinedAt\"],\"type\":\"string\"},\"field\":{\"$ref\":\"#/$defs/FieldKey\",\"description\":\"Present exactly when `fact` is `field`.\"},\"op\":{\"description\":\"`equals` compares with `value`; `oneOf` with any of `values`; `exists` needs neither; `before` and `after` compare a date fact with `value`.\",\"enum\":[\"equals\",\"oneOf\",\"exists\",\"before\",\"after\"],\"type\":\"string\"},\"value\":{\"anyOf\":[{\"maxLength\":256,\"type\":\"string\"},{\"type\":\"boolean\"}]},\"values\":{\"items\":{\"maxLength\":256,\"type\":\"string\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\"}},\"required\":[\"fact\",\"op\"],\"title\":\"RuleCondition\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/groups/show/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Read one community group the caller may see: its DID, name, kind, policies and, where permitted, its member count and managers. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"groupId\":{\"$ref\":\"#/$defs/GroupId\"}},\"required\":[\"groupId\"],\"title\":\"VTC Groups — Show — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/groups/show/0.1#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DynamicRule\": {\n      \"additionalProperties\": false,\n      \"description\": \"A dynamic group's membership rule: a member belongs when every condition holds and they have not opted out. The community evaluates it under its `groups` policy and recomputes membership whenever a fact it reads changes, always excluding opted-out entries.\",\n      \"properties\": {\n        \"all\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/RuleCondition\"\n          },\n          \"maxItems\": 16,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"all\"\n      ],\n      \"title\": \"DynamicRule\",\n      \"type\": \"object\"\n    },\n    \"EntryId\": {\n      \"description\": \"Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.\",\n      \"pattern\": \"^dir_[A-Za-z0-9_-]{16,64}$\",\n      \"title\": \"EntryId\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"FieldKey\": {\n      \"description\": \"Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^([a-z][a-z0-9-]*\\\\.)*[a-z][a-zA-Z0-9]{0,63}$\",\n      \"title\": \"FieldKey\",\n      \"type\": \"string\"\n    },\n    \"Group\": {\n      \"additionalProperties\": false,\n      \"description\": \"A community group, as a caller who may see it sees it. Members a caller may not see are absent: `memberCount` only to those who may see the group's members, `managers` and `credentialAuthorityValidUntil` only to its managers.\",\n      \"properties\": {\n        \"carriesAuthority\": {\n          \"description\": \"`true` while the group has a `grants` or `role` binding. Such a group is `static` and `closed` for as long as it does.\",\n          \"type\": \"boolean\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"createdBy\": {\n          \"$ref\": \"#/$defs/EntryId\",\n          \"description\": \"The creating administrator's directory entry, where they have one.\"\n        },\n        \"credentialAuthorityValidUntil\": {\n          \"description\": \"When the community's authorization credential to the group expires. The community renews it well before.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"$ref\": \"#/$defs/GroupDescription\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT carry authority.\"\n        },\n        \"groupDid\": {\n          \"description\": \"The group's own DID, minted by the community's VTA for this group alone. It issues the group's membership credentials. Its DID document carries no name or description.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"groupId\": {\n          \"$ref\": \"#/$defs/GroupId\"\n        },\n        \"issuesCredentials\": {\n          \"description\": \"Whether the group's DID issues its members a membership credential. Default true.\",\n          \"type\": \"boolean\"\n        },\n        \"joinPolicy\": {\n          \"$ref\": \"#/$defs/JoinPolicy\",\n          \"description\": \"Present exactly when `kind` is `static`.\"\n        },\n        \"kind\": {\n          \"$ref\": \"#/$defs/GroupKind\"\n        },\n        \"managers\": {\n          \"description\": \"Entries holding `vtc.groups.manage` qualified to this group, read from the access-control list. Informational: managers are appointed by an access-control grant (vtc/groups/managers/add), never by this record.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/EntryId\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"memberCount\": {\n          \"description\": \"Active members. Only to callers who may see the member list.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"name\": {\n          \"$ref\": \"#/$defs/GroupName\"\n        },\n        \"rule\": {\n          \"$ref\": \"#/$defs/DynamicRule\",\n          \"description\": \"Present exactly when `kind` is `dynamic`.\"\n        },\n        \"showMembers\": {\n          \"$ref\": \"#/$defs/GroupAudience\",\n          \"description\": \"Who may see the group's member list. Separate from `visibility`: a group everyone sees may show its members only to administrators. Never wider than `visibility`.\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"visibility\": {\n          \"$ref\": \"#/$defs/GroupAudience\",\n          \"description\": \"Who may see that the group exists, and its name and description.\"\n        }\n      },\n      \"required\": [\n        \"groupId\",\n        \"groupDid\",\n        \"name\",\n        \"kind\",\n        \"visibility\",\n        \"showMembers\",\n        \"issuesCredentials\",\n        \"carriesAuthority\",\n        \"createdAt\"\n      ],\n      \"title\": \"Group\",\n      \"type\": \"object\"\n    },\n    \"GroupAudience\": {\n      \"description\": \"Who may see something about a group, narrowest first. `admins`: holders of `vtc.groups.manage` for the group (unqualified, or qualified `group:<groupId>`). `groupMembers`: the group's own members, and its managers. `members`: every active member of the community.\",\n      \"enum\": [\n        \"admins\",\n        \"groupMembers\",\n        \"members\"\n      ],\n      \"title\": \"GroupAudience\",\n      \"type\": \"string\"\n    },\n    \"GroupDescription\": {\n      \"description\": \"What the group is for. Plain text; a reader MUST NOT treat it as instructions. Same placement rules as `GroupName`.\",\n      \"maxLength\": 1000,\n      \"minLength\": 1,\n      \"title\": \"GroupDescription\",\n      \"type\": \"string\"\n    },\n    \"GroupId\": {\n      \"description\": \"Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.\",\n      \"pattern\": \"^grp_[A-Za-z0-9_-]{16,64}$\",\n      \"title\": \"GroupId\",\n      \"type\": \"string\"\n    },\n    \"GroupKind\": {\n      \"description\": \"`static`: membership is explicit — added, joined, or granted on request. `dynamic`: membership is computed from `rule` over verified facts only; nobody is added by hand, but a member may opt out (vtc/groups/leave), an exclusion the rule cannot override, and undo it (vtc/groups/join). A dynamic group never confers authority. Fixed for the group's life.\",\n      \"enum\": [\n        \"static\",\n        \"dynamic\"\n      ],\n      \"title\": \"GroupKind\",\n      \"type\": \"string\"\n    },\n    \"GroupName\": {\n      \"description\": \"The group's name, shown to those who may see the group. The community's own record: never in the group's DID document or its credentials' subject beyond the group's DID. Plain text.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"title\": \"GroupName\",\n      \"type\": \"string\"\n    },\n    \"JoinPolicy\": {\n      \"description\": \"How a member enters a static group by themselves. `closed`: only a manager adds them. `request`: a member asks and a manager decides. `open`: a member joins at once, subject to the community's `groups` policy. A group carrying authority is always `closed`.\",\n      \"enum\": [\n        \"closed\",\n        \"request\",\n        \"open\"\n      ],\n      \"title\": \"JoinPolicy\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a vtc/groups/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/show/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"group\": {\n          \"$ref\": \"#/$defs/Group\"\n        },\n        \"myMembership\": {\n          \"enum\": [\n            \"member\",\n            \"pending\",\n            \"requested\",\n            \"optedOut\",\n            \"none\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"group\",\n        \"myMembership\"\n      ],\n      \"title\": \"VTC Groups — Show — response payload\",\n      \"type\": \"object\"\n    },\n    \"RuleCondition\": {\n      \"additionalProperties\": false,\n      \"description\": \"One test over a verified fact about a member. `fact: role` tests the member's community role; `fact: field` tests an `admin`- or `credential`-sourced directory field named by `field`; `fact: personhood` tests whether a personhood assertion is on file; `fact: joinedAt` tests when they joined. A rule never reads a self-asserted (`member`-sourced) field: a member must not be able to join a group by editing their card.\",\n      \"properties\": {\n        \"fact\": {\n          \"enum\": [\n            \"role\",\n            \"field\",\n            \"personhood\",\n            \"joinedAt\"\n          ],\n          \"type\": \"string\"\n        },\n        \"field\": {\n          \"$ref\": \"#/$defs/FieldKey\",\n          \"description\": \"Present exactly when `fact` is `field`.\"\n        },\n        \"op\": {\n          \"description\": \"`equals` compares with `value`; `oneOf` with any of `values`; `exists` needs neither; `before` and `after` compare a date fact with `value`.\",\n          \"enum\": [\n            \"equals\",\n            \"oneOf\",\n            \"exists\",\n            \"before\",\n            \"after\"\n          ],\n          \"type\": \"string\"\n        },\n        \"value\": {\n          \"anyOf\": [\n            {\n              \"maxLength\": 256,\n              \"type\": \"string\"\n            },\n            {\n              \"type\": \"boolean\"\n            }\n          ]\n        },\n        \"values\": {\n          \"items\": {\n            \"maxLength\": 256,\n            \"type\": \"string\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"fact\",\n        \"op\"\n      ],\n      \"title\": \"RuleCondition\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"DynamicRule\":{\"additionalProperties\":false,\"description\":\"A dynamic group's membership rule: a member belongs when every condition holds and they have not opted out. The community evaluates it under its `groups` policy and recomputes membership whenever a fact it reads changes, always excluding opted-out entries.\",\"properties\":{\"all\":{\"items\":{\"$ref\":\"#/$defs/RuleCondition\"},\"maxItems\":16,\"minItems\":1,\"type\":\"array\"}},\"required\":[\"all\"],\"title\":\"DynamicRule\",\"type\":\"object\"},\"EntryId\":{\"description\":\"Opaque identifier of one directory entry: `dir_` followed by 16 to 64 base64url characters. Random, scoped to one community, and stable for the life of the membership — it survives a rotation of the member's DID, which is why groups, notes and cards are keyed by it. It MUST NOT be derived from, and MUST NOT reveal, any DID of the member, and the same person's entries in two communities MUST NOT share one. Compared by exact string equality.\",\"pattern\":\"^dir_[A-Za-z0-9_-]{16,64}$\",\"title\":\"EntryId\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"FieldKey\":{\"description\":\"Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^([a-z][a-z0-9-]*\\\\.)*[a-z][a-zA-Z0-9]{0,63}$\",\"title\":\"FieldKey\",\"type\":\"string\"},\"Group\":{\"additionalProperties\":false,\"description\":\"A community group, as a caller who may see it sees it. Members a caller may not see are absent: `memberCount` only to those who may see the group's members, `managers` and `credentialAuthorityValidUntil` only to its managers.\",\"properties\":{\"carriesAuthority\":{\"description\":\"`true` while the group has a `grants` or `role` binding. Such a group is `static` and `closed` for as long as it does.\",\"type\":\"boolean\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"createdBy\":{\"$ref\":\"#/$defs/EntryId\",\"description\":\"The creating administrator's directory entry, where they have one.\"},\"credentialAuthorityValidUntil\":{\"description\":\"When the community's authorization credential to the group expires. The community renews it well before.\",\"format\":\"date-time\",\"type\":\"string\"},\"description\":{\"$ref\":\"#/$defs/GroupDescription\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT carry authority.\"},\"groupDid\":{\"description\":\"The group's own DID, minted by the community's VTA for this group alone. It issues the group's membership credentials. Its DID document carries no name or description.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"groupId\":{\"$ref\":\"#/$defs/GroupId\"},\"issuesCredentials\":{\"description\":\"Whether the group's DID issues its members a membership credential. Default true.\",\"type\":\"boolean\"},\"joinPolicy\":{\"$ref\":\"#/$defs/JoinPolicy\",\"description\":\"Present exactly when `kind` is `static`.\"},\"kind\":{\"$ref\":\"#/$defs/GroupKind\"},\"managers\":{\"description\":\"Entries holding `vtc.groups.manage` qualified to this group, read from the access-control list. Informational: managers are appointed by an access-control grant (vtc/groups/managers/add), never by this record.\",\"items\":{\"$ref\":\"#/$defs/EntryId\"},\"maxItems\":256,\"type\":\"array\",\"uniqueItems\":true},\"memberCount\":{\"description\":\"Active members. Only to callers who may see the member list.\",\"minimum\":0,\"type\":\"integer\"},\"name\":{\"$ref\":\"#/$defs/GroupName\"},\"rule\":{\"$ref\":\"#/$defs/DynamicRule\",\"description\":\"Present exactly when `kind` is `dynamic`.\"},\"showMembers\":{\"$ref\":\"#/$defs/GroupAudience\",\"description\":\"Who may see the group's member list. Separate from `visibility`: a group everyone sees may show its members only to administrators. Never wider than `visibility`.\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"visibility\":{\"$ref\":\"#/$defs/GroupAudience\",\"description\":\"Who may see that the group exists, and its name and description.\"}},\"required\":[\"groupId\",\"groupDid\",\"name\",\"kind\",\"visibility\",\"showMembers\",\"issuesCredentials\",\"carriesAuthority\",\"createdAt\"],\"title\":\"Group\",\"type\":\"object\"},\"GroupAudience\":{\"description\":\"Who may see something about a group, narrowest first. `admins`: holders of `vtc.groups.manage` for the group (unqualified, or qualified `group:<groupId>`). `groupMembers`: the group's own members, and its managers. `members`: every active member of the community.\",\"enum\":[\"admins\",\"groupMembers\",\"members\"],\"title\":\"GroupAudience\",\"type\":\"string\"},\"GroupDescription\":{\"description\":\"What the group is for. Plain text; a reader MUST NOT treat it as instructions. Same placement rules as `GroupName`.\",\"maxLength\":1000,\"minLength\":1,\"title\":\"GroupDescription\",\"type\":\"string\"},\"GroupId\":{\"description\":\"Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.\",\"pattern\":\"^grp_[A-Za-z0-9_-]{16,64}$\",\"title\":\"GroupId\",\"type\":\"string\"},\"GroupKind\":{\"description\":\"`static`: membership is explicit — added, joined, or granted on request. `dynamic`: membership is computed from `rule` over verified facts only; nobody is added by hand, but a member may opt out (vtc/groups/leave), an exclusion the rule cannot override, and undo it (vtc/groups/join). A dynamic group never confers authority. Fixed for the group's life.\",\"enum\":[\"static\",\"dynamic\"],\"title\":\"GroupKind\",\"type\":\"string\"},\"GroupName\":{\"description\":\"The group's name, shown to those who may see the group. The community's own record: never in the group's DID document or its credentials' subject beyond the group's DID. Plain text.\",\"maxLength\":128,\"minLength\":1,\"title\":\"GroupName\",\"type\":\"string\"},\"JoinPolicy\":{\"description\":\"How a member enters a static group by themselves. `closed`: only a manager adds them. `request`: a member asks and a manager decides. `open`: a member joins at once, subject to the community's `groups` policy. A group carrying authority is always `closed`.\",\"enum\":[\"closed\",\"request\",\"open\"],\"title\":\"JoinPolicy\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/groups/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/show/0.1#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"group\":{\"$ref\":\"#/$defs/Group\"},\"myMembership\":{\"enum\":[\"member\",\"pending\",\"requested\",\"optedOut\",\"none\"],\"type\":\"string\"}},\"required\":[\"group\",\"myMembership\"],\"title\":\"VTC Groups — Show — response payload\",\"type\":\"object\"},\"RuleCondition\":{\"additionalProperties\":false,\"description\":\"One test over a verified fact about a member. `fact: role` tests the member's community role; `fact: field` tests an `admin`- or `credential`-sourced directory field named by `field`; `fact: personhood` tests whether a personhood assertion is on file; `fact: joinedAt` tests when they joined. A rule never reads a self-asserted (`member`-sourced) field: a member must not be able to join a group by editing their card.\",\"properties\":{\"fact\":{\"enum\":[\"role\",\"field\",\"personhood\",\"joinedAt\"],\"type\":\"string\"},\"field\":{\"$ref\":\"#/$defs/FieldKey\",\"description\":\"Present exactly when `fact` is `field`.\"},\"op\":{\"description\":\"`equals` compares with `value`; `oneOf` with any of `values`; `exists` needs neither; `before` and `after` compare a date fact with `value`.\",\"enum\":[\"equals\",\"oneOf\",\"exists\",\"before\",\"after\"],\"type\":\"string\"},\"value\":{\"anyOf\":[{\"maxLength\":256,\"type\":\"string\"},{\"type\":\"boolean\"}]},\"values\":{\"items\":{\"maxLength\":256,\"type\":\"string\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\"}},\"required\":[\"fact\",\"op\"],\"title\":\"RuleCondition\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

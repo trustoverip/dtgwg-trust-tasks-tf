@@ -34,23 +34,6 @@ pub mod error {
 }
 ///A DID Core verification relationship.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DidVerificationRelationship",
-///  "description": "A DID Core verification relationship.",
-///  "type": "string",
-///  "enum": [
-///    "authentication",
-///    "assertionMethod",
-///    "keyAgreement",
-///    "capabilityInvocation",
-///    "capabilityDelegation"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -124,21 +107,6 @@ impl ::std::convert::TryFrom<::std::string::String> for DidVerificationRelations
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -160,15 +128,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -232,22 +191,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "KeyOrigin",
-///  "description": "Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.",
-///  "default": "derived",
-///  "type": "string",
-///  "enum": [
-///    "derived",
-///    "imported",
-///    "internal"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -318,22 +261,6 @@ impl ::std::default::Default for KeyOrigin {
 }
 ///The named key role a key occupies in the DID (VTI-KEY-070 onward). `attestation` — the only keys in `assertionMethod`; sign the DID's attestation artefacts (membership and role credentials, endorsements, status lists, every other credential the node issues), through the VTA's signing service and nowhere else. Generated inside the VTA, never derived, never exportable, never in a backup. `operational` — the only keys in `authentication`; sign the node's own traffic (Trust Task requests and responses, DIDComm and TSP message signatures, invitations, notices, audit checkpoints) with proof purpose `authentication`. `messaging` — the only keys in `keyAgreement`; sign nothing. `update` — the keys that authorize appending to the DID's log (a did:webvh `updateKeys` entry) and the pre-rotation commitments that authorize the next ones; never a verification method, never in `keyRoles`. Generated inside the VTA, never derived, never exportable, never in a backup. No role permits `capabilityInvocation` or `capabilityDelegation` (VTI-KEY-075); both are reserved for a future role. The mapping is normative and is set out in CONVENTIONS.md §1. The set is an extensible registry and growing it is a MINOR change: a consumer that receives a role it does not implement MUST refuse the document rather than map the key onto a role it does know.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "KeyRole",
-///  "description": "The named key role a key occupies in the DID (VTI-KEY-070 onward). `attestation` — the only keys in `assertionMethod`; sign the DID's attestation artefacts (membership and role credentials, endorsements, status lists, every other credential the node issues), through the VTA's signing service and nowhere else. Generated inside the VTA, never derived, never exportable, never in a backup. `operational` — the only keys in `authentication`; sign the node's own traffic (Trust Task requests and responses, DIDComm and TSP message signatures, invitations, notices, audit checkpoints) with proof purpose `authentication`. `messaging` — the only keys in `keyAgreement`; sign nothing. `update` — the keys that authorize appending to the DID's log (a did:webvh `updateKeys` entry) and the pre-rotation commitments that authorize the next ones; never a verification method, never in `keyRoles`. Generated inside the VTA, never derived, never exportable, never in a backup. No role permits `capabilityInvocation` or `capabilityDelegation` (VTI-KEY-075); both are reserved for a future role. The mapping is normative and is set out in CONVENTIONS.md §1. The set is an extensible registry and growing it is a MINOR change: a consumer that receives a role it does not implement MUST refuse the document rather than map the key onto a role it does know.",
-///  "type": "string",
-///  "enum": [
-///    "attestation",
-///    "operational",
-///    "messaging",
-///    "update"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -403,47 +330,6 @@ impl ::std::convert::TryFrom<::std::string::String> for KeyRole {
 }
 ///Approval progress of a change the VTA's policy gates on more than one approval (CONVENTIONS.md §3.3).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "KeyRoleApprovalState",
-///  "description": "Approval progress of a change the VTA's policy gates on more than one approval (CONVENTIONS.md §3.3).",
-///  "type": "object",
-///  "required": [
-///    "expiresAt",
-///    "received",
-///    "required"
-///  ],
-///  "properties": {
-///    "approvers": {
-///      "description": "VIDs whose approvals were recorded. Custody projection only; omitted from a response to anyone who is not themselves an eligible approver of this change.",
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      },
-///      "uniqueItems": true
-///    },
-///    "expiresAt": {
-///      "description": "When the preview, and every approval bound to it, stops being usable.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "received": {
-///      "description": "Distinct approvals recorded so far, including the initiator's own.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "required": {
-///      "description": "Distinct approvals the VTA's policy requires.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -466,20 +352,6 @@ impl KeyRoleApprovalState {
 }
 ///Which view of the DID's key roles the caller was given (CONVENTIONS.md §5). `public` — only what the published document and log already reveal to anyone who resolves the DID. `custody` — additionally the VTA's own custody state: pending keys, the custodian record behind each key, overlap deadlines, who initiated and approved each change, and why. The response always states which it is, so a caller never mistakes an absent member for a statement that the thing does not exist.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "KeyRoleProjection",
-///  "description": "Which view of the DID's key roles the caller was given (CONVENTIONS.md §5). `public` — only what the published document and log already reveal to anyone who resolves the DID. `custody` — additionally the VTA's own custody state: pending keys, the custodian record behind each key, overlap deadlines, who initiated and approved each change, and why. The response always states which it is, so a caller never mistakes an absent member for a statement that the thing does not exist.",
-///  "type": "string",
-///  "enum": [
-///    "public",
-///    "custody"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -541,23 +413,6 @@ impl ::std::convert::TryFrom<::std::string::String> for KeyRoleProjection {
 }
 ///Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "KeyType",
-///  "description": "Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support.",
-///  "type": "string",
-///  "enum": [
-///    "ed25519",
-///    "x25519",
-///    "p256",
-///    "mldsa44",
-///    "mldsa65"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -631,48 +486,6 @@ impl ::std::convert::TryFrom<::std::string::String> for KeyType {
 }
 ///List a did:webvh's keys by role, with their state, and optionally the DID's rotation history and any changes awaiting approval.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/webvh/dids/keys/list/1.0",
-///  "title": "Payload",
-///  "description": "List a did:webvh's keys by role, with their state, and optionally the DID's rotation history and any changes awaiting approval.",
-///  "type": "object",
-///  "required": [
-///    "did"
-///  ],
-///  "properties": {
-///    "did": {
-///      "description": "The DID whose key roles are listed.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "includeEnded": {
-///      "description": "Include `retired` and `revoked` keys. Absent reads as false. `revoked` keys still published in `verificationMethod` are always included, because the document shows them to anyone who resolves it.",
-///      "type": "boolean"
-///    },
-///    "includeHistory": {
-///      "description": "Include the DID's rotation history. Absent reads as false.",
-///      "type": "boolean"
-///    },
-///    "roles": {
-///      "description": "Return only these roles. Absent returns every role. Present-but-empty is refused by the schema rather than read as 'every role' — emptiness is never a wildcard.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/KeyRole"
-///      },
-///      "minItems": 1,
-///      "uniqueItems": true
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -706,16 +519,6 @@ impl Payload {
 }
 ///The DID whose key roles are listed.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The DID whose key roles are listed.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadDid(::std::string::String);
@@ -775,53 +578,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDid {
 }
 ///Success response to vta/webvh/dids/keys/list. Type https://trusttasks.org/spec/vta/webvh/dids/keys/list/1.0#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to vta/webvh/dids/keys/list. Type https://trusttasks.org/spec/vta/webvh/dids/keys/list/1.0#response.",
-///  "type": "object",
-///  "required": [
-///    "did",
-///    "projection",
-///    "roles",
-///    "versionId"
-///  ],
-///  "properties": {
-///    "did": {
-///      "type": "string"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "projection": {
-///      "$ref": "#/definitions/KeyRoleProjection"
-///    },
-///    "roles": {
-///      "description": "One entry per role asked for, including roles with no keys — an empty role is an answer, and omitting it would read as 'not asked'.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/RoleSummary"
-///      }
-///    },
-///    "rotations": {
-///      "description": "Present exactly when `includeHistory` was true. Newest first. In the custody projection this includes changes in `pendingApproval`; in the public projection it includes only changes that published an entry.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/RotationRecord"
-///      }
-///    },
-///    "versionId": {
-///      "description": "The log entry the answer describes. Pass it as `expectedVersionId` to a change made on the strength of this answer.",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -846,90 +602,6 @@ impl Response {
 }
 ///One key in one role. A key is in exactly one role for its whole life; a change of role is a retirement from one and an addition to another, under a new verification-method identifier.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RoleKey",
-///  "description": "One key in one role. A key is in exactly one role for its whole life; a change of role is a retirement from one and an addition to another, under a new verification-method identifier.",
-///  "type": "object",
-///  "required": [
-///    "keyType",
-///    "publicKeyMultibase",
-///    "role",
-///    "state"
-///  ],
-///  "properties": {
-///    "activatesAt": {
-///      "description": "For a `staged` key: when the VTA will begin using it — no earlier than the publishing entry's cache horizon (CONVENTIONS.md §11.1).",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "compromisedSince": {
-///      "description": "For a `revoked` key: the compromise time (VTI-KEY-121) — the earliest instant from which the key is treated as compromised. Where the operator cannot establish it, the time the key was first published. Published, because it is what a verifier needs.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "custody": {
-///      "$ref": "#/definitions/RoleKeyCustody"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "keyType": {
-///      "$ref": "#/definitions/KeyType"
-///    },
-///    "label": {
-///      "description": "Operator-facing label. Custody projection only.",
-///      "type": "string",
-///      "maxLength": 256
-///    },
-///    "publicKeyMultibase": {
-///      "description": "The public half, multibase-encoded, exactly as published.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "publishedInVersionId": {
-///      "description": "versionId of the log entry that first published the key. Absent while `pending`.",
-///      "type": "string"
-///    },
-///    "relationships": {
-///      "description": "The relationships the key is (or, while `pending`, will be) listed in. Always exactly its role's single relationship (CONVENTIONS.md §1) — carried so a caller can check it against the document rather than trusting it. Empty for `update`, `retired` and `revoked` keys.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/DidVerificationRelationship"
-///      },
-///      "uniqueItems": true
-///    },
-///    "removedInVersionId": {
-///      "description": "versionId of the log entry that retired or revoked the key.",
-///      "type": "string"
-///    },
-///    "retireAfter": {
-///      "description": "For a `retiring` key: the end of its overlap window. Custody projection only.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "role": {
-///      "$ref": "#/definitions/KeyRole"
-///    },
-///    "rotationId": {
-///      "description": "The rotation this key was introduced or retired by, when it was.",
-///      "type": "string"
-///    },
-///    "state": {
-///      "$ref": "#/definitions/RoleKeyState"
-///    },
-///    "verificationMethod": {
-///      "description": "The full verification-method identifier (`did#fragment`) the document publishes the key under, and lists in `keyRoles`. Absent only for `update` keys, which are published as log parameters and never as verification methods (VTI-KEY-093). A VTA minting a new method SHOULD derive its fragment from the key (VTI-KEY-150).",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1008,53 +680,6 @@ impl RoleKey {
 }
 ///How the VTA holds a key. Present only in the custody projection. Carries no key material, and a conforming VTA MUST NOT place any in `ext`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RoleKeyCustody",
-///  "description": "How the VTA holds a key. Present only in the custody projection. Carries no key material, and a conforming VTA MUST NOT place any in `ext`.",
-///  "type": "object",
-///  "required": [
-///    "exportable",
-///    "inBackups",
-///    "keyId",
-///    "neverExportable"
-///  ],
-///  "properties": {
-///    "destroyed": {
-///      "description": "True once the private half has been destroyed — a retired `attestation` key (VTI-KEY-125). The record survives so the key's past signatures stay attributable.",
-///      "type": "boolean"
-///    },
-///    "exportable": {
-///      "description": "Whether the custodian would release the private half through `keys/export-secret`. Always `false` for `attestation` and `update` keys (CONVENTIONS.md §4). Stated explicitly — never absent — because this is the member an operator reads to confirm a role key cannot leave the VTA, and `keys/*`'s absent-means-exportable reading is the wrong default to leave them to infer.",
-///      "type": "boolean"
-///    },
-///    "hardwareBacked": {
-///      "description": "True when the private half is held by a hardware or enclave module that performs the operation without releasing it. Absent means the VTA does not say, not that it is false.",
-///      "type": "boolean"
-///    },
-///    "inBackups": {
-///      "description": "Whether the key, or material it can be re-derived from, is included in the VTA's backups or any state transfer. Always `false` for `attestation` and `update` keys (VTI-KEY-112): they are generated, not derived, so there is no seed that recovers them, and their loss is recovered by rotation, never by restore.",
-///      "type": "boolean"
-///    },
-///    "keyId": {
-///      "description": "The custodian record identifier (`keys/*`'s `keyId`) behind this key.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "neverExportable": {
-///      "description": "True when no authority can make the key exportable — the role forbids it, or the material exists only inside a module that cannot release it. `true` implies `exportable: false`.",
-///      "type": "boolean"
-///    },
-///    "origin": {
-///      "$ref": "#/definitions/KeyOrigin"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1090,16 +715,6 @@ impl RoleKeyCustody {
 }
 ///The custodian record identifier (`keys/*`'s `keyId`) behind this key.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The custodian record identifier (`keys/*`'s `keyId`) behind this key.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RoleKeyCustodyKeyId(::std::string::String);
@@ -1159,16 +774,6 @@ impl<'de> ::serde::Deserialize<'de> for RoleKeyCustodyKeyId {
 }
 ///Operator-facing label. Custody projection only.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Operator-facing label. Custody projection only.",
-///  "type": "string",
-///  "maxLength": 256
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RoleKeyLabel(::std::string::String);
@@ -1228,16 +833,6 @@ impl<'de> ::serde::Deserialize<'de> for RoleKeyLabel {
 }
 ///The public half, multibase-encoded, exactly as published.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The public half, multibase-encoded, exactly as published.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RoleKeyPublicKeyMultibase(::std::string::String);
@@ -1297,24 +892,6 @@ impl<'de> ::serde::Deserialize<'de> for RoleKeyPublicKeyMultibase {
 }
 ///Where a key is in its role's lifecycle. `pending` — planned by a preview or a change awaiting approval; not published; custody projection only. `staged` — published and bound to its role, but not yet used: a planned rotation publishes the successor and waits until the entry's cache horizon — publication plus the longer of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1) — before the VTA first uses it, so that no verifier holding a cached document sees a signature by a key it has never seen (VTI-KEY-122). Becomes `active` at the rotation's `activatesAt`. `active` — the key the VTA uses for new signatures (or, for `messaging`, advertises for new sessions). `retiring` — still published so that what it signed and sessions keyed to it keep working, but never used again: from the successor's first use the VTA MUST NOT sign with it, while a retiring `messaging` key stays usable for decryption, and senders may still encrypt to it, until it is retired (CONVENTIONS.md §11.3). `retired` — removed by planned rotation; what it signed while published remains valid, judged against the DID version current at issuance (CONVENTIONS.md §7). A retired `attestation` or `messaging` key is destroyed at retirement. `revoked` — removed from every relationship and from `keyRoles` in one entry, without overlap, because it is or may be compromised; what it signed from `compromisedSince` onward establishes nothing. `retired` and `revoked` are terminal.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RoleKeyState",
-///  "description": "Where a key is in its role's lifecycle. `pending` — planned by a preview or a change awaiting approval; not published; custody projection only. `staged` — published and bound to its role, but not yet used: a planned rotation publishes the successor and waits until the entry's cache horizon — publication plus the longer of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1) — before the VTA first uses it, so that no verifier holding a cached document sees a signature by a key it has never seen (VTI-KEY-122). Becomes `active` at the rotation's `activatesAt`. `active` — the key the VTA uses for new signatures (or, for `messaging`, advertises for new sessions). `retiring` — still published so that what it signed and sessions keyed to it keep working, but never used again: from the successor's first use the VTA MUST NOT sign with it, while a retiring `messaging` key stays usable for decryption, and senders may still encrypt to it, until it is retired (CONVENTIONS.md §11.3). `retired` — removed by planned rotation; what it signed while published remains valid, judged against the DID version current at issuance (CONVENTIONS.md §7). A retired `attestation` or `messaging` key is destroyed at retirement. `revoked` — removed from every relationship and from `keyRoles` in one entry, without overlap, because it is or may be compromised; what it signed from `compromisedSince` onward establishes nothing. `retired` and `revoked` are terminal.",
-///  "type": "string",
-///  "enum": [
-///    "pending",
-///    "staged",
-///    "active",
-///    "retiring",
-///    "retired",
-///    "revoked"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1392,16 +969,6 @@ impl ::std::convert::TryFrom<::std::string::String> for RoleKeyState {
 }
 ///The full verification-method identifier (`did#fragment`) the document publishes the key under, and lists in `keyRoles`. Absent only for `update` keys, which are published as log parameters and never as verification methods (VTI-KEY-093). A VTA minting a new method SHOULD derive its fragment from the key (VTI-KEY-150).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The full verification-method identifier (`did#fragment`) the document publishes the key under, and lists in `keyRoles`. Absent only for `update` keys, which are published as log parameters and never as verification methods (VTI-KEY-093). A VTA minting a new method SHOULD derive its fragment from the key (VTI-KEY-150).",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RoleKeyVerificationMethod(::std::string::String);
@@ -1461,46 +1028,6 @@ impl<'de> ::serde::Deserialize<'de> for RoleKeyVerificationMethod {
 }
 ///`RoleSummary`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RoleSummary",
-///  "type": "object",
-///  "required": [
-///    "keys",
-///    "relationships",
-///    "role"
-///  ],
-///  "properties": {
-///    "keys": {
-///      "description": "The role's keys, in the order the document publishes them. Terminal-state keys are included only when the request asked for them.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/RoleKey"
-///      }
-///    },
-///    "preRotationCommitments": {
-///      "description": "`update` only: successors the latest entry commits to. `0` means a compromise of the current update key cannot be recovered from by rotation, and the DID would have to be deactivated (VTI-KEY-124).",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "relationships": {
-///      "description": "The relationship this role owns (CONVENTIONS.md §1). Empty for `update`.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/DidVerificationRelationship"
-///      },
-///      "uniqueItems": true
-///    },
-///    "role": {
-///      "$ref": "#/definitions/KeyRole"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1525,21 +1052,6 @@ impl RoleSummary {
 }
 ///`planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same log entry. `addition` — a key was added to a role without anything leaving it (for example a post-quantum key alongside a classical one).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RotationKind",
-///  "description": "`planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same log entry. `addition` — a key was added to a role without anything leaving it (for example a post-quantum key alongside a classical one).",
-///  "type": "string",
-///  "enum": [
-///    "planned",
-///    "compromise",
-///    "addition"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1605,101 +1117,6 @@ impl ::std::convert::TryFrom<::std::string::String> for RotationKind {
 }
 ///One change to a role's key set, from preview to completion. The rotation history of a DID is the list of these; the log is the authority for what was published, and this record adds what the log cannot say — which change was which, and (custody projection only) who asked, who approved, and why.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RotationRecord",
-///  "description": "One change to a role's key set, from preview to completion. The rotation history of a DID is the list of these; the log is the authority for what was published, and this record adds what the log cannot say — which change was which, and (custody projection only) who asked, who approved, and why.",
-///  "type": "object",
-///  "required": [
-///    "kind",
-///    "role",
-///    "rotationId",
-///    "state"
-///  ],
-///  "properties": {
-///    "activatesAt": {
-///      "description": "When the successor becomes `active` and the predecessor `retiring`; never before `cacheHorizonAt`.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "approvals": {
-///      "description": "Custody projection only.",
-///      "$ref": "#/definitions/KeyRoleApprovalState"
-///    },
-///    "autoRetire": {
-///      "description": "Custody projection only. Whether the VTA retires the predecessor itself at `overlapUntil`.",
-///      "type": "boolean"
-///    },
-///    "cacheHorizonAt": {
-///      "description": "Planned rotations: the publishing entry's cache horizon — publication plus the longer of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1). The switch, and any retirement of the predecessor, happen no earlier. Public: it follows from the log and the published cap.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "endedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "endedInVersionId": {
-///      "type": "string"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "initiatedBy": {
-///      "description": "Custody projection only. VID of the administrator whose signed request started the change.",
-///      "type": "string"
-///    },
-///    "kind": {
-///      "$ref": "#/definitions/RotationKind"
-///    },
-///    "overlapUntil": {
-///      "description": "Custody projection only. End of the overlap window.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "predecessors": {
-///      "description": "Verification-method identifiers (or, for `update`, public keys) leaving the role.",
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      }
-///    },
-///    "reason": {
-///      "description": "Custody projection only. The operator's stated reason. Never published.",
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "role": {
-///      "$ref": "#/definitions/KeyRole"
-///    },
-///    "rotationId": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "startedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "startedInVersionId": {
-///      "type": "string"
-///    },
-///    "state": {
-///      "$ref": "#/definitions/RotationState"
-///    },
-///    "successors": {
-///      "description": "Verification-method identifiers (or, for `update`, public keys) entering the role.",
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      }
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1790,16 +1207,6 @@ impl RotationRecord {
 }
 ///Custody projection only. The operator's stated reason. Never published.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Custody projection only. The operator's stated reason. Never published.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RotationRecordReason(::std::string::String);
@@ -1859,15 +1266,6 @@ impl<'de> ::serde::Deserialize<'de> for RotationRecordReason {
 }
 ///`RotationRecordRotationId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RotationRecordRotationId(::std::string::String);
@@ -1927,24 +1325,6 @@ impl<'de> ::serde::Deserialize<'de> for RotationRecordRotationId {
 }
 ///`pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is published. `staged` — successor published, not yet used; predecessor still active. `overlapping` — successor active, predecessor `retiring`. `completed` — every predecessor retired (or, for `compromise` and `addition`, the entry is published and any overlap it began has ended). `aborted` — the successor was retired instead of the predecessor, which stayed or returned to `active`. `expired` — approvals were not gathered before the preview expired; nothing was published.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RotationState",
-///  "description": "`pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is published. `staged` — successor published, not yet used; predecessor still active. `overlapping` — successor active, predecessor `retiring`. `completed` — every predecessor retired (or, for `compromise` and `addition`, the entry is published and any overlap it began has ended). `aborted` — the successor was retired instead of the predecessor, which stayed or returned to `active`. `expired` — approvals were not gathered before the preview expired; nothing was published.",
-///  "type": "string",
-///  "enum": [
-///    "pendingApproval",
-///    "staged",
-///    "overlapping",
-///    "completed",
-///    "aborted",
-///    "expired"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -3121,7 +2501,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/webvh/dids/keys/list/1.0";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DidVerificationRelationship\": {\n      \"description\": \"A DID Core verification relationship.\",\n      \"enum\": [\n        \"authentication\",\n        \"assertionMethod\",\n        \"keyAgreement\",\n        \"capabilityInvocation\",\n        \"capabilityDelegation\"\n      ],\n      \"title\": \"DidVerificationRelationship\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"KeyOrigin\": {\n      \"default\": \"derived\",\n      \"description\": \"Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.\",\n      \"enum\": [\n        \"derived\",\n        \"imported\",\n        \"internal\"\n      ],\n      \"title\": \"KeyOrigin\",\n      \"type\": \"string\"\n    },\n    \"KeyRole\": {\n      \"description\": \"The named key role a key occupies in the DID (VTI-KEY-070 onward). `attestation` — the only keys in `assertionMethod`; sign the DID's attestation artefacts (membership and role credentials, endorsements, status lists, every other credential the node issues), through the VTA's signing service and nowhere else. Generated inside the VTA, never derived, never exportable, never in a backup. `operational` — the only keys in `authentication`; sign the node's own traffic (Trust Task requests and responses, DIDComm and TSP message signatures, invitations, notices, audit checkpoints) with proof purpose `authentication`. `messaging` — the only keys in `keyAgreement`; sign nothing. `update` — the keys that authorize appending to the DID's log (a did:webvh `updateKeys` entry) and the pre-rotation commitments that authorize the next ones; never a verification method, never in `keyRoles`. Generated inside the VTA, never derived, never exportable, never in a backup. No role permits `capabilityInvocation` or `capabilityDelegation` (VTI-KEY-075); both are reserved for a future role. The mapping is normative and is set out in CONVENTIONS.md §1. The set is an extensible registry and growing it is a MINOR change: a consumer that receives a role it does not implement MUST refuse the document rather than map the key onto a role it does know.\",\n      \"enum\": [\n        \"attestation\",\n        \"operational\",\n        \"messaging\",\n        \"update\"\n      ],\n      \"title\": \"KeyRole\",\n      \"type\": \"string\"\n    },\n    \"KeyRoleApprovalState\": {\n      \"additionalProperties\": false,\n      \"description\": \"Approval progress of a change the VTA's policy gates on more than one approval (CONVENTIONS.md §3.3).\",\n      \"properties\": {\n        \"approvers\": {\n          \"description\": \"VIDs whose approvals were recorded. Custody projection only; omitted from a response to anyone who is not themselves an eligible approver of this change.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"expiresAt\": {\n          \"description\": \"When the preview, and every approval bound to it, stops being usable.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"received\": {\n          \"description\": \"Distinct approvals recorded so far, including the initiator's own.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"required\": {\n          \"description\": \"Distinct approvals the VTA's policy requires.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"required\",\n        \"received\",\n        \"expiresAt\"\n      ],\n      \"title\": \"KeyRoleApprovalState\",\n      \"type\": \"object\"\n    },\n    \"KeyRoleProjection\": {\n      \"description\": \"Which view of the DID's key roles the caller was given (CONVENTIONS.md §5). `public` — only what the published document and log already reveal to anyone who resolves the DID. `custody` — additionally the VTA's own custody state: pending keys, the custodian record behind each key, overlap deadlines, who initiated and approved each change, and why. The response always states which it is, so a caller never mistakes an absent member for a statement that the thing does not exist.\",\n      \"enum\": [\n        \"public\",\n        \"custody\"\n      ],\n      \"title\": \"KeyRoleProjection\",\n      \"type\": \"string\"\n    },\n    \"KeyType\": {\n      \"description\": \"Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support.\",\n      \"enum\": [\n        \"ed25519\",\n        \"x25519\",\n        \"p256\",\n        \"mldsa44\",\n        \"mldsa65\"\n      ],\n      \"title\": \"KeyType\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/webvh/dids/keys/list. Type https://trusttasks.org/spec/vta/webvh/dids/keys/list/1.0#response.\",\n      \"properties\": {\n        \"did\": {\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"projection\": {\n          \"$ref\": \"#/$defs/KeyRoleProjection\"\n        },\n        \"roles\": {\n          \"description\": \"One entry per role asked for, including roles with no keys — an empty role is an answer, and omitting it would read as 'not asked'.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/RoleSummary\"\n          },\n          \"type\": \"array\"\n        },\n        \"rotations\": {\n          \"description\": \"Present exactly when `includeHistory` was true. Newest first. In the custody projection this includes changes in `pendingApproval`; in the public projection it includes only changes that published an entry.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/RotationRecord\"\n          },\n          \"type\": \"array\"\n        },\n        \"versionId\": {\n          \"description\": \"The log entry the answer describes. Pass it as `expectedVersionId` to a change made on the strength of this answer.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"versionId\",\n        \"projection\",\n        \"roles\"\n      ],\n      \"title\": \"VTA WebVH DIDs Keys List — response payload\",\n      \"type\": \"object\"\n    },\n    \"RoleKey\": {\n      \"additionalProperties\": false,\n      \"description\": \"One key in one role. A key is in exactly one role for its whole life; a change of role is a retirement from one and an addition to another, under a new verification-method identifier.\",\n      \"properties\": {\n        \"activatesAt\": {\n          \"description\": \"For a `staged` key: when the VTA will begin using it — no earlier than the publishing entry's cache horizon (CONVENTIONS.md §11.1).\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"compromisedSince\": {\n          \"description\": \"For a `revoked` key: the compromise time (VTI-KEY-121) — the earliest instant from which the key is treated as compromised. Where the operator cannot establish it, the time the key was first published. Published, because it is what a verifier needs.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"custody\": {\n          \"$ref\": \"#/$defs/RoleKeyCustody\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"keyType\": {\n          \"$ref\": \"#/$defs/KeyType\"\n        },\n        \"label\": {\n          \"description\": \"Operator-facing label. Custody projection only.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"publicKeyMultibase\": {\n          \"description\": \"The public half, multibase-encoded, exactly as published.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"publishedInVersionId\": {\n          \"description\": \"versionId of the log entry that first published the key. Absent while `pending`.\",\n          \"type\": \"string\"\n        },\n        \"relationships\": {\n          \"description\": \"The relationships the key is (or, while `pending`, will be) listed in. Always exactly its role's single relationship (CONVENTIONS.md §1) — carried so a caller can check it against the document rather than trusting it. Empty for `update`, `retired` and `revoked` keys.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/DidVerificationRelationship\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"removedInVersionId\": {\n          \"description\": \"versionId of the log entry that retired or revoked the key.\",\n          \"type\": \"string\"\n        },\n        \"retireAfter\": {\n          \"description\": \"For a `retiring` key: the end of its overlap window. Custody projection only.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"role\": {\n          \"$ref\": \"#/$defs/KeyRole\"\n        },\n        \"rotationId\": {\n          \"description\": \"The rotation this key was introduced or retired by, when it was.\",\n          \"type\": \"string\"\n        },\n        \"state\": {\n          \"$ref\": \"#/$defs/RoleKeyState\"\n        },\n        \"verificationMethod\": {\n          \"description\": \"The full verification-method identifier (`did#fragment`) the document publishes the key under, and lists in `keyRoles`. Absent only for `update` keys, which are published as log parameters and never as verification methods (VTI-KEY-093). A VTA minting a new method SHOULD derive its fragment from the key (VTI-KEY-150).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"role\",\n        \"keyType\",\n        \"publicKeyMultibase\",\n        \"state\"\n      ],\n      \"title\": \"RoleKey\",\n      \"type\": \"object\"\n    },\n    \"RoleKeyCustody\": {\n      \"additionalProperties\": false,\n      \"description\": \"How the VTA holds a key. Present only in the custody projection. Carries no key material, and a conforming VTA MUST NOT place any in `ext`.\",\n      \"properties\": {\n        \"destroyed\": {\n          \"description\": \"True once the private half has been destroyed — a retired `attestation` key (VTI-KEY-125). The record survives so the key's past signatures stay attributable.\",\n          \"type\": \"boolean\"\n        },\n        \"exportable\": {\n          \"description\": \"Whether the custodian would release the private half through `keys/export-secret`. Always `false` for `attestation` and `update` keys (CONVENTIONS.md §4). Stated explicitly — never absent — because this is the member an operator reads to confirm a role key cannot leave the VTA, and `keys/*`'s absent-means-exportable reading is the wrong default to leave them to infer.\",\n          \"type\": \"boolean\"\n        },\n        \"hardwareBacked\": {\n          \"description\": \"True when the private half is held by a hardware or enclave module that performs the operation without releasing it. Absent means the VTA does not say, not that it is false.\",\n          \"type\": \"boolean\"\n        },\n        \"inBackups\": {\n          \"description\": \"Whether the key, or material it can be re-derived from, is included in the VTA's backups or any state transfer. Always `false` for `attestation` and `update` keys (VTI-KEY-112): they are generated, not derived, so there is no seed that recovers them, and their loss is recovered by rotation, never by restore.\",\n          \"type\": \"boolean\"\n        },\n        \"keyId\": {\n          \"description\": \"The custodian record identifier (`keys/*`'s `keyId`) behind this key.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"neverExportable\": {\n          \"description\": \"True when no authority can make the key exportable — the role forbids it, or the material exists only inside a module that cannot release it. `true` implies `exportable: false`.\",\n          \"type\": \"boolean\"\n        },\n        \"origin\": {\n          \"$ref\": \"#/$defs/KeyOrigin\"\n        }\n      },\n      \"required\": [\n        \"keyId\",\n        \"exportable\",\n        \"neverExportable\",\n        \"inBackups\"\n      ],\n      \"title\": \"RoleKeyCustody\",\n      \"type\": \"object\"\n    },\n    \"RoleKeyState\": {\n      \"description\": \"Where a key is in its role's lifecycle. `pending` — planned by a preview or a change awaiting approval; not published; custody projection only. `staged` — published and bound to its role, but not yet used: a planned rotation publishes the successor and waits until the entry's cache horizon — publication plus the longer of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1) — before the VTA first uses it, so that no verifier holding a cached document sees a signature by a key it has never seen (VTI-KEY-122). Becomes `active` at the rotation's `activatesAt`. `active` — the key the VTA uses for new signatures (or, for `messaging`, advertises for new sessions). `retiring` — still published so that what it signed and sessions keyed to it keep working, but never used again: from the successor's first use the VTA MUST NOT sign with it, while a retiring `messaging` key stays usable for decryption, and senders may still encrypt to it, until it is retired (CONVENTIONS.md §11.3). `retired` — removed by planned rotation; what it signed while published remains valid, judged against the DID version current at issuance (CONVENTIONS.md §7). A retired `attestation` or `messaging` key is destroyed at retirement. `revoked` — removed from every relationship and from `keyRoles` in one entry, without overlap, because it is or may be compromised; what it signed from `compromisedSince` onward establishes nothing. `retired` and `revoked` are terminal.\",\n      \"enum\": [\n        \"pending\",\n        \"staged\",\n        \"active\",\n        \"retiring\",\n        \"retired\",\n        \"revoked\"\n      ],\n      \"title\": \"RoleKeyState\",\n      \"type\": \"string\"\n    },\n    \"RoleSummary\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"keys\": {\n          \"description\": \"The role's keys, in the order the document publishes them. Terminal-state keys are included only when the request asked for them.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/RoleKey\"\n          },\n          \"type\": \"array\"\n        },\n        \"preRotationCommitments\": {\n          \"description\": \"`update` only: successors the latest entry commits to. `0` means a compromise of the current update key cannot be recovered from by rotation, and the DID would have to be deactivated (VTI-KEY-124).\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"relationships\": {\n          \"description\": \"The relationship this role owns (CONVENTIONS.md §1). Empty for `update`.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/DidVerificationRelationship\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"role\": {\n          \"$ref\": \"#/$defs/KeyRole\"\n        }\n      },\n      \"required\": [\n        \"role\",\n        \"relationships\",\n        \"keys\"\n      ],\n      \"title\": \"RoleSummary\",\n      \"type\": \"object\"\n    },\n    \"RotationKind\": {\n      \"description\": \"`planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same log entry. `addition` — a key was added to a role without anything leaving it (for example a post-quantum key alongside a classical one).\",\n      \"enum\": [\n        \"planned\",\n        \"compromise\",\n        \"addition\"\n      ],\n      \"title\": \"RotationKind\",\n      \"type\": \"string\"\n    },\n    \"RotationRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"One change to a role's key set, from preview to completion. The rotation history of a DID is the list of these; the log is the authority for what was published, and this record adds what the log cannot say — which change was which, and (custody projection only) who asked, who approved, and why.\",\n      \"properties\": {\n        \"activatesAt\": {\n          \"description\": \"When the successor becomes `active` and the predecessor `retiring`; never before `cacheHorizonAt`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"approvals\": {\n          \"$ref\": \"#/$defs/KeyRoleApprovalState\",\n          \"description\": \"Custody projection only.\"\n        },\n        \"autoRetire\": {\n          \"description\": \"Custody projection only. Whether the VTA retires the predecessor itself at `overlapUntil`.\",\n          \"type\": \"boolean\"\n        },\n        \"cacheHorizonAt\": {\n          \"description\": \"Planned rotations: the publishing entry's cache horizon — publication plus the longer of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1). The switch, and any retirement of the predecessor, happen no earlier. Public: it follows from the log and the published cap.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"endedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"endedInVersionId\": {\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"initiatedBy\": {\n          \"description\": \"Custody projection only. VID of the administrator whose signed request started the change.\",\n          \"type\": \"string\"\n        },\n        \"kind\": {\n          \"$ref\": \"#/$defs/RotationKind\"\n        },\n        \"overlapUntil\": {\n          \"description\": \"Custody projection only. End of the overlap window.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"predecessors\": {\n          \"description\": \"Verification-method identifiers (or, for `update`, public keys) leaving the role.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"reason\": {\n          \"description\": \"Custody projection only. The operator's stated reason. Never published.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"role\": {\n          \"$ref\": \"#/$defs/KeyRole\"\n        },\n        \"rotationId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"startedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"startedInVersionId\": {\n          \"type\": \"string\"\n        },\n        \"state\": {\n          \"$ref\": \"#/$defs/RotationState\"\n        },\n        \"successors\": {\n          \"description\": \"Verification-method identifiers (or, for `update`, public keys) entering the role.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"rotationId\",\n        \"role\",\n        \"kind\",\n        \"state\"\n      ],\n      \"title\": \"RotationRecord\",\n      \"type\": \"object\"\n    },\n    \"RotationState\": {\n      \"description\": \"`pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is published. `staged` — successor published, not yet used; predecessor still active. `overlapping` — successor active, predecessor `retiring`. `completed` — every predecessor retired (or, for `compromise` and `addition`, the entry is published and any overlap it began has ended). `aborted` — the successor was retired instead of the predecessor, which stayed or returned to `active`. `expired` — approvals were not gathered before the preview expired; nothing was published.\",\n      \"enum\": [\n        \"pendingApproval\",\n        \"staged\",\n        \"overlapping\",\n        \"completed\",\n        \"aborted\",\n        \"expired\"\n      ],\n      \"title\": \"RotationState\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/webvh/dids/keys/list/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"List a did:webvh's keys by role, with their state, and optionally the DID's rotation history and any changes awaiting approval.\",\n  \"properties\": {\n    \"did\": {\n      \"description\": \"The DID whose key roles are listed.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"includeEnded\": {\n      \"description\": \"Include `retired` and `revoked` keys. Absent reads as false. `revoked` keys still published in `verificationMethod` are always included, because the document shows them to anyone who resolves it.\",\n      \"type\": \"boolean\"\n    },\n    \"includeHistory\": {\n      \"description\": \"Include the DID's rotation history. Absent reads as false.\",\n      \"type\": \"boolean\"\n    },\n    \"roles\": {\n      \"description\": \"Return only these roles. Absent returns every role. Present-but-empty is refused by the schema rather than read as 'every role' — emptiness is never a wildcard.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/KeyRole\"\n      },\n      \"minItems\": 1,\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    }\n  },\n  \"required\": [\n    \"did\"\n  ],\n  \"title\": \"VTA WebVH DIDs Keys List — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"DidVerificationRelationship\":{\"description\":\"A DID Core verification relationship.\",\"enum\":[\"authentication\",\"assertionMethod\",\"keyAgreement\",\"capabilityInvocation\",\"capabilityDelegation\"],\"title\":\"DidVerificationRelationship\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"KeyOrigin\":{\"default\":\"derived\",\"description\":\"Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.\",\"enum\":[\"derived\",\"imported\",\"internal\"],\"title\":\"KeyOrigin\",\"type\":\"string\"},\"KeyRole\":{\"description\":\"The named key role a key occupies in the DID (VTI-KEY-070 onward). `attestation` — the only keys in `assertionMethod`; sign the DID's attestation artefacts (membership and role credentials, endorsements, status lists, every other credential the node issues), through the VTA's signing service and nowhere else. Generated inside the VTA, never derived, never exportable, never in a backup. `operational` — the only keys in `authentication`; sign the node's own traffic (Trust Task requests and responses, DIDComm and TSP message signatures, invitations, notices, audit checkpoints) with proof purpose `authentication`. `messaging` — the only keys in `keyAgreement`; sign nothing. `update` — the keys that authorize appending to the DID's log (a did:webvh `updateKeys` entry) and the pre-rotation commitments that authorize the next ones; never a verification method, never in `keyRoles`. Generated inside the VTA, never derived, never exportable, never in a backup. No role permits `capabilityInvocation` or `capabilityDelegation` (VTI-KEY-075); both are reserved for a future role. The mapping is normative and is set out in CONVENTIONS.md §1. The set is an extensible registry and growing it is a MINOR change: a consumer that receives a role it does not implement MUST refuse the document rather than map the key onto a role it does know.\",\"enum\":[\"attestation\",\"operational\",\"messaging\",\"update\"],\"title\":\"KeyRole\",\"type\":\"string\"},\"KeyRoleApprovalState\":{\"additionalProperties\":false,\"description\":\"Approval progress of a change the VTA's policy gates on more than one approval (CONVENTIONS.md §3.3).\",\"properties\":{\"approvers\":{\"description\":\"VIDs whose approvals were recorded. Custody projection only; omitted from a response to anyone who is not themselves an eligible approver of this change.\",\"items\":{\"type\":\"string\"},\"type\":\"array\",\"uniqueItems\":true},\"expiresAt\":{\"description\":\"When the preview, and every approval bound to it, stops being usable.\",\"format\":\"date-time\",\"type\":\"string\"},\"received\":{\"description\":\"Distinct approvals recorded so far, including the initiator's own.\",\"minimum\":0,\"type\":\"integer\"},\"required\":{\"description\":\"Distinct approvals the VTA's policy requires.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"required\",\"received\",\"expiresAt\"],\"title\":\"KeyRoleApprovalState\",\"type\":\"object\"},\"KeyRoleProjection\":{\"description\":\"Which view of the DID's key roles the caller was given (CONVENTIONS.md §5). `public` — only what the published document and log already reveal to anyone who resolves the DID. `custody` — additionally the VTA's own custody state: pending keys, the custodian record behind each key, overlap deadlines, who initiated and approved each change, and why. The response always states which it is, so a caller never mistakes an absent member for a statement that the thing does not exist.\",\"enum\":[\"public\",\"custody\"],\"title\":\"KeyRoleProjection\",\"type\":\"string\"},\"KeyType\":{\"description\":\"Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support.\",\"enum\":[\"ed25519\",\"x25519\",\"p256\",\"mldsa44\",\"mldsa65\"],\"title\":\"KeyType\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vta/webvh/dids/keys/list. Type https://trusttasks.org/spec/vta/webvh/dids/keys/list/1.0#response.\",\"properties\":{\"did\":{\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"projection\":{\"$ref\":\"#/$defs/KeyRoleProjection\"},\"roles\":{\"description\":\"One entry per role asked for, including roles with no keys — an empty role is an answer, and omitting it would read as 'not asked'.\",\"items\":{\"$ref\":\"#/$defs/RoleSummary\"},\"type\":\"array\"},\"rotations\":{\"description\":\"Present exactly when `includeHistory` was true. Newest first. In the custody projection this includes changes in `pendingApproval`; in the public projection it includes only changes that published an entry.\",\"items\":{\"$ref\":\"#/$defs/RotationRecord\"},\"type\":\"array\"},\"versionId\":{\"description\":\"The log entry the answer describes. Pass it as `expectedVersionId` to a change made on the strength of this answer.\",\"type\":\"string\"}},\"required\":[\"did\",\"versionId\",\"projection\",\"roles\"],\"title\":\"VTA WebVH DIDs Keys List — response payload\",\"type\":\"object\"},\"RoleKey\":{\"additionalProperties\":false,\"description\":\"One key in one role. A key is in exactly one role for its whole life; a change of role is a retirement from one and an addition to another, under a new verification-method identifier.\",\"properties\":{\"activatesAt\":{\"description\":\"For a `staged` key: when the VTA will begin using it — no earlier than the publishing entry's cache horizon (CONVENTIONS.md §11.1).\",\"format\":\"date-time\",\"type\":\"string\"},\"compromisedSince\":{\"description\":\"For a `revoked` key: the compromise time (VTI-KEY-121) — the earliest instant from which the key is treated as compromised. Where the operator cannot establish it, the time the key was first published. Published, because it is what a verifier needs.\",\"format\":\"date-time\",\"type\":\"string\"},\"custody\":{\"$ref\":\"#/$defs/RoleKeyCustody\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keyType\":{\"$ref\":\"#/$defs/KeyType\"},\"label\":{\"description\":\"Operator-facing label. Custody projection only.\",\"maxLength\":256,\"type\":\"string\"},\"publicKeyMultibase\":{\"description\":\"The public half, multibase-encoded, exactly as published.\",\"minLength\":1,\"type\":\"string\"},\"publishedInVersionId\":{\"description\":\"versionId of the log entry that first published the key. Absent while `pending`.\",\"type\":\"string\"},\"relationships\":{\"description\":\"The relationships the key is (or, while `pending`, will be) listed in. Always exactly its role's single relationship (CONVENTIONS.md §1) — carried so a caller can check it against the document rather than trusting it. Empty for `update`, `retired` and `revoked` keys.\",\"items\":{\"$ref\":\"#/$defs/DidVerificationRelationship\"},\"type\":\"array\",\"uniqueItems\":true},\"removedInVersionId\":{\"description\":\"versionId of the log entry that retired or revoked the key.\",\"type\":\"string\"},\"retireAfter\":{\"description\":\"For a `retiring` key: the end of its overlap window. Custody projection only.\",\"format\":\"date-time\",\"type\":\"string\"},\"role\":{\"$ref\":\"#/$defs/KeyRole\"},\"rotationId\":{\"description\":\"The rotation this key was introduced or retired by, when it was.\",\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/RoleKeyState\"},\"verificationMethod\":{\"description\":\"The full verification-method identifier (`did#fragment`) the document publishes the key under, and lists in `keyRoles`. Absent only for `update` keys, which are published as log parameters and never as verification methods (VTI-KEY-093). A VTA minting a new method SHOULD derive its fragment from the key (VTI-KEY-150).\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"role\",\"keyType\",\"publicKeyMultibase\",\"state\"],\"title\":\"RoleKey\",\"type\":\"object\"},\"RoleKeyCustody\":{\"additionalProperties\":false,\"description\":\"How the VTA holds a key. Present only in the custody projection. Carries no key material, and a conforming VTA MUST NOT place any in `ext`.\",\"properties\":{\"destroyed\":{\"description\":\"True once the private half has been destroyed — a retired `attestation` key (VTI-KEY-125). The record survives so the key's past signatures stay attributable.\",\"type\":\"boolean\"},\"exportable\":{\"description\":\"Whether the custodian would release the private half through `keys/export-secret`. Always `false` for `attestation` and `update` keys (CONVENTIONS.md §4). Stated explicitly — never absent — because this is the member an operator reads to confirm a role key cannot leave the VTA, and `keys/*`'s absent-means-exportable reading is the wrong default to leave them to infer.\",\"type\":\"boolean\"},\"hardwareBacked\":{\"description\":\"True when the private half is held by a hardware or enclave module that performs the operation without releasing it. Absent means the VTA does not say, not that it is false.\",\"type\":\"boolean\"},\"inBackups\":{\"description\":\"Whether the key, or material it can be re-derived from, is included in the VTA's backups or any state transfer. Always `false` for `attestation` and `update` keys (VTI-KEY-112): they are generated, not derived, so there is no seed that recovers them, and their loss is recovered by rotation, never by restore.\",\"type\":\"boolean\"},\"keyId\":{\"description\":\"The custodian record identifier (`keys/*`'s `keyId`) behind this key.\",\"minLength\":1,\"type\":\"string\"},\"neverExportable\":{\"description\":\"True when no authority can make the key exportable — the role forbids it, or the material exists only inside a module that cannot release it. `true` implies `exportable: false`.\",\"type\":\"boolean\"},\"origin\":{\"$ref\":\"#/$defs/KeyOrigin\"}},\"required\":[\"keyId\",\"exportable\",\"neverExportable\",\"inBackups\"],\"title\":\"RoleKeyCustody\",\"type\":\"object\"},\"RoleKeyState\":{\"description\":\"Where a key is in its role's lifecycle. `pending` — planned by a preview or a change awaiting approval; not published; custody projection only. `staged` — published and bound to its role, but not yet used: a planned rotation publishes the successor and waits until the entry's cache horizon — publication plus the longer of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1) — before the VTA first uses it, so that no verifier holding a cached document sees a signature by a key it has never seen (VTI-KEY-122). Becomes `active` at the rotation's `activatesAt`. `active` — the key the VTA uses for new signatures (or, for `messaging`, advertises for new sessions). `retiring` — still published so that what it signed and sessions keyed to it keep working, but never used again: from the successor's first use the VTA MUST NOT sign with it, while a retiring `messaging` key stays usable for decryption, and senders may still encrypt to it, until it is retired (CONVENTIONS.md §11.3). `retired` — removed by planned rotation; what it signed while published remains valid, judged against the DID version current at issuance (CONVENTIONS.md §7). A retired `attestation` or `messaging` key is destroyed at retirement. `revoked` — removed from every relationship and from `keyRoles` in one entry, without overlap, because it is or may be compromised; what it signed from `compromisedSince` onward establishes nothing. `retired` and `revoked` are terminal.\",\"enum\":[\"pending\",\"staged\",\"active\",\"retiring\",\"retired\",\"revoked\"],\"title\":\"RoleKeyState\",\"type\":\"string\"},\"RoleSummary\":{\"additionalProperties\":false,\"properties\":{\"keys\":{\"description\":\"The role's keys, in the order the document publishes them. Terminal-state keys are included only when the request asked for them.\",\"items\":{\"$ref\":\"#/$defs/RoleKey\"},\"type\":\"array\"},\"preRotationCommitments\":{\"description\":\"`update` only: successors the latest entry commits to. `0` means a compromise of the current update key cannot be recovered from by rotation, and the DID would have to be deactivated (VTI-KEY-124).\",\"minimum\":0,\"type\":\"integer\"},\"relationships\":{\"description\":\"The relationship this role owns (CONVENTIONS.md §1). Empty for `update`.\",\"items\":{\"$ref\":\"#/$defs/DidVerificationRelationship\"},\"type\":\"array\",\"uniqueItems\":true},\"role\":{\"$ref\":\"#/$defs/KeyRole\"}},\"required\":[\"role\",\"relationships\",\"keys\"],\"title\":\"RoleSummary\",\"type\":\"object\"},\"RotationKind\":{\"description\":\"`planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same log entry. `addition` — a key was added to a role without anything leaving it (for example a post-quantum key alongside a classical one).\",\"enum\":[\"planned\",\"compromise\",\"addition\"],\"title\":\"RotationKind\",\"type\":\"string\"},\"RotationRecord\":{\"additionalProperties\":false,\"description\":\"One change to a role's key set, from preview to completion. The rotation history of a DID is the list of these; the log is the authority for what was published, and this record adds what the log cannot say — which change was which, and (custody projection only) who asked, who approved, and why.\",\"properties\":{\"activatesAt\":{\"description\":\"When the successor becomes `active` and the predecessor `retiring`; never before `cacheHorizonAt`.\",\"format\":\"date-time\",\"type\":\"string\"},\"approvals\":{\"$ref\":\"#/$defs/KeyRoleApprovalState\",\"description\":\"Custody projection only.\"},\"autoRetire\":{\"description\":\"Custody projection only. Whether the VTA retires the predecessor itself at `overlapUntil`.\",\"type\":\"boolean\"},\"cacheHorizonAt\":{\"description\":\"Planned rotations: the publishing entry's cache horizon — publication plus the longer of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1). The switch, and any retirement of the predecessor, happen no earlier. Public: it follows from the log and the published cap.\",\"format\":\"date-time\",\"type\":\"string\"},\"endedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"endedInVersionId\":{\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"initiatedBy\":{\"description\":\"Custody projection only. VID of the administrator whose signed request started the change.\",\"type\":\"string\"},\"kind\":{\"$ref\":\"#/$defs/RotationKind\"},\"overlapUntil\":{\"description\":\"Custody projection only. End of the overlap window.\",\"format\":\"date-time\",\"type\":\"string\"},\"predecessors\":{\"description\":\"Verification-method identifiers (or, for `update`, public keys) leaving the role.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"reason\":{\"description\":\"Custody projection only. The operator's stated reason. Never published.\",\"maxLength\":1024,\"type\":\"string\"},\"role\":{\"$ref\":\"#/$defs/KeyRole\"},\"rotationId\":{\"minLength\":1,\"type\":\"string\"},\"startedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"startedInVersionId\":{\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/RotationState\"},\"successors\":{\"description\":\"Verification-method identifiers (or, for `update`, public keys) entering the role.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"rotationId\",\"role\",\"kind\",\"state\"],\"title\":\"RotationRecord\",\"type\":\"object\"},\"RotationState\":{\"description\":\"`pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is published. `staged` — successor published, not yet used; predecessor still active. `overlapping` — successor active, predecessor `retiring`. `completed` — every predecessor retired (or, for `compromise` and `addition`, the entry is published and any overlap it began has ended). `aborted` — the successor was retired instead of the predecessor, which stayed or returned to `active`. `expired` — approvals were not gathered before the preview expired; nothing was published.\",\"enum\":[\"pendingApproval\",\"staged\",\"overlapping\",\"completed\",\"aborted\",\"expired\"],\"title\":\"RotationState\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/vta/webvh/dids/keys/list/1.0\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"List a did:webvh's keys by role, with their state, and optionally the DID's rotation history and any changes awaiting approval.\",\"properties\":{\"did\":{\"description\":\"The DID whose key roles are listed.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"includeEnded\":{\"description\":\"Include `retired` and `revoked` keys. Absent reads as false. `revoked` keys still published in `verificationMethod` are always included, because the document shows them to anyone who resolves it.\",\"type\":\"boolean\"},\"includeHistory\":{\"description\":\"Include the DID's rotation history. Absent reads as false.\",\"type\":\"boolean\"},\"roles\":{\"description\":\"Return only these roles. Absent returns every role. Present-but-empty is refused by the schema rather than read as 'every role' — emptiness is never a wildcard.\",\"items\":{\"$ref\":\"#/$defs/KeyRole\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"did\"],\"title\":\"VTA WebVH DIDs Keys List — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -3129,7 +2509,7 @@ impl crate::Payload for Response {
         "https://trusttasks.org/spec/vta/webvh/dids/keys/list/1.0#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DidVerificationRelationship\": {\n      \"description\": \"A DID Core verification relationship.\",\n      \"enum\": [\n        \"authentication\",\n        \"assertionMethod\",\n        \"keyAgreement\",\n        \"capabilityInvocation\",\n        \"capabilityDelegation\"\n      ],\n      \"title\": \"DidVerificationRelationship\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"KeyOrigin\": {\n      \"default\": \"derived\",\n      \"description\": \"Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.\",\n      \"enum\": [\n        \"derived\",\n        \"imported\",\n        \"internal\"\n      ],\n      \"title\": \"KeyOrigin\",\n      \"type\": \"string\"\n    },\n    \"KeyRole\": {\n      \"description\": \"The named key role a key occupies in the DID (VTI-KEY-070 onward). `attestation` — the only keys in `assertionMethod`; sign the DID's attestation artefacts (membership and role credentials, endorsements, status lists, every other credential the node issues), through the VTA's signing service and nowhere else. Generated inside the VTA, never derived, never exportable, never in a backup. `operational` — the only keys in `authentication`; sign the node's own traffic (Trust Task requests and responses, DIDComm and TSP message signatures, invitations, notices, audit checkpoints) with proof purpose `authentication`. `messaging` — the only keys in `keyAgreement`; sign nothing. `update` — the keys that authorize appending to the DID's log (a did:webvh `updateKeys` entry) and the pre-rotation commitments that authorize the next ones; never a verification method, never in `keyRoles`. Generated inside the VTA, never derived, never exportable, never in a backup. No role permits `capabilityInvocation` or `capabilityDelegation` (VTI-KEY-075); both are reserved for a future role. The mapping is normative and is set out in CONVENTIONS.md §1. The set is an extensible registry and growing it is a MINOR change: a consumer that receives a role it does not implement MUST refuse the document rather than map the key onto a role it does know.\",\n      \"enum\": [\n        \"attestation\",\n        \"operational\",\n        \"messaging\",\n        \"update\"\n      ],\n      \"title\": \"KeyRole\",\n      \"type\": \"string\"\n    },\n    \"KeyRoleApprovalState\": {\n      \"additionalProperties\": false,\n      \"description\": \"Approval progress of a change the VTA's policy gates on more than one approval (CONVENTIONS.md §3.3).\",\n      \"properties\": {\n        \"approvers\": {\n          \"description\": \"VIDs whose approvals were recorded. Custody projection only; omitted from a response to anyone who is not themselves an eligible approver of this change.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"expiresAt\": {\n          \"description\": \"When the preview, and every approval bound to it, stops being usable.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"received\": {\n          \"description\": \"Distinct approvals recorded so far, including the initiator's own.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"required\": {\n          \"description\": \"Distinct approvals the VTA's policy requires.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"required\",\n        \"received\",\n        \"expiresAt\"\n      ],\n      \"title\": \"KeyRoleApprovalState\",\n      \"type\": \"object\"\n    },\n    \"KeyRoleProjection\": {\n      \"description\": \"Which view of the DID's key roles the caller was given (CONVENTIONS.md §5). `public` — only what the published document and log already reveal to anyone who resolves the DID. `custody` — additionally the VTA's own custody state: pending keys, the custodian record behind each key, overlap deadlines, who initiated and approved each change, and why. The response always states which it is, so a caller never mistakes an absent member for a statement that the thing does not exist.\",\n      \"enum\": [\n        \"public\",\n        \"custody\"\n      ],\n      \"title\": \"KeyRoleProjection\",\n      \"type\": \"string\"\n    },\n    \"KeyType\": {\n      \"description\": \"Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support.\",\n      \"enum\": [\n        \"ed25519\",\n        \"x25519\",\n        \"p256\",\n        \"mldsa44\",\n        \"mldsa65\"\n      ],\n      \"title\": \"KeyType\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/webvh/dids/keys/list. Type https://trusttasks.org/spec/vta/webvh/dids/keys/list/1.0#response.\",\n      \"properties\": {\n        \"did\": {\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"projection\": {\n          \"$ref\": \"#/$defs/KeyRoleProjection\"\n        },\n        \"roles\": {\n          \"description\": \"One entry per role asked for, including roles with no keys — an empty role is an answer, and omitting it would read as 'not asked'.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/RoleSummary\"\n          },\n          \"type\": \"array\"\n        },\n        \"rotations\": {\n          \"description\": \"Present exactly when `includeHistory` was true. Newest first. In the custody projection this includes changes in `pendingApproval`; in the public projection it includes only changes that published an entry.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/RotationRecord\"\n          },\n          \"type\": \"array\"\n        },\n        \"versionId\": {\n          \"description\": \"The log entry the answer describes. Pass it as `expectedVersionId` to a change made on the strength of this answer.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"versionId\",\n        \"projection\",\n        \"roles\"\n      ],\n      \"title\": \"VTA WebVH DIDs Keys List — response payload\",\n      \"type\": \"object\"\n    },\n    \"RoleKey\": {\n      \"additionalProperties\": false,\n      \"description\": \"One key in one role. A key is in exactly one role for its whole life; a change of role is a retirement from one and an addition to another, under a new verification-method identifier.\",\n      \"properties\": {\n        \"activatesAt\": {\n          \"description\": \"For a `staged` key: when the VTA will begin using it — no earlier than the publishing entry's cache horizon (CONVENTIONS.md §11.1).\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"compromisedSince\": {\n          \"description\": \"For a `revoked` key: the compromise time (VTI-KEY-121) — the earliest instant from which the key is treated as compromised. Where the operator cannot establish it, the time the key was first published. Published, because it is what a verifier needs.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"custody\": {\n          \"$ref\": \"#/$defs/RoleKeyCustody\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"keyType\": {\n          \"$ref\": \"#/$defs/KeyType\"\n        },\n        \"label\": {\n          \"description\": \"Operator-facing label. Custody projection only.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"publicKeyMultibase\": {\n          \"description\": \"The public half, multibase-encoded, exactly as published.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"publishedInVersionId\": {\n          \"description\": \"versionId of the log entry that first published the key. Absent while `pending`.\",\n          \"type\": \"string\"\n        },\n        \"relationships\": {\n          \"description\": \"The relationships the key is (or, while `pending`, will be) listed in. Always exactly its role's single relationship (CONVENTIONS.md §1) — carried so a caller can check it against the document rather than trusting it. Empty for `update`, `retired` and `revoked` keys.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/DidVerificationRelationship\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"removedInVersionId\": {\n          \"description\": \"versionId of the log entry that retired or revoked the key.\",\n          \"type\": \"string\"\n        },\n        \"retireAfter\": {\n          \"description\": \"For a `retiring` key: the end of its overlap window. Custody projection only.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"role\": {\n          \"$ref\": \"#/$defs/KeyRole\"\n        },\n        \"rotationId\": {\n          \"description\": \"The rotation this key was introduced or retired by, when it was.\",\n          \"type\": \"string\"\n        },\n        \"state\": {\n          \"$ref\": \"#/$defs/RoleKeyState\"\n        },\n        \"verificationMethod\": {\n          \"description\": \"The full verification-method identifier (`did#fragment`) the document publishes the key under, and lists in `keyRoles`. Absent only for `update` keys, which are published as log parameters and never as verification methods (VTI-KEY-093). A VTA minting a new method SHOULD derive its fragment from the key (VTI-KEY-150).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"role\",\n        \"keyType\",\n        \"publicKeyMultibase\",\n        \"state\"\n      ],\n      \"title\": \"RoleKey\",\n      \"type\": \"object\"\n    },\n    \"RoleKeyCustody\": {\n      \"additionalProperties\": false,\n      \"description\": \"How the VTA holds a key. Present only in the custody projection. Carries no key material, and a conforming VTA MUST NOT place any in `ext`.\",\n      \"properties\": {\n        \"destroyed\": {\n          \"description\": \"True once the private half has been destroyed — a retired `attestation` key (VTI-KEY-125). The record survives so the key's past signatures stay attributable.\",\n          \"type\": \"boolean\"\n        },\n        \"exportable\": {\n          \"description\": \"Whether the custodian would release the private half through `keys/export-secret`. Always `false` for `attestation` and `update` keys (CONVENTIONS.md §4). Stated explicitly — never absent — because this is the member an operator reads to confirm a role key cannot leave the VTA, and `keys/*`'s absent-means-exportable reading is the wrong default to leave them to infer.\",\n          \"type\": \"boolean\"\n        },\n        \"hardwareBacked\": {\n          \"description\": \"True when the private half is held by a hardware or enclave module that performs the operation without releasing it. Absent means the VTA does not say, not that it is false.\",\n          \"type\": \"boolean\"\n        },\n        \"inBackups\": {\n          \"description\": \"Whether the key, or material it can be re-derived from, is included in the VTA's backups or any state transfer. Always `false` for `attestation` and `update` keys (VTI-KEY-112): they are generated, not derived, so there is no seed that recovers them, and their loss is recovered by rotation, never by restore.\",\n          \"type\": \"boolean\"\n        },\n        \"keyId\": {\n          \"description\": \"The custodian record identifier (`keys/*`'s `keyId`) behind this key.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"neverExportable\": {\n          \"description\": \"True when no authority can make the key exportable — the role forbids it, or the material exists only inside a module that cannot release it. `true` implies `exportable: false`.\",\n          \"type\": \"boolean\"\n        },\n        \"origin\": {\n          \"$ref\": \"#/$defs/KeyOrigin\"\n        }\n      },\n      \"required\": [\n        \"keyId\",\n        \"exportable\",\n        \"neverExportable\",\n        \"inBackups\"\n      ],\n      \"title\": \"RoleKeyCustody\",\n      \"type\": \"object\"\n    },\n    \"RoleKeyState\": {\n      \"description\": \"Where a key is in its role's lifecycle. `pending` — planned by a preview or a change awaiting approval; not published; custody projection only. `staged` — published and bound to its role, but not yet used: a planned rotation publishes the successor and waits until the entry's cache horizon — publication plus the longer of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1) — before the VTA first uses it, so that no verifier holding a cached document sees a signature by a key it has never seen (VTI-KEY-122). Becomes `active` at the rotation's `activatesAt`. `active` — the key the VTA uses for new signatures (or, for `messaging`, advertises for new sessions). `retiring` — still published so that what it signed and sessions keyed to it keep working, but never used again: from the successor's first use the VTA MUST NOT sign with it, while a retiring `messaging` key stays usable for decryption, and senders may still encrypt to it, until it is retired (CONVENTIONS.md §11.3). `retired` — removed by planned rotation; what it signed while published remains valid, judged against the DID version current at issuance (CONVENTIONS.md §7). A retired `attestation` or `messaging` key is destroyed at retirement. `revoked` — removed from every relationship and from `keyRoles` in one entry, without overlap, because it is or may be compromised; what it signed from `compromisedSince` onward establishes nothing. `retired` and `revoked` are terminal.\",\n      \"enum\": [\n        \"pending\",\n        \"staged\",\n        \"active\",\n        \"retiring\",\n        \"retired\",\n        \"revoked\"\n      ],\n      \"title\": \"RoleKeyState\",\n      \"type\": \"string\"\n    },\n    \"RoleSummary\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"keys\": {\n          \"description\": \"The role's keys, in the order the document publishes them. Terminal-state keys are included only when the request asked for them.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/RoleKey\"\n          },\n          \"type\": \"array\"\n        },\n        \"preRotationCommitments\": {\n          \"description\": \"`update` only: successors the latest entry commits to. `0` means a compromise of the current update key cannot be recovered from by rotation, and the DID would have to be deactivated (VTI-KEY-124).\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"relationships\": {\n          \"description\": \"The relationship this role owns (CONVENTIONS.md §1). Empty for `update`.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/DidVerificationRelationship\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"role\": {\n          \"$ref\": \"#/$defs/KeyRole\"\n        }\n      },\n      \"required\": [\n        \"role\",\n        \"relationships\",\n        \"keys\"\n      ],\n      \"title\": \"RoleSummary\",\n      \"type\": \"object\"\n    },\n    \"RotationKind\": {\n      \"description\": \"`planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same log entry. `addition` — a key was added to a role without anything leaving it (for example a post-quantum key alongside a classical one).\",\n      \"enum\": [\n        \"planned\",\n        \"compromise\",\n        \"addition\"\n      ],\n      \"title\": \"RotationKind\",\n      \"type\": \"string\"\n    },\n    \"RotationRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"One change to a role's key set, from preview to completion. The rotation history of a DID is the list of these; the log is the authority for what was published, and this record adds what the log cannot say — which change was which, and (custody projection only) who asked, who approved, and why.\",\n      \"properties\": {\n        \"activatesAt\": {\n          \"description\": \"When the successor becomes `active` and the predecessor `retiring`; never before `cacheHorizonAt`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"approvals\": {\n          \"$ref\": \"#/$defs/KeyRoleApprovalState\",\n          \"description\": \"Custody projection only.\"\n        },\n        \"autoRetire\": {\n          \"description\": \"Custody projection only. Whether the VTA retires the predecessor itself at `overlapUntil`.\",\n          \"type\": \"boolean\"\n        },\n        \"cacheHorizonAt\": {\n          \"description\": \"Planned rotations: the publishing entry's cache horizon — publication plus the longer of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1). The switch, and any retirement of the predecessor, happen no earlier. Public: it follows from the log and the published cap.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"endedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"endedInVersionId\": {\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"initiatedBy\": {\n          \"description\": \"Custody projection only. VID of the administrator whose signed request started the change.\",\n          \"type\": \"string\"\n        },\n        \"kind\": {\n          \"$ref\": \"#/$defs/RotationKind\"\n        },\n        \"overlapUntil\": {\n          \"description\": \"Custody projection only. End of the overlap window.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"predecessors\": {\n          \"description\": \"Verification-method identifiers (or, for `update`, public keys) leaving the role.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"reason\": {\n          \"description\": \"Custody projection only. The operator's stated reason. Never published.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"role\": {\n          \"$ref\": \"#/$defs/KeyRole\"\n        },\n        \"rotationId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"startedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"startedInVersionId\": {\n          \"type\": \"string\"\n        },\n        \"state\": {\n          \"$ref\": \"#/$defs/RotationState\"\n        },\n        \"successors\": {\n          \"description\": \"Verification-method identifiers (or, for `update`, public keys) entering the role.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"rotationId\",\n        \"role\",\n        \"kind\",\n        \"state\"\n      ],\n      \"title\": \"RotationRecord\",\n      \"type\": \"object\"\n    },\n    \"RotationState\": {\n      \"description\": \"`pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is published. `staged` — successor published, not yet used; predecessor still active. `overlapping` — successor active, predecessor `retiring`. `completed` — every predecessor retired (or, for `compromise` and `addition`, the entry is published and any overlap it began has ended). `aborted` — the successor was retired instead of the predecessor, which stayed or returned to `active`. `expired` — approvals were not gathered before the preview expired; nothing was published.\",\n      \"enum\": [\n        \"pendingApproval\",\n        \"staged\",\n        \"overlapping\",\n        \"completed\",\n        \"aborted\",\n        \"expired\"\n      ],\n      \"title\": \"RotationState\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"DidVerificationRelationship\":{\"description\":\"A DID Core verification relationship.\",\"enum\":[\"authentication\",\"assertionMethod\",\"keyAgreement\",\"capabilityInvocation\",\"capabilityDelegation\"],\"title\":\"DidVerificationRelationship\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"KeyOrigin\":{\"default\":\"derived\",\"description\":\"Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.\",\"enum\":[\"derived\",\"imported\",\"internal\"],\"title\":\"KeyOrigin\",\"type\":\"string\"},\"KeyRole\":{\"description\":\"The named key role a key occupies in the DID (VTI-KEY-070 onward). `attestation` — the only keys in `assertionMethod`; sign the DID's attestation artefacts (membership and role credentials, endorsements, status lists, every other credential the node issues), through the VTA's signing service and nowhere else. Generated inside the VTA, never derived, never exportable, never in a backup. `operational` — the only keys in `authentication`; sign the node's own traffic (Trust Task requests and responses, DIDComm and TSP message signatures, invitations, notices, audit checkpoints) with proof purpose `authentication`. `messaging` — the only keys in `keyAgreement`; sign nothing. `update` — the keys that authorize appending to the DID's log (a did:webvh `updateKeys` entry) and the pre-rotation commitments that authorize the next ones; never a verification method, never in `keyRoles`. Generated inside the VTA, never derived, never exportable, never in a backup. No role permits `capabilityInvocation` or `capabilityDelegation` (VTI-KEY-075); both are reserved for a future role. The mapping is normative and is set out in CONVENTIONS.md §1. The set is an extensible registry and growing it is a MINOR change: a consumer that receives a role it does not implement MUST refuse the document rather than map the key onto a role it does know.\",\"enum\":[\"attestation\",\"operational\",\"messaging\",\"update\"],\"title\":\"KeyRole\",\"type\":\"string\"},\"KeyRoleApprovalState\":{\"additionalProperties\":false,\"description\":\"Approval progress of a change the VTA's policy gates on more than one approval (CONVENTIONS.md §3.3).\",\"properties\":{\"approvers\":{\"description\":\"VIDs whose approvals were recorded. Custody projection only; omitted from a response to anyone who is not themselves an eligible approver of this change.\",\"items\":{\"type\":\"string\"},\"type\":\"array\",\"uniqueItems\":true},\"expiresAt\":{\"description\":\"When the preview, and every approval bound to it, stops being usable.\",\"format\":\"date-time\",\"type\":\"string\"},\"received\":{\"description\":\"Distinct approvals recorded so far, including the initiator's own.\",\"minimum\":0,\"type\":\"integer\"},\"required\":{\"description\":\"Distinct approvals the VTA's policy requires.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"required\",\"received\",\"expiresAt\"],\"title\":\"KeyRoleApprovalState\",\"type\":\"object\"},\"KeyRoleProjection\":{\"description\":\"Which view of the DID's key roles the caller was given (CONVENTIONS.md §5). `public` — only what the published document and log already reveal to anyone who resolves the DID. `custody` — additionally the VTA's own custody state: pending keys, the custodian record behind each key, overlap deadlines, who initiated and approved each change, and why. The response always states which it is, so a caller never mistakes an absent member for a statement that the thing does not exist.\",\"enum\":[\"public\",\"custody\"],\"title\":\"KeyRoleProjection\",\"type\":\"string\"},\"KeyType\":{\"description\":\"Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support.\",\"enum\":[\"ed25519\",\"x25519\",\"p256\",\"mldsa44\",\"mldsa65\"],\"title\":\"KeyType\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vta/webvh/dids/keys/list. Type https://trusttasks.org/spec/vta/webvh/dids/keys/list/1.0#response.\",\"properties\":{\"did\":{\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"projection\":{\"$ref\":\"#/$defs/KeyRoleProjection\"},\"roles\":{\"description\":\"One entry per role asked for, including roles with no keys — an empty role is an answer, and omitting it would read as 'not asked'.\",\"items\":{\"$ref\":\"#/$defs/RoleSummary\"},\"type\":\"array\"},\"rotations\":{\"description\":\"Present exactly when `includeHistory` was true. Newest first. In the custody projection this includes changes in `pendingApproval`; in the public projection it includes only changes that published an entry.\",\"items\":{\"$ref\":\"#/$defs/RotationRecord\"},\"type\":\"array\"},\"versionId\":{\"description\":\"The log entry the answer describes. Pass it as `expectedVersionId` to a change made on the strength of this answer.\",\"type\":\"string\"}},\"required\":[\"did\",\"versionId\",\"projection\",\"roles\"],\"title\":\"VTA WebVH DIDs Keys List — response payload\",\"type\":\"object\"},\"RoleKey\":{\"additionalProperties\":false,\"description\":\"One key in one role. A key is in exactly one role for its whole life; a change of role is a retirement from one and an addition to another, under a new verification-method identifier.\",\"properties\":{\"activatesAt\":{\"description\":\"For a `staged` key: when the VTA will begin using it — no earlier than the publishing entry's cache horizon (CONVENTIONS.md §11.1).\",\"format\":\"date-time\",\"type\":\"string\"},\"compromisedSince\":{\"description\":\"For a `revoked` key: the compromise time (VTI-KEY-121) — the earliest instant from which the key is treated as compromised. Where the operator cannot establish it, the time the key was first published. Published, because it is what a verifier needs.\",\"format\":\"date-time\",\"type\":\"string\"},\"custody\":{\"$ref\":\"#/$defs/RoleKeyCustody\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keyType\":{\"$ref\":\"#/$defs/KeyType\"},\"label\":{\"description\":\"Operator-facing label. Custody projection only.\",\"maxLength\":256,\"type\":\"string\"},\"publicKeyMultibase\":{\"description\":\"The public half, multibase-encoded, exactly as published.\",\"minLength\":1,\"type\":\"string\"},\"publishedInVersionId\":{\"description\":\"versionId of the log entry that first published the key. Absent while `pending`.\",\"type\":\"string\"},\"relationships\":{\"description\":\"The relationships the key is (or, while `pending`, will be) listed in. Always exactly its role's single relationship (CONVENTIONS.md §1) — carried so a caller can check it against the document rather than trusting it. Empty for `update`, `retired` and `revoked` keys.\",\"items\":{\"$ref\":\"#/$defs/DidVerificationRelationship\"},\"type\":\"array\",\"uniqueItems\":true},\"removedInVersionId\":{\"description\":\"versionId of the log entry that retired or revoked the key.\",\"type\":\"string\"},\"retireAfter\":{\"description\":\"For a `retiring` key: the end of its overlap window. Custody projection only.\",\"format\":\"date-time\",\"type\":\"string\"},\"role\":{\"$ref\":\"#/$defs/KeyRole\"},\"rotationId\":{\"description\":\"The rotation this key was introduced or retired by, when it was.\",\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/RoleKeyState\"},\"verificationMethod\":{\"description\":\"The full verification-method identifier (`did#fragment`) the document publishes the key under, and lists in `keyRoles`. Absent only for `update` keys, which are published as log parameters and never as verification methods (VTI-KEY-093). A VTA minting a new method SHOULD derive its fragment from the key (VTI-KEY-150).\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"role\",\"keyType\",\"publicKeyMultibase\",\"state\"],\"title\":\"RoleKey\",\"type\":\"object\"},\"RoleKeyCustody\":{\"additionalProperties\":false,\"description\":\"How the VTA holds a key. Present only in the custody projection. Carries no key material, and a conforming VTA MUST NOT place any in `ext`.\",\"properties\":{\"destroyed\":{\"description\":\"True once the private half has been destroyed — a retired `attestation` key (VTI-KEY-125). The record survives so the key's past signatures stay attributable.\",\"type\":\"boolean\"},\"exportable\":{\"description\":\"Whether the custodian would release the private half through `keys/export-secret`. Always `false` for `attestation` and `update` keys (CONVENTIONS.md §4). Stated explicitly — never absent — because this is the member an operator reads to confirm a role key cannot leave the VTA, and `keys/*`'s absent-means-exportable reading is the wrong default to leave them to infer.\",\"type\":\"boolean\"},\"hardwareBacked\":{\"description\":\"True when the private half is held by a hardware or enclave module that performs the operation without releasing it. Absent means the VTA does not say, not that it is false.\",\"type\":\"boolean\"},\"inBackups\":{\"description\":\"Whether the key, or material it can be re-derived from, is included in the VTA's backups or any state transfer. Always `false` for `attestation` and `update` keys (VTI-KEY-112): they are generated, not derived, so there is no seed that recovers them, and their loss is recovered by rotation, never by restore.\",\"type\":\"boolean\"},\"keyId\":{\"description\":\"The custodian record identifier (`keys/*`'s `keyId`) behind this key.\",\"minLength\":1,\"type\":\"string\"},\"neverExportable\":{\"description\":\"True when no authority can make the key exportable — the role forbids it, or the material exists only inside a module that cannot release it. `true` implies `exportable: false`.\",\"type\":\"boolean\"},\"origin\":{\"$ref\":\"#/$defs/KeyOrigin\"}},\"required\":[\"keyId\",\"exportable\",\"neverExportable\",\"inBackups\"],\"title\":\"RoleKeyCustody\",\"type\":\"object\"},\"RoleKeyState\":{\"description\":\"Where a key is in its role's lifecycle. `pending` — planned by a preview or a change awaiting approval; not published; custody projection only. `staged` — published and bound to its role, but not yet used: a planned rotation publishes the successor and waits until the entry's cache horizon — publication plus the longer of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1) — before the VTA first uses it, so that no verifier holding a cached document sees a signature by a key it has never seen (VTI-KEY-122). Becomes `active` at the rotation's `activatesAt`. `active` — the key the VTA uses for new signatures (or, for `messaging`, advertises for new sessions). `retiring` — still published so that what it signed and sessions keyed to it keep working, but never used again: from the successor's first use the VTA MUST NOT sign with it, while a retiring `messaging` key stays usable for decryption, and senders may still encrypt to it, until it is retired (CONVENTIONS.md §11.3). `retired` — removed by planned rotation; what it signed while published remains valid, judged against the DID version current at issuance (CONVENTIONS.md §7). A retired `attestation` or `messaging` key is destroyed at retirement. `revoked` — removed from every relationship and from `keyRoles` in one entry, without overlap, because it is or may be compromised; what it signed from `compromisedSince` onward establishes nothing. `retired` and `revoked` are terminal.\",\"enum\":[\"pending\",\"staged\",\"active\",\"retiring\",\"retired\",\"revoked\"],\"title\":\"RoleKeyState\",\"type\":\"string\"},\"RoleSummary\":{\"additionalProperties\":false,\"properties\":{\"keys\":{\"description\":\"The role's keys, in the order the document publishes them. Terminal-state keys are included only when the request asked for them.\",\"items\":{\"$ref\":\"#/$defs/RoleKey\"},\"type\":\"array\"},\"preRotationCommitments\":{\"description\":\"`update` only: successors the latest entry commits to. `0` means a compromise of the current update key cannot be recovered from by rotation, and the DID would have to be deactivated (VTI-KEY-124).\",\"minimum\":0,\"type\":\"integer\"},\"relationships\":{\"description\":\"The relationship this role owns (CONVENTIONS.md §1). Empty for `update`.\",\"items\":{\"$ref\":\"#/$defs/DidVerificationRelationship\"},\"type\":\"array\",\"uniqueItems\":true},\"role\":{\"$ref\":\"#/$defs/KeyRole\"}},\"required\":[\"role\",\"relationships\",\"keys\"],\"title\":\"RoleSummary\",\"type\":\"object\"},\"RotationKind\":{\"description\":\"`planned` — a successor was staged, activated, and the predecessor retired on the operator's schedule. `compromise` — a key was revoked and, where the role would otherwise be empty, replaced in the same log entry. `addition` — a key was added to a role without anything leaving it (for example a post-quantum key alongside a classical one).\",\"enum\":[\"planned\",\"compromise\",\"addition\"],\"title\":\"RotationKind\",\"type\":\"string\"},\"RotationRecord\":{\"additionalProperties\":false,\"description\":\"One change to a role's key set, from preview to completion. The rotation history of a DID is the list of these; the log is the authority for what was published, and this record adds what the log cannot say — which change was which, and (custody projection only) who asked, who approved, and why.\",\"properties\":{\"activatesAt\":{\"description\":\"When the successor becomes `active` and the predecessor `retiring`; never before `cacheHorizonAt`.\",\"format\":\"date-time\",\"type\":\"string\"},\"approvals\":{\"$ref\":\"#/$defs/KeyRoleApprovalState\",\"description\":\"Custody projection only.\"},\"autoRetire\":{\"description\":\"Custody projection only. Whether the VTA retires the predecessor itself at `overlapUntil`.\",\"type\":\"boolean\"},\"cacheHorizonAt\":{\"description\":\"Planned rotations: the publishing entry's cache horizon — publication plus the longer of the document's TTL and the verifier cache cap (CONVENTIONS.md §11.1). The switch, and any retirement of the predecessor, happen no earlier. Public: it follows from the log and the published cap.\",\"format\":\"date-time\",\"type\":\"string\"},\"endedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"endedInVersionId\":{\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"initiatedBy\":{\"description\":\"Custody projection only. VID of the administrator whose signed request started the change.\",\"type\":\"string\"},\"kind\":{\"$ref\":\"#/$defs/RotationKind\"},\"overlapUntil\":{\"description\":\"Custody projection only. End of the overlap window.\",\"format\":\"date-time\",\"type\":\"string\"},\"predecessors\":{\"description\":\"Verification-method identifiers (or, for `update`, public keys) leaving the role.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"reason\":{\"description\":\"Custody projection only. The operator's stated reason. Never published.\",\"maxLength\":1024,\"type\":\"string\"},\"role\":{\"$ref\":\"#/$defs/KeyRole\"},\"rotationId\":{\"minLength\":1,\"type\":\"string\"},\"startedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"startedInVersionId\":{\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/RotationState\"},\"successors\":{\"description\":\"Verification-method identifiers (or, for `update`, public keys) entering the role.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"rotationId\",\"role\",\"kind\",\"state\"],\"title\":\"RotationRecord\",\"type\":\"object\"},\"RotationState\":{\"description\":\"`pendingApproval` — awaiting the approvals the VTA's policy requires; nothing is published. `staged` — successor published, not yet used; predecessor still active. `overlapping` — successor active, predecessor `retiring`. `completed` — every predecessor retired (or, for `compromise` and `addition`, the entry is published and any overlap it began has ended). `aborted` — the successor was retired instead of the predecessor, which stayed or returned to `active`. `expired` — approvals were not gathered before the preview expired; nothing was published.\",\"enum\":[\"pendingApproval\",\"staged\",\"overlapping\",\"completed\",\"aborted\",\"expired\"],\"title\":\"RotationState\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

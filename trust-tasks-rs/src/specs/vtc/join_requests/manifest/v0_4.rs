@@ -37,23 +37,6 @@ Who may see a directory field, ordered from narrowest to widest. `admins`: holde
 
 `groups` and `connections` are not a chain: a viewer sees a field when they satisfy the audience the subject chose for it or any wider audience. Every audience includes the administrators, and the subject always sees their own whole card. There is no `onlyMe`: a value nobody else should see is not directory data.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Audience",
-///  "description": "Who may see a directory field, ordered from narrowest to widest. `admins`: holders of `vtc.directory.admin` (and, for derived fields, `vtc.members.manage`). `groups`: members who share at least one community group with the subject (narrowed to the groups the subject names in `groupAudience`, where it names any). `connections`: members holding an attributed, in-force verified relationship with the subject at the community. `members`: every active member. `public`: anyone, and what the member's signed public card carries outside the community.\n\n`groups` and `connections` are not a chain: a viewer sees a field when they satisfy the audience the subject chose for it or any wider audience. Every audience includes the administrators, and the subject always sees their own whole card. There is no `onlyMe`: a value nobody else should see is not directory data.",
-///  "type": "string",
-///  "enum": [
-///    "admins",
-///    "groups",
-///    "connections",
-///    "members",
-///    "public"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -132,19 +115,6 @@ The token is the maintainer's own; no external vocabulary is primary. External v
 
 The `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ClaimType",
-///  "description": "The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\n\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\n\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1,
-///  "pattern": "^(x:)?[a-z][a-zA-Z0-9]*(\\.[a-z][a-zA-Z0-9]*)*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ClaimType(::std::string::String);
@@ -216,40 +186,6 @@ impl<'de> ::serde::Deserialize<'de> for ClaimType {
 }
 ///OPTIONAL. How the community asks to be shown to a prospective applicant: a name, an accent colour and a logo. Presentation only, self-asserted and unverified — `communityDid` identifies the community, never `branding`. Not part of any criterion, so not covered by a `requirementsDigest`. Every member is optional.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "CommunityBranding",
-///  "description": "OPTIONAL. How the community asks to be shown to a prospective applicant: a name, an accent colour and a logo. Presentation only, self-asserted and unverified — `communityDid` identifies the community, never `branding`. Not part of any criterion, so not covered by a `requirementsDigest`. Every member is optional.",
-///  "type": "object",
-///  "properties": {
-///    "accentColor": {
-///      "description": "An sRGB colour as `#rrggbb`, compared case-insensitively. A community SHOULD write it in lower case.",
-///      "type": "string",
-///      "pattern": "^#[0-9a-fA-F]{6}$"
-///    },
-///    "displayName": {
-///      "description": "The community's name as it asks to be shown.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "logoUrl": {
-///      "description": "An https URL of the community's logo. Fetched by the client, so an untrusted image from wherever it points.",
-///      "type": "string",
-///      "format": "uri",
-///      "maxLength": 2048,
-///      "pattern": "^https://"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -295,16 +231,6 @@ impl CommunityBranding {
 }
 ///An sRGB colour as `#rrggbb`, compared case-insensitively. A community SHOULD write it in lower case.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "An sRGB colour as `#rrggbb`, compared case-insensitively. A community SHOULD write it in lower case.",
-///  "type": "string",
-///  "pattern": "^#[0-9a-fA-F]{6}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CommunityBrandingAccentColor(::std::string::String);
@@ -366,17 +292,6 @@ impl<'de> ::serde::Deserialize<'de> for CommunityBrandingAccentColor {
 }
 ///The community's name as it asks to be shown.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The community's name as it asks to be shown.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CommunityBrandingDisplayName(::std::string::String);
@@ -439,73 +354,6 @@ impl<'de> ::serde::Deserialize<'de> for CommunityBrandingDisplayName {
 }
 ///`Criterion`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Criterion",
-///  "type": "object",
-///  "required": [
-///    "admission",
-///    "id",
-///    "requirementsDigest"
-///  ],
-///  "properties": {
-///    "admission": {
-///      "description": "How the community decides a submission that meets this criterion. `automatic`: it admits the applicant without a person deciding. `review`: it refers the submission to an administrator, who decides.",
-///      "type": "string",
-///      "enum": [
-///        "automatic",
-///        "review"
-///      ]
-///    },
-///    "credentialIssuers": {
-///      "description": "Whose credentials meet `presentationDefinition`: `community` (this community's own), `recognised` (this community's, or a community it recognises), or `any` (any issuer whose credential verifies). Present exactly when `presentationDefinition` is.",
-///      "type": "string",
-///      "enum": [
-///        "any",
-///        "community",
-///        "recognised"
-///      ]
-///    },
-///    "description": {
-///      "description": "Plain-language summary of the criterion, authored by the community and shown to prospective applicants. Informative: where it and `vetting` disagree, `vetting` governs.",
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "id": {
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "invitationRequired": {
-///      "description": "True: the criterion is met only by a submission carrying a valid, unconsumed invitation this community issued to the applicant.",
-///      "type": "boolean"
-///    },
-///    "presentationDefinition": {
-///      "description": "The credentials an applicant must present for this criterion (opaque here). Absent: the criterion requires no credential.",
-///      "type": "object"
-///    },
-///    "requirementsDigest": {
-///      "description": "Digest over the RFC 8785 (JCS) canonicalization of this criterion object with the `requirementsDigest` member removed, as a multibase-encoded multihash (SHA-256 and base58btc RECOMMENDED). Names one version of the criterion: an applicant records it when starting an application and echoes it to vetters and at submission.",
-///      "$ref": "#/definitions/DigestMultibase"
-///    },
-///    "vetting": {
-///      "$ref": "#/definitions/VettingRequirements"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "dependentRequired": {
-///    "credentialIssuers": [
-///      "presentationDefinition"
-///    ],
-///    "presentationDefinition": [
-///      "credentialIssuers"
-///    ]
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -550,19 +398,6 @@ impl Criterion {
 }
 ///How the community decides a submission that meets this criterion. `automatic`: it admits the applicant without a person deciding. `review`: it refers the submission to an administrator, who decides.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "How the community decides a submission that meets this criterion. `automatic`: it admits the applicant without a person deciding. `review`: it refers the submission to an administrator, who decides.",
-///  "type": "string",
-///  "enum": [
-///    "automatic",
-///    "review"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -624,20 +459,6 @@ impl ::std::convert::TryFrom<::std::string::String> for CriterionAdmission {
 }
 ///Whose credentials meet `presentationDefinition`: `community` (this community's own), `recognised` (this community's, or a community it recognises), or `any` (any issuer whose credential verifies). Present exactly when `presentationDefinition` is.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Whose credentials meet `presentationDefinition`: `community` (this community's own), `recognised` (this community's, or a community it recognises), or `any` (any issuer whose credential verifies). Present exactly when `presentationDefinition` is.",
-///  "type": "string",
-///  "enum": [
-///    "any",
-///    "community",
-///    "recognised"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -703,16 +524,6 @@ impl ::std::convert::TryFrom<::std::string::String> for CriterionCredentialIssue
 }
 ///Plain-language summary of the criterion, authored by the community and shown to prospective applicants. Informative: where it and `vetting` disagree, `vetting` governs.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Plain-language summary of the criterion, authored by the community and shown to prospective applicants. Informative: where it and `vetting` disagree, `vetting` governs.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CriterionDescription(::std::string::String);
@@ -772,16 +583,6 @@ impl<'de> ::serde::Deserialize<'de> for CriterionDescription {
 }
 ///`CriterionId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CriterionId(::std::string::String);
@@ -851,21 +652,6 @@ This definition constrains the *encoding only*. What the digest is computed over
 
 Restricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that "interoperability is not guaranteed between implementations using such values", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DigestMultibase",
-///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-///  "examples": [
-///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-///  ],
-///  "type": "string",
-///  "minLength": 16,
-///  "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DigestMultibase(::std::string::String);
@@ -934,60 +720,6 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
 }
 ///The statement itself. Every member is generated from the community's configuration when the statement is read. `statementDigest` names this exact statement, so an applicant can record which one it was shown.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DirectoryDisclosure",
-///  "description": "The statement itself. Every member is generated from the community's configuration when the statement is read. `statementDigest` names this exact statement, so an applicant can record which one it was shown.",
-///  "type": "object",
-///  "required": [
-///    "adminNotes",
-///    "externalCards",
-///    "fields",
-///    "membershipIdentifiers",
-///    "newCard",
-///    "statementDigest"
-///  ],
-///  "properties": {
-///    "adminNotes": {
-///      "description": "Whether administrators keep notes about members. Notes are never on a card and never reach another member; a member may ask for the notes about them.",
-///      "type": "boolean"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "externalCards": {
-///      "description": "Whether a member may publish a card beyond the community: their `public` values, signed by them, offered through the community's trust registry. Always the member's own choice, and off on a new card. False where the community cannot publish external cards.",
-///      "type": "boolean"
-///    },
-///    "fields": {
-///      "description": "Every active field, base and community-defined, in display order. A base field the community has disabled is absent, which is how a reader learns it is not collected.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/DisclosedField"
-///      },
-///      "maxItems": 128
-///    },
-///    "groups": {
-///      "$ref": "#/definitions/GroupDisclosure"
-///    },
-///    "membershipIdentifiers": {
-///      "description": "The widest audience a member's membership identifier — the DID they joined with — can reach through the directory: the ceiling of the base field `did`, or `admins` where that field is disabled. `members` or `public` means a member may choose to show it that widely; a new card never shows it beyond `admins` (VTI-DIR-042). Administrators always see it.",
-///      "$ref": "#/definitions/Audience"
-///    },
-///    "newCard": {
-///      "$ref": "#/definitions/NewCardDefaults"
-///    },
-///    "statementDigest": {
-///      "description": "Digest over the RFC 8785 (JCS) canonicalization of this statement with the `statementDigest` member removed, as a multibase-encoded multihash (SHA-256 and base58btc RECOMMENDED). Changes exactly when what the statement says changes.",
-///      "$ref": "#/definitions/DigestMultibase"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1020,60 +752,6 @@ impl DirectoryDisclosure {
 }
 ///One active field of the community's directory, as an applicant needs to see it: what it is, who writes its value, the widest audience it may ever reach and the audience a new card gives it. Disabled and retired fields are not listed: no projection shows them.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DisclosedField",
-///  "description": "One active field of the community's directory, as an applicant needs to see it: what it is, who writes its value, the widest audience it may ever reach and the audience a new card gives it. Disabled and retired fields are not listed: no projection shows them.",
-///  "type": "object",
-///  "required": [
-///    "ceiling",
-///    "defaultVisibility",
-///    "key",
-///    "label",
-///    "searchable",
-///    "source",
-///    "type"
-///  ],
-///  "properties": {
-///    "ceiling": {
-///      "description": "The widest audience the field may ever reach, whatever the member chooses.",
-///      "$ref": "#/definitions/Audience"
-///    },
-///    "defaultVisibility": {
-///      "description": "The audience a new card gives the field until its member chooses. Never wider than `ceiling`.",
-///      "$ref": "#/definitions/Audience"
-///    },
-///    "description": {
-///      "$ref": "#/definitions/FieldDescription"
-///    },
-///    "facet": {
-///      "description": "Whether members may filter on the field and see counts by its values. Absent: false.",
-///      "type": "boolean"
-///    },
-///    "key": {
-///      "$ref": "#/definitions/FieldKey"
-///    },
-///    "label": {
-///      "$ref": "#/definitions/FieldLabel"
-///    },
-///    "searchable": {
-///      "description": "Whether a member's search may match the field, within what the searcher may see.",
-///      "type": "boolean"
-///    },
-///    "source": {
-///      "description": "Who writes the value. `admin` and `credential` matter most to an applicant: an `admin` field holds what the community asserts about the member, which the member reads and cannot change.",
-///      "$ref": "#/definitions/FieldSource"
-///    },
-///    "type": {
-///      "$ref": "#/definitions/FieldType"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1104,18 +782,6 @@ impl DisclosedField {
 }
 ///An ISO 8601 duration in weeks, days, hours, minutes and seconds only (e.g. `P120D`, `P2W`, `P1DT12H`, `PT15M`). Years and months are refused: their length depends on the calendar, and an age limit that means different things on different days is not a limit.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Duration",
-///  "description": "An ISO 8601 duration in weeks, days, hours, minutes and seconds only (e.g. `P120D`, `P2W`, `P1DT12H`, `PT15M`). Years and months are refused: their length depends on the calendar, and an age limit that means different things on different days is not a limit.",
-///  "type": "string",
-///  "maxLength": 32,
-///  "pattern": "^P(([0-9]+W)?([0-9]+D)?T([0-9]+H([0-9]+M)?([0-9]+S)?|[0-9]+M([0-9]+S)?|[0-9]+S)|[0-9]+W([0-9]+D)?|[0-9]+D)$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Duration(::std::string::String);
@@ -1189,21 +855,6 @@ impl<'de> ::serde::Deserialize<'de> for Duration {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -1230,27 +881,6 @@ Every entry MUST be an immediate key of the sibling `ext` object at the same lev
 
 A producer marks a namespace only where the document's meaning depends on it. Marking one that merely carries a hint or an annotation turns every consumer that has not implemented it into a failure where it would otherwise have interoperated. JSON Schema cannot check either of those rules: that an entry names a present namespace is checkable only against the sibling `ext`, and whether a namespace is load-bearing is not a schema question at all. Both are consumer-side checks.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ExtCritical",
-///  "description": "Names the `ext` namespaces a consumer MUST understand or refuse, per SPEC.md §4.5.1.\n\nEvery entry MUST be an immediate key of the sibling `ext` object at the same level; an entry naming an absent namespace is non-conforming and the consumer rejects the document with `malformedRequest`. A consumer that does not recognize a namespace named here MUST NOT process the document as though the namespace were absent, and rejects it with `unsupportedExtension` — the exception to the rule that unrecognized namespaces are ignored.\n\nA producer marks a namespace only where the document's meaning depends on it. Marking one that merely carries a hint or an annotation turns every consumer that has not implemented it into a failure where it would otherwise have interoperated. JSON Schema cannot check either of those rules: that an entry names a present namespace is checkable only against the sibling `ext`, and whether a namespace is load-bearing is not a schema question at all. Both are consumer-side checks.",
-///  "examples": [
-///    [
-///      "org.openvtc.hidden-vetting"
-///    ]
-///  ],
-///  "type": "array",
-///  "items": {
-///    "type": "string",
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  },
-///  "minItems": 1,
-///  "uniqueItems": true
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct ExtCritical(pub Vec<ExtCriticalItem>);
@@ -1272,15 +902,6 @@ impl ::std::convert::From<Vec<ExtCriticalItem>> for ExtCritical {
 }
 ///`ExtCriticalItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtCriticalItem(::std::string::String);
@@ -1344,15 +965,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtCriticalItem {
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -1416,18 +1028,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Help text shown to a member filling the field in. Plain text; a reader MUST NOT treat it as instructions.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "FieldDescription",
-///  "description": "Help text shown to a member filling the field in. Plain text; a reader MUST NOT treat it as instructions.",
-///  "type": "string",
-///  "maxLength": 280,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct FieldDescription(::std::string::String);
@@ -1490,19 +1090,6 @@ impl<'de> ::serde::Deserialize<'de> for FieldDescription {
 }
 ///Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "FieldKey",
-///  "description": "Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1,
-///  "pattern": "^([a-z][a-z0-9-]*\\.)*[a-z][a-zA-Z0-9]{0,63}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct FieldKey(::std::string::String);
@@ -1574,18 +1161,6 @@ impl<'de> ::serde::Deserialize<'de> for FieldKey {
 }
 ///What readers see as the field's name. Plain text.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "FieldLabel",
-///  "description": "What readers see as the field's name. Plain text.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct FieldLabel(::std::string::String);
@@ -1648,22 +1223,6 @@ impl<'de> ::serde::Deserialize<'de> for FieldLabel {
 }
 ///Who writes the value. `member`: self-asserted, through vtc/directory/card/update. `admin`: asserted by the community through vtc/directory/card/assert; the member reads it and cannot change it. `credential`: a claim the member discloses from a credential through vtc/directory/card/present, badged with its issuer. `derived`: a base field read from the community's own records (`role`, `joinedAt`, `did`, `personhood`) and never stored on a card. Each source is written only through its own path.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "FieldSource",
-///  "description": "Who writes the value. `member`: self-asserted, through vtc/directory/card/update. `admin`: asserted by the community through vtc/directory/card/assert; the member reads it and cannot change it. `credential`: a claim the member discloses from a credential through vtc/directory/card/present, badged with its issuer. `derived`: a base field read from the community's own records (`role`, `joinedAt`, `did`, `personhood`) and never stored on a card. Each source is written only through its own path.",
-///  "type": "string",
-///  "enum": [
-///    "member",
-///    "admin",
-///    "credential",
-///    "derived"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1733,30 +1292,6 @@ impl ::std::convert::TryFrom<::std::string::String> for FieldSource {
 }
 ///The kind of value a field holds, which fixes its `FieldValue` shape. `did` holds a DID the member chooses to show (never their membership DID, which is the derived base field `did`). `claim` holds a `VerifiedValue` and requires `source: credential`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "FieldType",
-///  "description": "The kind of value a field holds, which fixes its `FieldValue` shape. `did` holds a DID the member chooses to show (never their membership DID, which is the derived base field `did`). `claim` holds a `VerifiedValue` and requires `source: credential`.",
-///  "type": "string",
-///  "enum": [
-///    "text",
-///    "longText",
-///    "url",
-///    "email",
-///    "phone",
-///    "enum",
-///    "multiEnum",
-///    "date",
-///    "country",
-///    "image",
-///    "did",
-///    "claim"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1858,28 +1393,6 @@ impl ::std::convert::TryFrom<::std::string::String> for FieldType {
 }
 ///Present when the community has groups. A member of a group holds a credential, issued by the group's own identifier, that evidences their membership, and can present it outside the community — which is why an applicant is told.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "GroupDisclosure",
-///  "description": "Present when the community has groups. A member of a group holds a credential, issued by the group's own identifier, that evidences their membership, and can present it outside the community — which is why an applicant is told.",
-///  "type": "object",
-///  "required": [
-///    "credentialValidity"
-///  ],
-///  "properties": {
-///    "credentialValidity": {
-///      "description": "How long each group membership credential is valid for, as an ISO 8601 duration in weeks, days, hours, minutes and seconds (`P30D`). It is renewed while the member stays in the group, and a credential already issued stays valid until it expires even after its holder leaves.",
-///      "type": "string",
-///      "maxLength": 32,
-///      "pattern": "^P(([0-9]+W)?([0-9]+D)?T([0-9]+H([0-9]+M)?([0-9]+S)?|[0-9]+M([0-9]+S)?|[0-9]+S)|[0-9]+W([0-9]+D)?|[0-9]+D)$"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1895,17 +1408,6 @@ impl GroupDisclosure {
 }
 ///How long each group membership credential is valid for, as an ISO 8601 duration in weeks, days, hours, minutes and seconds (`P30D`). It is renewed while the member stays in the group, and a credential already issued stays valid until it expires even after its holder leaves.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "How long each group membership credential is valid for, as an ISO 8601 duration in weeks, days, hours, minutes and seconds (`P30D`). It is renewed while the member stays in the group, and a credential already issued stays valid until it expires even after its holder leaves.",
-///  "type": "string",
-///  "maxLength": 32,
-///  "pattern": "^P(([0-9]+W)?([0-9]+D)?T([0-9]+H([0-9]+M)?([0-9]+S)?|[0-9]+M([0-9]+S)?|[0-9]+S)|[0-9]+W([0-9]+D)?|[0-9]+D)$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct GroupDisclosureCredentialValidity(::std::string::String);
@@ -1979,22 +1481,6 @@ impl<'de> ::serde::Deserialize<'de> for GroupDisclosureCredentialValidity {
 }
 ///Who may ask the community to introduce them to this member. `anyone`: any active member who can find the entry. `groups`: only members who share a community group with them. `connections`: only members holding an attributed, in-force verified relationship with them. `off`: nobody. A refused introduction is never reported to its sender.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Introductions",
-///  "description": "Who may ask the community to introduce them to this member. `anyone`: any active member who can find the entry. `groups`: only members who share a community group with them. `connections`: only members holding an attributed, in-force verified relationship with them. `off`: nobody. A refused introduction is never reported to its sender.",
-///  "type": "string",
-///  "enum": [
-///    "anyone",
-///    "groups",
-///    "connections",
-///    "off"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -2064,21 +1550,6 @@ impl ::std::convert::TryFrom<::std::string::String> for Introductions {
 }
 ///Whether members can find the entry. `listed`: it appears when members browse. `findable`: it does not appear when browsing, but a search that matches it under `search` returns it. `hidden`: no member finds it by browsing or searching; administrators still see it, and members who share a group that shows its members see it in that group's member list.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Listing",
-///  "description": "Whether members can find the entry. `listed`: it appears when members browse. `findable`: it does not appear when browsing, but a search that matches it under `search` returns it. `hidden`: no member finds it by browsing or searching; administrators still see it, and members who share a group that shows its members see it in that group's member list.",
-///  "type": "string",
-///  "enum": [
-///    "listed",
-///    "findable",
-///    "hidden"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -2144,40 +1615,6 @@ impl ::std::convert::TryFrom<::std::string::String> for Listing {
 }
 ///The discoverability a card has when the community creates it, before its member chooses. A new card is never published beyond the community (VTI-DIR-042), so there is no member for that here: `externalCards` says whether the member may turn it on.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "NewCardDefaults",
-///  "description": "The discoverability a card has when the community creates it, before its member chooses. A new card is never published beyond the community (VTI-DIR-042), so there is no member for that here: `externalCards` says whether the member may turn it on.",
-///  "type": "object",
-///  "required": [
-///    "listing",
-///    "search"
-///  ],
-///  "properties": {
-///    "introductions": {
-///      "description": "From whom a new card accepts introductions. Absent where the community does not deliver introductions.",
-///      "$ref": "#/definitions/Introductions"
-///    },
-///    "listing": {
-///      "description": "The listing a new card starts with: the community's `defaultListing` (vtc/directory/fields/list). Every member may always choose `hidden`.",
-///      "$ref": "#/definitions/Listing"
-///    },
-///    "search": {
-///      "description": "What a member's search may match, as the card's `discoverability.search`.",
-///      "type": "string",
-///      "enum": [
-///        "byName",
-///        "exactNickname",
-///        "off"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -2197,20 +1634,6 @@ impl NewCardDefaults {
 }
 ///What a member's search may match, as the card's `discoverability.search`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "What a member's search may match, as the card's `discoverability.search`.",
-///  "type": "string",
-///  "enum": [
-///    "byName",
-///    "exactNickname",
-///    "off"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -2276,23 +1699,6 @@ impl ::std::convert::TryFrom<::std::string::String> for NewCardDefaultsSearch {
 }
 ///Discover a community's join criteria before applying. The request carries nothing. Version 0.2 adds, per criterion, an optional `vetting` requirements object — how many identity-vetting statements a community needs, by which methods, from whom — and a `requirementsDigest` that names the exact version of the criterion an applicant started under. The response may also carry `branding`, how the community asks to be shown. Version 0.4 adds `directoryDisclosure`: where the community has a member directory, the statement of what it would disclose about a member and to whom, so an applicant reads it before applying.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/join-requests/manifest/0.4",
-///  "title": "Payload",
-///  "description": "Discover a community's join criteria before applying. The request carries nothing. Version 0.2 adds, per criterion, an optional `vetting` requirements object — how many identity-vetting statements a community needs, by which methods, from whom — and a `requirementsDigest` that names the exact version of the criterion an applicant started under. The response may also carry `branding`, how the community asks to be shown. Version 0.4 adds `directoryDisclosure`: where the community has a member directory, the statement of what it would disclose about a member and to whom, so an applicant reads it before applying.",
-///  "type": "object",
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -2314,74 +1720,6 @@ impl Payload {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "communityDid",
-///    "criteria"
-///  ],
-///  "properties": {
-///    "branding": {
-///      "$ref": "#/definitions/CommunityBranding"
-///    },
-///    "communityDid": {
-///      "type": "string",
-///      "pattern": "^did:"
-///    },
-///    "criteria": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Criterion"
-///      }
-///    },
-///    "directoryDisclosure": {
-///      "description": "Present exactly where the community offers a member directory: the statement, generated from its configuration, of what the directory would disclose about a member and to whom — the same statement vtc/directory/disclosure returns. Outside every criterion, so no `requirementsDigest` covers it; it names itself with its own `statementDigest`.",
-///      "$ref": "#/definitions/DirectoryDisclosure"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "requestedAttributes": {
-///      "description": "What the community asks an applicant to tell it about themselves, as claim types — never values. Answered in persona terms: the applicant's agent discloses those attributes from the face the applicant chooses, and they arrive on vtc/join-requests/submit as `attributes`. SELF-ASSERTED: a community MUST NOT describe an answer as verified, and MUST NOT make a decision that assumes it is. Outside every criterion, so no `requirementsDigest` covers it. Absent when the community asks nothing.",
-///      "type": "array",
-///      "items": {
-///        "type": "object",
-///        "required": [
-///          "type"
-///        ],
-///        "properties": {
-///          "purpose": {
-///            "description": "Why the community asks, in words shown to the applicant before they disclose.",
-///            "type": "string",
-///            "maxLength": 256
-///          },
-///          "required": {
-///            "description": "False for an attribute the applicant may decline. A submission missing a required one is refused with vtc/join-requests/submit:attributesMissing.",
-///            "default": true,
-///            "type": "boolean"
-///          },
-///          "type": {
-///            "description": "A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token.",
-///            "type": "string",
-///            "maxLength": 128,
-///            "minLength": 1,
-///            "pattern": "^(x:)?[a-z][A-Za-z0-9]*(\\.[a-z][A-Za-z0-9]*)*$"
-///          }
-///        },
-///        "additionalProperties": false
-///      },
-///      "maxItems": 32
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -2415,15 +1753,6 @@ impl Response {
 }
 ///`ResponseCommunityDid`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseCommunityDid(::std::string::String);
@@ -2485,37 +1814,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseCommunityDid {
 }
 ///`ResponseRequestedAttributesItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "type"
-///  ],
-///  "properties": {
-///    "purpose": {
-///      "description": "Why the community asks, in words shown to the applicant before they disclose.",
-///      "type": "string",
-///      "maxLength": 256
-///    },
-///    "required": {
-///      "description": "False for an attribute the applicant may decline. A submission missing a required one is refused with vtc/join-requests/submit:attributesMissing.",
-///      "default": true,
-///      "type": "boolean"
-///    },
-///    "type": {
-///      "description": "A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1,
-///      "pattern": "^(x:)?[a-z][A-Za-z0-9]*(\\.[a-z][A-Za-z0-9]*)*$"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -2537,16 +1835,6 @@ impl ResponseRequestedAttributesItem {
 }
 ///Why the community asks, in words shown to the applicant before they disclose.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Why the community asks, in words shown to the applicant before they disclose.",
-///  "type": "string",
-///  "maxLength": 256
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseRequestedAttributesItemPurpose(::std::string::String);
@@ -2606,18 +1894,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseRequestedAttributesItemPurpose {
 }
 ///A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1,
-///  "pattern": "^(x:)?[a-z][A-Za-z0-9]*(\\.[a-z][A-Za-z0-9]*)*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseRequestedAttributesItemType(::std::string::String);
@@ -2689,19 +1965,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseRequestedAttributesItemType {
 }
 ///A class of documentation, named in lowerCamelCase. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `nationalId`, `driverLicence`, and `none` — the vetter will attest without a document, which is the `priorAcquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "VettingDocumentation",
-///  "description": "A class of documentation, named in lowerCamelCase. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `nationalId`, `driverLicence`, and `none` — the vetter will attest without a document, which is the `priorAcquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1,
-///  "pattern": "^[a-z][a-zA-Z0-9]*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct VettingDocumentation(::std::string::String);
@@ -2769,21 +2032,6 @@ impl<'de> ::serde::Deserialize<'de> for VettingDocumentation {
 }
 ///How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "VettingMethod",
-///  "description": "How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy.",
-///  "type": "string",
-///  "enum": [
-///    "inPerson",
-///    "video",
-///    "priorAcquaintance"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -2849,23 +2097,6 @@ impl ::std::convert::TryFrom<::std::string::String> for VettingMethod {
 }
 ///The vetter's own declaration of how they relate to the applicant. Declared, not verified: it exists so community policy can cap how much evidence comes from people close to the applicant, and a false declaration is the vetter's attributable act.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "VettingRelationship",
-///  "description": "The vetter's own declaration of how they relate to the applicant. Declared, not verified: it exists so community policy can cap how much evidence comes from people close to the applicant, and a false declaration is the vetter's attributable act.",
-///  "type": "string",
-///  "enum": [
-///    "none",
-///    "communityColleague",
-///    "sameEmployer",
-///    "family",
-///    "otherPersonal"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -2939,160 +2170,6 @@ impl ::std::convert::TryFrom<::std::string::String> for VettingRelationship {
 }
 ///What identity-vetting evidence a criterion needs, beyond what a presentation-definition can express: distinct eligible vetters, per-method floors, independence caps. Every number is the community's own policy. This schema supplies no defaults — an absent optional member means the community imposes no constraint of that kind, never that some protocol value applies. Deliberately open: a consumer MUST ignore members it does not recognise, so a community publishing a newer shape does not make an older client unable to read the rest. Durations: `maxStatementAge` — a statement older than this at decision time does not count (absent: no limit beyond the statement's own validity); `decisionSla` — how long after submission the community undertakes to decide, including on a referred application; `requirementsGrace` — how long an application started under an earlier `requirementsDigest` is still evaluated under that version.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "VettingRequirements",
-///  "description": "What identity-vetting evidence a criterion needs, beyond what a presentation-definition can express: distinct eligible vetters, per-method floors, independence caps. Every number is the community's own policy. This schema supplies no defaults — an absent optional member means the community imposes no constraint of that kind, never that some protocol value applies. Deliberately open: a consumer MUST ignore members it does not recognise, so a community publishing a newer shape does not make an older client unable to read the rest. Durations: `maxStatementAge` — a statement older than this at decision time does not count (absent: no limit beyond the statement's own validity); `decisionSla` — how long after submission the community undertakes to decide, including on a referred application; `requirementsGrace` — how long an application started under an earlier `requirementsDigest` is still evaluated under that version.",
-///  "type": "object",
-///  "required": [
-///    "acceptedMethods",
-///    "eligibleVetters",
-///    "minStatements",
-///    "statementType",
-///    "version"
-///  ],
-///  "properties": {
-///    "acceptedDocumentClasses": {
-///      "description": "Documentation a statement must have relied on in order to count. Absent — the expected case — means each vetter decides what documentation they accept, including none for prior acquaintance, and the community counts what they attest.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/VettingDocumentation"
-///      },
-///      "minItems": 1,
-///      "uniqueItems": true
-///    },
-///    "acceptedMethods": {
-///      "description": "Methods whose statements count at all.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/VettingMethod"
-///      },
-///      "minItems": 1,
-///      "uniqueItems": true
-///    },
-///    "decisionSla": {
-///      "$ref": "#/definitions/Duration"
-///    },
-///    "eligibleVetters": {
-///      "description": "How a vetter's eligibility is established.",
-///      "type": "object",
-///      "required": [
-///        "role"
-///      ],
-///      "properties": {
-///        "role": {
-///          "description": "The role a statement's issuer must hold, matched as the action `role:<role>` in a Verifiable Authority Credential (`AuthorityCredential`) the community issued to that issuer, whose `authority.scope` is the community's DID (see `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds such a credential.",
-///          "type": "string",
-///          "maxLength": 128,
-///          "minLength": 1,
-///          "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1, for vetting parameters this version does not enumerate. A community publishing an admission mode the base members cannot express — the zero-knowledge parameters an applicant proves against, say — puts them under a namespace it controls, rather than waiting for a version that names them.\n\nThis object is already `additionalProperties: true`, so an unknown member here has always validated. That is not the same as reaching a consumer: a generated type names the members this schema declares and drops the rest, so an undeclared member is parsed and discarded, and it is discarded again on the re-serialization `requirementsDigest` is computed over. `ext` is a declared member, so it survives both.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "extCritical": {
-///      "description": "Namespaces of `ext` an applicant MUST understand or refuse, per SPEC.md §4.5.1.\n\nA community marks a namespace here when applying under this criterion without understanding it would mean something other than what the community requires — an applicant that ignored a hidden-vetting namespace, for instance, would submit named statements to a criterion whose whole point was that it does not receive them. An applicant that does not recognize a marked namespace stops rather than downgrading silently.\n\nAbsent, which is the common case, every namespace under `ext` is advisory and ignorable.",
-///      "$ref": "#/definitions/ExtCritical"
-///    },
-///    "governanceFrameworkUrl": {
-///      "description": "Where the community's vetting governance — including the attestation text vetters sign — is published.",
-///      "type": "string",
-///      "format": "uri",
-///      "maxLength": 2048,
-///      "pattern": "^https://"
-///    },
-///    "independence": {
-///      "description": "Caps on how much evidence may come from people close to the applicant. Absent: no caps.",
-///      "type": "object",
-///      "properties": {
-///        "maxByDeclaredRelationship": {
-///          "description": "The most counted statements that may come from vetters declaring each relationship — e.g. `{ \"family\": 0 }`.",
-///          "type": "object",
-///          "additionalProperties": {
-///            "type": "integer",
-///            "minimum": 0.0
-///          },
-///          "propertyNames": {
-///            "$ref": "#/definitions/VettingRelationship"
-///          }
-///        },
-///        "requireConsistentIdentityCommitment": {
-///          "description": "When true, every counted statement must carry the same identity commitment — all vetters verified the same claimed identity. Absent: false.",
-///          "type": "boolean"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "invitation": {
-///      "description": "Whether an invitation credential must accompany the statements at submission (`required`), may (`optional`), or plays no part (`none`). Absent: the presentation-definition alone governs.",
-///      "type": "string",
-///      "enum": [
-///        "required",
-///        "optional",
-///        "none"
-///      ]
-///    },
-///    "maxStatementAge": {
-///      "$ref": "#/definitions/Duration"
-///    },
-///    "minByMethod": {
-///      "description": "Per-method floors within `minStatements` — e.g. `{ \"inPerson\": 1 }`. Every method named MUST also be in `acceptedMethods`. Absent: no method floor.",
-///      "type": "object",
-///      "additionalProperties": {
-///        "type": "integer",
-///        "minimum": 0.0
-///      },
-///      "propertyNames": {
-///        "$ref": "#/definitions/VettingMethod"
-///      }
-///    },
-///    "minStatements": {
-///      "description": "How many counted statements are needed, counting each vetter once however many DIDs they hold.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "optionalClaims": {
-///      "description": "Claim types an applicant MAY add to the card and a vetter MAY verify. They never affect whether a statement counts.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/ClaimType"
-///      },
-///      "uniqueItems": true
-///    },
-///    "requiredClaims": {
-///      "description": "Claim types the applicant's Vetting Card must carry, which the identity commitment is computed over, and which a counted statement must list as verified. Absent: none.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/ClaimType"
-///      },
-///      "uniqueItems": true
-///    },
-///    "requirementsGrace": {
-///      "$ref": "#/definitions/Duration"
-///    },
-///    "statementType": {
-///      "description": "The predicate IRI a counted vetting statement carries in `credentialSubject.predicate` — `https://registry.trustoverip.org/dtg/vsc/vetted/1`, the DTG VSC registry's identity-vetting predicate, or a predicate in a namespace the community controls — registered as one the community accepts via vtc/endorsement-types/register. A statement under any other predicate does not count.",
-///      "type": "string",
-///      "format": "uri",
-///      "maxLength": 512,
-///      "minLength": 1
-///    },
-///    "version": {
-///      "description": "Version of this requirements object's shape. `0.1` for the members defined here.",
-///      "type": "string",
-///      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
-///    }
-///  },
-///  "additionalProperties": true
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
 pub struct VettingRequirements {
@@ -3193,28 +2270,6 @@ impl VettingRequirements {
 }
 ///How a vetter's eligibility is established.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "How a vetter's eligibility is established.",
-///  "type": "object",
-///  "required": [
-///    "role"
-///  ],
-///  "properties": {
-///    "role": {
-///      "description": "The role a statement's issuer must hold, matched as the action `role:<role>` in a Verifiable Authority Credential (`AuthorityCredential`) the community issued to that issuer, whose `authority.scope` is the community's DID (see `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds such a credential.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1,
-///      "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -3229,18 +2284,6 @@ impl VettingRequirementsEligibleVetters {
 }
 ///The role a statement's issuer must hold, matched as the action `role:<role>` in a Verifiable Authority Credential (`AuthorityCredential`) the community issued to that issuer, whose `authority.scope` is the community's DID (see `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds such a credential.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The role a statement's issuer must hold, matched as the action `role:<role>` in a Verifiable Authority Credential (`AuthorityCredential`) the community issued to that issuer, whose `authority.scope` is the community's DID (see `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds such a credential.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1,
-///  "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct VettingRequirementsEligibleVettersRole(::std::string::String);
@@ -3310,33 +2353,6 @@ impl<'de> ::serde::Deserialize<'de> for VettingRequirementsEligibleVettersRole {
 }
 ///Caps on how much evidence may come from people close to the applicant. Absent: no caps.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Caps on how much evidence may come from people close to the applicant. Absent: no caps.",
-///  "type": "object",
-///  "properties": {
-///    "maxByDeclaredRelationship": {
-///      "description": "The most counted statements that may come from vetters declaring each relationship — e.g. `{ \"family\": 0 }`.",
-///      "type": "object",
-///      "additionalProperties": {
-///        "type": "integer",
-///        "minimum": 0.0
-///      },
-///      "propertyNames": {
-///        "$ref": "#/definitions/VettingRelationship"
-///      }
-///    },
-///    "requireConsistentIdentityCommitment": {
-///      "description": "When true, every counted statement must carry the same identity commitment — all vetters verified the same claimed identity. Absent: false.",
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -3371,20 +2387,6 @@ impl VettingRequirementsIndependence {
 }
 ///Whether an invitation credential must accompany the statements at submission (`required`), may (`optional`), or plays no part (`none`). Absent: the presentation-definition alone governs.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Whether an invitation credential must accompany the statements at submission (`required`), may (`optional`), or plays no part (`none`). Absent: the presentation-definition alone governs.",
-///  "type": "string",
-///  "enum": [
-///    "required",
-///    "optional",
-///    "none"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -3450,16 +2452,6 @@ impl ::std::convert::TryFrom<::std::string::String> for VettingRequirementsInvit
 }
 ///Version of this requirements object's shape. `0.1` for the members defined here.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Version of this requirements object's shape. `0.1` for the members defined here.",
-///  "type": "string",
-///  "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct VettingRequirementsVersion(::std::string::String);
@@ -4828,7 +3820,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/join-requests/manifest/0.4";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Audience\": {\n      \"description\": \"Who may see a directory field, ordered from narrowest to widest. `admins`: holders of `vtc.directory.admin` (and, for derived fields, `vtc.members.manage`). `groups`: members who share at least one community group with the subject (narrowed to the groups the subject names in `groupAudience`, where it names any). `connections`: members holding an attributed, in-force verified relationship with the subject at the community. `members`: every active member. `public`: anyone, and what the member's signed public card carries outside the community.\\n\\n`groups` and `connections` are not a chain: a viewer sees a field when they satisfy the audience the subject chose for it or any wider audience. Every audience includes the administrators, and the subject always sees their own whole card. There is no `onlyMe`: a value nobody else should see is not directory data.\",\n      \"enum\": [\n        \"admins\",\n        \"groups\",\n        \"connections\",\n        \"members\",\n        \"public\"\n      ],\n      \"title\": \"Audience\",\n      \"type\": \"string\"\n    },\n    \"ClaimType\": {\n      \"description\": \"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\n      \"title\": \"ClaimType\",\n      \"type\": \"string\"\n    },\n    \"CommunityBranding\": {\n      \"additionalProperties\": false,\n      \"description\": \"OPTIONAL. How the community asks to be shown to a prospective applicant: a name, an accent colour and a logo. Presentation only, self-asserted and unverified — `communityDid` identifies the community, never `branding`. Not part of any criterion, so not covered by a `requirementsDigest`. Every member is optional.\",\n      \"properties\": {\n        \"accentColor\": {\n          \"description\": \"An sRGB colour as `#rrggbb`, compared case-insensitively. A community SHOULD write it in lower case.\",\n          \"pattern\": \"^#[0-9a-fA-F]{6}$\",\n          \"type\": \"string\"\n        },\n        \"displayName\": {\n          \"description\": \"The community's name as it asks to be shown.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"logoUrl\": {\n          \"description\": \"An https URL of the community's logo. Fetched by the client, so an untrusted image from wherever it points.\",\n          \"format\": \"uri\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^https://\",\n          \"type\": \"string\"\n        }\n      },\n      \"title\": \"CommunityBranding\",\n      \"type\": \"object\"\n    },\n    \"Criterion\": {\n      \"additionalProperties\": false,\n      \"dependentRequired\": {\n        \"credentialIssuers\": [\n          \"presentationDefinition\"\n        ],\n        \"presentationDefinition\": [\n          \"credentialIssuers\"\n        ]\n      },\n      \"properties\": {\n        \"admission\": {\n          \"description\": \"How the community decides a submission that meets this criterion. `automatic`: it admits the applicant without a person deciding. `review`: it refers the submission to an administrator, who decides.\",\n          \"enum\": [\n            \"automatic\",\n            \"review\"\n          ],\n          \"type\": \"string\"\n        },\n        \"credentialIssuers\": {\n          \"description\": \"Whose credentials meet `presentationDefinition`: `community` (this community's own), `recognised` (this community's, or a community it recognises), or `any` (any issuer whose credential verifies). Present exactly when `presentationDefinition` is.\",\n          \"enum\": [\n            \"any\",\n            \"community\",\n            \"recognised\"\n          ],\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"description\": \"Plain-language summary of the criterion, authored by the community and shown to prospective applicants. Informative: where it and `vetting` disagree, `vetting` governs.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"invitationRequired\": {\n          \"description\": \"True: the criterion is met only by a submission carrying a valid, unconsumed invitation this community issued to the applicant.\",\n          \"type\": \"boolean\"\n        },\n        \"presentationDefinition\": {\n          \"description\": \"The credentials an applicant must present for this criterion (opaque here). Absent: the criterion requires no credential.\",\n          \"type\": \"object\"\n        },\n        \"requirementsDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"Digest over the RFC 8785 (JCS) canonicalization of this criterion object with the `requirementsDigest` member removed, as a multibase-encoded multihash (SHA-256 and base58btc RECOMMENDED). Names one version of the criterion: an applicant records it when starting an application and echoes it to vetters and at submission.\"\n        },\n        \"vetting\": {\n          \"$ref\": \"#/$defs/VettingRequirements\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"admission\",\n        \"requirementsDigest\"\n      ],\n      \"title\": \"Criterion\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"DirectoryDisclosure\": {\n      \"additionalProperties\": false,\n      \"description\": \"The statement itself. Every member is generated from the community's configuration when the statement is read. `statementDigest` names this exact statement, so an applicant can record which one it was shown.\",\n      \"properties\": {\n        \"adminNotes\": {\n          \"description\": \"Whether administrators keep notes about members. Notes are never on a card and never reach another member; a member may ask for the notes about them.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"externalCards\": {\n          \"description\": \"Whether a member may publish a card beyond the community: their `public` values, signed by them, offered through the community's trust registry. Always the member's own choice, and off on a new card. False where the community cannot publish external cards.\",\n          \"type\": \"boolean\"\n        },\n        \"fields\": {\n          \"description\": \"Every active field, base and community-defined, in display order. A base field the community has disabled is absent, which is how a reader learns it is not collected.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/DisclosedField\"\n          },\n          \"maxItems\": 128,\n          \"type\": \"array\"\n        },\n        \"groups\": {\n          \"$ref\": \"#/$defs/GroupDisclosure\"\n        },\n        \"membershipIdentifiers\": {\n          \"$ref\": \"#/$defs/Audience\",\n          \"description\": \"The widest audience a member's membership identifier — the DID they joined with — can reach through the directory: the ceiling of the base field `did`, or `admins` where that field is disabled. `members` or `public` means a member may choose to show it that widely; a new card never shows it beyond `admins` (VTI-DIR-042). Administrators always see it.\"\n        },\n        \"newCard\": {\n          \"$ref\": \"#/$defs/NewCardDefaults\"\n        },\n        \"statementDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"Digest over the RFC 8785 (JCS) canonicalization of this statement with the `statementDigest` member removed, as a multibase-encoded multihash (SHA-256 and base58btc RECOMMENDED). Changes exactly when what the statement says changes.\"\n        }\n      },\n      \"required\": [\n        \"fields\",\n        \"newCard\",\n        \"membershipIdentifiers\",\n        \"adminNotes\",\n        \"externalCards\",\n        \"statementDigest\"\n      ],\n      \"title\": \"DirectoryDisclosure\",\n      \"type\": \"object\"\n    },\n    \"DisclosedField\": {\n      \"additionalProperties\": false,\n      \"description\": \"One active field of the community's directory, as an applicant needs to see it: what it is, who writes its value, the widest audience it may ever reach and the audience a new card gives it. Disabled and retired fields are not listed: no projection shows them.\",\n      \"properties\": {\n        \"ceiling\": {\n          \"$ref\": \"#/$defs/Audience\",\n          \"description\": \"The widest audience the field may ever reach, whatever the member chooses.\"\n        },\n        \"defaultVisibility\": {\n          \"$ref\": \"#/$defs/Audience\",\n          \"description\": \"The audience a new card gives the field until its member chooses. Never wider than `ceiling`.\"\n        },\n        \"description\": {\n          \"$ref\": \"#/$defs/FieldDescription\"\n        },\n        \"facet\": {\n          \"description\": \"Whether members may filter on the field and see counts by its values. Absent: false.\",\n          \"type\": \"boolean\"\n        },\n        \"key\": {\n          \"$ref\": \"#/$defs/FieldKey\"\n        },\n        \"label\": {\n          \"$ref\": \"#/$defs/FieldLabel\"\n        },\n        \"searchable\": {\n          \"description\": \"Whether a member's search may match the field, within what the searcher may see.\",\n          \"type\": \"boolean\"\n        },\n        \"source\": {\n          \"$ref\": \"#/$defs/FieldSource\",\n          \"description\": \"Who writes the value. `admin` and `credential` matter most to an applicant: an `admin` field holds what the community asserts about the member, which the member reads and cannot change.\"\n        },\n        \"type\": {\n          \"$ref\": \"#/$defs/FieldType\"\n        }\n      },\n      \"required\": [\n        \"key\",\n        \"label\",\n        \"type\",\n        \"source\",\n        \"ceiling\",\n        \"defaultVisibility\",\n        \"searchable\"\n      ],\n      \"title\": \"DisclosedField\",\n      \"type\": \"object\"\n    },\n    \"Duration\": {\n      \"description\": \"An ISO 8601 duration in weeks, days, hours, minutes and seconds only (e.g. `P120D`, `P2W`, `P1DT12H`, `PT15M`). Years and months are refused: their length depends on the calendar, and an age limit that means different things on different days is not a limit.\",\n      \"maxLength\": 32,\n      \"pattern\": \"^P(([0-9]+W)?([0-9]+D)?T([0-9]+H([0-9]+M)?([0-9]+S)?|[0-9]+M([0-9]+S)?|[0-9]+S)|[0-9]+W([0-9]+D)?|[0-9]+D)$\",\n      \"title\": \"Duration\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ExtCritical\": {\n      \"description\": \"Names the `ext` namespaces a consumer MUST understand or refuse, per SPEC.md §4.5.1.\\n\\nEvery entry MUST be an immediate key of the sibling `ext` object at the same level; an entry naming an absent namespace is non-conforming and the consumer rejects the document with `malformedRequest`. A consumer that does not recognize a namespace named here MUST NOT process the document as though the namespace were absent, and rejects it with `unsupportedExtension` — the exception to the rule that unrecognized namespaces are ignored.\\n\\nA producer marks a namespace only where the document's meaning depends on it. Marking one that merely carries a hint or an annotation turns every consumer that has not implemented it into a failure where it would otherwise have interoperated. JSON Schema cannot check either of those rules: that an entry names a present namespace is checkable only against the sibling `ext`, and whether a namespace is load-bearing is not a schema question at all. Both are consumer-side checks.\",\n      \"examples\": [\n        [\n          \"org.openvtc.hidden-vetting\"\n        ]\n      ],\n      \"items\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\",\n        \"type\": \"string\"\n      },\n      \"minItems\": 1,\n      \"title\": \"ExtCritical\",\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    },\n    \"FieldDescription\": {\n      \"description\": \"Help text shown to a member filling the field in. Plain text; a reader MUST NOT treat it as instructions.\",\n      \"maxLength\": 280,\n      \"minLength\": 1,\n      \"title\": \"FieldDescription\",\n      \"type\": \"string\"\n    },\n    \"FieldKey\": {\n      \"description\": \"Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^([a-z][a-z0-9-]*\\\\.)*[a-z][a-zA-Z0-9]{0,63}$\",\n      \"title\": \"FieldKey\",\n      \"type\": \"string\"\n    },\n    \"FieldLabel\": {\n      \"description\": \"What readers see as the field's name. Plain text.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"title\": \"FieldLabel\",\n      \"type\": \"string\"\n    },\n    \"FieldSource\": {\n      \"description\": \"Who writes the value. `member`: self-asserted, through vtc/directory/card/update. `admin`: asserted by the community through vtc/directory/card/assert; the member reads it and cannot change it. `credential`: a claim the member discloses from a credential through vtc/directory/card/present, badged with its issuer. `derived`: a base field read from the community's own records (`role`, `joinedAt`, `did`, `personhood`) and never stored on a card. Each source is written only through its own path.\",\n      \"enum\": [\n        \"member\",\n        \"admin\",\n        \"credential\",\n        \"derived\"\n      ],\n      \"title\": \"FieldSource\",\n      \"type\": \"string\"\n    },\n    \"FieldType\": {\n      \"description\": \"The kind of value a field holds, which fixes its `FieldValue` shape. `did` holds a DID the member chooses to show (never their membership DID, which is the derived base field `did`). `claim` holds a `VerifiedValue` and requires `source: credential`.\",\n      \"enum\": [\n        \"text\",\n        \"longText\",\n        \"url\",\n        \"email\",\n        \"phone\",\n        \"enum\",\n        \"multiEnum\",\n        \"date\",\n        \"country\",\n        \"image\",\n        \"did\",\n        \"claim\"\n      ],\n      \"title\": \"FieldType\",\n      \"type\": \"string\"\n    },\n    \"GroupDisclosure\": {\n      \"additionalProperties\": false,\n      \"description\": \"Present when the community has groups. A member of a group holds a credential, issued by the group's own identifier, that evidences their membership, and can present it outside the community — which is why an applicant is told.\",\n      \"properties\": {\n        \"credentialValidity\": {\n          \"description\": \"How long each group membership credential is valid for, as an ISO 8601 duration in weeks, days, hours, minutes and seconds (`P30D`). It is renewed while the member stays in the group, and a credential already issued stays valid until it expires even after its holder leaves.\",\n          \"maxLength\": 32,\n          \"pattern\": \"^P(([0-9]+W)?([0-9]+D)?T([0-9]+H([0-9]+M)?([0-9]+S)?|[0-9]+M([0-9]+S)?|[0-9]+S)|[0-9]+W([0-9]+D)?|[0-9]+D)$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialValidity\"\n      ],\n      \"title\": \"GroupDisclosure\",\n      \"type\": \"object\"\n    },\n    \"Introductions\": {\n      \"description\": \"Who may ask the community to introduce them to this member. `anyone`: any active member who can find the entry. `groups`: only members who share a community group with them. `connections`: only members holding an attributed, in-force verified relationship with them. `off`: nobody. A refused introduction is never reported to its sender.\",\n      \"enum\": [\n        \"anyone\",\n        \"groups\",\n        \"connections\",\n        \"off\"\n      ],\n      \"title\": \"Introductions\",\n      \"type\": \"string\"\n    },\n    \"Listing\": {\n      \"description\": \"Whether members can find the entry. `listed`: it appears when members browse. `findable`: it does not appear when browsing, but a search that matches it under `search` returns it. `hidden`: no member finds it by browsing or searching; administrators still see it, and members who share a group that shows its members see it in that group's member list.\",\n      \"enum\": [\n        \"listed\",\n        \"findable\",\n        \"hidden\"\n      ],\n      \"title\": \"Listing\",\n      \"type\": \"string\"\n    },\n    \"NewCardDefaults\": {\n      \"additionalProperties\": false,\n      \"description\": \"The discoverability a card has when the community creates it, before its member chooses. A new card is never published beyond the community (VTI-DIR-042), so there is no member for that here: `externalCards` says whether the member may turn it on.\",\n      \"properties\": {\n        \"introductions\": {\n          \"$ref\": \"#/$defs/Introductions\",\n          \"description\": \"From whom a new card accepts introductions. Absent where the community does not deliver introductions.\"\n        },\n        \"listing\": {\n          \"$ref\": \"#/$defs/Listing\",\n          \"description\": \"The listing a new card starts with: the community's `defaultListing` (vtc/directory/fields/list). Every member may always choose `hidden`.\"\n        },\n        \"search\": {\n          \"description\": \"What a member's search may match, as the card's `discoverability.search`.\",\n          \"enum\": [\n            \"byName\",\n            \"exactNickname\",\n            \"off\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"listing\",\n        \"search\"\n      ],\n      \"title\": \"NewCardDefaults\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"branding\": {\n          \"$ref\": \"#/$defs/CommunityBranding\"\n        },\n        \"communityDid\": {\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"criteria\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Criterion\"\n          },\n          \"type\": \"array\"\n        },\n        \"directoryDisclosure\": {\n          \"$ref\": \"#/$defs/DirectoryDisclosure\",\n          \"description\": \"Present exactly where the community offers a member directory: the statement, generated from its configuration, of what the directory would disclose about a member and to whom — the same statement vtc/directory/disclosure returns. Outside every criterion, so no `requirementsDigest` covers it; it names itself with its own `statementDigest`.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"requestedAttributes\": {\n          \"description\": \"What the community asks an applicant to tell it about themselves, as claim types — never values. Answered in persona terms: the applicant's agent discloses those attributes from the face the applicant chooses, and they arrive on vtc/join-requests/submit as `attributes`. SELF-ASSERTED: a community MUST NOT describe an answer as verified, and MUST NOT make a decision that assumes it is. Outside every criterion, so no `requirementsDigest` covers it. Absent when the community asks nothing.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"purpose\": {\n                \"description\": \"Why the community asks, in words shown to the applicant before they disclose.\",\n                \"maxLength\": 256,\n                \"type\": \"string\"\n              },\n              \"required\": {\n                \"default\": true,\n                \"description\": \"False for an attribute the applicant may decline. A submission missing a required one is refused with vtc/join-requests/submit:attributesMissing.\",\n                \"type\": \"boolean\"\n              },\n              \"type\": {\n                \"description\": \"A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token.\",\n                \"maxLength\": 128,\n                \"minLength\": 1,\n                \"pattern\": \"^(x:)?[a-z][A-Za-z0-9]*(\\\\.[a-z][A-Za-z0-9]*)*$\",\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"type\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 32,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"communityDid\",\n        \"criteria\"\n      ],\n      \"title\": \"VTC Join-Requests Manifest — response payload\",\n      \"type\": \"object\"\n    },\n    \"VettingDocumentation\": {\n      \"description\": \"A class of documentation, named in lowerCamelCase. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `nationalId`, `driverLicence`, and `none` — the vetter will attest without a document, which is the `priorAcquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z][a-zA-Z0-9]*$\",\n      \"title\": \"VettingDocumentation\",\n      \"type\": \"string\"\n    },\n    \"VettingMethod\": {\n      \"description\": \"How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy.\",\n      \"enum\": [\n        \"inPerson\",\n        \"video\",\n        \"priorAcquaintance\"\n      ],\n      \"title\": \"VettingMethod\",\n      \"type\": \"string\"\n    },\n    \"VettingRelationship\": {\n      \"description\": \"The vetter's own declaration of how they relate to the applicant. Declared, not verified: it exists so community policy can cap how much evidence comes from people close to the applicant, and a false declaration is the vetter's attributable act.\",\n      \"enum\": [\n        \"none\",\n        \"communityColleague\",\n        \"sameEmployer\",\n        \"family\",\n        \"otherPersonal\"\n      ],\n      \"title\": \"VettingRelationship\",\n      \"type\": \"string\"\n    },\n    \"VettingRequirements\": {\n      \"additionalProperties\": true,\n      \"description\": \"What identity-vetting evidence a criterion needs, beyond what a presentation-definition can express: distinct eligible vetters, per-method floors, independence caps. Every number is the community's own policy. This schema supplies no defaults — an absent optional member means the community imposes no constraint of that kind, never that some protocol value applies. Deliberately open: a consumer MUST ignore members it does not recognise, so a community publishing a newer shape does not make an older client unable to read the rest. Durations: `maxStatementAge` — a statement older than this at decision time does not count (absent: no limit beyond the statement's own validity); `decisionSla` — how long after submission the community undertakes to decide, including on a referred application; `requirementsGrace` — how long an application started under an earlier `requirementsDigest` is still evaluated under that version.\",\n      \"properties\": {\n        \"acceptedDocumentClasses\": {\n          \"description\": \"Documentation a statement must have relied on in order to count. Absent — the expected case — means each vetter decides what documentation they accept, including none for prior acquaintance, and the community counts what they attest.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/VettingDocumentation\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"acceptedMethods\": {\n          \"description\": \"Methods whose statements count at all.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/VettingMethod\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"decisionSla\": {\n          \"$ref\": \"#/$defs/Duration\"\n        },\n        \"eligibleVetters\": {\n          \"additionalProperties\": false,\n          \"description\": \"How a vetter's eligibility is established.\",\n          \"properties\": {\n            \"role\": {\n              \"description\": \"The role a statement's issuer must hold, matched as the action `role:<role>` in a Verifiable Authority Credential (`AuthorityCredential`) the community issued to that issuer, whose `authority.scope` is the community's DID (see `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds such a credential.\",\n              \"maxLength\": 128,\n              \"minLength\": 1,\n              \"pattern\": \"^[a-zA-Z][a-zA-Z0-9_-]*$\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"role\"\n          ],\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1, for vetting parameters this version does not enumerate. A community publishing an admission mode the base members cannot express — the zero-knowledge parameters an applicant proves against, say — puts them under a namespace it controls, rather than waiting for a version that names them.\\n\\nThis object is already `additionalProperties: true`, so an unknown member here has always validated. That is not the same as reaching a consumer: a generated type names the members this schema declares and drops the rest, so an undeclared member is parsed and discarded, and it is discarded again on the re-serialization `requirementsDigest` is computed over. `ext` is a declared member, so it survives both.\"\n        },\n        \"extCritical\": {\n          \"$ref\": \"#/$defs/ExtCritical\",\n          \"description\": \"Namespaces of `ext` an applicant MUST understand or refuse, per SPEC.md §4.5.1.\\n\\nA community marks a namespace here when applying under this criterion without understanding it would mean something other than what the community requires — an applicant that ignored a hidden-vetting namespace, for instance, would submit named statements to a criterion whose whole point was that it does not receive them. An applicant that does not recognize a marked namespace stops rather than downgrading silently.\\n\\nAbsent, which is the common case, every namespace under `ext` is advisory and ignorable.\"\n        },\n        \"governanceFrameworkUrl\": {\n          \"description\": \"Where the community's vetting governance — including the attestation text vetters sign — is published.\",\n          \"format\": \"uri\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^https://\",\n          \"type\": \"string\"\n        },\n        \"independence\": {\n          \"additionalProperties\": false,\n          \"description\": \"Caps on how much evidence may come from people close to the applicant. Absent: no caps.\",\n          \"properties\": {\n            \"maxByDeclaredRelationship\": {\n              \"additionalProperties\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"description\": \"The most counted statements that may come from vetters declaring each relationship — e.g. `{ \\\"family\\\": 0 }`.\",\n              \"propertyNames\": {\n                \"$ref\": \"#/$defs/VettingRelationship\"\n              },\n              \"type\": \"object\"\n            },\n            \"requireConsistentIdentityCommitment\": {\n              \"description\": \"When true, every counted statement must carry the same identity commitment — all vetters verified the same claimed identity. Absent: false.\",\n              \"type\": \"boolean\"\n            }\n          },\n          \"type\": \"object\"\n        },\n        \"invitation\": {\n          \"description\": \"Whether an invitation credential must accompany the statements at submission (`required`), may (`optional`), or plays no part (`none`). Absent: the presentation-definition alone governs.\",\n          \"enum\": [\n            \"required\",\n            \"optional\",\n            \"none\"\n          ],\n          \"type\": \"string\"\n        },\n        \"maxStatementAge\": {\n          \"$ref\": \"#/$defs/Duration\"\n        },\n        \"minByMethod\": {\n          \"additionalProperties\": {\n            \"minimum\": 0,\n            \"type\": \"integer\"\n          },\n          \"description\": \"Per-method floors within `minStatements` — e.g. `{ \\\"inPerson\\\": 1 }`. Every method named MUST also be in `acceptedMethods`. Absent: no method floor.\",\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/VettingMethod\"\n          },\n          \"type\": \"object\"\n        },\n        \"minStatements\": {\n          \"description\": \"How many counted statements are needed, counting each vetter once however many DIDs they hold.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"optionalClaims\": {\n          \"description\": \"Claim types an applicant MAY add to the card and a vetter MAY verify. They never affect whether a statement counts.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/ClaimType\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"requiredClaims\": {\n          \"description\": \"Claim types the applicant's Vetting Card must carry, which the identity commitment is computed over, and which a counted statement must list as verified. Absent: none.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/ClaimType\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"requirementsGrace\": {\n          \"$ref\": \"#/$defs/Duration\"\n        },\n        \"statementType\": {\n          \"description\": \"The predicate IRI a counted vetting statement carries in `credentialSubject.predicate` — `https://registry.trustoverip.org/dtg/vsc/vetted/1`, the DTG VSC registry's identity-vetting predicate, or a predicate in a namespace the community controls — registered as one the community accepts via vtc/endorsement-types/register. A statement under any other predicate does not count.\",\n          \"format\": \"uri\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"description\": \"Version of this requirements object's shape. `0.1` for the members defined here.\",\n          \"pattern\": \"^(0|[1-9][0-9]*)\\\\.(0|[1-9][0-9]*)$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"version\",\n        \"statementType\",\n        \"minStatements\",\n        \"acceptedMethods\",\n        \"eligibleVetters\"\n      ],\n      \"title\": \"VettingRequirements\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/join-requests/manifest/0.4\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Discover a community's join criteria before applying. The request carries nothing. Version 0.2 adds, per criterion, an optional `vetting` requirements object — how many identity-vetting statements a community needs, by which methods, from whom — and a `requirementsDigest` that names the exact version of the criterion an applicant started under. The response may also carry `branding`, how the community asks to be shown. Version 0.4 adds `directoryDisclosure`: where the community has a member directory, the statement of what it would disclose about a member and to whom, so an applicant reads it before applying.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"title\": \"VTC Join-Requests Manifest — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Audience\":{\"description\":\"Who may see a directory field, ordered from narrowest to widest. `admins`: holders of `vtc.directory.admin` (and, for derived fields, `vtc.members.manage`). `groups`: members who share at least one community group with the subject (narrowed to the groups the subject names in `groupAudience`, where it names any). `connections`: members holding an attributed, in-force verified relationship with the subject at the community. `members`: every active member. `public`: anyone, and what the member's signed public card carries outside the community.\\n\\n`groups` and `connections` are not a chain: a viewer sees a field when they satisfy the audience the subject chose for it or any wider audience. Every audience includes the administrators, and the subject always sees their own whole card. There is no `onlyMe`: a value nobody else should see is not directory data.\",\"enum\":[\"admins\",\"groups\",\"connections\",\"members\",\"public\"],\"title\":\"Audience\",\"type\":\"string\"},\"ClaimType\":{\"description\":\"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\"title\":\"ClaimType\",\"type\":\"string\"},\"CommunityBranding\":{\"additionalProperties\":false,\"description\":\"OPTIONAL. How the community asks to be shown to a prospective applicant: a name, an accent colour and a logo. Presentation only, self-asserted and unverified — `communityDid` identifies the community, never `branding`. Not part of any criterion, so not covered by a `requirementsDigest`. Every member is optional.\",\"properties\":{\"accentColor\":{\"description\":\"An sRGB colour as `#rrggbb`, compared case-insensitively. A community SHOULD write it in lower case.\",\"pattern\":\"^#[0-9a-fA-F]{6}$\",\"type\":\"string\"},\"displayName\":{\"description\":\"The community's name as it asks to be shown.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"logoUrl\":{\"description\":\"An https URL of the community's logo. Fetched by the client, so an untrusted image from wherever it points.\",\"format\":\"uri\",\"maxLength\":2048,\"pattern\":\"^https://\",\"type\":\"string\"}},\"title\":\"CommunityBranding\",\"type\":\"object\"},\"Criterion\":{\"additionalProperties\":false,\"dependentRequired\":{\"credentialIssuers\":[\"presentationDefinition\"],\"presentationDefinition\":[\"credentialIssuers\"]},\"properties\":{\"admission\":{\"description\":\"How the community decides a submission that meets this criterion. `automatic`: it admits the applicant without a person deciding. `review`: it refers the submission to an administrator, who decides.\",\"enum\":[\"automatic\",\"review\"],\"type\":\"string\"},\"credentialIssuers\":{\"description\":\"Whose credentials meet `presentationDefinition`: `community` (this community's own), `recognised` (this community's, or a community it recognises), or `any` (any issuer whose credential verifies). Present exactly when `presentationDefinition` is.\",\"enum\":[\"any\",\"community\",\"recognised\"],\"type\":\"string\"},\"description\":{\"description\":\"Plain-language summary of the criterion, authored by the community and shown to prospective applicants. Informative: where it and `vetting` disagree, `vetting` governs.\",\"maxLength\":1024,\"type\":\"string\"},\"id\":{\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"invitationRequired\":{\"description\":\"True: the criterion is met only by a submission carrying a valid, unconsumed invitation this community issued to the applicant.\",\"type\":\"boolean\"},\"presentationDefinition\":{\"description\":\"The credentials an applicant must present for this criterion (opaque here). Absent: the criterion requires no credential.\",\"type\":\"object\"},\"requirementsDigest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Digest over the RFC 8785 (JCS) canonicalization of this criterion object with the `requirementsDigest` member removed, as a multibase-encoded multihash (SHA-256 and base58btc RECOMMENDED). Names one version of the criterion: an applicant records it when starting an application and echoes it to vetters and at submission.\"},\"vetting\":{\"$ref\":\"#/$defs/VettingRequirements\"}},\"required\":[\"id\",\"admission\",\"requirementsDigest\"],\"title\":\"Criterion\",\"type\":\"object\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"DirectoryDisclosure\":{\"additionalProperties\":false,\"description\":\"The statement itself. Every member is generated from the community's configuration when the statement is read. `statementDigest` names this exact statement, so an applicant can record which one it was shown.\",\"properties\":{\"adminNotes\":{\"description\":\"Whether administrators keep notes about members. Notes are never on a card and never reach another member; a member may ask for the notes about them.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"externalCards\":{\"description\":\"Whether a member may publish a card beyond the community: their `public` values, signed by them, offered through the community's trust registry. Always the member's own choice, and off on a new card. False where the community cannot publish external cards.\",\"type\":\"boolean\"},\"fields\":{\"description\":\"Every active field, base and community-defined, in display order. A base field the community has disabled is absent, which is how a reader learns it is not collected.\",\"items\":{\"$ref\":\"#/$defs/DisclosedField\"},\"maxItems\":128,\"type\":\"array\"},\"groups\":{\"$ref\":\"#/$defs/GroupDisclosure\"},\"membershipIdentifiers\":{\"$ref\":\"#/$defs/Audience\",\"description\":\"The widest audience a member's membership identifier — the DID they joined with — can reach through the directory: the ceiling of the base field `did`, or `admins` where that field is disabled. `members` or `public` means a member may choose to show it that widely; a new card never shows it beyond `admins` (VTI-DIR-042). Administrators always see it.\"},\"newCard\":{\"$ref\":\"#/$defs/NewCardDefaults\"},\"statementDigest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Digest over the RFC 8785 (JCS) canonicalization of this statement with the `statementDigest` member removed, as a multibase-encoded multihash (SHA-256 and base58btc RECOMMENDED). Changes exactly when what the statement says changes.\"}},\"required\":[\"fields\",\"newCard\",\"membershipIdentifiers\",\"adminNotes\",\"externalCards\",\"statementDigest\"],\"title\":\"DirectoryDisclosure\",\"type\":\"object\"},\"DisclosedField\":{\"additionalProperties\":false,\"description\":\"One active field of the community's directory, as an applicant needs to see it: what it is, who writes its value, the widest audience it may ever reach and the audience a new card gives it. Disabled and retired fields are not listed: no projection shows them.\",\"properties\":{\"ceiling\":{\"$ref\":\"#/$defs/Audience\",\"description\":\"The widest audience the field may ever reach, whatever the member chooses.\"},\"defaultVisibility\":{\"$ref\":\"#/$defs/Audience\",\"description\":\"The audience a new card gives the field until its member chooses. Never wider than `ceiling`.\"},\"description\":{\"$ref\":\"#/$defs/FieldDescription\"},\"facet\":{\"description\":\"Whether members may filter on the field and see counts by its values. Absent: false.\",\"type\":\"boolean\"},\"key\":{\"$ref\":\"#/$defs/FieldKey\"},\"label\":{\"$ref\":\"#/$defs/FieldLabel\"},\"searchable\":{\"description\":\"Whether a member's search may match the field, within what the searcher may see.\",\"type\":\"boolean\"},\"source\":{\"$ref\":\"#/$defs/FieldSource\",\"description\":\"Who writes the value. `admin` and `credential` matter most to an applicant: an `admin` field holds what the community asserts about the member, which the member reads and cannot change.\"},\"type\":{\"$ref\":\"#/$defs/FieldType\"}},\"required\":[\"key\",\"label\",\"type\",\"source\",\"ceiling\",\"defaultVisibility\",\"searchable\"],\"title\":\"DisclosedField\",\"type\":\"object\"},\"Duration\":{\"description\":\"An ISO 8601 duration in weeks, days, hours, minutes and seconds only (e.g. `P120D`, `P2W`, `P1DT12H`, `PT15M`). Years and months are refused: their length depends on the calendar, and an age limit that means different things on different days is not a limit.\",\"maxLength\":32,\"pattern\":\"^P(([0-9]+W)?([0-9]+D)?T([0-9]+H([0-9]+M)?([0-9]+S)?|[0-9]+M([0-9]+S)?|[0-9]+S)|[0-9]+W([0-9]+D)?|[0-9]+D)$\",\"title\":\"Duration\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ExtCritical\":{\"description\":\"Names the `ext` namespaces a consumer MUST understand or refuse, per SPEC.md §4.5.1.\\n\\nEvery entry MUST be an immediate key of the sibling `ext` object at the same level; an entry naming an absent namespace is non-conforming and the consumer rejects the document with `malformedRequest`. A consumer that does not recognize a namespace named here MUST NOT process the document as though the namespace were absent, and rejects it with `unsupportedExtension` — the exception to the rule that unrecognized namespaces are ignored.\\n\\nA producer marks a namespace only where the document's meaning depends on it. Marking one that merely carries a hint or an annotation turns every consumer that has not implemented it into a failure where it would otherwise have interoperated. JSON Schema cannot check either of those rules: that an entry names a present namespace is checkable only against the sibling `ext`, and whether a namespace is load-bearing is not a schema question at all. Both are consumer-side checks.\",\"examples\":[[\"org.openvtc.hidden-vetting\"]],\"items\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\",\"type\":\"string\"},\"minItems\":1,\"title\":\"ExtCritical\",\"type\":\"array\",\"uniqueItems\":true},\"FieldDescription\":{\"description\":\"Help text shown to a member filling the field in. Plain text; a reader MUST NOT treat it as instructions.\",\"maxLength\":280,\"minLength\":1,\"title\":\"FieldDescription\",\"type\":\"string\"},\"FieldKey\":{\"description\":\"Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^([a-z][a-z0-9-]*\\\\.)*[a-z][a-zA-Z0-9]{0,63}$\",\"title\":\"FieldKey\",\"type\":\"string\"},\"FieldLabel\":{\"description\":\"What readers see as the field's name. Plain text.\",\"maxLength\":64,\"minLength\":1,\"title\":\"FieldLabel\",\"type\":\"string\"},\"FieldSource\":{\"description\":\"Who writes the value. `member`: self-asserted, through vtc/directory/card/update. `admin`: asserted by the community through vtc/directory/card/assert; the member reads it and cannot change it. `credential`: a claim the member discloses from a credential through vtc/directory/card/present, badged with its issuer. `derived`: a base field read from the community's own records (`role`, `joinedAt`, `did`, `personhood`) and never stored on a card. Each source is written only through its own path.\",\"enum\":[\"member\",\"admin\",\"credential\",\"derived\"],\"title\":\"FieldSource\",\"type\":\"string\"},\"FieldType\":{\"description\":\"The kind of value a field holds, which fixes its `FieldValue` shape. `did` holds a DID the member chooses to show (never their membership DID, which is the derived base field `did`). `claim` holds a `VerifiedValue` and requires `source: credential`.\",\"enum\":[\"text\",\"longText\",\"url\",\"email\",\"phone\",\"enum\",\"multiEnum\",\"date\",\"country\",\"image\",\"did\",\"claim\"],\"title\":\"FieldType\",\"type\":\"string\"},\"GroupDisclosure\":{\"additionalProperties\":false,\"description\":\"Present when the community has groups. A member of a group holds a credential, issued by the group's own identifier, that evidences their membership, and can present it outside the community — which is why an applicant is told.\",\"properties\":{\"credentialValidity\":{\"description\":\"How long each group membership credential is valid for, as an ISO 8601 duration in weeks, days, hours, minutes and seconds (`P30D`). It is renewed while the member stays in the group, and a credential already issued stays valid until it expires even after its holder leaves.\",\"maxLength\":32,\"pattern\":\"^P(([0-9]+W)?([0-9]+D)?T([0-9]+H([0-9]+M)?([0-9]+S)?|[0-9]+M([0-9]+S)?|[0-9]+S)|[0-9]+W([0-9]+D)?|[0-9]+D)$\",\"type\":\"string\"}},\"required\":[\"credentialValidity\"],\"title\":\"GroupDisclosure\",\"type\":\"object\"},\"Introductions\":{\"description\":\"Who may ask the community to introduce them to this member. `anyone`: any active member who can find the entry. `groups`: only members who share a community group with them. `connections`: only members holding an attributed, in-force verified relationship with them. `off`: nobody. A refused introduction is never reported to its sender.\",\"enum\":[\"anyone\",\"groups\",\"connections\",\"off\"],\"title\":\"Introductions\",\"type\":\"string\"},\"Listing\":{\"description\":\"Whether members can find the entry. `listed`: it appears when members browse. `findable`: it does not appear when browsing, but a search that matches it under `search` returns it. `hidden`: no member finds it by browsing or searching; administrators still see it, and members who share a group that shows its members see it in that group's member list.\",\"enum\":[\"listed\",\"findable\",\"hidden\"],\"title\":\"Listing\",\"type\":\"string\"},\"NewCardDefaults\":{\"additionalProperties\":false,\"description\":\"The discoverability a card has when the community creates it, before its member chooses. A new card is never published beyond the community (VTI-DIR-042), so there is no member for that here: `externalCards` says whether the member may turn it on.\",\"properties\":{\"introductions\":{\"$ref\":\"#/$defs/Introductions\",\"description\":\"From whom a new card accepts introductions. Absent where the community does not deliver introductions.\"},\"listing\":{\"$ref\":\"#/$defs/Listing\",\"description\":\"The listing a new card starts with: the community's `defaultListing` (vtc/directory/fields/list). Every member may always choose `hidden`.\"},\"search\":{\"description\":\"What a member's search may match, as the card's `discoverability.search`.\",\"enum\":[\"byName\",\"exactNickname\",\"off\"],\"type\":\"string\"}},\"required\":[\"listing\",\"search\"],\"title\":\"NewCardDefaults\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"branding\":{\"$ref\":\"#/$defs/CommunityBranding\"},\"communityDid\":{\"pattern\":\"^did:\",\"type\":\"string\"},\"criteria\":{\"items\":{\"$ref\":\"#/$defs/Criterion\"},\"type\":\"array\"},\"directoryDisclosure\":{\"$ref\":\"#/$defs/DirectoryDisclosure\",\"description\":\"Present exactly where the community offers a member directory: the statement, generated from its configuration, of what the directory would disclose about a member and to whom — the same statement vtc/directory/disclosure returns. Outside every criterion, so no `requirementsDigest` covers it; it names itself with its own `statementDigest`.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"requestedAttributes\":{\"description\":\"What the community asks an applicant to tell it about themselves, as claim types — never values. Answered in persona terms: the applicant's agent discloses those attributes from the face the applicant chooses, and they arrive on vtc/join-requests/submit as `attributes`. SELF-ASSERTED: a community MUST NOT describe an answer as verified, and MUST NOT make a decision that assumes it is. Outside every criterion, so no `requirementsDigest` covers it. Absent when the community asks nothing.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"purpose\":{\"description\":\"Why the community asks, in words shown to the applicant before they disclose.\",\"maxLength\":256,\"type\":\"string\"},\"required\":{\"default\":true,\"description\":\"False for an attribute the applicant may decline. A submission missing a required one is refused with vtc/join-requests/submit:attributesMissing.\",\"type\":\"boolean\"},\"type\":{\"description\":\"A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^(x:)?[a-z][A-Za-z0-9]*(\\\\.[a-z][A-Za-z0-9]*)*$\",\"type\":\"string\"}},\"required\":[\"type\"],\"type\":\"object\"},\"maxItems\":32,\"type\":\"array\"}},\"required\":[\"communityDid\",\"criteria\"],\"title\":\"VTC Join-Requests Manifest — response payload\",\"type\":\"object\"},\"VettingDocumentation\":{\"description\":\"A class of documentation, named in lowerCamelCase. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `nationalId`, `driverLicence`, and `none` — the vetter will attest without a document, which is the `priorAcquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z][a-zA-Z0-9]*$\",\"title\":\"VettingDocumentation\",\"type\":\"string\"},\"VettingMethod\":{\"description\":\"How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy.\",\"enum\":[\"inPerson\",\"video\",\"priorAcquaintance\"],\"title\":\"VettingMethod\",\"type\":\"string\"},\"VettingRelationship\":{\"description\":\"The vetter's own declaration of how they relate to the applicant. Declared, not verified: it exists so community policy can cap how much evidence comes from people close to the applicant, and a false declaration is the vetter's attributable act.\",\"enum\":[\"none\",\"communityColleague\",\"sameEmployer\",\"family\",\"otherPersonal\"],\"title\":\"VettingRelationship\",\"type\":\"string\"},\"VettingRequirements\":{\"additionalProperties\":true,\"description\":\"What identity-vetting evidence a criterion needs, beyond what a presentation-definition can express: distinct eligible vetters, per-method floors, independence caps. Every number is the community's own policy. This schema supplies no defaults — an absent optional member means the community imposes no constraint of that kind, never that some protocol value applies. Deliberately open: a consumer MUST ignore members it does not recognise, so a community publishing a newer shape does not make an older client unable to read the rest. Durations: `maxStatementAge` — a statement older than this at decision time does not count (absent: no limit beyond the statement's own validity); `decisionSla` — how long after submission the community undertakes to decide, including on a referred application; `requirementsGrace` — how long an application started under an earlier `requirementsDigest` is still evaluated under that version.\",\"properties\":{\"acceptedDocumentClasses\":{\"description\":\"Documentation a statement must have relied on in order to count. Absent — the expected case — means each vetter decides what documentation they accept, including none for prior acquaintance, and the community counts what they attest.\",\"items\":{\"$ref\":\"#/$defs/VettingDocumentation\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"acceptedMethods\":{\"description\":\"Methods whose statements count at all.\",\"items\":{\"$ref\":\"#/$defs/VettingMethod\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"decisionSla\":{\"$ref\":\"#/$defs/Duration\"},\"eligibleVetters\":{\"additionalProperties\":false,\"description\":\"How a vetter's eligibility is established.\",\"properties\":{\"role\":{\"description\":\"The role a statement's issuer must hold, matched as the action `role:<role>` in a Verifiable Authority Credential (`AuthorityCredential`) the community issued to that issuer, whose `authority.scope` is the community's DID (see `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds such a credential.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9_-]*$\",\"type\":\"string\"}},\"required\":[\"role\"],\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1, for vetting parameters this version does not enumerate. A community publishing an admission mode the base members cannot express — the zero-knowledge parameters an applicant proves against, say — puts them under a namespace it controls, rather than waiting for a version that names them.\\n\\nThis object is already `additionalProperties: true`, so an unknown member here has always validated. That is not the same as reaching a consumer: a generated type names the members this schema declares and drops the rest, so an undeclared member is parsed and discarded, and it is discarded again on the re-serialization `requirementsDigest` is computed over. `ext` is a declared member, so it survives both.\"},\"extCritical\":{\"$ref\":\"#/$defs/ExtCritical\",\"description\":\"Namespaces of `ext` an applicant MUST understand or refuse, per SPEC.md §4.5.1.\\n\\nA community marks a namespace here when applying under this criterion without understanding it would mean something other than what the community requires — an applicant that ignored a hidden-vetting namespace, for instance, would submit named statements to a criterion whose whole point was that it does not receive them. An applicant that does not recognize a marked namespace stops rather than downgrading silently.\\n\\nAbsent, which is the common case, every namespace under `ext` is advisory and ignorable.\"},\"governanceFrameworkUrl\":{\"description\":\"Where the community's vetting governance — including the attestation text vetters sign — is published.\",\"format\":\"uri\",\"maxLength\":2048,\"pattern\":\"^https://\",\"type\":\"string\"},\"independence\":{\"additionalProperties\":false,\"description\":\"Caps on how much evidence may come from people close to the applicant. Absent: no caps.\",\"properties\":{\"maxByDeclaredRelationship\":{\"additionalProperties\":{\"minimum\":0,\"type\":\"integer\"},\"description\":\"The most counted statements that may come from vetters declaring each relationship — e.g. `{ \\\"family\\\": 0 }`.\",\"propertyNames\":{\"$ref\":\"#/$defs/VettingRelationship\"},\"type\":\"object\"},\"requireConsistentIdentityCommitment\":{\"description\":\"When true, every counted statement must carry the same identity commitment — all vetters verified the same claimed identity. Absent: false.\",\"type\":\"boolean\"}},\"type\":\"object\"},\"invitation\":{\"description\":\"Whether an invitation credential must accompany the statements at submission (`required`), may (`optional`), or plays no part (`none`). Absent: the presentation-definition alone governs.\",\"enum\":[\"required\",\"optional\",\"none\"],\"type\":\"string\"},\"maxStatementAge\":{\"$ref\":\"#/$defs/Duration\"},\"minByMethod\":{\"additionalProperties\":{\"minimum\":0,\"type\":\"integer\"},\"description\":\"Per-method floors within `minStatements` — e.g. `{ \\\"inPerson\\\": 1 }`. Every method named MUST also be in `acceptedMethods`. Absent: no method floor.\",\"propertyNames\":{\"$ref\":\"#/$defs/VettingMethod\"},\"type\":\"object\"},\"minStatements\":{\"description\":\"How many counted statements are needed, counting each vetter once however many DIDs they hold.\",\"minimum\":1,\"type\":\"integer\"},\"optionalClaims\":{\"description\":\"Claim types an applicant MAY add to the card and a vetter MAY verify. They never affect whether a statement counts.\",\"items\":{\"$ref\":\"#/$defs/ClaimType\"},\"type\":\"array\",\"uniqueItems\":true},\"requiredClaims\":{\"description\":\"Claim types the applicant's Vetting Card must carry, which the identity commitment is computed over, and which a counted statement must list as verified. Absent: none.\",\"items\":{\"$ref\":\"#/$defs/ClaimType\"},\"type\":\"array\",\"uniqueItems\":true},\"requirementsGrace\":{\"$ref\":\"#/$defs/Duration\"},\"statementType\":{\"description\":\"The predicate IRI a counted vetting statement carries in `credentialSubject.predicate` — `https://registry.trustoverip.org/dtg/vsc/vetted/1`, the DTG VSC registry's identity-vetting predicate, or a predicate in a namespace the community controls — registered as one the community accepts via vtc/endorsement-types/register. A statement under any other predicate does not count.\",\"format\":\"uri\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"version\":{\"description\":\"Version of this requirements object's shape. `0.1` for the members defined here.\",\"pattern\":\"^(0|[1-9][0-9]*)\\\\.(0|[1-9][0-9]*)$\",\"type\":\"string\"}},\"required\":[\"version\",\"statementType\",\"minStatements\",\"acceptedMethods\",\"eligibleVetters\"],\"title\":\"VettingRequirements\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/join-requests/manifest/0.4\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Discover a community's join criteria before applying. The request carries nothing. Version 0.2 adds, per criterion, an optional `vetting` requirements object — how many identity-vetting statements a community needs, by which methods, from whom — and a `requirementsDigest` that names the exact version of the criterion an applicant started under. The response may also carry `branding`, how the community asks to be shown. Version 0.4 adds `directoryDisclosure`: where the community has a member directory, the statement of what it would disclose about a member and to whom, so an applicant reads it before applying.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"title\":\"VTC Join-Requests Manifest — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -4836,7 +3828,7 @@ impl crate::Payload for Response {
         "https://trusttasks.org/spec/vtc/join-requests/manifest/0.4#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Audience\": {\n      \"description\": \"Who may see a directory field, ordered from narrowest to widest. `admins`: holders of `vtc.directory.admin` (and, for derived fields, `vtc.members.manage`). `groups`: members who share at least one community group with the subject (narrowed to the groups the subject names in `groupAudience`, where it names any). `connections`: members holding an attributed, in-force verified relationship with the subject at the community. `members`: every active member. `public`: anyone, and what the member's signed public card carries outside the community.\\n\\n`groups` and `connections` are not a chain: a viewer sees a field when they satisfy the audience the subject chose for it or any wider audience. Every audience includes the administrators, and the subject always sees their own whole card. There is no `onlyMe`: a value nobody else should see is not directory data.\",\n      \"enum\": [\n        \"admins\",\n        \"groups\",\n        \"connections\",\n        \"members\",\n        \"public\"\n      ],\n      \"title\": \"Audience\",\n      \"type\": \"string\"\n    },\n    \"ClaimType\": {\n      \"description\": \"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\n      \"title\": \"ClaimType\",\n      \"type\": \"string\"\n    },\n    \"CommunityBranding\": {\n      \"additionalProperties\": false,\n      \"description\": \"OPTIONAL. How the community asks to be shown to a prospective applicant: a name, an accent colour and a logo. Presentation only, self-asserted and unverified — `communityDid` identifies the community, never `branding`. Not part of any criterion, so not covered by a `requirementsDigest`. Every member is optional.\",\n      \"properties\": {\n        \"accentColor\": {\n          \"description\": \"An sRGB colour as `#rrggbb`, compared case-insensitively. A community SHOULD write it in lower case.\",\n          \"pattern\": \"^#[0-9a-fA-F]{6}$\",\n          \"type\": \"string\"\n        },\n        \"displayName\": {\n          \"description\": \"The community's name as it asks to be shown.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"logoUrl\": {\n          \"description\": \"An https URL of the community's logo. Fetched by the client, so an untrusted image from wherever it points.\",\n          \"format\": \"uri\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^https://\",\n          \"type\": \"string\"\n        }\n      },\n      \"title\": \"CommunityBranding\",\n      \"type\": \"object\"\n    },\n    \"Criterion\": {\n      \"additionalProperties\": false,\n      \"dependentRequired\": {\n        \"credentialIssuers\": [\n          \"presentationDefinition\"\n        ],\n        \"presentationDefinition\": [\n          \"credentialIssuers\"\n        ]\n      },\n      \"properties\": {\n        \"admission\": {\n          \"description\": \"How the community decides a submission that meets this criterion. `automatic`: it admits the applicant without a person deciding. `review`: it refers the submission to an administrator, who decides.\",\n          \"enum\": [\n            \"automatic\",\n            \"review\"\n          ],\n          \"type\": \"string\"\n        },\n        \"credentialIssuers\": {\n          \"description\": \"Whose credentials meet `presentationDefinition`: `community` (this community's own), `recognised` (this community's, or a community it recognises), or `any` (any issuer whose credential verifies). Present exactly when `presentationDefinition` is.\",\n          \"enum\": [\n            \"any\",\n            \"community\",\n            \"recognised\"\n          ],\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"description\": \"Plain-language summary of the criterion, authored by the community and shown to prospective applicants. Informative: where it and `vetting` disagree, `vetting` governs.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"invitationRequired\": {\n          \"description\": \"True: the criterion is met only by a submission carrying a valid, unconsumed invitation this community issued to the applicant.\",\n          \"type\": \"boolean\"\n        },\n        \"presentationDefinition\": {\n          \"description\": \"The credentials an applicant must present for this criterion (opaque here). Absent: the criterion requires no credential.\",\n          \"type\": \"object\"\n        },\n        \"requirementsDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"Digest over the RFC 8785 (JCS) canonicalization of this criterion object with the `requirementsDigest` member removed, as a multibase-encoded multihash (SHA-256 and base58btc RECOMMENDED). Names one version of the criterion: an applicant records it when starting an application and echoes it to vetters and at submission.\"\n        },\n        \"vetting\": {\n          \"$ref\": \"#/$defs/VettingRequirements\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"admission\",\n        \"requirementsDigest\"\n      ],\n      \"title\": \"Criterion\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"DirectoryDisclosure\": {\n      \"additionalProperties\": false,\n      \"description\": \"The statement itself. Every member is generated from the community's configuration when the statement is read. `statementDigest` names this exact statement, so an applicant can record which one it was shown.\",\n      \"properties\": {\n        \"adminNotes\": {\n          \"description\": \"Whether administrators keep notes about members. Notes are never on a card and never reach another member; a member may ask for the notes about them.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"externalCards\": {\n          \"description\": \"Whether a member may publish a card beyond the community: their `public` values, signed by them, offered through the community's trust registry. Always the member's own choice, and off on a new card. False where the community cannot publish external cards.\",\n          \"type\": \"boolean\"\n        },\n        \"fields\": {\n          \"description\": \"Every active field, base and community-defined, in display order. A base field the community has disabled is absent, which is how a reader learns it is not collected.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/DisclosedField\"\n          },\n          \"maxItems\": 128,\n          \"type\": \"array\"\n        },\n        \"groups\": {\n          \"$ref\": \"#/$defs/GroupDisclosure\"\n        },\n        \"membershipIdentifiers\": {\n          \"$ref\": \"#/$defs/Audience\",\n          \"description\": \"The widest audience a member's membership identifier — the DID they joined with — can reach through the directory: the ceiling of the base field `did`, or `admins` where that field is disabled. `members` or `public` means a member may choose to show it that widely; a new card never shows it beyond `admins` (VTI-DIR-042). Administrators always see it.\"\n        },\n        \"newCard\": {\n          \"$ref\": \"#/$defs/NewCardDefaults\"\n        },\n        \"statementDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"Digest over the RFC 8785 (JCS) canonicalization of this statement with the `statementDigest` member removed, as a multibase-encoded multihash (SHA-256 and base58btc RECOMMENDED). Changes exactly when what the statement says changes.\"\n        }\n      },\n      \"required\": [\n        \"fields\",\n        \"newCard\",\n        \"membershipIdentifiers\",\n        \"adminNotes\",\n        \"externalCards\",\n        \"statementDigest\"\n      ],\n      \"title\": \"DirectoryDisclosure\",\n      \"type\": \"object\"\n    },\n    \"DisclosedField\": {\n      \"additionalProperties\": false,\n      \"description\": \"One active field of the community's directory, as an applicant needs to see it: what it is, who writes its value, the widest audience it may ever reach and the audience a new card gives it. Disabled and retired fields are not listed: no projection shows them.\",\n      \"properties\": {\n        \"ceiling\": {\n          \"$ref\": \"#/$defs/Audience\",\n          \"description\": \"The widest audience the field may ever reach, whatever the member chooses.\"\n        },\n        \"defaultVisibility\": {\n          \"$ref\": \"#/$defs/Audience\",\n          \"description\": \"The audience a new card gives the field until its member chooses. Never wider than `ceiling`.\"\n        },\n        \"description\": {\n          \"$ref\": \"#/$defs/FieldDescription\"\n        },\n        \"facet\": {\n          \"description\": \"Whether members may filter on the field and see counts by its values. Absent: false.\",\n          \"type\": \"boolean\"\n        },\n        \"key\": {\n          \"$ref\": \"#/$defs/FieldKey\"\n        },\n        \"label\": {\n          \"$ref\": \"#/$defs/FieldLabel\"\n        },\n        \"searchable\": {\n          \"description\": \"Whether a member's search may match the field, within what the searcher may see.\",\n          \"type\": \"boolean\"\n        },\n        \"source\": {\n          \"$ref\": \"#/$defs/FieldSource\",\n          \"description\": \"Who writes the value. `admin` and `credential` matter most to an applicant: an `admin` field holds what the community asserts about the member, which the member reads and cannot change.\"\n        },\n        \"type\": {\n          \"$ref\": \"#/$defs/FieldType\"\n        }\n      },\n      \"required\": [\n        \"key\",\n        \"label\",\n        \"type\",\n        \"source\",\n        \"ceiling\",\n        \"defaultVisibility\",\n        \"searchable\"\n      ],\n      \"title\": \"DisclosedField\",\n      \"type\": \"object\"\n    },\n    \"Duration\": {\n      \"description\": \"An ISO 8601 duration in weeks, days, hours, minutes and seconds only (e.g. `P120D`, `P2W`, `P1DT12H`, `PT15M`). Years and months are refused: their length depends on the calendar, and an age limit that means different things on different days is not a limit.\",\n      \"maxLength\": 32,\n      \"pattern\": \"^P(([0-9]+W)?([0-9]+D)?T([0-9]+H([0-9]+M)?([0-9]+S)?|[0-9]+M([0-9]+S)?|[0-9]+S)|[0-9]+W([0-9]+D)?|[0-9]+D)$\",\n      \"title\": \"Duration\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ExtCritical\": {\n      \"description\": \"Names the `ext` namespaces a consumer MUST understand or refuse, per SPEC.md §4.5.1.\\n\\nEvery entry MUST be an immediate key of the sibling `ext` object at the same level; an entry naming an absent namespace is non-conforming and the consumer rejects the document with `malformedRequest`. A consumer that does not recognize a namespace named here MUST NOT process the document as though the namespace were absent, and rejects it with `unsupportedExtension` — the exception to the rule that unrecognized namespaces are ignored.\\n\\nA producer marks a namespace only where the document's meaning depends on it. Marking one that merely carries a hint or an annotation turns every consumer that has not implemented it into a failure where it would otherwise have interoperated. JSON Schema cannot check either of those rules: that an entry names a present namespace is checkable only against the sibling `ext`, and whether a namespace is load-bearing is not a schema question at all. Both are consumer-side checks.\",\n      \"examples\": [\n        [\n          \"org.openvtc.hidden-vetting\"\n        ]\n      ],\n      \"items\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\",\n        \"type\": \"string\"\n      },\n      \"minItems\": 1,\n      \"title\": \"ExtCritical\",\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    },\n    \"FieldDescription\": {\n      \"description\": \"Help text shown to a member filling the field in. Plain text; a reader MUST NOT treat it as instructions.\",\n      \"maxLength\": 280,\n      \"minLength\": 1,\n      \"title\": \"FieldDescription\",\n      \"type\": \"string\"\n    },\n    \"FieldKey\": {\n      \"description\": \"Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^([a-z][a-z0-9-]*\\\\.)*[a-z][a-zA-Z0-9]{0,63}$\",\n      \"title\": \"FieldKey\",\n      \"type\": \"string\"\n    },\n    \"FieldLabel\": {\n      \"description\": \"What readers see as the field's name. Plain text.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"title\": \"FieldLabel\",\n      \"type\": \"string\"\n    },\n    \"FieldSource\": {\n      \"description\": \"Who writes the value. `member`: self-asserted, through vtc/directory/card/update. `admin`: asserted by the community through vtc/directory/card/assert; the member reads it and cannot change it. `credential`: a claim the member discloses from a credential through vtc/directory/card/present, badged with its issuer. `derived`: a base field read from the community's own records (`role`, `joinedAt`, `did`, `personhood`) and never stored on a card. Each source is written only through its own path.\",\n      \"enum\": [\n        \"member\",\n        \"admin\",\n        \"credential\",\n        \"derived\"\n      ],\n      \"title\": \"FieldSource\",\n      \"type\": \"string\"\n    },\n    \"FieldType\": {\n      \"description\": \"The kind of value a field holds, which fixes its `FieldValue` shape. `did` holds a DID the member chooses to show (never their membership DID, which is the derived base field `did`). `claim` holds a `VerifiedValue` and requires `source: credential`.\",\n      \"enum\": [\n        \"text\",\n        \"longText\",\n        \"url\",\n        \"email\",\n        \"phone\",\n        \"enum\",\n        \"multiEnum\",\n        \"date\",\n        \"country\",\n        \"image\",\n        \"did\",\n        \"claim\"\n      ],\n      \"title\": \"FieldType\",\n      \"type\": \"string\"\n    },\n    \"GroupDisclosure\": {\n      \"additionalProperties\": false,\n      \"description\": \"Present when the community has groups. A member of a group holds a credential, issued by the group's own identifier, that evidences their membership, and can present it outside the community — which is why an applicant is told.\",\n      \"properties\": {\n        \"credentialValidity\": {\n          \"description\": \"How long each group membership credential is valid for, as an ISO 8601 duration in weeks, days, hours, minutes and seconds (`P30D`). It is renewed while the member stays in the group, and a credential already issued stays valid until it expires even after its holder leaves.\",\n          \"maxLength\": 32,\n          \"pattern\": \"^P(([0-9]+W)?([0-9]+D)?T([0-9]+H([0-9]+M)?([0-9]+S)?|[0-9]+M([0-9]+S)?|[0-9]+S)|[0-9]+W([0-9]+D)?|[0-9]+D)$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialValidity\"\n      ],\n      \"title\": \"GroupDisclosure\",\n      \"type\": \"object\"\n    },\n    \"Introductions\": {\n      \"description\": \"Who may ask the community to introduce them to this member. `anyone`: any active member who can find the entry. `groups`: only members who share a community group with them. `connections`: only members holding an attributed, in-force verified relationship with them. `off`: nobody. A refused introduction is never reported to its sender.\",\n      \"enum\": [\n        \"anyone\",\n        \"groups\",\n        \"connections\",\n        \"off\"\n      ],\n      \"title\": \"Introductions\",\n      \"type\": \"string\"\n    },\n    \"Listing\": {\n      \"description\": \"Whether members can find the entry. `listed`: it appears when members browse. `findable`: it does not appear when browsing, but a search that matches it under `search` returns it. `hidden`: no member finds it by browsing or searching; administrators still see it, and members who share a group that shows its members see it in that group's member list.\",\n      \"enum\": [\n        \"listed\",\n        \"findable\",\n        \"hidden\"\n      ],\n      \"title\": \"Listing\",\n      \"type\": \"string\"\n    },\n    \"NewCardDefaults\": {\n      \"additionalProperties\": false,\n      \"description\": \"The discoverability a card has when the community creates it, before its member chooses. A new card is never published beyond the community (VTI-DIR-042), so there is no member for that here: `externalCards` says whether the member may turn it on.\",\n      \"properties\": {\n        \"introductions\": {\n          \"$ref\": \"#/$defs/Introductions\",\n          \"description\": \"From whom a new card accepts introductions. Absent where the community does not deliver introductions.\"\n        },\n        \"listing\": {\n          \"$ref\": \"#/$defs/Listing\",\n          \"description\": \"The listing a new card starts with: the community's `defaultListing` (vtc/directory/fields/list). Every member may always choose `hidden`.\"\n        },\n        \"search\": {\n          \"description\": \"What a member's search may match, as the card's `discoverability.search`.\",\n          \"enum\": [\n            \"byName\",\n            \"exactNickname\",\n            \"off\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"listing\",\n        \"search\"\n      ],\n      \"title\": \"NewCardDefaults\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"branding\": {\n          \"$ref\": \"#/$defs/CommunityBranding\"\n        },\n        \"communityDid\": {\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"criteria\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Criterion\"\n          },\n          \"type\": \"array\"\n        },\n        \"directoryDisclosure\": {\n          \"$ref\": \"#/$defs/DirectoryDisclosure\",\n          \"description\": \"Present exactly where the community offers a member directory: the statement, generated from its configuration, of what the directory would disclose about a member and to whom — the same statement vtc/directory/disclosure returns. Outside every criterion, so no `requirementsDigest` covers it; it names itself with its own `statementDigest`.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"requestedAttributes\": {\n          \"description\": \"What the community asks an applicant to tell it about themselves, as claim types — never values. Answered in persona terms: the applicant's agent discloses those attributes from the face the applicant chooses, and they arrive on vtc/join-requests/submit as `attributes`. SELF-ASSERTED: a community MUST NOT describe an answer as verified, and MUST NOT make a decision that assumes it is. Outside every criterion, so no `requirementsDigest` covers it. Absent when the community asks nothing.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"purpose\": {\n                \"description\": \"Why the community asks, in words shown to the applicant before they disclose.\",\n                \"maxLength\": 256,\n                \"type\": \"string\"\n              },\n              \"required\": {\n                \"default\": true,\n                \"description\": \"False for an attribute the applicant may decline. A submission missing a required one is refused with vtc/join-requests/submit:attributesMissing.\",\n                \"type\": \"boolean\"\n              },\n              \"type\": {\n                \"description\": \"A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token.\",\n                \"maxLength\": 128,\n                \"minLength\": 1,\n                \"pattern\": \"^(x:)?[a-z][A-Za-z0-9]*(\\\\.[a-z][A-Za-z0-9]*)*$\",\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"type\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 32,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"communityDid\",\n        \"criteria\"\n      ],\n      \"title\": \"VTC Join-Requests Manifest — response payload\",\n      \"type\": \"object\"\n    },\n    \"VettingDocumentation\": {\n      \"description\": \"A class of documentation, named in lowerCamelCase. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `nationalId`, `driverLicence`, and `none` — the vetter will attest without a document, which is the `priorAcquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z][a-zA-Z0-9]*$\",\n      \"title\": \"VettingDocumentation\",\n      \"type\": \"string\"\n    },\n    \"VettingMethod\": {\n      \"description\": \"How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy.\",\n      \"enum\": [\n        \"inPerson\",\n        \"video\",\n        \"priorAcquaintance\"\n      ],\n      \"title\": \"VettingMethod\",\n      \"type\": \"string\"\n    },\n    \"VettingRelationship\": {\n      \"description\": \"The vetter's own declaration of how they relate to the applicant. Declared, not verified: it exists so community policy can cap how much evidence comes from people close to the applicant, and a false declaration is the vetter's attributable act.\",\n      \"enum\": [\n        \"none\",\n        \"communityColleague\",\n        \"sameEmployer\",\n        \"family\",\n        \"otherPersonal\"\n      ],\n      \"title\": \"VettingRelationship\",\n      \"type\": \"string\"\n    },\n    \"VettingRequirements\": {\n      \"additionalProperties\": true,\n      \"description\": \"What identity-vetting evidence a criterion needs, beyond what a presentation-definition can express: distinct eligible vetters, per-method floors, independence caps. Every number is the community's own policy. This schema supplies no defaults — an absent optional member means the community imposes no constraint of that kind, never that some protocol value applies. Deliberately open: a consumer MUST ignore members it does not recognise, so a community publishing a newer shape does not make an older client unable to read the rest. Durations: `maxStatementAge` — a statement older than this at decision time does not count (absent: no limit beyond the statement's own validity); `decisionSla` — how long after submission the community undertakes to decide, including on a referred application; `requirementsGrace` — how long an application started under an earlier `requirementsDigest` is still evaluated under that version.\",\n      \"properties\": {\n        \"acceptedDocumentClasses\": {\n          \"description\": \"Documentation a statement must have relied on in order to count. Absent — the expected case — means each vetter decides what documentation they accept, including none for prior acquaintance, and the community counts what they attest.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/VettingDocumentation\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"acceptedMethods\": {\n          \"description\": \"Methods whose statements count at all.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/VettingMethod\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"decisionSla\": {\n          \"$ref\": \"#/$defs/Duration\"\n        },\n        \"eligibleVetters\": {\n          \"additionalProperties\": false,\n          \"description\": \"How a vetter's eligibility is established.\",\n          \"properties\": {\n            \"role\": {\n              \"description\": \"The role a statement's issuer must hold, matched as the action `role:<role>` in a Verifiable Authority Credential (`AuthorityCredential`) the community issued to that issuer, whose `authority.scope` is the community's DID (see `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds such a credential.\",\n              \"maxLength\": 128,\n              \"minLength\": 1,\n              \"pattern\": \"^[a-zA-Z][a-zA-Z0-9_-]*$\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"role\"\n          ],\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1, for vetting parameters this version does not enumerate. A community publishing an admission mode the base members cannot express — the zero-knowledge parameters an applicant proves against, say — puts them under a namespace it controls, rather than waiting for a version that names them.\\n\\nThis object is already `additionalProperties: true`, so an unknown member here has always validated. That is not the same as reaching a consumer: a generated type names the members this schema declares and drops the rest, so an undeclared member is parsed and discarded, and it is discarded again on the re-serialization `requirementsDigest` is computed over. `ext` is a declared member, so it survives both.\"\n        },\n        \"extCritical\": {\n          \"$ref\": \"#/$defs/ExtCritical\",\n          \"description\": \"Namespaces of `ext` an applicant MUST understand or refuse, per SPEC.md §4.5.1.\\n\\nA community marks a namespace here when applying under this criterion without understanding it would mean something other than what the community requires — an applicant that ignored a hidden-vetting namespace, for instance, would submit named statements to a criterion whose whole point was that it does not receive them. An applicant that does not recognize a marked namespace stops rather than downgrading silently.\\n\\nAbsent, which is the common case, every namespace under `ext` is advisory and ignorable.\"\n        },\n        \"governanceFrameworkUrl\": {\n          \"description\": \"Where the community's vetting governance — including the attestation text vetters sign — is published.\",\n          \"format\": \"uri\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^https://\",\n          \"type\": \"string\"\n        },\n        \"independence\": {\n          \"additionalProperties\": false,\n          \"description\": \"Caps on how much evidence may come from people close to the applicant. Absent: no caps.\",\n          \"properties\": {\n            \"maxByDeclaredRelationship\": {\n              \"additionalProperties\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"description\": \"The most counted statements that may come from vetters declaring each relationship — e.g. `{ \\\"family\\\": 0 }`.\",\n              \"propertyNames\": {\n                \"$ref\": \"#/$defs/VettingRelationship\"\n              },\n              \"type\": \"object\"\n            },\n            \"requireConsistentIdentityCommitment\": {\n              \"description\": \"When true, every counted statement must carry the same identity commitment — all vetters verified the same claimed identity. Absent: false.\",\n              \"type\": \"boolean\"\n            }\n          },\n          \"type\": \"object\"\n        },\n        \"invitation\": {\n          \"description\": \"Whether an invitation credential must accompany the statements at submission (`required`), may (`optional`), or plays no part (`none`). Absent: the presentation-definition alone governs.\",\n          \"enum\": [\n            \"required\",\n            \"optional\",\n            \"none\"\n          ],\n          \"type\": \"string\"\n        },\n        \"maxStatementAge\": {\n          \"$ref\": \"#/$defs/Duration\"\n        },\n        \"minByMethod\": {\n          \"additionalProperties\": {\n            \"minimum\": 0,\n            \"type\": \"integer\"\n          },\n          \"description\": \"Per-method floors within `minStatements` — e.g. `{ \\\"inPerson\\\": 1 }`. Every method named MUST also be in `acceptedMethods`. Absent: no method floor.\",\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/VettingMethod\"\n          },\n          \"type\": \"object\"\n        },\n        \"minStatements\": {\n          \"description\": \"How many counted statements are needed, counting each vetter once however many DIDs they hold.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"optionalClaims\": {\n          \"description\": \"Claim types an applicant MAY add to the card and a vetter MAY verify. They never affect whether a statement counts.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/ClaimType\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"requiredClaims\": {\n          \"description\": \"Claim types the applicant's Vetting Card must carry, which the identity commitment is computed over, and which a counted statement must list as verified. Absent: none.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/ClaimType\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"requirementsGrace\": {\n          \"$ref\": \"#/$defs/Duration\"\n        },\n        \"statementType\": {\n          \"description\": \"The predicate IRI a counted vetting statement carries in `credentialSubject.predicate` — `https://registry.trustoverip.org/dtg/vsc/vetted/1`, the DTG VSC registry's identity-vetting predicate, or a predicate in a namespace the community controls — registered as one the community accepts via vtc/endorsement-types/register. A statement under any other predicate does not count.\",\n          \"format\": \"uri\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"description\": \"Version of this requirements object's shape. `0.1` for the members defined here.\",\n          \"pattern\": \"^(0|[1-9][0-9]*)\\\\.(0|[1-9][0-9]*)$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"version\",\n        \"statementType\",\n        \"minStatements\",\n        \"acceptedMethods\",\n        \"eligibleVetters\"\n      ],\n      \"title\": \"VettingRequirements\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Audience\":{\"description\":\"Who may see a directory field, ordered from narrowest to widest. `admins`: holders of `vtc.directory.admin` (and, for derived fields, `vtc.members.manage`). `groups`: members who share at least one community group with the subject (narrowed to the groups the subject names in `groupAudience`, where it names any). `connections`: members holding an attributed, in-force verified relationship with the subject at the community. `members`: every active member. `public`: anyone, and what the member's signed public card carries outside the community.\\n\\n`groups` and `connections` are not a chain: a viewer sees a field when they satisfy the audience the subject chose for it or any wider audience. Every audience includes the administrators, and the subject always sees their own whole card. There is no `onlyMe`: a value nobody else should see is not directory data.\",\"enum\":[\"admins\",\"groups\",\"connections\",\"members\",\"public\"],\"title\":\"Audience\",\"type\":\"string\"},\"ClaimType\":{\"description\":\"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\"title\":\"ClaimType\",\"type\":\"string\"},\"CommunityBranding\":{\"additionalProperties\":false,\"description\":\"OPTIONAL. How the community asks to be shown to a prospective applicant: a name, an accent colour and a logo. Presentation only, self-asserted and unverified — `communityDid` identifies the community, never `branding`. Not part of any criterion, so not covered by a `requirementsDigest`. Every member is optional.\",\"properties\":{\"accentColor\":{\"description\":\"An sRGB colour as `#rrggbb`, compared case-insensitively. A community SHOULD write it in lower case.\",\"pattern\":\"^#[0-9a-fA-F]{6}$\",\"type\":\"string\"},\"displayName\":{\"description\":\"The community's name as it asks to be shown.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"logoUrl\":{\"description\":\"An https URL of the community's logo. Fetched by the client, so an untrusted image from wherever it points.\",\"format\":\"uri\",\"maxLength\":2048,\"pattern\":\"^https://\",\"type\":\"string\"}},\"title\":\"CommunityBranding\",\"type\":\"object\"},\"Criterion\":{\"additionalProperties\":false,\"dependentRequired\":{\"credentialIssuers\":[\"presentationDefinition\"],\"presentationDefinition\":[\"credentialIssuers\"]},\"properties\":{\"admission\":{\"description\":\"How the community decides a submission that meets this criterion. `automatic`: it admits the applicant without a person deciding. `review`: it refers the submission to an administrator, who decides.\",\"enum\":[\"automatic\",\"review\"],\"type\":\"string\"},\"credentialIssuers\":{\"description\":\"Whose credentials meet `presentationDefinition`: `community` (this community's own), `recognised` (this community's, or a community it recognises), or `any` (any issuer whose credential verifies). Present exactly when `presentationDefinition` is.\",\"enum\":[\"any\",\"community\",\"recognised\"],\"type\":\"string\"},\"description\":{\"description\":\"Plain-language summary of the criterion, authored by the community and shown to prospective applicants. Informative: where it and `vetting` disagree, `vetting` governs.\",\"maxLength\":1024,\"type\":\"string\"},\"id\":{\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"invitationRequired\":{\"description\":\"True: the criterion is met only by a submission carrying a valid, unconsumed invitation this community issued to the applicant.\",\"type\":\"boolean\"},\"presentationDefinition\":{\"description\":\"The credentials an applicant must present for this criterion (opaque here). Absent: the criterion requires no credential.\",\"type\":\"object\"},\"requirementsDigest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Digest over the RFC 8785 (JCS) canonicalization of this criterion object with the `requirementsDigest` member removed, as a multibase-encoded multihash (SHA-256 and base58btc RECOMMENDED). Names one version of the criterion: an applicant records it when starting an application and echoes it to vetters and at submission.\"},\"vetting\":{\"$ref\":\"#/$defs/VettingRequirements\"}},\"required\":[\"id\",\"admission\",\"requirementsDigest\"],\"title\":\"Criterion\",\"type\":\"object\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"DirectoryDisclosure\":{\"additionalProperties\":false,\"description\":\"The statement itself. Every member is generated from the community's configuration when the statement is read. `statementDigest` names this exact statement, so an applicant can record which one it was shown.\",\"properties\":{\"adminNotes\":{\"description\":\"Whether administrators keep notes about members. Notes are never on a card and never reach another member; a member may ask for the notes about them.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"externalCards\":{\"description\":\"Whether a member may publish a card beyond the community: their `public` values, signed by them, offered through the community's trust registry. Always the member's own choice, and off on a new card. False where the community cannot publish external cards.\",\"type\":\"boolean\"},\"fields\":{\"description\":\"Every active field, base and community-defined, in display order. A base field the community has disabled is absent, which is how a reader learns it is not collected.\",\"items\":{\"$ref\":\"#/$defs/DisclosedField\"},\"maxItems\":128,\"type\":\"array\"},\"groups\":{\"$ref\":\"#/$defs/GroupDisclosure\"},\"membershipIdentifiers\":{\"$ref\":\"#/$defs/Audience\",\"description\":\"The widest audience a member's membership identifier — the DID they joined with — can reach through the directory: the ceiling of the base field `did`, or `admins` where that field is disabled. `members` or `public` means a member may choose to show it that widely; a new card never shows it beyond `admins` (VTI-DIR-042). Administrators always see it.\"},\"newCard\":{\"$ref\":\"#/$defs/NewCardDefaults\"},\"statementDigest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Digest over the RFC 8785 (JCS) canonicalization of this statement with the `statementDigest` member removed, as a multibase-encoded multihash (SHA-256 and base58btc RECOMMENDED). Changes exactly when what the statement says changes.\"}},\"required\":[\"fields\",\"newCard\",\"membershipIdentifiers\",\"adminNotes\",\"externalCards\",\"statementDigest\"],\"title\":\"DirectoryDisclosure\",\"type\":\"object\"},\"DisclosedField\":{\"additionalProperties\":false,\"description\":\"One active field of the community's directory, as an applicant needs to see it: what it is, who writes its value, the widest audience it may ever reach and the audience a new card gives it. Disabled and retired fields are not listed: no projection shows them.\",\"properties\":{\"ceiling\":{\"$ref\":\"#/$defs/Audience\",\"description\":\"The widest audience the field may ever reach, whatever the member chooses.\"},\"defaultVisibility\":{\"$ref\":\"#/$defs/Audience\",\"description\":\"The audience a new card gives the field until its member chooses. Never wider than `ceiling`.\"},\"description\":{\"$ref\":\"#/$defs/FieldDescription\"},\"facet\":{\"description\":\"Whether members may filter on the field and see counts by its values. Absent: false.\",\"type\":\"boolean\"},\"key\":{\"$ref\":\"#/$defs/FieldKey\"},\"label\":{\"$ref\":\"#/$defs/FieldLabel\"},\"searchable\":{\"description\":\"Whether a member's search may match the field, within what the searcher may see.\",\"type\":\"boolean\"},\"source\":{\"$ref\":\"#/$defs/FieldSource\",\"description\":\"Who writes the value. `admin` and `credential` matter most to an applicant: an `admin` field holds what the community asserts about the member, which the member reads and cannot change.\"},\"type\":{\"$ref\":\"#/$defs/FieldType\"}},\"required\":[\"key\",\"label\",\"type\",\"source\",\"ceiling\",\"defaultVisibility\",\"searchable\"],\"title\":\"DisclosedField\",\"type\":\"object\"},\"Duration\":{\"description\":\"An ISO 8601 duration in weeks, days, hours, minutes and seconds only (e.g. `P120D`, `P2W`, `P1DT12H`, `PT15M`). Years and months are refused: their length depends on the calendar, and an age limit that means different things on different days is not a limit.\",\"maxLength\":32,\"pattern\":\"^P(([0-9]+W)?([0-9]+D)?T([0-9]+H([0-9]+M)?([0-9]+S)?|[0-9]+M([0-9]+S)?|[0-9]+S)|[0-9]+W([0-9]+D)?|[0-9]+D)$\",\"title\":\"Duration\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ExtCritical\":{\"description\":\"Names the `ext` namespaces a consumer MUST understand or refuse, per SPEC.md §4.5.1.\\n\\nEvery entry MUST be an immediate key of the sibling `ext` object at the same level; an entry naming an absent namespace is non-conforming and the consumer rejects the document with `malformedRequest`. A consumer that does not recognize a namespace named here MUST NOT process the document as though the namespace were absent, and rejects it with `unsupportedExtension` — the exception to the rule that unrecognized namespaces are ignored.\\n\\nA producer marks a namespace only where the document's meaning depends on it. Marking one that merely carries a hint or an annotation turns every consumer that has not implemented it into a failure where it would otherwise have interoperated. JSON Schema cannot check either of those rules: that an entry names a present namespace is checkable only against the sibling `ext`, and whether a namespace is load-bearing is not a schema question at all. Both are consumer-side checks.\",\"examples\":[[\"org.openvtc.hidden-vetting\"]],\"items\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\",\"type\":\"string\"},\"minItems\":1,\"title\":\"ExtCritical\",\"type\":\"array\",\"uniqueItems\":true},\"FieldDescription\":{\"description\":\"Help text shown to a member filling the field in. Plain text; a reader MUST NOT treat it as instructions.\",\"maxLength\":280,\"minLength\":1,\"title\":\"FieldDescription\",\"type\":\"string\"},\"FieldKey\":{\"description\":\"Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^([a-z][a-z0-9-]*\\\\.)*[a-z][a-zA-Z0-9]{0,63}$\",\"title\":\"FieldKey\",\"type\":\"string\"},\"FieldLabel\":{\"description\":\"What readers see as the field's name. Plain text.\",\"maxLength\":64,\"minLength\":1,\"title\":\"FieldLabel\",\"type\":\"string\"},\"FieldSource\":{\"description\":\"Who writes the value. `member`: self-asserted, through vtc/directory/card/update. `admin`: asserted by the community through vtc/directory/card/assert; the member reads it and cannot change it. `credential`: a claim the member discloses from a credential through vtc/directory/card/present, badged with its issuer. `derived`: a base field read from the community's own records (`role`, `joinedAt`, `did`, `personhood`) and never stored on a card. Each source is written only through its own path.\",\"enum\":[\"member\",\"admin\",\"credential\",\"derived\"],\"title\":\"FieldSource\",\"type\":\"string\"},\"FieldType\":{\"description\":\"The kind of value a field holds, which fixes its `FieldValue` shape. `did` holds a DID the member chooses to show (never their membership DID, which is the derived base field `did`). `claim` holds a `VerifiedValue` and requires `source: credential`.\",\"enum\":[\"text\",\"longText\",\"url\",\"email\",\"phone\",\"enum\",\"multiEnum\",\"date\",\"country\",\"image\",\"did\",\"claim\"],\"title\":\"FieldType\",\"type\":\"string\"},\"GroupDisclosure\":{\"additionalProperties\":false,\"description\":\"Present when the community has groups. A member of a group holds a credential, issued by the group's own identifier, that evidences their membership, and can present it outside the community — which is why an applicant is told.\",\"properties\":{\"credentialValidity\":{\"description\":\"How long each group membership credential is valid for, as an ISO 8601 duration in weeks, days, hours, minutes and seconds (`P30D`). It is renewed while the member stays in the group, and a credential already issued stays valid until it expires even after its holder leaves.\",\"maxLength\":32,\"pattern\":\"^P(([0-9]+W)?([0-9]+D)?T([0-9]+H([0-9]+M)?([0-9]+S)?|[0-9]+M([0-9]+S)?|[0-9]+S)|[0-9]+W([0-9]+D)?|[0-9]+D)$\",\"type\":\"string\"}},\"required\":[\"credentialValidity\"],\"title\":\"GroupDisclosure\",\"type\":\"object\"},\"Introductions\":{\"description\":\"Who may ask the community to introduce them to this member. `anyone`: any active member who can find the entry. `groups`: only members who share a community group with them. `connections`: only members holding an attributed, in-force verified relationship with them. `off`: nobody. A refused introduction is never reported to its sender.\",\"enum\":[\"anyone\",\"groups\",\"connections\",\"off\"],\"title\":\"Introductions\",\"type\":\"string\"},\"Listing\":{\"description\":\"Whether members can find the entry. `listed`: it appears when members browse. `findable`: it does not appear when browsing, but a search that matches it under `search` returns it. `hidden`: no member finds it by browsing or searching; administrators still see it, and members who share a group that shows its members see it in that group's member list.\",\"enum\":[\"listed\",\"findable\",\"hidden\"],\"title\":\"Listing\",\"type\":\"string\"},\"NewCardDefaults\":{\"additionalProperties\":false,\"description\":\"The discoverability a card has when the community creates it, before its member chooses. A new card is never published beyond the community (VTI-DIR-042), so there is no member for that here: `externalCards` says whether the member may turn it on.\",\"properties\":{\"introductions\":{\"$ref\":\"#/$defs/Introductions\",\"description\":\"From whom a new card accepts introductions. Absent where the community does not deliver introductions.\"},\"listing\":{\"$ref\":\"#/$defs/Listing\",\"description\":\"The listing a new card starts with: the community's `defaultListing` (vtc/directory/fields/list). Every member may always choose `hidden`.\"},\"search\":{\"description\":\"What a member's search may match, as the card's `discoverability.search`.\",\"enum\":[\"byName\",\"exactNickname\",\"off\"],\"type\":\"string\"}},\"required\":[\"listing\",\"search\"],\"title\":\"NewCardDefaults\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"branding\":{\"$ref\":\"#/$defs/CommunityBranding\"},\"communityDid\":{\"pattern\":\"^did:\",\"type\":\"string\"},\"criteria\":{\"items\":{\"$ref\":\"#/$defs/Criterion\"},\"type\":\"array\"},\"directoryDisclosure\":{\"$ref\":\"#/$defs/DirectoryDisclosure\",\"description\":\"Present exactly where the community offers a member directory: the statement, generated from its configuration, of what the directory would disclose about a member and to whom — the same statement vtc/directory/disclosure returns. Outside every criterion, so no `requirementsDigest` covers it; it names itself with its own `statementDigest`.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"requestedAttributes\":{\"description\":\"What the community asks an applicant to tell it about themselves, as claim types — never values. Answered in persona terms: the applicant's agent discloses those attributes from the face the applicant chooses, and they arrive on vtc/join-requests/submit as `attributes`. SELF-ASSERTED: a community MUST NOT describe an answer as verified, and MUST NOT make a decision that assumes it is. Outside every criterion, so no `requirementsDigest` covers it. Absent when the community asks nothing.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"purpose\":{\"description\":\"Why the community asks, in words shown to the applicant before they disclose.\",\"maxLength\":256,\"type\":\"string\"},\"required\":{\"default\":true,\"description\":\"False for an attribute the applicant may decline. A submission missing a required one is refused with vtc/join-requests/submit:attributesMissing.\",\"type\":\"boolean\"},\"type\":{\"description\":\"A claim-type token from the persona claim-type registry (persona/_shared/0.1/CLAIM-TYPES.md) — `name.display`, `address.country` — or an `x:` extension token.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^(x:)?[a-z][A-Za-z0-9]*(\\\\.[a-z][A-Za-z0-9]*)*$\",\"type\":\"string\"}},\"required\":[\"type\"],\"type\":\"object\"},\"maxItems\":32,\"type\":\"array\"}},\"required\":[\"communityDid\",\"criteria\"],\"title\":\"VTC Join-Requests Manifest — response payload\",\"type\":\"object\"},\"VettingDocumentation\":{\"description\":\"A class of documentation, named in lowerCamelCase. Open rather than enumerated, because what documentation a vetter accepts is each vetter's own choice. Well-known values: `passport`, `nationalId`, `driverLicence`, and `none` — the vetter will attest without a document, which is the `priorAcquaintance` case. Only the class ever travels — never a document number, an image, an issuing authority or an expiry date. `none` states a policy (what a vetter accepts); a record of what was relied on expresses 'no document' as an empty list instead.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z][a-zA-Z0-9]*$\",\"title\":\"VettingDocumentation\",\"type\":\"string\"},\"VettingMethod\":{\"description\":\"How the vetter established that the person they checked is the person controlling the applicant's DID. `inPerson` — both people were physically together. `video` — a live, two-way video call. `priorAcquaintance` — the vetter has known or worked with this person over a period, and attests from that knowledge rather than from a document. A method is a description of what happened, not an assurance level: which methods count, and how many of each, is community policy.\",\"enum\":[\"inPerson\",\"video\",\"priorAcquaintance\"],\"title\":\"VettingMethod\",\"type\":\"string\"},\"VettingRelationship\":{\"description\":\"The vetter's own declaration of how they relate to the applicant. Declared, not verified: it exists so community policy can cap how much evidence comes from people close to the applicant, and a false declaration is the vetter's attributable act.\",\"enum\":[\"none\",\"communityColleague\",\"sameEmployer\",\"family\",\"otherPersonal\"],\"title\":\"VettingRelationship\",\"type\":\"string\"},\"VettingRequirements\":{\"additionalProperties\":true,\"description\":\"What identity-vetting evidence a criterion needs, beyond what a presentation-definition can express: distinct eligible vetters, per-method floors, independence caps. Every number is the community's own policy. This schema supplies no defaults — an absent optional member means the community imposes no constraint of that kind, never that some protocol value applies. Deliberately open: a consumer MUST ignore members it does not recognise, so a community publishing a newer shape does not make an older client unable to read the rest. Durations: `maxStatementAge` — a statement older than this at decision time does not count (absent: no limit beyond the statement's own validity); `decisionSla` — how long after submission the community undertakes to decide, including on a referred application; `requirementsGrace` — how long an application started under an earlier `requirementsDigest` is still evaluated under that version.\",\"properties\":{\"acceptedDocumentClasses\":{\"description\":\"Documentation a statement must have relied on in order to count. Absent — the expected case — means each vetter decides what documentation they accept, including none for prior acquaintance, and the community counts what they attest.\",\"items\":{\"$ref\":\"#/$defs/VettingDocumentation\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"acceptedMethods\":{\"description\":\"Methods whose statements count at all.\",\"items\":{\"$ref\":\"#/$defs/VettingMethod\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"decisionSla\":{\"$ref\":\"#/$defs/Duration\"},\"eligibleVetters\":{\"additionalProperties\":false,\"description\":\"How a vetter's eligibility is established.\",\"properties\":{\"role\":{\"description\":\"The role a statement's issuer must hold, matched as the action `role:<role>` in a Verifiable Authority Credential (`AuthorityCredential`) the community issued to that issuer, whose `authority.scope` is the community's DID (see `vtc/vetting/vetters/grant/0.1`). A statement counts only if its issuer holds such a credential.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[a-zA-Z][a-zA-Z0-9_-]*$\",\"type\":\"string\"}},\"required\":[\"role\"],\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1, for vetting parameters this version does not enumerate. A community publishing an admission mode the base members cannot express — the zero-knowledge parameters an applicant proves against, say — puts them under a namespace it controls, rather than waiting for a version that names them.\\n\\nThis object is already `additionalProperties: true`, so an unknown member here has always validated. That is not the same as reaching a consumer: a generated type names the members this schema declares and drops the rest, so an undeclared member is parsed and discarded, and it is discarded again on the re-serialization `requirementsDigest` is computed over. `ext` is a declared member, so it survives both.\"},\"extCritical\":{\"$ref\":\"#/$defs/ExtCritical\",\"description\":\"Namespaces of `ext` an applicant MUST understand or refuse, per SPEC.md §4.5.1.\\n\\nA community marks a namespace here when applying under this criterion without understanding it would mean something other than what the community requires — an applicant that ignored a hidden-vetting namespace, for instance, would submit named statements to a criterion whose whole point was that it does not receive them. An applicant that does not recognize a marked namespace stops rather than downgrading silently.\\n\\nAbsent, which is the common case, every namespace under `ext` is advisory and ignorable.\"},\"governanceFrameworkUrl\":{\"description\":\"Where the community's vetting governance — including the attestation text vetters sign — is published.\",\"format\":\"uri\",\"maxLength\":2048,\"pattern\":\"^https://\",\"type\":\"string\"},\"independence\":{\"additionalProperties\":false,\"description\":\"Caps on how much evidence may come from people close to the applicant. Absent: no caps.\",\"properties\":{\"maxByDeclaredRelationship\":{\"additionalProperties\":{\"minimum\":0,\"type\":\"integer\"},\"description\":\"The most counted statements that may come from vetters declaring each relationship — e.g. `{ \\\"family\\\": 0 }`.\",\"propertyNames\":{\"$ref\":\"#/$defs/VettingRelationship\"},\"type\":\"object\"},\"requireConsistentIdentityCommitment\":{\"description\":\"When true, every counted statement must carry the same identity commitment — all vetters verified the same claimed identity. Absent: false.\",\"type\":\"boolean\"}},\"type\":\"object\"},\"invitation\":{\"description\":\"Whether an invitation credential must accompany the statements at submission (`required`), may (`optional`), or plays no part (`none`). Absent: the presentation-definition alone governs.\",\"enum\":[\"required\",\"optional\",\"none\"],\"type\":\"string\"},\"maxStatementAge\":{\"$ref\":\"#/$defs/Duration\"},\"minByMethod\":{\"additionalProperties\":{\"minimum\":0,\"type\":\"integer\"},\"description\":\"Per-method floors within `minStatements` — e.g. `{ \\\"inPerson\\\": 1 }`. Every method named MUST also be in `acceptedMethods`. Absent: no method floor.\",\"propertyNames\":{\"$ref\":\"#/$defs/VettingMethod\"},\"type\":\"object\"},\"minStatements\":{\"description\":\"How many counted statements are needed, counting each vetter once however many DIDs they hold.\",\"minimum\":1,\"type\":\"integer\"},\"optionalClaims\":{\"description\":\"Claim types an applicant MAY add to the card and a vetter MAY verify. They never affect whether a statement counts.\",\"items\":{\"$ref\":\"#/$defs/ClaimType\"},\"type\":\"array\",\"uniqueItems\":true},\"requiredClaims\":{\"description\":\"Claim types the applicant's Vetting Card must carry, which the identity commitment is computed over, and which a counted statement must list as verified. Absent: none.\",\"items\":{\"$ref\":\"#/$defs/ClaimType\"},\"type\":\"array\",\"uniqueItems\":true},\"requirementsGrace\":{\"$ref\":\"#/$defs/Duration\"},\"statementType\":{\"description\":\"The predicate IRI a counted vetting statement carries in `credentialSubject.predicate` — `https://registry.trustoverip.org/dtg/vsc/vetted/1`, the DTG VSC registry's identity-vetting predicate, or a predicate in a namespace the community controls — registered as one the community accepts via vtc/endorsement-types/register. A statement under any other predicate does not count.\",\"format\":\"uri\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"version\":{\"description\":\"Version of this requirements object's shape. `0.1` for the members defined here.\",\"pattern\":\"^(0|[1-9][0-9]*)\\\\.(0|[1-9][0-9]*)$\",\"type\":\"string\"}},\"required\":[\"version\",\"statementType\",\"minStatements\",\"acceptedMethods\",\"eligibleVetters\"],\"title\":\"VettingRequirements\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

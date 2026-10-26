@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,17 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "GroupId",
-///  "description": "Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.",
-///  "type": "string",
-///  "pattern": "^grp_[A-Za-z0-9_-]{16,64}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct GroupId(::std::string::String);
@@ -216,29 +181,6 @@ impl<'de> ::serde::Deserialize<'de> for GroupId {
 }
 ///A member leaves a static group, opts out of a dynamic one, or withdraws a pending request to join: renewal of their group credential stops, and what only the group provided is withdrawn. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/groups/leave/0.1",
-///  "title": "Payload",
-///  "description": "A member leaves a static group, opts out of a dynamic one, or withdraws a pending request to join: renewal of their group credential stops, and what only the group provided is withdrawn. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "groupId"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "groupId": {
-///      "$ref": "#/definitions/GroupId"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -255,48 +197,6 @@ impl Payload {
 }
 ///The success response to a vtc/groups/leave/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/leave/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The success response to a vtc/groups/leave/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/leave/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "groupId",
-///    "state"
-///  ],
-///  "properties": {
-///    "credentialValidUntil": {
-///      "description": "When the member's last group credential lapses; renewal has stopped. Null when they held none.",
-///      "type": [
-///        "string",
-///        "null"
-///      ],
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "groupId": {
-///      "$ref": "#/definitions/GroupId"
-///    },
-///    "state": {
-///      "description": "`left`: out of a static group. `optedOut`: out of a dynamic group, and kept out whatever its rule says until the member joins again. `requestWithdrawn`: a pending request is withdrawn. `pending`: leaving a group carrying authority, which the community executes as a reduction of the member's own authority on its terms.",
-///      "type": "string",
-///      "enum": [
-///        "left",
-///        "optedOut",
-///        "requestWithdrawn",
-///        "pending"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -322,21 +222,6 @@ impl Response {
 }
 ///`left`: out of a static group. `optedOut`: out of a dynamic group, and kept out whatever its rule says until the member joins again. `requestWithdrawn`: a pending request is withdrawn. `pending`: leaving a group carrying authority, which the community executes as a reduction of the member's own authority on its terms.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`left`: out of a static group. `optedOut`: out of a dynamic group, and kept out whatever its rule says until the member joins again. `requestWithdrawn`: a pending request is withdrawn. `pending`: leaving a group carrying authority, which the community executes as a reduction of the member's own authority on its terms.",
-///  "type": "string",
-///  "enum": [
-///    "left",
-///    "optedOut",
-///    "requestWithdrawn",
-///    "pending"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -550,7 +435,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"GroupId\": {\n      \"description\": \"Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.\",\n      \"pattern\": \"^grp_[A-Za-z0-9_-]{16,64}$\",\n      \"title\": \"GroupId\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a vtc/groups/leave/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/leave/0.1#response.\",\n      \"properties\": {\n        \"credentialValidUntil\": {\n          \"description\": \"When the member's last group credential lapses; renewal has stopped. Null when they held none.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"groupId\": {\n          \"$ref\": \"#/$defs/GroupId\"\n        },\n        \"state\": {\n          \"description\": \"`left`: out of a static group. `optedOut`: out of a dynamic group, and kept out whatever its rule says until the member joins again. `requestWithdrawn`: a pending request is withdrawn. `pending`: leaving a group carrying authority, which the community executes as a reduction of the member's own authority on its terms.\",\n          \"enum\": [\n            \"left\",\n            \"optedOut\",\n            \"requestWithdrawn\",\n            \"pending\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"groupId\",\n        \"state\"\n      ],\n      \"title\": \"VTC Groups — Leave — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/groups/leave/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A member leaves a static group, opts out of a dynamic one, or withdraws a pending request to join: renewal of their group credential stops, and what only the group provided is withdrawn. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"groupId\": {\n      \"$ref\": \"#/$defs/GroupId\"\n    }\n  },\n  \"required\": [\n    \"groupId\"\n  ],\n  \"title\": \"VTC Groups — Leave — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"GroupId\":{\"description\":\"Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.\",\"pattern\":\"^grp_[A-Za-z0-9_-]{16,64}$\",\"title\":\"GroupId\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/groups/leave/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/leave/0.1#response.\",\"properties\":{\"credentialValidUntil\":{\"description\":\"When the member's last group credential lapses; renewal has stopped. Null when they held none.\",\"format\":\"date-time\",\"type\":[\"string\",\"null\"]},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"groupId\":{\"$ref\":\"#/$defs/GroupId\"},\"state\":{\"description\":\"`left`: out of a static group. `optedOut`: out of a dynamic group, and kept out whatever its rule says until the member joins again. `requestWithdrawn`: a pending request is withdrawn. `pending`: leaving a group carrying authority, which the community executes as a reduction of the member's own authority on its terms.\",\"enum\":[\"left\",\"optedOut\",\"requestWithdrawn\",\"pending\"],\"type\":\"string\"}},\"required\":[\"groupId\",\"state\"],\"title\":\"VTC Groups — Leave — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/groups/leave/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A member leaves a static group, opts out of a dynamic one, or withdraws a pending request to join: renewal of their group credential stops, and what only the group provided is withdrawn. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"groupId\":{\"$ref\":\"#/$defs/GroupId\"}},\"required\":[\"groupId\"],\"title\":\"VTC Groups — Leave — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -559,7 +444,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"GroupId\": {\n      \"description\": \"Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.\",\n      \"pattern\": \"^grp_[A-Za-z0-9_-]{16,64}$\",\n      \"title\": \"GroupId\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a vtc/groups/leave/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/leave/0.1#response.\",\n      \"properties\": {\n        \"credentialValidUntil\": {\n          \"description\": \"When the member's last group credential lapses; renewal has stopped. Null when they held none.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"groupId\": {\n          \"$ref\": \"#/$defs/GroupId\"\n        },\n        \"state\": {\n          \"description\": \"`left`: out of a static group. `optedOut`: out of a dynamic group, and kept out whatever its rule says until the member joins again. `requestWithdrawn`: a pending request is withdrawn. `pending`: leaving a group carrying authority, which the community executes as a reduction of the member's own authority on its terms.\",\n          \"enum\": [\n            \"left\",\n            \"optedOut\",\n            \"requestWithdrawn\",\n            \"pending\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"groupId\",\n        \"state\"\n      ],\n      \"title\": \"VTC Groups — Leave — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"GroupId\":{\"description\":\"Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.\",\"pattern\":\"^grp_[A-Za-z0-9_-]{16,64}$\",\"title\":\"GroupId\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/groups/leave/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/leave/0.1#response.\",\"properties\":{\"credentialValidUntil\":{\"description\":\"When the member's last group credential lapses; renewal has stopped. Null when they held none.\",\"format\":\"date-time\",\"type\":[\"string\",\"null\"]},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"groupId\":{\"$ref\":\"#/$defs/GroupId\"},\"state\":{\"description\":\"`left`: out of a static group. `optedOut`: out of a dynamic group, and kept out whatever its rule says until the member joins again. `requestWithdrawn`: a pending request is withdrawn. `pending`: leaving a group carrying authority, which the community executes as a reduction of the member's own authority on its terms.\",\"enum\":[\"left\",\"optedOut\",\"requestWithdrawn\",\"pending\"],\"type\":\"string\"}},\"required\":[\"groupId\",\"state\"],\"title\":\"VTC Groups — Leave — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

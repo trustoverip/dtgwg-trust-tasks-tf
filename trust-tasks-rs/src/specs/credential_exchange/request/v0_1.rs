@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,30 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Holder to issuer: an OID4VCI Credential Request carrying the holder's key-binding proof. Replies on the offer thread.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/credential-exchange/request/0.1",
-///  "title": "Payload",
-///  "description": "Holder to issuer: an OID4VCI Credential Request carrying the holder's key-binding proof. Replies on the offer thread.",
-///  "type": "object",
-///  "required": [
-///    "credential_request"
-///  ],
-///  "properties": {
-///    "credential_request": {
-///      "description": "An OID4VCI Credential Request object, carried verbatim, including the embedded key-binding proof (`openid4vci-proof+jwt`). Its members are defined by OpenID for Verifiable Credential Issuance and are not re-specified here. snake_case member names are OID4VCI's own.",
-///      "type": "object"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -246,7 +198,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/credential-exchange/request/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Holder to issuer: an OID4VCI Credential Request carrying the holder's key-binding proof. Replies on the offer thread.\",\n  \"properties\": {\n    \"credential_request\": {\n      \"description\": \"An OID4VCI Credential Request object, carried verbatim, including the embedded key-binding proof (`openid4vci-proof+jwt`). Its members are defined by OpenID for Verifiable Credential Issuance and are not re-specified here. snake_case member names are OID4VCI's own.\",\n      \"type\": \"object\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"required\": [\n    \"credential_request\"\n  ],\n  \"title\": \"Credential Exchange Request — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/credential-exchange/request/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Holder to issuer: an OID4VCI Credential Request carrying the holder's key-binding proof. Replies on the offer thread.\",\"properties\":{\"credential_request\":{\"description\":\"An OID4VCI Credential Request object, carried verbatim, including the embedded key-binding proof (`openid4vci-proof+jwt`). Its members are defined by OpenID for Verifiable Credential Issuance and are not re-specified here. snake_case member names are OID4VCI's own.\",\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"credential_request\"],\"title\":\"Credential Exchange Request — payload\",\"type\":\"object\"}\n",
     );
 }
 /// The earlier `MAJOR.MINOR` of this slug that this version declares it

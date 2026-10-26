@@ -35,42 +35,6 @@ pub mod error {
 }
 ///`CredentialDescriptor`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "PublicKeyCredentialDescriptor",
-///  "type": "object",
-///  "required": [
-///    "id",
-///    "type"
-///  ],
-///  "properties": {
-///    "id": {
-///      "description": "base64url-encoded credential id.",
-///      "type": "string"
-///    },
-///    "transports": {
-///      "type": "array",
-///      "items": {
-///        "enum": [
-///          "usb",
-///          "nfc",
-///          "ble",
-///          "internal",
-///          "hybrid"
-///        ]
-///      }
-///    },
-///    "type": {
-///      "const": "public-key"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "credentialDescriptor"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -89,20 +53,6 @@ impl CredentialDescriptor {
 }
 ///`CredentialDescriptorTransportsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "enum": [
-///    "usb",
-///    "nfc",
-///    "ble",
-///    "internal",
-///    "hybrid"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -176,52 +126,6 @@ impl ::std::convert::TryFrom<::std::string::String> for CredentialDescriptorTran
 }
 ///Server-issued options for `navigator.credentials.get({ publicKey: ... })`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "PublicKeyCredentialRequestOptions",
-///  "description": "Server-issued options for `navigator.credentials.get({ publicKey: ... })`.",
-///  "type": "object",
-///  "required": [
-///    "challenge"
-///  ],
-///  "properties": {
-///    "allowCredentials": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/CredentialDescriptor"
-///      }
-///    },
-///    "challenge": {
-///      "description": "base64url-encoded one-time nonce.",
-///      "type": "string"
-///    },
-///    "extensions": {
-///      "description": "Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\n\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\n\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.",
-///      "type": "object"
-///    },
-///    "rpId": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "timeout": {
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "userVerification": {
-///      "enum": [
-///        "discouraged",
-///        "preferred",
-///        "required"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "credentialRequestOptions"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -264,15 +168,6 @@ impl CredentialRequestOptions {
 }
 ///`CredentialRequestOptionsRpId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CredentialRequestOptionsRpId(::std::string::String);
@@ -332,18 +227,6 @@ impl<'de> ::serde::Deserialize<'de> for CredentialRequestOptionsRpId {
 }
 ///`CredentialRequestOptionsUserVerification`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "enum": [
-///    "discouraged",
-///    "preferred",
-///    "required"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -409,21 +292,6 @@ impl ::std::convert::TryFrom<::std::string::String> for CredentialRequestOptions
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -445,15 +313,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -517,37 +376,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Ask the auth service to begin a WebAuthn authentication ceremony. The response carries PublicKeyCredentialRequestOptions for `navigator.credentials.get`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/auth/passkey/login/start/0.1",
-///  "title": "Payload",
-///  "description": "Ask the auth service to begin a WebAuthn authentication ceremony. The response carries PublicKeyCredentialRequestOptions for `navigator.credentials.get`.",
-///  "type": "object",
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "purpose": {
-///      "description": "Producer-declared intent. `login` issues a new session; `step-up` elevates an existing session's `acr`. The consumer's behaviour on the matching finish differs accordingly.",
-///      "type": "string",
-///      "enum": [
-///        "login",
-///        "step-up"
-///      ]
-///    },
-///    "subject": {
-///      "description": "The VID the producer intends to authenticate as. Optional — omit for usernameless / discoverable-credential flows where any registered passkey may answer.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -579,19 +407,6 @@ impl Payload {
 }
 ///Producer-declared intent. `login` issues a new session; `step-up` elevates an existing session's `acr`. The consumer's behaviour on the matching finish differs accordingly.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Producer-declared intent. `login` issues a new session; `step-up` elevates an existing session's `acr`. The consumer's behaviour on the matching finish differs accordingly.",
-///  "type": "string",
-///  "enum": [
-///    "login",
-///    "step-up"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -653,16 +468,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadPurpose {
 }
 ///The VID the producer intends to authenticate as. Optional — omit for usernameless / discoverable-credential flows where any registered passkey may answer.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The VID the producer intends to authenticate as. Optional — omit for usernameless / discoverable-credential flows where any registered passkey may answer.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadSubject(::std::string::String);
@@ -722,37 +527,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubject {
 }
 ///Server-issued WebAuthn request options. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/login/start/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Server-issued WebAuthn request options. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/login/start/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "authId",
-///    "options"
-///  ],
-///  "properties": {
-///    "authId": {
-///      "description": "Opaque server handle correlating this start with the matching finish.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "options": {
-///      "description": "PublicKeyCredentialRequestOptions for navigator.credentials.get.",
-///      "$ref": "#/definitions/CredentialRequestOptions"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -774,16 +548,6 @@ impl Response {
 }
 ///Opaque server handle correlating this start with the matching finish.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Opaque server handle correlating this start with the matching finish.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseAuthId(::std::string::String);
@@ -1186,7 +950,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/auth/passkey/login/start/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CredentialDescriptor\": {\n      \"$anchor\": \"credentialDescriptor\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"id\": {\n          \"description\": \"base64url-encoded credential id.\",\n          \"type\": \"string\"\n        },\n        \"transports\": {\n          \"items\": {\n            \"enum\": [\n              \"usb\",\n              \"nfc\",\n              \"ble\",\n              \"internal\",\n              \"hybrid\"\n            ]\n          },\n          \"type\": \"array\"\n        },\n        \"type\": {\n          \"const\": \"public-key\"\n        }\n      },\n      \"required\": [\n        \"type\",\n        \"id\"\n      ],\n      \"title\": \"PublicKeyCredentialDescriptor\",\n      \"type\": \"object\"\n    },\n    \"CredentialRequestOptions\": {\n      \"$anchor\": \"credentialRequestOptions\",\n      \"additionalProperties\": false,\n      \"description\": \"Server-issued options for `navigator.credentials.get({ publicKey: ... })`.\",\n      \"properties\": {\n        \"allowCredentials\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/CredentialDescriptor\"\n          },\n          \"type\": \"array\"\n        },\n        \"challenge\": {\n          \"description\": \"base64url-encoded one-time nonce.\",\n          \"type\": \"string\"\n        },\n        \"extensions\": {\n          \"description\": \"Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\\n\\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\\n\\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.\",\n          \"type\": \"object\"\n        },\n        \"rpId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"timeout\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"userVerification\": {\n          \"enum\": [\n            \"discouraged\",\n            \"preferred\",\n            \"required\"\n          ]\n        }\n      },\n      \"required\": [\n        \"challenge\"\n      ],\n      \"title\": \"PublicKeyCredentialRequestOptions\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Server-issued WebAuthn request options. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/login/start/0.1#response.\",\n      \"properties\": {\n        \"authId\": {\n          \"description\": \"Opaque server handle correlating this start with the matching finish.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"options\": {\n          \"$ref\": \"#/$defs/CredentialRequestOptions\",\n          \"description\": \"PublicKeyCredentialRequestOptions for navigator.credentials.get.\"\n        }\n      },\n      \"required\": [\n        \"authId\",\n        \"options\"\n      ],\n      \"title\": \"Auth Passkey Login Start — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/passkey/login/start/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Ask the auth service to begin a WebAuthn authentication ceremony. The response carries PublicKeyCredentialRequestOptions for `navigator.credentials.get`.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"purpose\": {\n      \"description\": \"Producer-declared intent. `login` issues a new session; `step-up` elevates an existing session's `acr`. The consumer's behaviour on the matching finish differs accordingly.\",\n      \"enum\": [\n        \"login\",\n        \"step-up\"\n      ],\n      \"type\": \"string\"\n    },\n    \"subject\": {\n      \"description\": \"The VID the producer intends to authenticate as. Optional — omit for usernameless / discoverable-credential flows where any registered passkey may answer.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"title\": \"Auth — Passkey Login (start)\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"CredentialDescriptor\":{\"$anchor\":\"credentialDescriptor\",\"additionalProperties\":false,\"properties\":{\"id\":{\"description\":\"base64url-encoded credential id.\",\"type\":\"string\"},\"transports\":{\"items\":{\"enum\":[\"usb\",\"nfc\",\"ble\",\"internal\",\"hybrid\"]},\"type\":\"array\"},\"type\":{\"const\":\"public-key\"}},\"required\":[\"type\",\"id\"],\"title\":\"PublicKeyCredentialDescriptor\",\"type\":\"object\"},\"CredentialRequestOptions\":{\"$anchor\":\"credentialRequestOptions\",\"additionalProperties\":false,\"description\":\"Server-issued options for `navigator.credentials.get({ publicKey: ... })`.\",\"properties\":{\"allowCredentials\":{\"items\":{\"$ref\":\"#/$defs/CredentialDescriptor\"},\"type\":\"array\"},\"challenge\":{\"description\":\"base64url-encoded one-time nonce.\",\"type\":\"string\"},\"extensions\":{\"description\":\"Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\\n\\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\\n\\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.\",\"type\":\"object\"},\"rpId\":{\"minLength\":1,\"type\":\"string\"},\"timeout\":{\"minimum\":1,\"type\":\"integer\"},\"userVerification\":{\"enum\":[\"discouraged\",\"preferred\",\"required\"]}},\"required\":[\"challenge\"],\"title\":\"PublicKeyCredentialRequestOptions\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Server-issued WebAuthn request options. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/login/start/0.1#response.\",\"properties\":{\"authId\":{\"description\":\"Opaque server handle correlating this start with the matching finish.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"options\":{\"$ref\":\"#/$defs/CredentialRequestOptions\",\"description\":\"PublicKeyCredentialRequestOptions for navigator.credentials.get.\"}},\"required\":[\"authId\",\"options\"],\"title\":\"Auth Passkey Login Start — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/auth/passkey/login/start/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Ask the auth service to begin a WebAuthn authentication ceremony. The response carries PublicKeyCredentialRequestOptions for `navigator.credentials.get`.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"purpose\":{\"description\":\"Producer-declared intent. `login` issues a new session; `step-up` elevates an existing session's `acr`. The consumer's behaviour on the matching finish differs accordingly.\",\"enum\":[\"login\",\"step-up\"],\"type\":\"string\"},\"subject\":{\"description\":\"The VID the producer intends to authenticate as. Optional — omit for usernameless / discoverable-credential flows where any registered passkey may answer.\",\"minLength\":1,\"type\":\"string\"}},\"title\":\"Auth — Passkey Login (start)\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1194,7 +958,7 @@ impl crate::Payload for Response {
         "https://trusttasks.org/spec/auth/passkey/login/start/0.1#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CredentialDescriptor\": {\n      \"$anchor\": \"credentialDescriptor\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"id\": {\n          \"description\": \"base64url-encoded credential id.\",\n          \"type\": \"string\"\n        },\n        \"transports\": {\n          \"items\": {\n            \"enum\": [\n              \"usb\",\n              \"nfc\",\n              \"ble\",\n              \"internal\",\n              \"hybrid\"\n            ]\n          },\n          \"type\": \"array\"\n        },\n        \"type\": {\n          \"const\": \"public-key\"\n        }\n      },\n      \"required\": [\n        \"type\",\n        \"id\"\n      ],\n      \"title\": \"PublicKeyCredentialDescriptor\",\n      \"type\": \"object\"\n    },\n    \"CredentialRequestOptions\": {\n      \"$anchor\": \"credentialRequestOptions\",\n      \"additionalProperties\": false,\n      \"description\": \"Server-issued options for `navigator.credentials.get({ publicKey: ... })`.\",\n      \"properties\": {\n        \"allowCredentials\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/CredentialDescriptor\"\n          },\n          \"type\": \"array\"\n        },\n        \"challenge\": {\n          \"description\": \"base64url-encoded one-time nonce.\",\n          \"type\": \"string\"\n        },\n        \"extensions\": {\n          \"description\": \"Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\\n\\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\\n\\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.\",\n          \"type\": \"object\"\n        },\n        \"rpId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"timeout\": {\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"userVerification\": {\n          \"enum\": [\n            \"discouraged\",\n            \"preferred\",\n            \"required\"\n          ]\n        }\n      },\n      \"required\": [\n        \"challenge\"\n      ],\n      \"title\": \"PublicKeyCredentialRequestOptions\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Server-issued WebAuthn request options. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/login/start/0.1#response.\",\n      \"properties\": {\n        \"authId\": {\n          \"description\": \"Opaque server handle correlating this start with the matching finish.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"options\": {\n          \"$ref\": \"#/$defs/CredentialRequestOptions\",\n          \"description\": \"PublicKeyCredentialRequestOptions for navigator.credentials.get.\"\n        }\n      },\n      \"required\": [\n        \"authId\",\n        \"options\"\n      ],\n      \"title\": \"Auth Passkey Login Start — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"CredentialDescriptor\":{\"$anchor\":\"credentialDescriptor\",\"additionalProperties\":false,\"properties\":{\"id\":{\"description\":\"base64url-encoded credential id.\",\"type\":\"string\"},\"transports\":{\"items\":{\"enum\":[\"usb\",\"nfc\",\"ble\",\"internal\",\"hybrid\"]},\"type\":\"array\"},\"type\":{\"const\":\"public-key\"}},\"required\":[\"type\",\"id\"],\"title\":\"PublicKeyCredentialDescriptor\",\"type\":\"object\"},\"CredentialRequestOptions\":{\"$anchor\":\"credentialRequestOptions\",\"additionalProperties\":false,\"description\":\"Server-issued options for `navigator.credentials.get({ publicKey: ... })`.\",\"properties\":{\"allowCredentials\":{\"items\":{\"$ref\":\"#/$defs/CredentialDescriptor\"},\"type\":\"array\"},\"challenge\":{\"description\":\"base64url-encoded one-time nonce.\",\"type\":\"string\"},\"extensions\":{\"description\":\"Client extension inputs, per the WebAuthn Level 2 `AuthenticationExtensionsClientInputs` dictionary.\\n\\nThis component states that it mirrors the W3C dictionary, and that dictionary defines `extensions`. Omitting it while closing the object with `additionalProperties: false` made the two claims contradict each other: a server emitting standard WebAuthn options could not conform, and the widely-used server libraries emit this member by default.\\n\\nStructure is deliberately unconstrained. The set of extensions is open and registered outside this framework, so enumerating them here would date the schema against a registry it does not own — and a closed list would reproduce the original defect one revision later.\",\"type\":\"object\"},\"rpId\":{\"minLength\":1,\"type\":\"string\"},\"timeout\":{\"minimum\":1,\"type\":\"integer\"},\"userVerification\":{\"enum\":[\"discouraged\",\"preferred\",\"required\"]}},\"required\":[\"challenge\"],\"title\":\"PublicKeyCredentialRequestOptions\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Server-issued WebAuthn request options. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/login/start/0.1#response.\",\"properties\":{\"authId\":{\"description\":\"Opaque server handle correlating this start with the matching finish.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"options\":{\"$ref\":\"#/$defs/CredentialRequestOptions\",\"description\":\"PublicKeyCredentialRequestOptions for navigator.credentials.get.\"}},\"required\":[\"authId\",\"options\"],\"title\":\"Auth Passkey Login Start — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

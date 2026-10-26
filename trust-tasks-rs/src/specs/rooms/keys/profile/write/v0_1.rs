@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,59 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A member holding `curate` or `admin` in a room asks their own key holder to set what the room is called and what it is for — or to clear it. The key holder signs the profile as the member, with the member's authority chain inside it, seals it under the room's current epoch, and stores it at the host at the location only members can compute. Exactly one of `profile` and `clear`. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/rooms/keys/profile/write/0.1",
-///  "title": "Payload",
-///  "description": "A member holding `curate` or `admin` in a room asks their own key holder to set what the room is called and what it is for — or to clear it. The key holder signs the profile as the member, with the member's authority chain inside it, seals it under the room's current epoch, and stores it at the host at the location only members can compute. Exactly one of `profile` and `clear`. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "host",
-///    "roomId"
-///  ],
-///  "properties": {
-///    "clear": {
-///      "description": "Remove the room's profile: retract the record at the current epoch's profile location, so that readers find `cleared` there and stop. Only `true` is meaningful, so only `true` is accepted. Takes `curate`, which the host enforces on a retraction. Mutually exclusive with `profile`.",
-///      "type": "boolean",
-///      "const": true
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "host": {
-///      "description": "The host to write to, as a DID. Named by the caller for the reason `rooms/keys/read` gives. A room registered with more than one host is written at the one that takes its writes.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1,
-///      "pattern": "^did:"
-///    },
-///    "profile": {
-///      "description": "The room's new profile, replacing the whole of the current one: a member absent here is absent from the room's profile afterwards. Mutually exclusive with `clear`.",
-///      "$ref": "#/definitions/RoomProfile"
-///    },
-///    "roomId": {
-///      "description": "The room whose profile to set. The recipient MUST hold its principal's membership of it.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "dependentSchemas": {
-///    "clear": {
-///      "not": {
-///        "required": [
-///          "profile"
-///        ]
-///      }
-///    }
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -221,18 +144,6 @@ impl Payload {
 }
 ///The host to write to, as a DID. Named by the caller for the reason `rooms/keys/read` gives. A room registered with more than one host is written at the one that takes its writes.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The host to write to, as a DID. Named by the caller for the reason `rooms/keys/read` gives. A room registered with more than one host is written at the one that takes its writes.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadHost(::std::string::String);
@@ -300,17 +211,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadHost {
 }
 ///The room whose profile to set. The recipient MUST hold its principal's membership of it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The room whose profile to set. The recipient MUST hold its principal's membership of it.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadRoomId(::std::string::String);
@@ -373,58 +273,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRoomId {
 }
 ///Success response to rooms/keys/profile/write. Type https://trusttasks.org/spec/rooms/keys/profile/write/0.1#response. Where the profile now is at the host, and under which epoch.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to rooms/keys/profile/write. Type https://trusttasks.org/spec/rooms/keys/profile/write/0.1#response. Where the profile now is at the host, and under which epoch.",
-///  "type": "object",
-///  "required": [
-///    "key",
-///    "outcome",
-///    "roomId",
-///    "version"
-///  ],
-///  "properties": {
-///    "epoch": {
-///      "description": "The epoch the profile was sealed under. Absent on an `open` room.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "key": {
-///      "description": "The record key the profile is stored at: `profile_key(epoch)` on a sealed tier, `room-profile` on an `open` room. Returned because it is already the host's to see; the caller needs it for nothing but diagnosis.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    },
-///    "outcome": {
-///      "description": "`written`: the profile given is the room's profile, stored and checked to open. `cleared`: the record at the current epoch's profile location is retracted.",
-///      "type": "string",
-///      "enum": [
-///        "written",
-///        "cleared"
-///      ]
-///    },
-///    "roomId": {
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    },
-///    "version": {
-///      "description": "The version the host assigned to the write or the retraction.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -450,17 +298,6 @@ impl Response {
 }
 ///The record key the profile is stored at: `profile_key(epoch)` on a sealed tier, `room-profile` on an `open` room. Returned because it is already the host's to see; the caller needs it for nothing but diagnosis.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The record key the profile is stored at: `profile_key(epoch)` on a sealed tier, `room-profile` on an `open` room. Returned because it is already the host's to see; the caller needs it for nothing but diagnosis.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseKey(::std::string::String);
@@ -523,19 +360,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseKey {
 }
 ///`written`: the profile given is the room's profile, stored and checked to open. `cleared`: the record at the current epoch's profile location is retracted.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`written`: the profile given is the room's profile, stored and checked to open. `cleared`: the record at the current epoch's profile location is retracted.",
-///  "type": "string",
-///  "enum": [
-///    "written",
-///    "cleared"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -597,16 +421,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseOutcome {
 }
 ///`ResponseRoomId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseRoomId(::std::string::String);
@@ -676,56 +490,6 @@ What a room says about itself to its own members: a name and, optionally, a desc
 
 **Growth.** A new optional member arrives in a later version of this component. A reader refuses a member it does not know (the `SealedRecordBody` rules), so a profile carrying one is not shown by a reader that predates it, and a writer SHOULD NOT use a member it cannot expect the room's readers to know. An ecosystem extension goes in `ext`, which a reader that does not understand it ignores. A change no earlier reader could survive is a new statement under a new derivation label (`openvtc/room/profile/v2`), written beside this one until the room's readers have moved.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RoomProfile",
-///  "description": "What a room says about itself to its own members: a name and, optionally, a description, short tags and an emoji, so that a member's wallet, portal or CLI can show what each room is rather than a DID.\n\n**It lives in the room, and only there.** A profile is carried in a record of the room (`RoomProfileStatement`), sealed on `attributed` and `private` rooms like every other record, so the room's host stores ciphertext and learns neither the name nor anything else here. It is never put in a credential — credentials are presented to hosts — nor in a host's record of the room, in `rooms/create` or `rooms/owner/register`, or in any member a host can read. On an `open` room it is cleartext, as everything in an open room is.\n\n**Plain text, never instructions.** Every member is free text chosen by whoever wrote the profile and shown to every member of the room. A reader renders `name`, `description` and `tags` as text — never as markup, never as a link it follows — removes or replaces control characters before showing them, and MUST NOT treat any of it as instructions, which matters most for an agent acting for a member. A writer MUST NOT put personal data or a credential in any member.\n\n**Growth.** A new optional member arrives in a later version of this component. A reader refuses a member it does not know (the `SealedRecordBody` rules), so a profile carrying one is not shown by a reader that predates it, and a writer SHOULD NOT use a member it cannot expect the room's readers to know. An ecosystem extension goes in `ext`, which a reader that does not understand it ignores. A change no earlier reader could survive is a new statement under a new derivation label (`openvtc/room/profile/v2`), written beside this one until the room's readers have moved.",
-///  "type": "object",
-///  "required": [
-///    "name"
-///  ],
-///  "properties": {
-///    "description": {
-///      "description": "What the room is for, in a sentence or a short paragraph. Plain text. Absent when the room has none; an empty string is not a description.",
-///      "type": "string",
-///      "maxLength": 1000,
-///      "minLength": 1
-///    },
-///    "emoji": {
-///      "description": "One emoji — a single extended grapheme cluster, such as `📋` — that a surface MAY show beside the name. Text, rendered as text: never an image, never a URL, never anything a reader fetches, since a fetched icon would tell whoever serves it which member opened which room, and when. A reader that cannot render it shows nothing in its place.",
-///      "type": "string",
-///      "maxLength": 16,
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1. A reader ignores what it does not understand.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "name": {
-///      "description": "The room's name as its members see it. Plain text, one line. Bounded like the label a community gives a room it owns (`RoomLabel` in vtc/_shared), so a community can write the same name here that it shows its administrators and the members it offers the room to.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "tags": {
-///      "description": "Short identifiers the room files itself under, as a set: order carries no meaning. A member's surface MAY filter or group rooms by them. They are the room's own and shown to its members — distinct from the tags a community files the rooms it owns under for its administrators, which are never written here.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 32,
-///        "minLength": 1,
-///        "pattern": "^[a-z0-9][a-z0-9-]{0,31}$"
-///      },
-///      "maxItems": 8,
-///      "uniqueItems": true
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -752,17 +516,6 @@ impl RoomProfile {
 }
 ///What the room is for, in a sentence or a short paragraph. Plain text. Absent when the room has none; an empty string is not a description.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "What the room is for, in a sentence or a short paragraph. Plain text. Absent when the room has none; an empty string is not a description.",
-///  "type": "string",
-///  "maxLength": 1000,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RoomProfileDescription(::std::string::String);
@@ -825,17 +578,6 @@ impl<'de> ::serde::Deserialize<'de> for RoomProfileDescription {
 }
 ///One emoji — a single extended grapheme cluster, such as `📋` — that a surface MAY show beside the name. Text, rendered as text: never an image, never a URL, never anything a reader fetches, since a fetched icon would tell whoever serves it which member opened which room, and when. A reader that cannot render it shows nothing in its place.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "One emoji — a single extended grapheme cluster, such as `📋` — that a surface MAY show beside the name. Text, rendered as text: never an image, never a URL, never anything a reader fetches, since a fetched icon would tell whoever serves it which member opened which room, and when. A reader that cannot render it shows nothing in its place.",
-///  "type": "string",
-///  "maxLength": 16,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RoomProfileEmoji(::std::string::String);
@@ -898,17 +640,6 @@ impl<'de> ::serde::Deserialize<'de> for RoomProfileEmoji {
 }
 ///The room's name as its members see it. Plain text, one line. Bounded like the label a community gives a room it owns (`RoomLabel` in vtc/_shared), so a community can write the same name here that it shows its administrators and the members it offers the room to.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The room's name as its members see it. Plain text, one line. Bounded like the label a community gives a room it owns (`RoomLabel` in vtc/_shared), so a community can write the same name here that it shows its administrators and the members it offers the room to.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RoomProfileName(::std::string::String);
@@ -971,17 +702,6 @@ impl<'de> ::serde::Deserialize<'de> for RoomProfileName {
 }
 ///`RoomProfileTagsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 32,
-///  "minLength": 1,
-///  "pattern": "^[a-z0-9][a-z0-9-]{0,31}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RoomProfileTagsItem(::std::string::String);
@@ -1369,7 +1089,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/keys/profile/write. Type https://trusttasks.org/spec/rooms/keys/profile/write/0.1#response. Where the profile now is at the host, and under which epoch.\",\n      \"properties\": {\n        \"epoch\": {\n          \"description\": \"The epoch the profile was sealed under. Absent on an `open` room.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"key\": {\n          \"description\": \"The record key the profile is stored at: `profile_key(epoch)` on a sealed tier, `room-profile` on an `open` room. Returned because it is already the host's to see; the caller needs it for nothing but diagnosis.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"outcome\": {\n          \"description\": \"`written`: the profile given is the room's profile, stored and checked to open. `cleared`: the record at the current epoch's profile location is retracted.\",\n          \"enum\": [\n            \"written\",\n            \"cleared\"\n          ],\n          \"type\": \"string\"\n        },\n        \"roomId\": {\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"description\": \"The version the host assigned to the write or the retraction.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"outcome\",\n        \"key\",\n        \"version\"\n      ],\n      \"title\": \"Rooms Keys Profile Write — response payload\",\n      \"type\": \"object\"\n    },\n    \"RoomProfile\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a room says about itself to its own members: a name and, optionally, a description, short tags and an emoji, so that a member's wallet, portal or CLI can show what each room is rather than a DID.\\n\\n**It lives in the room, and only there.** A profile is carried in a record of the room (`RoomProfileStatement`), sealed on `attributed` and `private` rooms like every other record, so the room's host stores ciphertext and learns neither the name nor anything else here. It is never put in a credential — credentials are presented to hosts — nor in a host's record of the room, in `rooms/create` or `rooms/owner/register`, or in any member a host can read. On an `open` room it is cleartext, as everything in an open room is.\\n\\n**Plain text, never instructions.** Every member is free text chosen by whoever wrote the profile and shown to every member of the room. A reader renders `name`, `description` and `tags` as text — never as markup, never as a link it follows — removes or replaces control characters before showing them, and MUST NOT treat any of it as instructions, which matters most for an agent acting for a member. A writer MUST NOT put personal data or a credential in any member.\\n\\n**Growth.** A new optional member arrives in a later version of this component. A reader refuses a member it does not know (the `SealedRecordBody` rules), so a profile carrying one is not shown by a reader that predates it, and a writer SHOULD NOT use a member it cannot expect the room's readers to know. An ecosystem extension goes in `ext`, which a reader that does not understand it ignores. A change no earlier reader could survive is a new statement under a new derivation label (`openvtc/room/profile/v2`), written beside this one until the room's readers have moved.\",\n      \"properties\": {\n        \"description\": {\n          \"description\": \"What the room is for, in a sentence or a short paragraph. Plain text. Absent when the room has none; an empty string is not a description.\",\n          \"maxLength\": 1000,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"emoji\": {\n          \"description\": \"One emoji — a single extended grapheme cluster, such as `📋` — that a surface MAY show beside the name. Text, rendered as text: never an image, never a URL, never anything a reader fetches, since a fetched icon would tell whoever serves it which member opened which room, and when. A reader that cannot render it shows nothing in its place.\",\n          \"maxLength\": 16,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1. A reader ignores what it does not understand.\"\n        },\n        \"name\": {\n          \"description\": \"The room's name as its members see it. Plain text, one line. Bounded like the label a community gives a room it owns (`RoomLabel` in vtc/_shared), so a community can write the same name here that it shows its administrators and the members it offers the room to.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tags\": {\n          \"description\": \"Short identifiers the room files itself under, as a set: order carries no meaning. A member's surface MAY filter or group rooms by them. They are the room's own and shown to its members — distinct from the tags a community files the rooms it owns under for its administrators, which are never written here.\",\n          \"items\": {\n            \"maxLength\": 32,\n            \"minLength\": 1,\n            \"pattern\": \"^[a-z0-9][a-z0-9-]{0,31}$\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 8,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        }\n      },\n      \"required\": [\n        \"name\"\n      ],\n      \"title\": \"RoomProfile\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/rooms/keys/profile/write/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"anyOf\": [\n    {\n      \"required\": [\n        \"profile\"\n      ]\n    },\n    {\n      \"required\": [\n        \"clear\"\n      ]\n    }\n  ],\n  \"dependentSchemas\": {\n    \"clear\": {\n      \"not\": {\n        \"required\": [\n          \"profile\"\n        ]\n      }\n    }\n  },\n  \"description\": \"A member holding `curate` or `admin` in a room asks their own key holder to set what the room is called and what it is for — or to clear it. The key holder signs the profile as the member, with the member's authority chain inside it, seals it under the room's current epoch, and stores it at the host at the location only members can compute. Exactly one of `profile` and `clear`. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"clear\": {\n      \"const\": true,\n      \"description\": \"Remove the room's profile: retract the record at the current epoch's profile location, so that readers find `cleared` there and stop. Only `true` is meaningful, so only `true` is accepted. Takes `curate`, which the host enforces on a retraction. Mutually exclusive with `profile`.\",\n      \"type\": \"boolean\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"host\": {\n      \"description\": \"The host to write to, as a DID. Named by the caller for the reason `rooms/keys/read` gives. A room registered with more than one host is written at the one that takes its writes.\",\n      \"maxLength\": 2048,\n      \"minLength\": 1,\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    },\n    \"profile\": {\n      \"$ref\": \"#/$defs/RoomProfile\",\n      \"description\": \"The room's new profile, replacing the whole of the current one: a member absent here is absent from the room's profile afterwards. Mutually exclusive with `clear`.\"\n    },\n    \"roomId\": {\n      \"description\": \"The room whose profile to set. The recipient MUST hold its principal's membership of it.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"roomId\",\n    \"host\"\n  ],\n  \"title\": \"Rooms Keys Profile Write — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/keys/profile/write. Type https://trusttasks.org/spec/rooms/keys/profile/write/0.1#response. Where the profile now is at the host, and under which epoch.\",\"properties\":{\"epoch\":{\"description\":\"The epoch the profile was sealed under. Absent on an `open` room.\",\"minimum\":1,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"key\":{\"description\":\"The record key the profile is stored at: `profile_key(epoch)` on a sealed tier, `room-profile` on an `open` room. Returned because it is already the host's to see; the caller needs it for nothing but diagnosis.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"outcome\":{\"description\":\"`written`: the profile given is the room's profile, stored and checked to open. `cleared`: the record at the current epoch's profile location is retracted.\",\"enum\":[\"written\",\"cleared\"],\"type\":\"string\"},\"roomId\":{\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"version\":{\"description\":\"The version the host assigned to the write or the retraction.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"roomId\",\"outcome\",\"key\",\"version\"],\"title\":\"Rooms Keys Profile Write — response payload\",\"type\":\"object\"},\"RoomProfile\":{\"additionalProperties\":false,\"description\":\"What a room says about itself to its own members: a name and, optionally, a description, short tags and an emoji, so that a member's wallet, portal or CLI can show what each room is rather than a DID.\\n\\n**It lives in the room, and only there.** A profile is carried in a record of the room (`RoomProfileStatement`), sealed on `attributed` and `private` rooms like every other record, so the room's host stores ciphertext and learns neither the name nor anything else here. It is never put in a credential — credentials are presented to hosts — nor in a host's record of the room, in `rooms/create` or `rooms/owner/register`, or in any member a host can read. On an `open` room it is cleartext, as everything in an open room is.\\n\\n**Plain text, never instructions.** Every member is free text chosen by whoever wrote the profile and shown to every member of the room. A reader renders `name`, `description` and `tags` as text — never as markup, never as a link it follows — removes or replaces control characters before showing them, and MUST NOT treat any of it as instructions, which matters most for an agent acting for a member. A writer MUST NOT put personal data or a credential in any member.\\n\\n**Growth.** A new optional member arrives in a later version of this component. A reader refuses a member it does not know (the `SealedRecordBody` rules), so a profile carrying one is not shown by a reader that predates it, and a writer SHOULD NOT use a member it cannot expect the room's readers to know. An ecosystem extension goes in `ext`, which a reader that does not understand it ignores. A change no earlier reader could survive is a new statement under a new derivation label (`openvtc/room/profile/v2`), written beside this one until the room's readers have moved.\",\"properties\":{\"description\":{\"description\":\"What the room is for, in a sentence or a short paragraph. Plain text. Absent when the room has none; an empty string is not a description.\",\"maxLength\":1000,\"minLength\":1,\"type\":\"string\"},\"emoji\":{\"description\":\"One emoji — a single extended grapheme cluster, such as `📋` — that a surface MAY show beside the name. Text, rendered as text: never an image, never a URL, never anything a reader fetches, since a fetched icon would tell whoever serves it which member opened which room, and when. A reader that cannot render it shows nothing in its place.\",\"maxLength\":16,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1. A reader ignores what it does not understand.\"},\"name\":{\"description\":\"The room's name as its members see it. Plain text, one line. Bounded like the label a community gives a room it owns (`RoomLabel` in vtc/_shared), so a community can write the same name here that it shows its administrators and the members it offers the room to.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"tags\":{\"description\":\"Short identifiers the room files itself under, as a set: order carries no meaning. A member's surface MAY filter or group rooms by them. They are the room's own and shown to its members — distinct from the tags a community files the rooms it owns under for its administrators, which are never written here.\",\"items\":{\"maxLength\":32,\"minLength\":1,\"pattern\":\"^[a-z0-9][a-z0-9-]{0,31}$\",\"type\":\"string\"},\"maxItems\":8,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"name\"],\"title\":\"RoomProfile\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/rooms/keys/profile/write/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"anyOf\":[{\"required\":[\"profile\"]},{\"required\":[\"clear\"]}],\"dependentSchemas\":{\"clear\":{\"not\":{\"required\":[\"profile\"]}}},\"description\":\"A member holding `curate` or `admin` in a room asks their own key holder to set what the room is called and what it is for — or to clear it. The key holder signs the profile as the member, with the member's authority chain inside it, seals it under the room's current epoch, and stores it at the host at the location only members can compute. Exactly one of `profile` and `clear`. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"clear\":{\"const\":true,\"description\":\"Remove the room's profile: retract the record at the current epoch's profile location, so that readers find `cleared` there and stop. Only `true` is meaningful, so only `true` is accepted. Takes `curate`, which the host enforces on a retraction. Mutually exclusive with `profile`.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"host\":{\"description\":\"The host to write to, as a DID. Named by the caller for the reason `rooms/keys/read` gives. A room registered with more than one host is written at the one that takes its writes.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^did:\",\"type\":\"string\"},\"profile\":{\"$ref\":\"#/$defs/RoomProfile\",\"description\":\"The room's new profile, replacing the whole of the current one: a member absent here is absent from the room's profile afterwards. Mutually exclusive with `clear`.\"},\"roomId\":{\"description\":\"The room whose profile to set. The recipient MUST hold its principal's membership of it.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"roomId\",\"host\"],\"title\":\"Rooms Keys Profile Write — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1379,7 +1099,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/keys/profile/write. Type https://trusttasks.org/spec/rooms/keys/profile/write/0.1#response. Where the profile now is at the host, and under which epoch.\",\n      \"properties\": {\n        \"epoch\": {\n          \"description\": \"The epoch the profile was sealed under. Absent on an `open` room.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"key\": {\n          \"description\": \"The record key the profile is stored at: `profile_key(epoch)` on a sealed tier, `room-profile` on an `open` room. Returned because it is already the host's to see; the caller needs it for nothing but diagnosis.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"outcome\": {\n          \"description\": \"`written`: the profile given is the room's profile, stored and checked to open. `cleared`: the record at the current epoch's profile location is retracted.\",\n          \"enum\": [\n            \"written\",\n            \"cleared\"\n          ],\n          \"type\": \"string\"\n        },\n        \"roomId\": {\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"description\": \"The version the host assigned to the write or the retraction.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"outcome\",\n        \"key\",\n        \"version\"\n      ],\n      \"title\": \"Rooms Keys Profile Write — response payload\",\n      \"type\": \"object\"\n    },\n    \"RoomProfile\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a room says about itself to its own members: a name and, optionally, a description, short tags and an emoji, so that a member's wallet, portal or CLI can show what each room is rather than a DID.\\n\\n**It lives in the room, and only there.** A profile is carried in a record of the room (`RoomProfileStatement`), sealed on `attributed` and `private` rooms like every other record, so the room's host stores ciphertext and learns neither the name nor anything else here. It is never put in a credential — credentials are presented to hosts — nor in a host's record of the room, in `rooms/create` or `rooms/owner/register`, or in any member a host can read. On an `open` room it is cleartext, as everything in an open room is.\\n\\n**Plain text, never instructions.** Every member is free text chosen by whoever wrote the profile and shown to every member of the room. A reader renders `name`, `description` and `tags` as text — never as markup, never as a link it follows — removes or replaces control characters before showing them, and MUST NOT treat any of it as instructions, which matters most for an agent acting for a member. A writer MUST NOT put personal data or a credential in any member.\\n\\n**Growth.** A new optional member arrives in a later version of this component. A reader refuses a member it does not know (the `SealedRecordBody` rules), so a profile carrying one is not shown by a reader that predates it, and a writer SHOULD NOT use a member it cannot expect the room's readers to know. An ecosystem extension goes in `ext`, which a reader that does not understand it ignores. A change no earlier reader could survive is a new statement under a new derivation label (`openvtc/room/profile/v2`), written beside this one until the room's readers have moved.\",\n      \"properties\": {\n        \"description\": {\n          \"description\": \"What the room is for, in a sentence or a short paragraph. Plain text. Absent when the room has none; an empty string is not a description.\",\n          \"maxLength\": 1000,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"emoji\": {\n          \"description\": \"One emoji — a single extended grapheme cluster, such as `📋` — that a surface MAY show beside the name. Text, rendered as text: never an image, never a URL, never anything a reader fetches, since a fetched icon would tell whoever serves it which member opened which room, and when. A reader that cannot render it shows nothing in its place.\",\n          \"maxLength\": 16,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1. A reader ignores what it does not understand.\"\n        },\n        \"name\": {\n          \"description\": \"The room's name as its members see it. Plain text, one line. Bounded like the label a community gives a room it owns (`RoomLabel` in vtc/_shared), so a community can write the same name here that it shows its administrators and the members it offers the room to.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tags\": {\n          \"description\": \"Short identifiers the room files itself under, as a set: order carries no meaning. A member's surface MAY filter or group rooms by them. They are the room's own and shown to its members — distinct from the tags a community files the rooms it owns under for its administrators, which are never written here.\",\n          \"items\": {\n            \"maxLength\": 32,\n            \"minLength\": 1,\n            \"pattern\": \"^[a-z0-9][a-z0-9-]{0,31}$\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 8,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        }\n      },\n      \"required\": [\n        \"name\"\n      ],\n      \"title\": \"RoomProfile\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/keys/profile/write. Type https://trusttasks.org/spec/rooms/keys/profile/write/0.1#response. Where the profile now is at the host, and under which epoch.\",\"properties\":{\"epoch\":{\"description\":\"The epoch the profile was sealed under. Absent on an `open` room.\",\"minimum\":1,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"key\":{\"description\":\"The record key the profile is stored at: `profile_key(epoch)` on a sealed tier, `room-profile` on an `open` room. Returned because it is already the host's to see; the caller needs it for nothing but diagnosis.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"outcome\":{\"description\":\"`written`: the profile given is the room's profile, stored and checked to open. `cleared`: the record at the current epoch's profile location is retracted.\",\"enum\":[\"written\",\"cleared\"],\"type\":\"string\"},\"roomId\":{\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"version\":{\"description\":\"The version the host assigned to the write or the retraction.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"roomId\",\"outcome\",\"key\",\"version\"],\"title\":\"Rooms Keys Profile Write — response payload\",\"type\":\"object\"},\"RoomProfile\":{\"additionalProperties\":false,\"description\":\"What a room says about itself to its own members: a name and, optionally, a description, short tags and an emoji, so that a member's wallet, portal or CLI can show what each room is rather than a DID.\\n\\n**It lives in the room, and only there.** A profile is carried in a record of the room (`RoomProfileStatement`), sealed on `attributed` and `private` rooms like every other record, so the room's host stores ciphertext and learns neither the name nor anything else here. It is never put in a credential — credentials are presented to hosts — nor in a host's record of the room, in `rooms/create` or `rooms/owner/register`, or in any member a host can read. On an `open` room it is cleartext, as everything in an open room is.\\n\\n**Plain text, never instructions.** Every member is free text chosen by whoever wrote the profile and shown to every member of the room. A reader renders `name`, `description` and `tags` as text — never as markup, never as a link it follows — removes or replaces control characters before showing them, and MUST NOT treat any of it as instructions, which matters most for an agent acting for a member. A writer MUST NOT put personal data or a credential in any member.\\n\\n**Growth.** A new optional member arrives in a later version of this component. A reader refuses a member it does not know (the `SealedRecordBody` rules), so a profile carrying one is not shown by a reader that predates it, and a writer SHOULD NOT use a member it cannot expect the room's readers to know. An ecosystem extension goes in `ext`, which a reader that does not understand it ignores. A change no earlier reader could survive is a new statement under a new derivation label (`openvtc/room/profile/v2`), written beside this one until the room's readers have moved.\",\"properties\":{\"description\":{\"description\":\"What the room is for, in a sentence or a short paragraph. Plain text. Absent when the room has none; an empty string is not a description.\",\"maxLength\":1000,\"minLength\":1,\"type\":\"string\"},\"emoji\":{\"description\":\"One emoji — a single extended grapheme cluster, such as `📋` — that a surface MAY show beside the name. Text, rendered as text: never an image, never a URL, never anything a reader fetches, since a fetched icon would tell whoever serves it which member opened which room, and when. A reader that cannot render it shows nothing in its place.\",\"maxLength\":16,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1. A reader ignores what it does not understand.\"},\"name\":{\"description\":\"The room's name as its members see it. Plain text, one line. Bounded like the label a community gives a room it owns (`RoomLabel` in vtc/_shared), so a community can write the same name here that it shows its administrators and the members it offers the room to.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"tags\":{\"description\":\"Short identifiers the room files itself under, as a set: order carries no meaning. A member's surface MAY filter or group rooms by them. They are the room's own and shown to its members — distinct from the tags a community files the rooms it owns under for its administrators, which are never written here.\",\"items\":{\"maxLength\":32,\"minLength\":1,\"pattern\":\"^[a-z0-9][a-z0-9-]{0,31}$\",\"type\":\"string\"},\"maxItems\":8,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"name\"],\"title\":\"RoomProfile\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

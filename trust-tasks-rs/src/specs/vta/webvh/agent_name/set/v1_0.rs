@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,37 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Bind an agent name to a DID. The binding is only authoritative once the DID document claims the name back via `alsoKnownAs` — this task records the VTA's side of it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/webvh/agent-name/set/1.0",
-///  "title": "Payload",
-///  "description": "Bind an agent name to a DID. The binding is only authoritative once the DID document claims the name back via `alsoKnownAs` — this task records the VTA's side of it.",
-///  "type": "object",
-///  "required": [
-///    "did",
-///    "name"
-///  ],
-///  "properties": {
-///    "did": {
-///      "description": "DID the name is bound to.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "name": {
-///      "description": "The name, without the host — the full form is `<host>/@<name>`.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -191,16 +136,6 @@ impl Payload {
 }
 ///DID the name is bound to.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "DID the name is bound to.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadDid(::std::string::String);
@@ -260,16 +195,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDid {
 }
 ///The name, without the host — the full form is `<host>/@<name>`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The name, without the host — the full form is `<host>/@<name>`.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadName(::std::string::String);
@@ -329,38 +254,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadName {
 }
 ///Success response to vta/webvh/agent-name/set. Type https://trusttasks.org/spec/vta/webvh/agent-name/set/1.0#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to vta/webvh/agent-name/set. Type https://trusttasks.org/spec/vta/webvh/agent-name/set/1.0#response.",
-///  "type": "object",
-///  "required": [
-///    "did",
-///    "enabled",
-///    "name"
-///  ],
-///  "properties": {
-///    "did": {
-///      "type": "string"
-///    },
-///    "enabled": {
-///      "description": "Whether the name resolves after this call.",
-///      "type": "boolean"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "name": {
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -532,7 +425,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/webvh/agent-name/set. Type https://trusttasks.org/spec/vta/webvh/agent-name/set/1.0#response.\",\n      \"properties\": {\n        \"did\": {\n          \"type\": \"string\"\n        },\n        \"enabled\": {\n          \"description\": \"Whether the name resolves after this call.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"name\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"name\",\n        \"enabled\"\n      ],\n      \"title\": \"VTA WebVH Agent-Name Set — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/webvh/agent-name/set/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Bind an agent name to a DID. The binding is only authoritative once the DID document claims the name back via `alsoKnownAs` — this task records the VTA's side of it.\",\n  \"properties\": {\n    \"did\": {\n      \"description\": \"DID the name is bound to.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"name\": {\n      \"description\": \"The name, without the host — the full form is `<host>/@<name>`.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"did\",\n    \"name\"\n  ],\n  \"title\": \"VTA WebVH Agent-Name Set — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vta/webvh/agent-name/set. Type https://trusttasks.org/spec/vta/webvh/agent-name/set/1.0#response.\",\"properties\":{\"did\":{\"type\":\"string\"},\"enabled\":{\"description\":\"Whether the name resolves after this call.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"name\":{\"type\":\"string\"}},\"required\":[\"did\",\"name\",\"enabled\"],\"title\":\"VTA WebVH Agent-Name Set — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/webvh/agent-name/set/1.0\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Bind an agent name to a DID. The binding is only authoritative once the DID document claims the name back via `alsoKnownAs` — this task records the VTA's side of it.\",\"properties\":{\"did\":{\"description\":\"DID the name is bound to.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"name\":{\"description\":\"The name, without the host — the full form is `<host>/@<name>`.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"did\",\"name\"],\"title\":\"VTA WebVH Agent-Name Set — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -542,7 +435,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/webvh/agent-name/set. Type https://trusttasks.org/spec/vta/webvh/agent-name/set/1.0#response.\",\n      \"properties\": {\n        \"did\": {\n          \"type\": \"string\"\n        },\n        \"enabled\": {\n          \"description\": \"Whether the name resolves after this call.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"name\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"name\",\n        \"enabled\"\n      ],\n      \"title\": \"VTA WebVH Agent-Name Set — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vta/webvh/agent-name/set. Type https://trusttasks.org/spec/vta/webvh/agent-name/set/1.0#response.\",\"properties\":{\"did\":{\"type\":\"string\"},\"enabled\":{\"description\":\"Whether the name resolves after this call.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"name\":{\"type\":\"string\"}},\"required\":[\"did\",\"name\",\"enabled\"],\"title\":\"VTA WebVH Agent-Name Set — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

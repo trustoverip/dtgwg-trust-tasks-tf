@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,24 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Asks an agent which trusted execution environment it runs in. The payload carries nothing. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/attestation/status/0.1",
-///  "title": "Payload",
-///  "description": "Asks an agent which trusted execution environment it runs in. The payload carries nothing. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -182,46 +140,6 @@ impl Payload {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "detected",
-///    "teeType"
-///  ],
-///  "properties": {
-///    "detected": {
-///      "description": "Whether the agent found the platform at boot. False means it was configured for one it did not find, and it produces no evidence.",
-///      "type": "boolean"
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "platformVersion": {
-///      "description": "The platform's own version string, when it reports one. Informational.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "teeType": {
-///      "description": "The platform whose evidence vta/attestation/report returns: nitro (AWS Nitro Enclaves), sev-snp (AMD SEV-SNP), or simulated (a development build whose evidence no verifier should accept).",
-///      "type": "string",
-///      "enum": [
-///        "nitro",
-///        "sev-snp",
-///        "simulated"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -249,17 +167,6 @@ impl Response {
 }
 ///The platform's own version string, when it reports one. Informational.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The platform's own version string, when it reports one. Informational.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponsePlatformVersion(::std::string::String);
@@ -322,20 +229,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponsePlatformVersion {
 }
 ///The platform whose evidence vta/attestation/report returns: nitro (AWS Nitro Enclaves), sev-snp (AMD SEV-SNP), or simulated (a development build whose evidence no verifier should accept).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The platform whose evidence vta/attestation/report returns: nitro (AWS Nitro Enclaves), sev-snp (AMD SEV-SNP), or simulated (a development build whose evidence no verifier should accept).",
-///  "type": "string",
-///  "enum": [
-///    "nitro",
-///    "sev-snp",
-///    "simulated"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -523,7 +416,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/attestation/status/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"detected\": {\n          \"description\": \"Whether the agent found the platform at boot. False means it was configured for one it did not find, and it produces no evidence.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"platformVersion\": {\n          \"description\": \"The platform's own version string, when it reports one. Informational.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"teeType\": {\n          \"description\": \"The platform whose evidence vta/attestation/report returns: nitro (AWS Nitro Enclaves), sev-snp (AMD SEV-SNP), or simulated (a development build whose evidence no verifier should accept).\",\n          \"enum\": [\n            \"nitro\",\n            \"sev-snp\",\n            \"simulated\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"teeType\",\n        \"detected\"\n      ],\n      \"title\": \"VTA Attestation Status — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/attestation/status/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Asks an agent which trusted execution environment it runs in. The payload carries nothing. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    }\n  },\n  \"title\": \"VTA Attestation — Status — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"detected\":{\"description\":\"Whether the agent found the platform at boot. False means it was configured for one it did not find, and it produces no evidence.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"platformVersion\":{\"description\":\"The platform's own version string, when it reports one. Informational.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"teeType\":{\"description\":\"The platform whose evidence vta/attestation/report returns: nitro (AWS Nitro Enclaves), sev-snp (AMD SEV-SNP), or simulated (a development build whose evidence no verifier should accept).\",\"enum\":[\"nitro\",\"sev-snp\",\"simulated\"],\"type\":\"string\"}},\"required\":[\"teeType\",\"detected\"],\"title\":\"VTA Attestation Status — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/attestation/status/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Asks an agent which trusted execution environment it runs in. The payload carries nothing. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"title\":\"VTA Attestation — Status — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -532,7 +425,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"detected\": {\n          \"description\": \"Whether the agent found the platform at boot. False means it was configured for one it did not find, and it produces no evidence.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"platformVersion\": {\n          \"description\": \"The platform's own version string, when it reports one. Informational.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"teeType\": {\n          \"description\": \"The platform whose evidence vta/attestation/report returns: nitro (AWS Nitro Enclaves), sev-snp (AMD SEV-SNP), or simulated (a development build whose evidence no verifier should accept).\",\n          \"enum\": [\n            \"nitro\",\n            \"sev-snp\",\n            \"simulated\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"teeType\",\n        \"detected\"\n      ],\n      \"title\": \"VTA Attestation Status — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"detected\":{\"description\":\"Whether the agent found the platform at boot. False means it was configured for one it did not find, and it produces no evidence.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"platformVersion\":{\"description\":\"The platform's own version string, when it reports one. Informational.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"teeType\":{\"description\":\"The platform whose evidence vta/attestation/report returns: nitro (AWS Nitro Enclaves), sev-snp (AMD SEV-SNP), or simulated (a development build whose evidence no verifier should accept).\",\"enum\":[\"nitro\",\"sev-snp\",\"simulated\"],\"type\":\"string\"}},\"required\":[\"teeType\",\"detected\"],\"title\":\"VTA Attestation Status — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

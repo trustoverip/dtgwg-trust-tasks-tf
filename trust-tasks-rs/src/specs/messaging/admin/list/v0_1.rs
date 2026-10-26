@@ -35,22 +35,6 @@ pub mod error {
 }
 ///The account's role at the mediator. `standard` is an ordinary served account; `admin`/`rootAdmin` may administer other accounts; `mediator` is the mediator's own account. Only a rootAdmin may assign or modify the rootAdmin role.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "AccountType",
-///  "description": "The account's role at the mediator. `standard` is an ordinary served account; `admin`/`rootAdmin` may administer other accounts; `mediator` is the mediator's own account. Only a rootAdmin may assign or modify the rootAdmin role.",
-///  "type": "string",
-///  "enum": [
-///    "standard",
-///    "admin",
-///    "rootAdmin",
-///    "mediator"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -120,31 +104,6 @@ impl ::std::convert::TryFrom<::std::string::String> for AccountType {
 }
 ///A privileged account at the mediator (an `admin` or `rootAdmin`).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "AdminAccount",
-///  "description": "A privileged account at the mediator (an `admin` or `rootAdmin`).",
-///  "type": "object",
-///  "required": [
-///    "accountType",
-///    "did"
-///  ],
-///  "properties": {
-///    "accountType": {
-///      "description": "The admin role; one of `admin` or `rootAdmin`.",
-///      "$ref": "#/definitions/AccountType"
-///    },
-///    "did": {
-///      "description": "The admin account's identifier — its DID or, for privacy, a stable hash of that DID (see `Vid`).",
-///      "$ref": "#/definitions/Vid"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -162,21 +121,6 @@ impl AdminAccount {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -198,15 +142,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -270,34 +205,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/messaging/admin/list/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "properties": {
-///    "cursor": {
-///      "description": "Opaque continuation token from a prior page's nextCursor. Echoed verbatim; treated as unstructured by the requester.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "limit": {
-///      "description": "Maximum number of admin accounts to return in this page. The mediator chooses a default when omitted.",
-///      "type": "integer",
-///      "maximum": 1000.0,
-///      "minimum": 1.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -329,16 +236,6 @@ impl Payload {
 }
 ///Opaque continuation token from a prior page's nextCursor. Echoed verbatim; treated as unstructured by the requester.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Opaque continuation token from a prior page's nextCursor. Echoed verbatim; treated as unstructured by the requester.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCursor(::std::string::String);
@@ -398,39 +295,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCursor {
 }
 ///The success response to a messaging/admin/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/admin/list/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The success response to a messaging/admin/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/admin/list/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "admins"
-///  ],
-///  "properties": {
-///    "admins": {
-///      "description": "The page of admin accounts.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/AdminAccount"
-///      }
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "nextCursor": {
-///      "description": "Opaque continuation token. Present only when further admins remain beyond this page; omitted on the final page.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -456,16 +320,6 @@ impl Response {
 }
 ///Opaque continuation token. Present only when further admins remain beyond this page; omitted on the final page.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Opaque continuation token. Present only when further admins remain beyond this page; omitted on the final page.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseNextCursor(::std::string::String);
@@ -525,17 +379,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseNextCursor {
 }
 ///A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Vid",
-///  "description": "A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Vid(::std::string::String);
@@ -795,14 +638,14 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/messaging/admin/list/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AccountType\": {\n      \"description\": \"The account's role at the mediator. `standard` is an ordinary served account; `admin`/`rootAdmin` may administer other accounts; `mediator` is the mediator's own account. Only a rootAdmin may assign or modify the rootAdmin role.\",\n      \"enum\": [\n        \"standard\",\n        \"admin\",\n        \"rootAdmin\",\n        \"mediator\"\n      ],\n      \"title\": \"AccountType\",\n      \"type\": \"string\"\n    },\n    \"AdminAccount\": {\n      \"additionalProperties\": false,\n      \"description\": \"A privileged account at the mediator (an `admin` or `rootAdmin`).\",\n      \"properties\": {\n        \"accountType\": {\n          \"$ref\": \"#/$defs/AccountType\",\n          \"description\": \"The admin role; one of `admin` or `rootAdmin`.\"\n        },\n        \"did\": {\n          \"$ref\": \"#/$defs/Vid\",\n          \"description\": \"The admin account's identifier — its DID or, for privacy, a stable hash of that DID (see `Vid`).\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"accountType\"\n      ],\n      \"title\": \"AdminAccount\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a messaging/admin/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/admin/list/0.1#response.\",\n      \"properties\": {\n        \"admins\": {\n          \"description\": \"The page of admin accounts.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/AdminAccount\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Opaque continuation token. Present only when further admins remain beyond this page; omitted on the final page.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"admins\"\n      ],\n      \"title\": \"Messaging List Admins — response payload\",\n      \"type\": \"object\"\n    },\n    \"Vid\": {\n      \"description\": \"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\n      \"minLength\": 1,\n      \"title\": \"Vid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/messaging/admin/list/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"cursor\": {\n      \"description\": \"Opaque continuation token from a prior page's nextCursor. Echoed verbatim; treated as unstructured by the requester.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"limit\": {\n      \"description\": \"Maximum number of admin accounts to return in this page. The mediator chooses a default when omitted.\",\n      \"maximum\": 1000,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    }\n  },\n  \"title\": \"Messaging List Admins — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"AccountType\":{\"description\":\"The account's role at the mediator. `standard` is an ordinary served account; `admin`/`rootAdmin` may administer other accounts; `mediator` is the mediator's own account. Only a rootAdmin may assign or modify the rootAdmin role.\",\"enum\":[\"standard\",\"admin\",\"rootAdmin\",\"mediator\"],\"title\":\"AccountType\",\"type\":\"string\"},\"AdminAccount\":{\"additionalProperties\":false,\"description\":\"A privileged account at the mediator (an `admin` or `rootAdmin`).\",\"properties\":{\"accountType\":{\"$ref\":\"#/$defs/AccountType\",\"description\":\"The admin role; one of `admin` or `rootAdmin`.\"},\"did\":{\"$ref\":\"#/$defs/Vid\",\"description\":\"The admin account's identifier — its DID or, for privacy, a stable hash of that DID (see `Vid`).\"}},\"required\":[\"did\",\"accountType\"],\"title\":\"AdminAccount\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a messaging/admin/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/admin/list/0.1#response.\",\"properties\":{\"admins\":{\"description\":\"The page of admin accounts.\",\"items\":{\"$ref\":\"#/$defs/AdminAccount\"},\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"nextCursor\":{\"description\":\"Opaque continuation token. Present only when further admins remain beyond this page; omitted on the final page.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"admins\"],\"title\":\"Messaging List Admins — response payload\",\"type\":\"object\"},\"Vid\":{\"description\":\"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\"minLength\":1,\"title\":\"Vid\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/messaging/admin/list/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"cursor\":{\"description\":\"Opaque continuation token from a prior page's nextCursor. Echoed verbatim; treated as unstructured by the requester.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"limit\":{\"description\":\"Maximum number of admin accounts to return in this page. The mediator chooses a default when omitted.\",\"maximum\":1000,\"minimum\":1,\"type\":\"integer\"}},\"title\":\"Messaging List Admins — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/messaging/admin/list/0.1#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AccountType\": {\n      \"description\": \"The account's role at the mediator. `standard` is an ordinary served account; `admin`/`rootAdmin` may administer other accounts; `mediator` is the mediator's own account. Only a rootAdmin may assign or modify the rootAdmin role.\",\n      \"enum\": [\n        \"standard\",\n        \"admin\",\n        \"rootAdmin\",\n        \"mediator\"\n      ],\n      \"title\": \"AccountType\",\n      \"type\": \"string\"\n    },\n    \"AdminAccount\": {\n      \"additionalProperties\": false,\n      \"description\": \"A privileged account at the mediator (an `admin` or `rootAdmin`).\",\n      \"properties\": {\n        \"accountType\": {\n          \"$ref\": \"#/$defs/AccountType\",\n          \"description\": \"The admin role; one of `admin` or `rootAdmin`.\"\n        },\n        \"did\": {\n          \"$ref\": \"#/$defs/Vid\",\n          \"description\": \"The admin account's identifier — its DID or, for privacy, a stable hash of that DID (see `Vid`).\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"accountType\"\n      ],\n      \"title\": \"AdminAccount\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a messaging/admin/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/admin/list/0.1#response.\",\n      \"properties\": {\n        \"admins\": {\n          \"description\": \"The page of admin accounts.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/AdminAccount\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Opaque continuation token. Present only when further admins remain beyond this page; omitted on the final page.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"admins\"\n      ],\n      \"title\": \"Messaging List Admins — response payload\",\n      \"type\": \"object\"\n    },\n    \"Vid\": {\n      \"description\": \"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\n      \"minLength\": 1,\n      \"title\": \"Vid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"AccountType\":{\"description\":\"The account's role at the mediator. `standard` is an ordinary served account; `admin`/`rootAdmin` may administer other accounts; `mediator` is the mediator's own account. Only a rootAdmin may assign or modify the rootAdmin role.\",\"enum\":[\"standard\",\"admin\",\"rootAdmin\",\"mediator\"],\"title\":\"AccountType\",\"type\":\"string\"},\"AdminAccount\":{\"additionalProperties\":false,\"description\":\"A privileged account at the mediator (an `admin` or `rootAdmin`).\",\"properties\":{\"accountType\":{\"$ref\":\"#/$defs/AccountType\",\"description\":\"The admin role; one of `admin` or `rootAdmin`.\"},\"did\":{\"$ref\":\"#/$defs/Vid\",\"description\":\"The admin account's identifier — its DID or, for privacy, a stable hash of that DID (see `Vid`).\"}},\"required\":[\"did\",\"accountType\"],\"title\":\"AdminAccount\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a messaging/admin/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/admin/list/0.1#response.\",\"properties\":{\"admins\":{\"description\":\"The page of admin accounts.\",\"items\":{\"$ref\":\"#/$defs/AdminAccount\"},\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"nextCursor\":{\"description\":\"Opaque continuation token. Present only when further admins remain beyond this page; omitted on the final page.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"admins\"],\"title\":\"Messaging List Admins — response payload\",\"type\":\"object\"},\"Vid\":{\"description\":\"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\"minLength\":1,\"title\":\"Vid\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

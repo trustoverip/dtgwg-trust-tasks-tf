@@ -34,16 +34,6 @@ pub mod error {
 }
 ///`Did`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:[a-z0-9]+:.+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Did(::std::string::String);
@@ -108,21 +98,6 @@ impl<'de> ::serde::Deserialize<'de> for Did {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -144,15 +119,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -216,31 +182,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Fetch the membership-pair credential bodies a community holds for one member.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/members/credentials/0.1",
-///  "title": "Payload",
-///  "description": "Fetch the membership-pair credential bodies a community holds for one member.",
-///  "type": "object",
-///  "required": [
-///    "did"
-///  ],
-///  "properties": {
-///    "did": {
-///      "description": "The member to read.",
-///      "$ref": "#/definitions/Did"
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -258,56 +199,6 @@ impl Payload {
 }
 ///The documents the community holds for this member. Every credential member is optional; absent means the community holds no such document, which is a real answer rather than a failure.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The documents the community holds for this member. Every credential member is optional; absent means the community holds no such document, which is a real answer rather than a failure.",
-///  "type": "object",
-///  "required": [
-///    "did",
-///    "memberVmcBound"
-///  ],
-///  "properties": {
-///    "did": {
-///      "description": "The member these documents belong to.",
-///      "$ref": "#/definitions/Did"
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "memberVmc": {
-///      "description": "The member-issued reciprocal VMC — the acknowledgement that completes the edge. A verifiable credential, carried verbatim and opaque to this schema. Maintainers must not re-serialise it — the bytes carry a proof over themselves. Matches the `vrcJsonld` idiom in vtc/relationships/list/0.2.",
-///      "type": "object",
-///      "minProperties": 1
-///    },
-///    "memberVmcBound": {
-///      "description": "Whether the acknowledgement's digest was verified against the grant. REQUIRED so that 'not verified' is stated rather than inferred from silence. Declares no `default` on purpose — a declared default is materialised by the generated bindings and breaks round-trip idempotence for every existing document.",
-///      "type": "boolean"
-///    },
-///    "memberVmcReceivedAt": {
-///      "description": "When the acknowledgement arrived. Paired with `memberVmc`; a maintainer must not send one without the other.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "membershipCredential": {
-///      "description": "The community-issued Verifiable Membership Credential — the grant. A verifiable credential, carried verbatim and opaque to this schema. Maintainers must not re-serialise it — the bytes carry a proof over themselves. Matches the `vrcJsonld` idiom in vtc/relationships/list/0.2.",
-///      "type": "object",
-///      "minProperties": 1
-///    },
-///    "roleCredential": {
-///      "description": "The role credential: a community-issued Verifiable Authority Credential (`AuthorityCredential`) conferring `role:<name>` at the community's DID. A verifiable credential, carried verbatim and opaque to this schema. Maintainers must not re-serialise it — the bytes carry a proof over themselves. Matches the `vrcJsonld` idiom in vtc/relationships/list/0.2.",
-///      "type": "object",
-///      "minProperties": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -557,7 +448,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Did\": {\n      \"maxLength\": 2048,\n      \"pattern\": \"^did:[a-z0-9]+:.+$\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The documents the community holds for this member. Every credential member is optional; absent means the community holds no such document, which is a real answer rather than a failure.\",\n      \"properties\": {\n        \"did\": {\n          \"$ref\": \"#/$defs/Did\",\n          \"description\": \"The member these documents belong to.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"memberVmc\": {\n          \"description\": \"The member-issued reciprocal VMC — the acknowledgement that completes the edge. A verifiable credential, carried verbatim and opaque to this schema. Maintainers must not re-serialise it — the bytes carry a proof over themselves. Matches the `vrcJsonld` idiom in vtc/relationships/list/0.2.\",\n          \"minProperties\": 1,\n          \"type\": \"object\"\n        },\n        \"memberVmcBound\": {\n          \"description\": \"Whether the acknowledgement's digest was verified against the grant. REQUIRED so that 'not verified' is stated rather than inferred from silence. Declares no `default` on purpose — a declared default is materialised by the generated bindings and breaks round-trip idempotence for every existing document.\",\n          \"type\": \"boolean\"\n        },\n        \"memberVmcReceivedAt\": {\n          \"description\": \"When the acknowledgement arrived. Paired with `memberVmc`; a maintainer must not send one without the other.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"membershipCredential\": {\n          \"description\": \"The community-issued Verifiable Membership Credential — the grant. A verifiable credential, carried verbatim and opaque to this schema. Maintainers must not re-serialise it — the bytes carry a proof over themselves. Matches the `vrcJsonld` idiom in vtc/relationships/list/0.2.\",\n          \"minProperties\": 1,\n          \"type\": \"object\"\n        },\n        \"roleCredential\": {\n          \"description\": \"The role credential: a community-issued Verifiable Authority Credential (`AuthorityCredential`) conferring `role:<name>` at the community's DID. A verifiable credential, carried verbatim and opaque to this schema. Maintainers must not re-serialise it — the bytes carry a proof over themselves. Matches the `vrcJsonld` idiom in vtc/relationships/list/0.2.\",\n          \"minProperties\": 1,\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"memberVmcBound\"\n      ],\n      \"title\": \"VTC Members Credentials — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/members/credentials/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Fetch the membership-pair credential bodies a community holds for one member.\",\n  \"properties\": {\n    \"did\": {\n      \"$ref\": \"#/$defs/Did\",\n      \"description\": \"The member to read.\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    }\n  },\n  \"required\": [\n    \"did\"\n  ],\n  \"title\": \"VTC Members — Credentials\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Did\":{\"maxLength\":2048,\"pattern\":\"^did:[a-z0-9]+:.+$\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The documents the community holds for this member. Every credential member is optional; absent means the community holds no such document, which is a real answer rather than a failure.\",\"properties\":{\"did\":{\"$ref\":\"#/$defs/Did\",\"description\":\"The member these documents belong to.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"memberVmc\":{\"description\":\"The member-issued reciprocal VMC — the acknowledgement that completes the edge. A verifiable credential, carried verbatim and opaque to this schema. Maintainers must not re-serialise it — the bytes carry a proof over themselves. Matches the `vrcJsonld` idiom in vtc/relationships/list/0.2.\",\"minProperties\":1,\"type\":\"object\"},\"memberVmcBound\":{\"description\":\"Whether the acknowledgement's digest was verified against the grant. REQUIRED so that 'not verified' is stated rather than inferred from silence. Declares no `default` on purpose — a declared default is materialised by the generated bindings and breaks round-trip idempotence for every existing document.\",\"type\":\"boolean\"},\"memberVmcReceivedAt\":{\"description\":\"When the acknowledgement arrived. Paired with `memberVmc`; a maintainer must not send one without the other.\",\"format\":\"date-time\",\"type\":\"string\"},\"membershipCredential\":{\"description\":\"The community-issued Verifiable Membership Credential — the grant. A verifiable credential, carried verbatim and opaque to this schema. Maintainers must not re-serialise it — the bytes carry a proof over themselves. Matches the `vrcJsonld` idiom in vtc/relationships/list/0.2.\",\"minProperties\":1,\"type\":\"object\"},\"roleCredential\":{\"description\":\"The role credential: a community-issued Verifiable Authority Credential (`AuthorityCredential`) conferring `role:<name>` at the community's DID. A verifiable credential, carried verbatim and opaque to this schema. Maintainers must not re-serialise it — the bytes carry a proof over themselves. Matches the `vrcJsonld` idiom in vtc/relationships/list/0.2.\",\"minProperties\":1,\"type\":\"object\"}},\"required\":[\"did\",\"memberVmcBound\"],\"title\":\"VTC Members Credentials — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/members/credentials/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Fetch the membership-pair credential bodies a community holds for one member.\",\"properties\":{\"did\":{\"$ref\":\"#/$defs/Did\",\"description\":\"The member to read.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"required\":[\"did\"],\"title\":\"VTC Members — Credentials\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -567,7 +458,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Did\": {\n      \"maxLength\": 2048,\n      \"pattern\": \"^did:[a-z0-9]+:.+$\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The documents the community holds for this member. Every credential member is optional; absent means the community holds no such document, which is a real answer rather than a failure.\",\n      \"properties\": {\n        \"did\": {\n          \"$ref\": \"#/$defs/Did\",\n          \"description\": \"The member these documents belong to.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"memberVmc\": {\n          \"description\": \"The member-issued reciprocal VMC — the acknowledgement that completes the edge. A verifiable credential, carried verbatim and opaque to this schema. Maintainers must not re-serialise it — the bytes carry a proof over themselves. Matches the `vrcJsonld` idiom in vtc/relationships/list/0.2.\",\n          \"minProperties\": 1,\n          \"type\": \"object\"\n        },\n        \"memberVmcBound\": {\n          \"description\": \"Whether the acknowledgement's digest was verified against the grant. REQUIRED so that 'not verified' is stated rather than inferred from silence. Declares no `default` on purpose — a declared default is materialised by the generated bindings and breaks round-trip idempotence for every existing document.\",\n          \"type\": \"boolean\"\n        },\n        \"memberVmcReceivedAt\": {\n          \"description\": \"When the acknowledgement arrived. Paired with `memberVmc`; a maintainer must not send one without the other.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"membershipCredential\": {\n          \"description\": \"The community-issued Verifiable Membership Credential — the grant. A verifiable credential, carried verbatim and opaque to this schema. Maintainers must not re-serialise it — the bytes carry a proof over themselves. Matches the `vrcJsonld` idiom in vtc/relationships/list/0.2.\",\n          \"minProperties\": 1,\n          \"type\": \"object\"\n        },\n        \"roleCredential\": {\n          \"description\": \"The role credential: a community-issued Verifiable Authority Credential (`AuthorityCredential`) conferring `role:<name>` at the community's DID. A verifiable credential, carried verbatim and opaque to this schema. Maintainers must not re-serialise it — the bytes carry a proof over themselves. Matches the `vrcJsonld` idiom in vtc/relationships/list/0.2.\",\n          \"minProperties\": 1,\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"memberVmcBound\"\n      ],\n      \"title\": \"VTC Members Credentials — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Did\":{\"maxLength\":2048,\"pattern\":\"^did:[a-z0-9]+:.+$\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The documents the community holds for this member. Every credential member is optional; absent means the community holds no such document, which is a real answer rather than a failure.\",\"properties\":{\"did\":{\"$ref\":\"#/$defs/Did\",\"description\":\"The member these documents belong to.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"memberVmc\":{\"description\":\"The member-issued reciprocal VMC — the acknowledgement that completes the edge. A verifiable credential, carried verbatim and opaque to this schema. Maintainers must not re-serialise it — the bytes carry a proof over themselves. Matches the `vrcJsonld` idiom in vtc/relationships/list/0.2.\",\"minProperties\":1,\"type\":\"object\"},\"memberVmcBound\":{\"description\":\"Whether the acknowledgement's digest was verified against the grant. REQUIRED so that 'not verified' is stated rather than inferred from silence. Declares no `default` on purpose — a declared default is materialised by the generated bindings and breaks round-trip idempotence for every existing document.\",\"type\":\"boolean\"},\"memberVmcReceivedAt\":{\"description\":\"When the acknowledgement arrived. Paired with `memberVmc`; a maintainer must not send one without the other.\",\"format\":\"date-time\",\"type\":\"string\"},\"membershipCredential\":{\"description\":\"The community-issued Verifiable Membership Credential — the grant. A verifiable credential, carried verbatim and opaque to this schema. Maintainers must not re-serialise it — the bytes carry a proof over themselves. Matches the `vrcJsonld` idiom in vtc/relationships/list/0.2.\",\"minProperties\":1,\"type\":\"object\"},\"roleCredential\":{\"description\":\"The role credential: a community-issued Verifiable Authority Credential (`AuthorityCredential`) conferring `role:<name>` at the community's DID. A verifiable credential, carried verbatim and opaque to this schema. Maintainers must not re-serialise it — the bytes carry a proof over themselves. Matches the `vrcJsonld` idiom in vtc/relationships/list/0.2.\",\"minProperties\":1,\"type\":\"object\"}},\"required\":[\"did\",\"memberVmcBound\"],\"title\":\"VTC Members Credentials — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

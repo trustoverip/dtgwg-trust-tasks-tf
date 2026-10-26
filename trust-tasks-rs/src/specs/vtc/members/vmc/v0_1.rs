@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,34 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/members/vmc/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "vc"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "requestId": {
-///      "description": "Optional: an approved join request this delivery also closes. When present and naming an approved request whose applicant is the delivering member, the community records the delivered credential as the reciprocal half of the join and marks the request's reciprocation complete.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "vc": {
-///      "description": "The member-issued MembershipCredential (W3C VC). Opaque here; credentialSubject.id must be the community DID.",
-///      "type": "object"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -193,16 +141,6 @@ impl Payload {
 }
 ///Optional: an approved join request this delivery also closes. When present and naming an approved request whose applicant is the delivering member, the community records the delivered credential as the reciprocal half of the join and marks the request's reciprocation complete.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Optional: an approved join request this delivery also closes. When present and naming an approved request whose applicant is the delivering member, the community records the delivered credential as the reciprocal half of the join and marks the request's reciprocation complete.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadRequestId(::std::string::String);
@@ -262,49 +200,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRequestId {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "memberDid",
-///    "status",
-///    "vmcId"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "memberDid": {
-///      "description": "The delivering member, as proven by the transport.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "requestId": {
-///      "description": "Echoed when the delivery also closed a join request (the request payload carried `requestId`).",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "status": {
-///      "description": "Terminal state of the delivery.",
-///      "type": "string",
-///      "enum": [
-///        "stored"
-///      ]
-///    },
-///    "vmcId": {
-///      "description": "Identifier of the stored credential.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -334,16 +229,6 @@ impl Response {
 }
 ///The delivering member, as proven by the transport.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The delivering member, as proven by the transport.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseMemberDid(::std::string::String);
@@ -403,16 +288,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseMemberDid {
 }
 ///Echoed when the delivery also closed a join request (the request payload carried `requestId`).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Echoed when the delivery also closed a join request (the request payload carried `requestId`).",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseRequestId(::std::string::String);
@@ -472,18 +347,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseRequestId {
 }
 ///Terminal state of the delivery.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Terminal state of the delivery.",
-///  "type": "string",
-///  "enum": [
-///    "stored"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -541,16 +404,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseStatus {
 }
 ///Identifier of the stored credential.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Identifier of the stored credential.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseVmcId(::std::string::String);
@@ -788,7 +641,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"memberDid\": {\n          \"description\": \"The delivering member, as proven by the transport.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"requestId\": {\n          \"description\": \"Echoed when the delivery also closed a join request (the request payload carried `requestId`).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"Terminal state of the delivery.\",\n          \"enum\": [\n            \"stored\"\n          ],\n          \"type\": \"string\"\n        },\n        \"vmcId\": {\n          \"description\": \"Identifier of the stored credential.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"memberDid\",\n        \"vmcId\",\n        \"status\"\n      ],\n      \"title\": \"VTC Members Deliver VMC — receipt payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/members/vmc/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"requestId\": {\n      \"description\": \"Optional: an approved join request this delivery also closes. When present and naming an approved request whose applicant is the delivering member, the community records the delivered credential as the reciprocal half of the join and marks the request's reciprocation complete.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"vc\": {\n      \"description\": \"The member-issued MembershipCredential (W3C VC). Opaque here; credentialSubject.id must be the community DID.\",\n      \"type\": \"object\"\n    }\n  },\n  \"required\": [\n    \"vc\"\n  ],\n  \"title\": \"VTC Members Deliver VMC — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"memberDid\":{\"description\":\"The delivering member, as proven by the transport.\",\"minLength\":1,\"type\":\"string\"},\"requestId\":{\"description\":\"Echoed when the delivery also closed a join request (the request payload carried `requestId`).\",\"minLength\":1,\"type\":\"string\"},\"status\":{\"description\":\"Terminal state of the delivery.\",\"enum\":[\"stored\"],\"type\":\"string\"},\"vmcId\":{\"description\":\"Identifier of the stored credential.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"memberDid\",\"vmcId\",\"status\"],\"title\":\"VTC Members Deliver VMC — receipt payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/members/vmc/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"requestId\":{\"description\":\"Optional: an approved join request this delivery also closes. When present and naming an approved request whose applicant is the delivering member, the community records the delivered credential as the reciprocal half of the join and marks the request's reciprocation complete.\",\"minLength\":1,\"type\":\"string\"},\"vc\":{\"description\":\"The member-issued MembershipCredential (W3C VC). Opaque here; credentialSubject.id must be the community DID.\",\"type\":\"object\"}},\"required\":[\"vc\"],\"title\":\"VTC Members Deliver VMC — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -797,7 +650,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"memberDid\": {\n          \"description\": \"The delivering member, as proven by the transport.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"requestId\": {\n          \"description\": \"Echoed when the delivery also closed a join request (the request payload carried `requestId`).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"Terminal state of the delivery.\",\n          \"enum\": [\n            \"stored\"\n          ],\n          \"type\": \"string\"\n        },\n        \"vmcId\": {\n          \"description\": \"Identifier of the stored credential.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"memberDid\",\n        \"vmcId\",\n        \"status\"\n      ],\n      \"title\": \"VTC Members Deliver VMC — receipt payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"memberDid\":{\"description\":\"The delivering member, as proven by the transport.\",\"minLength\":1,\"type\":\"string\"},\"requestId\":{\"description\":\"Echoed when the delivery also closed a join request (the request payload carried `requestId`).\",\"minLength\":1,\"type\":\"string\"},\"status\":{\"description\":\"Terminal state of the delivery.\",\"enum\":[\"stored\"],\"type\":\"string\"},\"vmcId\":{\"description\":\"Identifier of the stored credential.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"memberDid\",\"vmcId\",\"status\"],\"title\":\"VTC Members Deliver VMC — receipt payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

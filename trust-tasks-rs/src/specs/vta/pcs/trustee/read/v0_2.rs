@@ -34,17 +34,6 @@ pub mod error {
 }
 ///An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ElectionId",
-///  "description": "An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.",
-///  "type": "string",
-///  "pattern": "^[A-Za-z0-9._-]{1,128}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ElectionId(::std::string::String);
@@ -108,21 +97,6 @@ impl<'de> ::serde::Deserialize<'de> for ElectionId {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -144,15 +118,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -216,68 +181,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A trustee's client asks its VTA for a voting/trustees/status or voting/election/show request signed as the trustee, so it can follow the election's ceremony at the ballot box — on a private board as on a public one — without holding the trustee's key.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/pcs/trustee/read/0.2",
-///  "title": "Payload",
-///  "description": "A trustee's client asks its VTA for a voting/trustees/status or voting/election/show request signed as the trustee, so it can follow the election's ceremony at the ballot box — on a private board as on a public one — without holding the trustee's key.",
-///  "type": "object",
-///  "required": [
-///    "ballotBox",
-///    "community",
-///    "contextId",
-///    "electionId",
-///    "read",
-///    "trustee"
-///  ],
-///  "properties": {
-///    "ballotBox": {
-///      "description": "The ballot box's DID: the recipient of the signed request.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1,
-///      "pattern": "^did:"
-///    },
-///    "community": {
-///      "description": "The community's DID: the registrar that registered the election.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1
-///    },
-///    "contextId": {
-///      "description": "The VTA context the trustee's keys live in.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "electionId": {
-///      "$ref": "#/definitions/ElectionId"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "read": {
-///      "description": "Which read to sign: voting/trustees/status/0.1 or voting/election/show/0.2.",
-///      "type": "string",
-///      "enum": [
-///        "status",
-///        "election"
-///      ]
-///    },
-///    "trustee": {
-///      "description": "The trustee's DID: a persona this VTA holds an authentication key of.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1,
-///      "pattern": "^did:"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -306,18 +209,6 @@ impl Payload {
 }
 ///The ballot box's DID: the recipient of the signed request.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The ballot box's DID: the recipient of the signed request.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadBallotBox(::std::string::String);
@@ -385,17 +276,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadBallotBox {
 }
 ///The community's DID: the registrar that registered the election.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The community's DID: the registrar that registered the election.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCommunity(::std::string::String);
@@ -458,17 +338,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCommunity {
 }
 ///The VTA context the trustee's keys live in.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The VTA context the trustee's keys live in.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadContextId(::std::string::String);
@@ -531,19 +400,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 }
 ///Which read to sign: voting/trustees/status/0.1 or voting/election/show/0.2.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Which read to sign: voting/trustees/status/0.1 or voting/election/show/0.2.",
-///  "type": "string",
-///  "enum": [
-///    "status",
-///    "election"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -605,18 +461,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadRead {
 }
 ///The trustee's DID: a persona this VTA holds an authentication key of.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The trustee's DID: a persona this VTA holds an authentication key of.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadTrustee(::std::string::String);
@@ -684,66 +528,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadTrustee {
 }
 ///A complete, signed voting/trustees/status/0.1 or voting/election/show/0.2 request document, ready to send to the ballot box unchanged.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ReadDocument",
-///  "description": "A complete, signed voting/trustees/status/0.1 or voting/election/show/0.2 request document, ready to send to the ballot box unchanged.",
-///  "type": "object",
-///  "required": [
-///    "id",
-///    "issuedAt",
-///    "issuer",
-///    "payload",
-///    "proof",
-///    "recipient",
-///    "type"
-///  ],
-///  "properties": {
-///    "expiresAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "id": {
-///      "type": "string",
-///      "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
-///    },
-///    "issuedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "issuer": {
-///      "description": "The request's `trustee`.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1
-///    },
-///    "payload": {
-///      "description": "`{ community, electionId }` from the request, exactly.",
-///      "type": "object"
-///    },
-///    "proof": {
-///      "description": "A Data Integrity proof by an `authentication` key of `issuer`.",
-///      "type": "object"
-///    },
-///    "recipient": {
-///      "description": "The request's `ballotBox`.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1
-///    },
-///    "type": {
-///      "type": "string",
-///      "enum": [
-///        "https://trusttasks.org/spec/voting/trustees/status/0.1",
-///        "https://trusttasks.org/spec/voting/election/show/0.2"
-///      ]
-///    }
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
 pub struct ReadDocument {
@@ -774,15 +558,6 @@ impl ReadDocument {
 }
 ///`ReadDocumentId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ReadDocumentId(::std::string::String);
@@ -853,17 +628,6 @@ impl<'de> ::serde::Deserialize<'de> for ReadDocumentId {
 }
 ///The request's `trustee`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The request's `trustee`.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ReadDocumentIssuer(::std::string::String);
@@ -926,17 +690,6 @@ impl<'de> ::serde::Deserialize<'de> for ReadDocumentIssuer {
 }
 ///The request's `ballotBox`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The request's `ballotBox`.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ReadDocumentRecipient(::std::string::String);
@@ -999,18 +752,6 @@ impl<'de> ::serde::Deserialize<'de> for ReadDocumentRecipient {
 }
 ///`ReadDocumentType`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "enum": [
-///    "https://trusttasks.org/spec/voting/trustees/status/0.1",
-///    "https://trusttasks.org/spec/voting/election/show/0.2"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1080,29 +821,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ReadDocumentType {
 }
 ///The signed read, to send to the ballot box.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The signed read, to send to the ballot box.",
-///  "type": "object",
-///  "required": [
-///    "document"
-///  ],
-///  "properties": {
-///    "document": {
-///      "$ref": "#/definitions/ReadDocument"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1453,7 +1171,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ElectionId\": {\n      \"description\": \"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,128}$\",\n      \"title\": \"ElectionId\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ReadDocument\": {\n      \"description\": \"A complete, signed voting/trustees/status/0.1 or voting/election/show/0.2 request document, ready to send to the ballot box unchanged.\",\n      \"properties\": {\n        \"expiresAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"pattern\": \"^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$\",\n          \"type\": \"string\"\n        },\n        \"issuedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"issuer\": {\n          \"description\": \"The request's `trustee`.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"payload\": {\n          \"description\": \"`{ community, electionId }` from the request, exactly.\",\n          \"type\": \"object\"\n        },\n        \"proof\": {\n          \"description\": \"A Data Integrity proof by an `authentication` key of `issuer`.\",\n          \"type\": \"object\"\n        },\n        \"recipient\": {\n          \"description\": \"The request's `ballotBox`.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"type\": {\n          \"enum\": [\n            \"https://trusttasks.org/spec/voting/trustees/status/0.1\",\n            \"https://trusttasks.org/spec/voting/election/show/0.2\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"type\",\n        \"issuer\",\n        \"recipient\",\n        \"issuedAt\",\n        \"payload\",\n        \"proof\"\n      ],\n      \"title\": \"ReadDocument\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The signed read, to send to the ballot box.\",\n      \"properties\": {\n        \"document\": {\n          \"$ref\": \"#/$defs/ReadDocument\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"document\"\n      ],\n      \"title\": \"VTA PCS — Trustee Read — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/pcs/trustee/read/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A trustee's client asks its VTA for a voting/trustees/status or voting/election/show request signed as the trustee, so it can follow the election's ceremony at the ballot box — on a private board as on a public one — without holding the trustee's key.\",\n  \"properties\": {\n    \"ballotBox\": {\n      \"description\": \"The ballot box's DID: the recipient of the signed request.\",\n      \"maxLength\": 2048,\n      \"minLength\": 1,\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    },\n    \"community\": {\n      \"description\": \"The community's DID: the registrar that registered the election.\",\n      \"maxLength\": 2048,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"contextId\": {\n      \"description\": \"The VTA context the trustee's keys live in.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"electionId\": {\n      \"$ref\": \"#/$defs/ElectionId\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"read\": {\n      \"description\": \"Which read to sign: voting/trustees/status/0.1 or voting/election/show/0.2.\",\n      \"enum\": [\n        \"status\",\n        \"election\"\n      ],\n      \"type\": \"string\"\n    },\n    \"trustee\": {\n      \"description\": \"The trustee's DID: a persona this VTA holds an authentication key of.\",\n      \"maxLength\": 2048,\n      \"minLength\": 1,\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"contextId\",\n    \"community\",\n    \"electionId\",\n    \"trustee\",\n    \"ballotBox\",\n    \"read\"\n  ],\n  \"title\": \"VTA PCS — Trustee Read — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"ElectionId\":{\"description\":\"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\"pattern\":\"^[A-Za-z0-9._-]{1,128}$\",\"title\":\"ElectionId\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ReadDocument\":{\"description\":\"A complete, signed voting/trustees/status/0.1 or voting/election/show/0.2 request document, ready to send to the ballot box unchanged.\",\"properties\":{\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"id\":{\"pattern\":\"^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$\",\"type\":\"string\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"issuer\":{\"description\":\"The request's `trustee`.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"payload\":{\"description\":\"`{ community, electionId }` from the request, exactly.\",\"type\":\"object\"},\"proof\":{\"description\":\"A Data Integrity proof by an `authentication` key of `issuer`.\",\"type\":\"object\"},\"recipient\":{\"description\":\"The request's `ballotBox`.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"type\":{\"enum\":[\"https://trusttasks.org/spec/voting/trustees/status/0.1\",\"https://trusttasks.org/spec/voting/election/show/0.2\"],\"type\":\"string\"}},\"required\":[\"id\",\"type\",\"issuer\",\"recipient\",\"issuedAt\",\"payload\",\"proof\"],\"title\":\"ReadDocument\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The signed read, to send to the ballot box.\",\"properties\":{\"document\":{\"$ref\":\"#/$defs/ReadDocument\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"document\"],\"title\":\"VTA PCS — Trustee Read — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/pcs/trustee/read/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A trustee's client asks its VTA for a voting/trustees/status or voting/election/show request signed as the trustee, so it can follow the election's ceremony at the ballot box — on a private board as on a public one — without holding the trustee's key.\",\"properties\":{\"ballotBox\":{\"description\":\"The ballot box's DID: the recipient of the signed request.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^did:\",\"type\":\"string\"},\"community\":{\"description\":\"The community's DID: the registrar that registered the election.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"contextId\":{\"description\":\"The VTA context the trustee's keys live in.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"read\":{\"description\":\"Which read to sign: voting/trustees/status/0.1 or voting/election/show/0.2.\",\"enum\":[\"status\",\"election\"],\"type\":\"string\"},\"trustee\":{\"description\":\"The trustee's DID: a persona this VTA holds an authentication key of.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"contextId\",\"community\",\"electionId\",\"trustee\",\"ballotBox\",\"read\"],\"title\":\"VTA PCS — Trustee Read — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1461,7 +1179,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ElectionId\": {\n      \"description\": \"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,128}$\",\n      \"title\": \"ElectionId\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ReadDocument\": {\n      \"description\": \"A complete, signed voting/trustees/status/0.1 or voting/election/show/0.2 request document, ready to send to the ballot box unchanged.\",\n      \"properties\": {\n        \"expiresAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"pattern\": \"^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$\",\n          \"type\": \"string\"\n        },\n        \"issuedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"issuer\": {\n          \"description\": \"The request's `trustee`.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"payload\": {\n          \"description\": \"`{ community, electionId }` from the request, exactly.\",\n          \"type\": \"object\"\n        },\n        \"proof\": {\n          \"description\": \"A Data Integrity proof by an `authentication` key of `issuer`.\",\n          \"type\": \"object\"\n        },\n        \"recipient\": {\n          \"description\": \"The request's `ballotBox`.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"type\": {\n          \"enum\": [\n            \"https://trusttasks.org/spec/voting/trustees/status/0.1\",\n            \"https://trusttasks.org/spec/voting/election/show/0.2\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"type\",\n        \"issuer\",\n        \"recipient\",\n        \"issuedAt\",\n        \"payload\",\n        \"proof\"\n      ],\n      \"title\": \"ReadDocument\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The signed read, to send to the ballot box.\",\n      \"properties\": {\n        \"document\": {\n          \"$ref\": \"#/$defs/ReadDocument\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"document\"\n      ],\n      \"title\": \"VTA PCS — Trustee Read — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"ElectionId\":{\"description\":\"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\"pattern\":\"^[A-Za-z0-9._-]{1,128}$\",\"title\":\"ElectionId\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ReadDocument\":{\"description\":\"A complete, signed voting/trustees/status/0.1 or voting/election/show/0.2 request document, ready to send to the ballot box unchanged.\",\"properties\":{\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"id\":{\"pattern\":\"^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$\",\"type\":\"string\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"issuer\":{\"description\":\"The request's `trustee`.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"payload\":{\"description\":\"`{ community, electionId }` from the request, exactly.\",\"type\":\"object\"},\"proof\":{\"description\":\"A Data Integrity proof by an `authentication` key of `issuer`.\",\"type\":\"object\"},\"recipient\":{\"description\":\"The request's `ballotBox`.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"type\":{\"enum\":[\"https://trusttasks.org/spec/voting/trustees/status/0.1\",\"https://trusttasks.org/spec/voting/election/show/0.2\"],\"type\":\"string\"}},\"required\":[\"id\",\"type\",\"issuer\",\"recipient\",\"issuedAt\",\"payload\",\"proof\"],\"title\":\"ReadDocument\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The signed read, to send to the ballot box.\",\"properties\":{\"document\":{\"$ref\":\"#/$defs/ReadDocument\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"document\"],\"title\":\"VTA PCS — Trustee Read — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

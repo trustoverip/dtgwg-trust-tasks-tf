@@ -35,115 +35,6 @@ pub mod error {
 }
 ///`AclEntry`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "AclEntry",
-///  "type": "object",
-///  "required": [
-///    "role",
-///    "subject"
-///  ],
-///  "properties": {
-///    "allowedKeys": {
-///      "description": "Key identifiers this subject may invoke the maintainer's signing oracle on. INTERSECTS WITH `scopes` — it can only narrow, never widen: a key named here that lies outside the entry's scopes remains unreachable, exactly as if it were not named. ABSENT means every key within the entry's scopes (the behaviour of entries that pre-date this member); explicit `null` is equivalent to absent, and producers SHOULD omit the member instead. PRESENT-BUT-EMPTY means authorized on NO keys — the opposite of absent, and deliberately so: emptiness is never a wildcard (CONVENTIONS.md §5). A consumer MUST preserve and enforce the absent-vs-empty distinction end to end; collapsing the two (e.g. by testing emptiness alone) re-creates the empty-means-unrestricted class of privilege-escalation defect this family's conventions exist to prevent.",
-///      "type": [
-///        "array",
-///        "null"
-///      ],
-///      "items": {
-///        "type": "string"
-///      }
-///    },
-///    "approve": {
-///      "description": "Approve-authority: what this subject may **confer on others** by ratifying an approval, as distinct from `scopes`, which is what it may **exercise itself**. The two axes are independent, and that independence is the point — it is what lets a maintainer configure a least-privilege approver who can authorize an operation in a scope it has no authority to perform.\n\nOMISSION MEANS NOTHING IS CONFERRED. An absent `approve`, an absent `all`, and an empty `scopes` are all equivalent to \"this subject may ratify nothing\". A consumer that does not implement this member therefore confers less than the producer intended rather than more, which is the direction a missed member has to fail in.\n\nA subject with approve-authority is NOT thereby authorized to act. Consumers MUST resolve the two axes separately: reading `approve` to answer \"may this party ratify X\" and `scopes` to answer \"may this party do X\". Collapsing them grants an approver the ability to perform what it was only meant to sign off on.",
-///      "type": "object",
-///      "properties": {
-///        "all": {
-///          "description": "The subject may confer ANY scope. Takes precedence over `scopes`, which a consumer MUST ignore when this is true. Absent or false → only the scopes listed below, if any.",
-///          "default": false,
-///          "type": "boolean"
-///        },
-///        "scopes": {
-///          "description": "Opaque scope identifiers this subject may confer, drawn from the same vocabulary as the entry's own `scopes`. Where a maintainer's scopes are hierarchical, conferring a scope confers its descendants — the same containment rule the maintainer already applies to `scopes`, so the two axes cannot disagree about what a scope means. An empty array confers nothing; it is not a wildcard.",
-///          "type": "array",
-///          "items": {
-///            "type": "string"
-///          }
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "createdAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "createdBy": {
-///      "description": "VID of the party that originally added this entry.",
-///      "type": "string"
-///    },
-///    "expiresAt": {
-///      "description": "Optional time after which the entry is no longer effective.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1. Reverse-DNS-namespaced; consumers MUST ignore unrecognized namespaces.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "label": {
-///      "description": "Optional human-readable label.",
-///      "type": "string",
-///      "maxLength": 256
-///    },
-///    "role": {
-///      "description": "Opaque role identifier interpreted by the ACL maintainer.",
-///      "type": "string"
-///    },
-///    "scopes": {
-///      "description": "Opaque scope identifiers (e.g. contexts, domains, resource prefixes).",
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      }
-///    },
-///    "stepUp": {
-///      "description": "Per-entry authentication step-up configuration, consumed by the ACL maintainer when it gates an operation behind a step-up (see auth/step-up/policy/0.1). ADDITIVE-ONLY: a per-entry setting MAY raise the assurance required of this subject above the maintainer's system-wide floor, but MUST NOT lower it. The maintainer resolves the effective requirement as the strictest of (system floor, this entry).",
-///      "type": "object",
-///      "properties": {
-///        "approver": {
-///          "description": "VID authorized to ratify step-up for this subject — the `recipient` the maintainer addresses an auth/step-up/approve-request to (e.g. the holder's mobile authenticator or browser companion). Absent → the subject is its own approver (mode `self`) when it holds a usable authenticator; if neither an `approver` nor a self authenticator exists, no step-up method is available for this subject and the maintainer's fail-closed rule applies.",
-///          "type": "string"
-///        },
-///        "require": {
-///          "description": "Minimum step-up mode this subject MUST satisfy for gated operations, raising the system floor. `self` = the subject re-authenticates its own session; `delegated` = a separate `approver` MUST ratify. Omitted → the system floor applies unchanged. A value weaker than the resolved floor is ignored (additive-only).",
-///          "type": "string",
-///          "enum": [
-///            "self",
-///            "delegated"
-///          ]
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "subject": {
-///      "description": "VID of the party in the ACL. Compared by exact string equality (SPEC.md §4.8); producers SHOULD emit canonical form.",
-///      "type": "string"
-///    },
-///    "updatedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "updatedBy": {
-///      "description": "VID of the party that last modified this entry.",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -222,30 +113,6 @@ OMISSION MEANS NOTHING IS CONFERRED. An absent `approve`, an absent `all`, and a
 
 A subject with approve-authority is NOT thereby authorized to act. Consumers MUST resolve the two axes separately: reading `approve` to answer "may this party ratify X" and `scopes` to answer "may this party do X". Collapsing them grants an approver the ability to perform what it was only meant to sign off on.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Approve-authority: what this subject may **confer on others** by ratifying an approval, as distinct from `scopes`, which is what it may **exercise itself**. The two axes are independent, and that independence is the point — it is what lets a maintainer configure a least-privilege approver who can authorize an operation in a scope it has no authority to perform.\n\nOMISSION MEANS NOTHING IS CONFERRED. An absent `approve`, an absent `all`, and an empty `scopes` are all equivalent to \"this subject may ratify nothing\". A consumer that does not implement this member therefore confers less than the producer intended rather than more, which is the direction a missed member has to fail in.\n\nA subject with approve-authority is NOT thereby authorized to act. Consumers MUST resolve the two axes separately: reading `approve` to answer \"may this party ratify X\" and `scopes` to answer \"may this party do X\". Collapsing them grants an approver the ability to perform what it was only meant to sign off on.",
-///  "type": "object",
-///  "properties": {
-///    "all": {
-///      "description": "The subject may confer ANY scope. Takes precedence over `scopes`, which a consumer MUST ignore when this is true. Absent or false → only the scopes listed below, if any.",
-///      "default": false,
-///      "type": "boolean"
-///    },
-///    "scopes": {
-///      "description": "Opaque scope identifiers this subject may confer, drawn from the same vocabulary as the entry's own `scopes`. Where a maintainer's scopes are hierarchical, conferring a scope confers its descendants — the same containment rule the maintainer already applies to `scopes`, so the two axes cannot disagree about what a scope means. An empty array confers nothing; it is not a wildcard.",
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      }
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -272,16 +139,6 @@ impl AclEntryApprove {
 }
 ///Optional human-readable label.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Optional human-readable label.",
-///  "type": "string",
-///  "maxLength": 256
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct AclEntryLabel(::std::string::String);
@@ -341,30 +198,6 @@ impl<'de> ::serde::Deserialize<'de> for AclEntryLabel {
 }
 ///Per-entry authentication step-up configuration, consumed by the ACL maintainer when it gates an operation behind a step-up (see auth/step-up/policy/0.1). ADDITIVE-ONLY: a per-entry setting MAY raise the assurance required of this subject above the maintainer's system-wide floor, but MUST NOT lower it. The maintainer resolves the effective requirement as the strictest of (system floor, this entry).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Per-entry authentication step-up configuration, consumed by the ACL maintainer when it gates an operation behind a step-up (see auth/step-up/policy/0.1). ADDITIVE-ONLY: a per-entry setting MAY raise the assurance required of this subject above the maintainer's system-wide floor, but MUST NOT lower it. The maintainer resolves the effective requirement as the strictest of (system floor, this entry).",
-///  "type": "object",
-///  "properties": {
-///    "approver": {
-///      "description": "VID authorized to ratify step-up for this subject — the `recipient` the maintainer addresses an auth/step-up/approve-request to (e.g. the holder's mobile authenticator or browser companion). Absent → the subject is its own approver (mode `self`) when it holds a usable authenticator; if neither an `approver` nor a self authenticator exists, no step-up method is available for this subject and the maintainer's fail-closed rule applies.",
-///      "type": "string"
-///    },
-///    "require": {
-///      "description": "Minimum step-up mode this subject MUST satisfy for gated operations, raising the system floor. `self` = the subject re-authenticates its own session; `delegated` = a separate `approver` MUST ratify. Omitted → the system floor applies unchanged. A value weaker than the resolved floor is ignored (additive-only).",
-///      "type": "string",
-///      "enum": [
-///        "self",
-///        "delegated"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -391,19 +224,6 @@ impl AclEntryStepUp {
 }
 ///Minimum step-up mode this subject MUST satisfy for gated operations, raising the system floor. `self` = the subject re-authenticates its own session; `delegated` = a separate `approver` MUST ratify. Omitted → the system floor applies unchanged. A value weaker than the resolved floor is ignored (additive-only).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Minimum step-up mode this subject MUST satisfy for gated operations, raising the system floor. `self` = the subject re-authenticates its own session; `delegated` = a separate `approver` MUST ratify. Omitted → the system floor applies unchanged. A value weaker than the resolved floor is ignored (additive-only).",
-///  "type": "string",
-///  "enum": [
-///    "self",
-///    "delegated"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -465,21 +285,6 @@ impl ::std::convert::TryFrom<::std::string::String> for AclEntryStepUpRequire {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -501,15 +306,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -573,44 +369,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/acl/revoke/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "subject"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "reason": {
-///      "description": "Optional human-readable rationale for the revocation.",
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "scopes": {
-///      "description": "If present, the specific scopes to remove from the subject's entry. If absent, the entire entry is removed.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "minLength": 1
-///      },
-///      "minItems": 1
-///    },
-///    "subject": {
-///      "description": "VID of the party being revoked (or scope-reduced).",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -635,16 +393,6 @@ impl Payload {
 }
 ///Optional human-readable rationale for the revocation.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Optional human-readable rationale for the revocation.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadReason(::std::string::String);
@@ -704,15 +452,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 }
 ///`PayloadScopesItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadScopesItem(::std::string::String);
@@ -772,38 +511,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadScopesItem {
 }
 ///The success response to an acl/revoke request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/revoke/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The success response to an acl/revoke request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/revoke/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "entry"
-///  ],
-///  "properties": {
-///    "entry": {
-///      "description": "The AclEntry the maintainer now holds for the subject. null for a full removal; an AclEntry with reduced scopes for a scope reduction.",
-///      "oneOf": [
-///        {
-///          "type": "null"
-///        },
-///        {
-///          "$ref": "#/definitions/AclEntry"
-///        }
-///      ]
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1322,7 +1029,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AclEntry\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"allowedKeys\": {\n          \"description\": \"Key identifiers this subject may invoke the maintainer's signing oracle on. INTERSECTS WITH `scopes` — it can only narrow, never widen: a key named here that lies outside the entry's scopes remains unreachable, exactly as if it were not named. ABSENT means every key within the entry's scopes (the behaviour of entries that pre-date this member); explicit `null` is equivalent to absent, and producers SHOULD omit the member instead. PRESENT-BUT-EMPTY means authorized on NO keys — the opposite of absent, and deliberately so: emptiness is never a wildcard (CONVENTIONS.md §5). A consumer MUST preserve and enforce the absent-vs-empty distinction end to end; collapsing the two (e.g. by testing emptiness alone) re-creates the empty-means-unrestricted class of privilege-escalation defect this family's conventions exist to prevent.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": [\n            \"array\",\n            \"null\"\n          ]\n        },\n        \"approve\": {\n          \"additionalProperties\": false,\n          \"description\": \"Approve-authority: what this subject may **confer on others** by ratifying an approval, as distinct from `scopes`, which is what it may **exercise itself**. The two axes are independent, and that independence is the point — it is what lets a maintainer configure a least-privilege approver who can authorize an operation in a scope it has no authority to perform.\\n\\nOMISSION MEANS NOTHING IS CONFERRED. An absent `approve`, an absent `all`, and an empty `scopes` are all equivalent to \\\"this subject may ratify nothing\\\". A consumer that does not implement this member therefore confers less than the producer intended rather than more, which is the direction a missed member has to fail in.\\n\\nA subject with approve-authority is NOT thereby authorized to act. Consumers MUST resolve the two axes separately: reading `approve` to answer \\\"may this party ratify X\\\" and `scopes` to answer \\\"may this party do X\\\". Collapsing them grants an approver the ability to perform what it was only meant to sign off on.\",\n          \"properties\": {\n            \"all\": {\n              \"default\": false,\n              \"description\": \"The subject may confer ANY scope. Takes precedence over `scopes`, which a consumer MUST ignore when this is true. Absent or false → only the scopes listed below, if any.\",\n              \"type\": \"boolean\"\n            },\n            \"scopes\": {\n              \"description\": \"Opaque scope identifiers this subject may confer, drawn from the same vocabulary as the entry's own `scopes`. Where a maintainer's scopes are hierarchical, conferring a scope confers its descendants — the same containment rule the maintainer already applies to `scopes`, so the two axes cannot disagree about what a scope means. An empty array confers nothing; it is not a wildcard.\",\n              \"items\": {\n                \"type\": \"string\"\n              },\n              \"type\": \"array\"\n            }\n          },\n          \"type\": \"object\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"createdBy\": {\n          \"description\": \"VID of the party that originally added this entry.\",\n          \"type\": \"string\"\n        },\n        \"expiresAt\": {\n          \"description\": \"Optional time after which the entry is no longer effective.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1. Reverse-DNS-namespaced; consumers MUST ignore unrecognized namespaces.\"\n        },\n        \"label\": {\n          \"description\": \"Optional human-readable label.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"role\": {\n          \"description\": \"Opaque role identifier interpreted by the ACL maintainer.\",\n          \"type\": \"string\"\n        },\n        \"scopes\": {\n          \"description\": \"Opaque scope identifiers (e.g. contexts, domains, resource prefixes).\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"stepUp\": {\n          \"additionalProperties\": false,\n          \"description\": \"Per-entry authentication step-up configuration, consumed by the ACL maintainer when it gates an operation behind a step-up (see auth/step-up/policy/0.1). ADDITIVE-ONLY: a per-entry setting MAY raise the assurance required of this subject above the maintainer's system-wide floor, but MUST NOT lower it. The maintainer resolves the effective requirement as the strictest of (system floor, this entry).\",\n          \"properties\": {\n            \"approver\": {\n              \"description\": \"VID authorized to ratify step-up for this subject — the `recipient` the maintainer addresses an auth/step-up/approve-request to (e.g. the holder's mobile authenticator or browser companion). Absent → the subject is its own approver (mode `self`) when it holds a usable authenticator; if neither an `approver` nor a self authenticator exists, no step-up method is available for this subject and the maintainer's fail-closed rule applies.\",\n              \"type\": \"string\"\n            },\n            \"require\": {\n              \"description\": \"Minimum step-up mode this subject MUST satisfy for gated operations, raising the system floor. `self` = the subject re-authenticates its own session; `delegated` = a separate `approver` MUST ratify. Omitted → the system floor applies unchanged. A value weaker than the resolved floor is ignored (additive-only).\",\n              \"enum\": [\n                \"self\",\n                \"delegated\"\n              ],\n              \"type\": \"string\"\n            }\n          },\n          \"type\": \"object\"\n        },\n        \"subject\": {\n          \"description\": \"VID of the party in the ACL. Compared by exact string equality (SPEC.md §4.8); producers SHOULD emit canonical form.\",\n          \"type\": \"string\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"updatedBy\": {\n          \"description\": \"VID of the party that last modified this entry.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"subject\",\n        \"role\"\n      ],\n      \"title\": \"AclEntry\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to an acl/revoke request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/revoke/0.1#response.\",\n      \"properties\": {\n        \"entry\": {\n          \"description\": \"The AclEntry the maintainer now holds for the subject. null for a full removal; an AclEntry with reduced scopes for a scope reduction.\",\n          \"oneOf\": [\n            {\n              \"type\": \"null\"\n            },\n            {\n              \"$ref\": \"#/$defs/AclEntry\"\n            }\n          ]\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        }\n      },\n      \"required\": [\n        \"entry\"\n      ],\n      \"title\": \"ACL Revoke — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/acl/revoke/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"reason\": {\n      \"description\": \"Optional human-readable rationale for the revocation.\",\n      \"maxLength\": 1024,\n      \"type\": \"string\"\n    },\n    \"scopes\": {\n      \"description\": \"If present, the specific scopes to remove from the subject's entry. If absent, the entire entry is removed.\",\n      \"items\": {\n        \"minLength\": 1,\n        \"type\": \"string\"\n      },\n      \"minItems\": 1,\n      \"type\": \"array\"\n    },\n    \"subject\": {\n      \"description\": \"VID of the party being revoked (or scope-reduced).\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"subject\"\n  ],\n  \"title\": \"ACL Revoke — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"AclEntry\":{\"additionalProperties\":false,\"properties\":{\"allowedKeys\":{\"description\":\"Key identifiers this subject may invoke the maintainer's signing oracle on. INTERSECTS WITH `scopes` — it can only narrow, never widen: a key named here that lies outside the entry's scopes remains unreachable, exactly as if it were not named. ABSENT means every key within the entry's scopes (the behaviour of entries that pre-date this member); explicit `null` is equivalent to absent, and producers SHOULD omit the member instead. PRESENT-BUT-EMPTY means authorized on NO keys — the opposite of absent, and deliberately so: emptiness is never a wildcard (CONVENTIONS.md §5). A consumer MUST preserve and enforce the absent-vs-empty distinction end to end; collapsing the two (e.g. by testing emptiness alone) re-creates the empty-means-unrestricted class of privilege-escalation defect this family's conventions exist to prevent.\",\"items\":{\"type\":\"string\"},\"type\":[\"array\",\"null\"]},\"approve\":{\"additionalProperties\":false,\"description\":\"Approve-authority: what this subject may **confer on others** by ratifying an approval, as distinct from `scopes`, which is what it may **exercise itself**. The two axes are independent, and that independence is the point — it is what lets a maintainer configure a least-privilege approver who can authorize an operation in a scope it has no authority to perform.\\n\\nOMISSION MEANS NOTHING IS CONFERRED. An absent `approve`, an absent `all`, and an empty `scopes` are all equivalent to \\\"this subject may ratify nothing\\\". A consumer that does not implement this member therefore confers less than the producer intended rather than more, which is the direction a missed member has to fail in.\\n\\nA subject with approve-authority is NOT thereby authorized to act. Consumers MUST resolve the two axes separately: reading `approve` to answer \\\"may this party ratify X\\\" and `scopes` to answer \\\"may this party do X\\\". Collapsing them grants an approver the ability to perform what it was only meant to sign off on.\",\"properties\":{\"all\":{\"default\":false,\"description\":\"The subject may confer ANY scope. Takes precedence over `scopes`, which a consumer MUST ignore when this is true. Absent or false → only the scopes listed below, if any.\",\"type\":\"boolean\"},\"scopes\":{\"description\":\"Opaque scope identifiers this subject may confer, drawn from the same vocabulary as the entry's own `scopes`. Where a maintainer's scopes are hierarchical, conferring a scope confers its descendants — the same containment rule the maintainer already applies to `scopes`, so the two axes cannot disagree about what a scope means. An empty array confers nothing; it is not a wildcard.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"type\":\"object\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"createdBy\":{\"description\":\"VID of the party that originally added this entry.\",\"type\":\"string\"},\"expiresAt\":{\"description\":\"Optional time after which the entry is no longer effective.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1. Reverse-DNS-namespaced; consumers MUST ignore unrecognized namespaces.\"},\"label\":{\"description\":\"Optional human-readable label.\",\"maxLength\":256,\"type\":\"string\"},\"role\":{\"description\":\"Opaque role identifier interpreted by the ACL maintainer.\",\"type\":\"string\"},\"scopes\":{\"description\":\"Opaque scope identifiers (e.g. contexts, domains, resource prefixes).\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"stepUp\":{\"additionalProperties\":false,\"description\":\"Per-entry authentication step-up configuration, consumed by the ACL maintainer when it gates an operation behind a step-up (see auth/step-up/policy/0.1). ADDITIVE-ONLY: a per-entry setting MAY raise the assurance required of this subject above the maintainer's system-wide floor, but MUST NOT lower it. The maintainer resolves the effective requirement as the strictest of (system floor, this entry).\",\"properties\":{\"approver\":{\"description\":\"VID authorized to ratify step-up for this subject — the `recipient` the maintainer addresses an auth/step-up/approve-request to (e.g. the holder's mobile authenticator or browser companion). Absent → the subject is its own approver (mode `self`) when it holds a usable authenticator; if neither an `approver` nor a self authenticator exists, no step-up method is available for this subject and the maintainer's fail-closed rule applies.\",\"type\":\"string\"},\"require\":{\"description\":\"Minimum step-up mode this subject MUST satisfy for gated operations, raising the system floor. `self` = the subject re-authenticates its own session; `delegated` = a separate `approver` MUST ratify. Omitted → the system floor applies unchanged. A value weaker than the resolved floor is ignored (additive-only).\",\"enum\":[\"self\",\"delegated\"],\"type\":\"string\"}},\"type\":\"object\"},\"subject\":{\"description\":\"VID of the party in the ACL. Compared by exact string equality (SPEC.md §4.8); producers SHOULD emit canonical form.\",\"type\":\"string\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"updatedBy\":{\"description\":\"VID of the party that last modified this entry.\",\"type\":\"string\"}},\"required\":[\"subject\",\"role\"],\"title\":\"AclEntry\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to an acl/revoke request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/revoke/0.1#response.\",\"properties\":{\"entry\":{\"description\":\"The AclEntry the maintainer now holds for the subject. null for a full removal; an AclEntry with reduced scopes for a scope reduction.\",\"oneOf\":[{\"type\":\"null\"},{\"$ref\":\"#/$defs/AclEntry\"}]},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"required\":[\"entry\"],\"title\":\"ACL Revoke — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/acl/revoke/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"reason\":{\"description\":\"Optional human-readable rationale for the revocation.\",\"maxLength\":1024,\"type\":\"string\"},\"scopes\":{\"description\":\"If present, the specific scopes to remove from the subject's entry. If absent, the entire entry is removed.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"},\"subject\":{\"description\":\"VID of the party being revoked (or scope-reduced).\",\"type\":\"string\"}},\"required\":[\"subject\"],\"title\":\"ACL Revoke — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1331,7 +1038,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AclEntry\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"allowedKeys\": {\n          \"description\": \"Key identifiers this subject may invoke the maintainer's signing oracle on. INTERSECTS WITH `scopes` — it can only narrow, never widen: a key named here that lies outside the entry's scopes remains unreachable, exactly as if it were not named. ABSENT means every key within the entry's scopes (the behaviour of entries that pre-date this member); explicit `null` is equivalent to absent, and producers SHOULD omit the member instead. PRESENT-BUT-EMPTY means authorized on NO keys — the opposite of absent, and deliberately so: emptiness is never a wildcard (CONVENTIONS.md §5). A consumer MUST preserve and enforce the absent-vs-empty distinction end to end; collapsing the two (e.g. by testing emptiness alone) re-creates the empty-means-unrestricted class of privilege-escalation defect this family's conventions exist to prevent.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": [\n            \"array\",\n            \"null\"\n          ]\n        },\n        \"approve\": {\n          \"additionalProperties\": false,\n          \"description\": \"Approve-authority: what this subject may **confer on others** by ratifying an approval, as distinct from `scopes`, which is what it may **exercise itself**. The two axes are independent, and that independence is the point — it is what lets a maintainer configure a least-privilege approver who can authorize an operation in a scope it has no authority to perform.\\n\\nOMISSION MEANS NOTHING IS CONFERRED. An absent `approve`, an absent `all`, and an empty `scopes` are all equivalent to \\\"this subject may ratify nothing\\\". A consumer that does not implement this member therefore confers less than the producer intended rather than more, which is the direction a missed member has to fail in.\\n\\nA subject with approve-authority is NOT thereby authorized to act. Consumers MUST resolve the two axes separately: reading `approve` to answer \\\"may this party ratify X\\\" and `scopes` to answer \\\"may this party do X\\\". Collapsing them grants an approver the ability to perform what it was only meant to sign off on.\",\n          \"properties\": {\n            \"all\": {\n              \"default\": false,\n              \"description\": \"The subject may confer ANY scope. Takes precedence over `scopes`, which a consumer MUST ignore when this is true. Absent or false → only the scopes listed below, if any.\",\n              \"type\": \"boolean\"\n            },\n            \"scopes\": {\n              \"description\": \"Opaque scope identifiers this subject may confer, drawn from the same vocabulary as the entry's own `scopes`. Where a maintainer's scopes are hierarchical, conferring a scope confers its descendants — the same containment rule the maintainer already applies to `scopes`, so the two axes cannot disagree about what a scope means. An empty array confers nothing; it is not a wildcard.\",\n              \"items\": {\n                \"type\": \"string\"\n              },\n              \"type\": \"array\"\n            }\n          },\n          \"type\": \"object\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"createdBy\": {\n          \"description\": \"VID of the party that originally added this entry.\",\n          \"type\": \"string\"\n        },\n        \"expiresAt\": {\n          \"description\": \"Optional time after which the entry is no longer effective.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1. Reverse-DNS-namespaced; consumers MUST ignore unrecognized namespaces.\"\n        },\n        \"label\": {\n          \"description\": \"Optional human-readable label.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"role\": {\n          \"description\": \"Opaque role identifier interpreted by the ACL maintainer.\",\n          \"type\": \"string\"\n        },\n        \"scopes\": {\n          \"description\": \"Opaque scope identifiers (e.g. contexts, domains, resource prefixes).\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"stepUp\": {\n          \"additionalProperties\": false,\n          \"description\": \"Per-entry authentication step-up configuration, consumed by the ACL maintainer when it gates an operation behind a step-up (see auth/step-up/policy/0.1). ADDITIVE-ONLY: a per-entry setting MAY raise the assurance required of this subject above the maintainer's system-wide floor, but MUST NOT lower it. The maintainer resolves the effective requirement as the strictest of (system floor, this entry).\",\n          \"properties\": {\n            \"approver\": {\n              \"description\": \"VID authorized to ratify step-up for this subject — the `recipient` the maintainer addresses an auth/step-up/approve-request to (e.g. the holder's mobile authenticator or browser companion). Absent → the subject is its own approver (mode `self`) when it holds a usable authenticator; if neither an `approver` nor a self authenticator exists, no step-up method is available for this subject and the maintainer's fail-closed rule applies.\",\n              \"type\": \"string\"\n            },\n            \"require\": {\n              \"description\": \"Minimum step-up mode this subject MUST satisfy for gated operations, raising the system floor. `self` = the subject re-authenticates its own session; `delegated` = a separate `approver` MUST ratify. Omitted → the system floor applies unchanged. A value weaker than the resolved floor is ignored (additive-only).\",\n              \"enum\": [\n                \"self\",\n                \"delegated\"\n              ],\n              \"type\": \"string\"\n            }\n          },\n          \"type\": \"object\"\n        },\n        \"subject\": {\n          \"description\": \"VID of the party in the ACL. Compared by exact string equality (SPEC.md §4.8); producers SHOULD emit canonical form.\",\n          \"type\": \"string\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"updatedBy\": {\n          \"description\": \"VID of the party that last modified this entry.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"subject\",\n        \"role\"\n      ],\n      \"title\": \"AclEntry\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to an acl/revoke request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/revoke/0.1#response.\",\n      \"properties\": {\n        \"entry\": {\n          \"description\": \"The AclEntry the maintainer now holds for the subject. null for a full removal; an AclEntry with reduced scopes for a scope reduction.\",\n          \"oneOf\": [\n            {\n              \"type\": \"null\"\n            },\n            {\n              \"$ref\": \"#/$defs/AclEntry\"\n            }\n          ]\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        }\n      },\n      \"required\": [\n        \"entry\"\n      ],\n      \"title\": \"ACL Revoke — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"AclEntry\":{\"additionalProperties\":false,\"properties\":{\"allowedKeys\":{\"description\":\"Key identifiers this subject may invoke the maintainer's signing oracle on. INTERSECTS WITH `scopes` — it can only narrow, never widen: a key named here that lies outside the entry's scopes remains unreachable, exactly as if it were not named. ABSENT means every key within the entry's scopes (the behaviour of entries that pre-date this member); explicit `null` is equivalent to absent, and producers SHOULD omit the member instead. PRESENT-BUT-EMPTY means authorized on NO keys — the opposite of absent, and deliberately so: emptiness is never a wildcard (CONVENTIONS.md §5). A consumer MUST preserve and enforce the absent-vs-empty distinction end to end; collapsing the two (e.g. by testing emptiness alone) re-creates the empty-means-unrestricted class of privilege-escalation defect this family's conventions exist to prevent.\",\"items\":{\"type\":\"string\"},\"type\":[\"array\",\"null\"]},\"approve\":{\"additionalProperties\":false,\"description\":\"Approve-authority: what this subject may **confer on others** by ratifying an approval, as distinct from `scopes`, which is what it may **exercise itself**. The two axes are independent, and that independence is the point — it is what lets a maintainer configure a least-privilege approver who can authorize an operation in a scope it has no authority to perform.\\n\\nOMISSION MEANS NOTHING IS CONFERRED. An absent `approve`, an absent `all`, and an empty `scopes` are all equivalent to \\\"this subject may ratify nothing\\\". A consumer that does not implement this member therefore confers less than the producer intended rather than more, which is the direction a missed member has to fail in.\\n\\nA subject with approve-authority is NOT thereby authorized to act. Consumers MUST resolve the two axes separately: reading `approve` to answer \\\"may this party ratify X\\\" and `scopes` to answer \\\"may this party do X\\\". Collapsing them grants an approver the ability to perform what it was only meant to sign off on.\",\"properties\":{\"all\":{\"default\":false,\"description\":\"The subject may confer ANY scope. Takes precedence over `scopes`, which a consumer MUST ignore when this is true. Absent or false → only the scopes listed below, if any.\",\"type\":\"boolean\"},\"scopes\":{\"description\":\"Opaque scope identifiers this subject may confer, drawn from the same vocabulary as the entry's own `scopes`. Where a maintainer's scopes are hierarchical, conferring a scope confers its descendants — the same containment rule the maintainer already applies to `scopes`, so the two axes cannot disagree about what a scope means. An empty array confers nothing; it is not a wildcard.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"type\":\"object\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"createdBy\":{\"description\":\"VID of the party that originally added this entry.\",\"type\":\"string\"},\"expiresAt\":{\"description\":\"Optional time after which the entry is no longer effective.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1. Reverse-DNS-namespaced; consumers MUST ignore unrecognized namespaces.\"},\"label\":{\"description\":\"Optional human-readable label.\",\"maxLength\":256,\"type\":\"string\"},\"role\":{\"description\":\"Opaque role identifier interpreted by the ACL maintainer.\",\"type\":\"string\"},\"scopes\":{\"description\":\"Opaque scope identifiers (e.g. contexts, domains, resource prefixes).\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"stepUp\":{\"additionalProperties\":false,\"description\":\"Per-entry authentication step-up configuration, consumed by the ACL maintainer when it gates an operation behind a step-up (see auth/step-up/policy/0.1). ADDITIVE-ONLY: a per-entry setting MAY raise the assurance required of this subject above the maintainer's system-wide floor, but MUST NOT lower it. The maintainer resolves the effective requirement as the strictest of (system floor, this entry).\",\"properties\":{\"approver\":{\"description\":\"VID authorized to ratify step-up for this subject — the `recipient` the maintainer addresses an auth/step-up/approve-request to (e.g. the holder's mobile authenticator or browser companion). Absent → the subject is its own approver (mode `self`) when it holds a usable authenticator; if neither an `approver` nor a self authenticator exists, no step-up method is available for this subject and the maintainer's fail-closed rule applies.\",\"type\":\"string\"},\"require\":{\"description\":\"Minimum step-up mode this subject MUST satisfy for gated operations, raising the system floor. `self` = the subject re-authenticates its own session; `delegated` = a separate `approver` MUST ratify. Omitted → the system floor applies unchanged. A value weaker than the resolved floor is ignored (additive-only).\",\"enum\":[\"self\",\"delegated\"],\"type\":\"string\"}},\"type\":\"object\"},\"subject\":{\"description\":\"VID of the party in the ACL. Compared by exact string equality (SPEC.md §4.8); producers SHOULD emit canonical form.\",\"type\":\"string\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"updatedBy\":{\"description\":\"VID of the party that last modified this entry.\",\"type\":\"string\"}},\"required\":[\"subject\",\"role\"],\"title\":\"AclEntry\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to an acl/revoke request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/acl/revoke/0.1#response.\",\"properties\":{\"entry\":{\"description\":\"The AclEntry the maintainer now holds for the subject. null for a full removal; an AclEntry with reduced scopes for a scope reduction.\",\"oneOf\":[{\"type\":\"null\"},{\"$ref\":\"#/$defs/AclEntry\"}]},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"required\":[\"entry\"],\"title\":\"ACL Revoke — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

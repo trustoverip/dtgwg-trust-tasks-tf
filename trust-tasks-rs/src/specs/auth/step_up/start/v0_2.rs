@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,36 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/auth/step-up/start/0.2",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "sessionId"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "sessionId": {
-///      "description": "The relying-party session to elevate.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "targetAcr": {
-///      "description": "The assurance level the holder wants the session raised to. Absent means the relying party's own next level above the session's current one.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -196,17 +142,6 @@ impl Payload {
 }
 ///The relying-party session to elevate.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The relying-party session to elevate.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadSessionId(::std::string::String);
@@ -269,16 +204,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSessionId {
 }
 ///The assurance level the holder wants the session raised to. Absent means the relying party's own next level above the session's current one.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The assurance level the holder wants the session raised to. Absent means the relying party's own next level above the session's current one.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadTargetAcr(::std::string::String);
@@ -338,77 +263,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadTargetAcr {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "approveRequest"
-///  ],
-///  "properties": {
-///    "approveRequest": {
-///      "description": "A complete, signed auth/step-up/approve-request/0.5 document for this session: issuer the relying party, recipient the approver. The approver verifies it on its own terms; the framework-level envelope members are modelled here so none are lost on receipt, but `payload` and `proof` are carried opaque (unpacked and re-validated by that spec, not by this one) so the proof survives.",
-///      "type": "object",
-///      "required": [
-///        "id",
-///        "issuer",
-///        "payload",
-///        "proof",
-///        "recipient",
-///        "type"
-///      ],
-///      "properties": {
-///        "expiresAt": {
-///          "type": "string",
-///          "format": "date-time"
-///        },
-///        "ext": {
-///          "$ref": "#/definitions/Ext"
-///        },
-///        "id": {
-///          "type": "string",
-///          "minLength": 1
-///        },
-///        "issuedAt": {
-///          "type": "string",
-///          "format": "date-time"
-///        },
-///        "issuer": {
-///          "type": "string",
-///          "minLength": 1
-///        },
-///        "payload": {
-///          "description": "The auth/step-up/approve-request/0.5 payload, opaque here — see that spec for its shape."
-///        },
-///        "proof": {
-///          "description": "A W3C Data Integrity proof (SPEC §4.7), opaque here — the approver verifies it on its own terms.",
-///          "type": "object"
-///        },
-///        "recipient": {
-///          "type": "string",
-///          "minLength": 1
-///        },
-///        "threadId": {
-///          "type": "string",
-///          "minLength": 1
-///        },
-///        "type": {
-///          "const": "https://trusttasks.org/spec/auth/step-up/approve-request/0.5"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -425,63 +279,6 @@ impl Response {
 }
 ///A complete, signed auth/step-up/approve-request/0.5 document for this session: issuer the relying party, recipient the approver. The approver verifies it on its own terms; the framework-level envelope members are modelled here so none are lost on receipt, but `payload` and `proof` are carried opaque (unpacked and re-validated by that spec, not by this one) so the proof survives.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "A complete, signed auth/step-up/approve-request/0.5 document for this session: issuer the relying party, recipient the approver. The approver verifies it on its own terms; the framework-level envelope members are modelled here so none are lost on receipt, but `payload` and `proof` are carried opaque (unpacked and re-validated by that spec, not by this one) so the proof survives.",
-///  "type": "object",
-///  "required": [
-///    "id",
-///    "issuer",
-///    "payload",
-///    "proof",
-///    "recipient",
-///    "type"
-///  ],
-///  "properties": {
-///    "expiresAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "id": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "issuedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "issuer": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "payload": {
-///      "description": "The auth/step-up/approve-request/0.5 payload, opaque here — see that spec for its shape."
-///    },
-///    "proof": {
-///      "description": "A W3C Data Integrity proof (SPEC §4.7), opaque here — the approver verifies it on its own terms.",
-///      "type": "object"
-///    },
-///    "recipient": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "threadId": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "type": {
-///      "const": "https://trusttasks.org/spec/auth/step-up/approve-request/0.5"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -523,15 +320,6 @@ impl ResponseApproveRequest {
 }
 ///`ResponseApproveRequestId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseApproveRequestId(::std::string::String);
@@ -591,15 +379,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseApproveRequestId {
 }
 ///`ResponseApproveRequestIssuer`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseApproveRequestIssuer(::std::string::String);
@@ -659,15 +438,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseApproveRequestIssuer {
 }
 ///`ResponseApproveRequestRecipient`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseApproveRequestRecipient(::std::string::String);
@@ -727,15 +497,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseApproveRequestRecipient {
 }
 ///`ResponseApproveRequestThreadId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseApproveRequestThreadId(::std::string::String);
@@ -1111,7 +872,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"approveRequest\": {\n          \"additionalProperties\": false,\n          \"description\": \"A complete, signed auth/step-up/approve-request/0.5 document for this session: issuer the relying party, recipient the approver. The approver verifies it on its own terms; the framework-level envelope members are modelled here so none are lost on receipt, but `payload` and `proof` are carried opaque (unpacked and re-validated by that spec, not by this one) so the proof survives.\",\n          \"properties\": {\n            \"expiresAt\": {\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"ext\": {\n              \"$ref\": \"#/$defs/Ext\"\n            },\n            \"id\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"issuedAt\": {\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"issuer\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"payload\": {\n              \"description\": \"The auth/step-up/approve-request/0.5 payload, opaque here — see that spec for its shape.\"\n            },\n            \"proof\": {\n              \"description\": \"A W3C Data Integrity proof (SPEC §4.7), opaque here — the approver verifies it on its own terms.\",\n              \"type\": \"object\"\n            },\n            \"recipient\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"threadId\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"type\": {\n              \"const\": \"https://trusttasks.org/spec/auth/step-up/approve-request/0.5\"\n            }\n          },\n          \"required\": [\n            \"id\",\n            \"type\",\n            \"issuer\",\n            \"recipient\",\n            \"payload\",\n            \"proof\"\n          ],\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"approveRequest\"\n      ],\n      \"title\": \"Auth Step-up Start — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/step-up/start/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"sessionId\": {\n      \"description\": \"The relying-party session to elevate.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"targetAcr\": {\n      \"description\": \"The assurance level the holder wants the session raised to. Absent means the relying party's own next level above the session's current one.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"sessionId\"\n  ],\n  \"title\": \"Auth Step-up Start — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"approveRequest\":{\"additionalProperties\":false,\"description\":\"A complete, signed auth/step-up/approve-request/0.5 document for this session: issuer the relying party, recipient the approver. The approver verifies it on its own terms; the framework-level envelope members are modelled here so none are lost on receipt, but `payload` and `proof` are carried opaque (unpacked and re-validated by that spec, not by this one) so the proof survives.\",\"properties\":{\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"minLength\":1,\"type\":\"string\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"issuer\":{\"minLength\":1,\"type\":\"string\"},\"payload\":{\"description\":\"The auth/step-up/approve-request/0.5 payload, opaque here — see that spec for its shape.\"},\"proof\":{\"description\":\"A W3C Data Integrity proof (SPEC §4.7), opaque here — the approver verifies it on its own terms.\",\"type\":\"object\"},\"recipient\":{\"minLength\":1,\"type\":\"string\"},\"threadId\":{\"minLength\":1,\"type\":\"string\"},\"type\":{\"const\":\"https://trusttasks.org/spec/auth/step-up/approve-request/0.5\"}},\"required\":[\"id\",\"type\",\"issuer\",\"recipient\",\"payload\",\"proof\"],\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"approveRequest\"],\"title\":\"Auth Step-up Start — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/auth/step-up/start/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"sessionId\":{\"description\":\"The relying-party session to elevate.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"targetAcr\":{\"description\":\"The assurance level the holder wants the session raised to. Absent means the relying party's own next level above the session's current one.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"sessionId\"],\"title\":\"Auth Step-up Start — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1120,7 +881,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"approveRequest\": {\n          \"additionalProperties\": false,\n          \"description\": \"A complete, signed auth/step-up/approve-request/0.5 document for this session: issuer the relying party, recipient the approver. The approver verifies it on its own terms; the framework-level envelope members are modelled here so none are lost on receipt, but `payload` and `proof` are carried opaque (unpacked and re-validated by that spec, not by this one) so the proof survives.\",\n          \"properties\": {\n            \"expiresAt\": {\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"ext\": {\n              \"$ref\": \"#/$defs/Ext\"\n            },\n            \"id\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"issuedAt\": {\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"issuer\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"payload\": {\n              \"description\": \"The auth/step-up/approve-request/0.5 payload, opaque here — see that spec for its shape.\"\n            },\n            \"proof\": {\n              \"description\": \"A W3C Data Integrity proof (SPEC §4.7), opaque here — the approver verifies it on its own terms.\",\n              \"type\": \"object\"\n            },\n            \"recipient\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"threadId\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"type\": {\n              \"const\": \"https://trusttasks.org/spec/auth/step-up/approve-request/0.5\"\n            }\n          },\n          \"required\": [\n            \"id\",\n            \"type\",\n            \"issuer\",\n            \"recipient\",\n            \"payload\",\n            \"proof\"\n          ],\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"approveRequest\"\n      ],\n      \"title\": \"Auth Step-up Start — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"approveRequest\":{\"additionalProperties\":false,\"description\":\"A complete, signed auth/step-up/approve-request/0.5 document for this session: issuer the relying party, recipient the approver. The approver verifies it on its own terms; the framework-level envelope members are modelled here so none are lost on receipt, but `payload` and `proof` are carried opaque (unpacked and re-validated by that spec, not by this one) so the proof survives.\",\"properties\":{\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"minLength\":1,\"type\":\"string\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"issuer\":{\"minLength\":1,\"type\":\"string\"},\"payload\":{\"description\":\"The auth/step-up/approve-request/0.5 payload, opaque here — see that spec for its shape.\"},\"proof\":{\"description\":\"A W3C Data Integrity proof (SPEC §4.7), opaque here — the approver verifies it on its own terms.\",\"type\":\"object\"},\"recipient\":{\"minLength\":1,\"type\":\"string\"},\"threadId\":{\"minLength\":1,\"type\":\"string\"},\"type\":{\"const\":\"https://trusttasks.org/spec/auth/step-up/approve-request/0.5\"}},\"required\":[\"id\",\"type\",\"issuer\",\"recipient\",\"payload\",\"proof\"],\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"approveRequest\"],\"title\":\"Auth Step-up Start — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

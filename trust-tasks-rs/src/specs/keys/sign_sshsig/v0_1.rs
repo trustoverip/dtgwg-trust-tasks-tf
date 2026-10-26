@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,64 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A request for an SSHSIG signature (the OpenSSH `PROTOCOL.sshsig` format git uses for SSH commit signing) over a message digest, made with a key the custodian holds. The producer supplies the digest and the namespace; the custodian builds the signed-data structure itself. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/keys/sign-sshsig/0.1",
-///  "title": "Payload",
-///  "description": "A request for an SSHSIG signature (the OpenSSH `PROTOCOL.sshsig` format git uses for SSH commit signing) over a message digest, made with a key the custodian holds. The producer supplies the digest and the namespace; the custodian builds the signed-data structure itself. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "algorithm",
-///    "hashAlgorithm",
-///    "keyId",
-///    "messageHash",
-///    "namespace"
-///  ],
-///  "properties": {
-///    "algorithm": {
-///      "description": "Signature algorithm, as a JOSE identifier: `EdDSA` with an `ed25519` key (SSH key type `ssh-ed25519`), `ES256` with a `p256` key (`ecdsa-sha2-nistp256`). These are the custodian-held key types SSHSIG defines a signature for. MUST be compatible with the named key's `keyType`. Closed: an unrecognised algorithm is refused, never substituted.",
-///      "type": "string",
-///      "enum": [
-///        "EdDSA",
-///        "ES256"
-///      ]
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "hashAlgorithm": {
-///      "description": "The digest algorithm the producer applied to the message, in the SSHSIG spelling (externally owned, carried verbatim). It is written into the signed data, so the verifier recomputes the digest with the same algorithm.",
-///      "type": "string",
-///      "enum": [
-///        "sha256",
-///        "sha512"
-///      ]
-///    },
-///    "keyId": {
-///      "description": "Identifier of the key to sign with. The key MUST be `active`.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "messageHash": {
-///      "description": "The digest of the message, `H(message)` in `PROTOCOL.sshsig`, base64url-encoded without padding: 32 bytes (43 characters) for `sha256`, 64 bytes (86 characters) for `sha512`. The custodian never sees the message itself.",
-///      "type": "string",
-///      "maxLength": 86,
-///      "minLength": 43,
-///      "pattern": "^[A-Za-z0-9_-]+$"
-///    },
-///    "namespace": {
-///      "description": "The SSHSIG namespace the signature is bound to — `git` for a git commit or tag, `file` for `ssh-keygen -Y sign` over a file. Printable ASCII without spaces. A signature made under one namespace does not verify under another, so the custodian MAY restrict which namespaces a producer may name.",
-///      "type": "string",
-///      "pattern": "^[!-~]{1,128}$"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -228,19 +146,6 @@ impl Payload {
 }
 ///Signature algorithm, as a JOSE identifier: `EdDSA` with an `ed25519` key (SSH key type `ssh-ed25519`), `ES256` with a `p256` key (`ecdsa-sha2-nistp256`). These are the custodian-held key types SSHSIG defines a signature for. MUST be compatible with the named key's `keyType`. Closed: an unrecognised algorithm is refused, never substituted.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Signature algorithm, as a JOSE identifier: `EdDSA` with an `ed25519` key (SSH key type `ssh-ed25519`), `ES256` with a `p256` key (`ecdsa-sha2-nistp256`). These are the custodian-held key types SSHSIG defines a signature for. MUST be compatible with the named key's `keyType`. Closed: an unrecognised algorithm is refused, never substituted.",
-///  "type": "string",
-///  "enum": [
-///    "EdDSA",
-///    "ES256"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -302,19 +207,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadAlgorithm {
 }
 ///The digest algorithm the producer applied to the message, in the SSHSIG spelling (externally owned, carried verbatim). It is written into the signed data, so the verifier recomputes the digest with the same algorithm.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The digest algorithm the producer applied to the message, in the SSHSIG spelling (externally owned, carried verbatim). It is written into the signed data, so the verifier recomputes the digest with the same algorithm.",
-///  "type": "string",
-///  "enum": [
-///    "sha256",
-///    "sha512"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -376,16 +268,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadHashAlgorithm {
 }
 ///Identifier of the key to sign with. The key MUST be `active`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Identifier of the key to sign with. The key MUST be `active`.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadKeyId(::std::string::String);
@@ -445,18 +327,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadKeyId {
 }
 ///The digest of the message, `H(message)` in `PROTOCOL.sshsig`, base64url-encoded without padding: 32 bytes (43 characters) for `sha256`, 64 bytes (86 characters) for `sha512`. The custodian never sees the message itself.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The digest of the message, `H(message)` in `PROTOCOL.sshsig`, base64url-encoded without padding: 32 bytes (43 characters) for `sha256`, 64 bytes (86 characters) for `sha512`. The custodian never sees the message itself.",
-///  "type": "string",
-///  "maxLength": 86,
-///  "minLength": 43,
-///  "pattern": "^[A-Za-z0-9_-]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadMessageHash(::std::string::String);
@@ -524,16 +394,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadMessageHash {
 }
 ///The SSHSIG namespace the signature is bound to — `git` for a git commit or tag, `file` for `ssh-keygen -Y sign` over a file. Printable ASCII without spaces. A signature made under one namespace does not verify under another, so the custodian MAY restrict which namespaces a producer may name.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The SSHSIG namespace the signature is bound to — `git` for a git commit or tag, `file` for `ssh-keygen -Y sign` over a file. Printable ASCII without spaces. A signature made under one namespace does not verify under another, so the custodian MAY restrict which namespaces a producer may name.",
-///  "type": "string",
-///  "pattern": "^[!-~]{1,128}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadNamespace(::std::string::String);
@@ -595,45 +455,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadNamespace {
 }
 ///The success response to a keys/sign-sshsig request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/sign-sshsig/0.1#response. Failures use trust-task-error, not this shape.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The success response to a keys/sign-sshsig request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/sign-sshsig/0.1#response. Failures use trust-task-error, not this shape.",
-///  "type": "object",
-///  "required": [
-///    "algorithm",
-///    "keyId",
-///    "signature"
-///  ],
-///  "properties": {
-///    "algorithm": {
-///      "description": "The algorithm the signature was made with — the one the request named.",
-///      "type": "string",
-///      "enum": [
-///        "EdDSA",
-///        "ES256"
-///      ]
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "keyId": {
-///      "description": "The key that produced the signature. Echoed so a response separated from its request is still attributable.",
-///      "type": "string"
-///    },
-///    "signature": {
-///      "description": "The raw signature over the SSHSIG signed data, base64url-encoded without padding: 64 bytes for `EdDSA`; for `ES256`, the 64-byte JOSE `r || s` form, which the producer re-encodes as the two SSH `mpint`s when it assembles the SSHSIG blob.",
-///      "type": "string",
-///      "pattern": "^[A-Za-z0-9_-]+$"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -655,19 +476,6 @@ impl Response {
 }
 ///The algorithm the signature was made with — the one the request named.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The algorithm the signature was made with — the one the request named.",
-///  "type": "string",
-///  "enum": [
-///    "EdDSA",
-///    "ES256"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -729,16 +537,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseAlgorithm {
 }
 ///The raw signature over the SSHSIG signed data, base64url-encoded without padding: 64 bytes for `EdDSA`; for `ES256`, the 64-byte JOSE `r || s` form, which the producer re-encodes as the two SSH `mpint`s when it assembles the SSHSIG blob.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The raw signature over the SSHSIG signed data, base64url-encoded without padding: 64 bytes for `EdDSA`; for `ES256`, the 64-byte JOSE `r || s` form, which the producer re-encodes as the two SSH `mpint`s when it assembles the SSHSIG blob.",
-///  "type": "string",
-///  "pattern": "^[A-Za-z0-9_-]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseSignature(::std::string::String);
@@ -995,7 +793,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a keys/sign-sshsig request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/sign-sshsig/0.1#response. Failures use trust-task-error, not this shape.\",\n      \"properties\": {\n        \"algorithm\": {\n          \"description\": \"The algorithm the signature was made with — the one the request named.\",\n          \"enum\": [\n            \"EdDSA\",\n            \"ES256\"\n          ],\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"keyId\": {\n          \"description\": \"The key that produced the signature. Echoed so a response separated from its request is still attributable.\",\n          \"type\": \"string\"\n        },\n        \"signature\": {\n          \"description\": \"The raw signature over the SSHSIG signed data, base64url-encoded without padding: 64 bytes for `EdDSA`; for `ES256`, the 64-byte JOSE `r || s` form, which the producer re-encodes as the two SSH `mpint`s when it assembles the SSHSIG blob.\",\n          \"pattern\": \"^[A-Za-z0-9_-]+$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"keyId\",\n        \"algorithm\",\n        \"signature\"\n      ],\n      \"title\": \"Keys — Sign SSHSIG — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/keys/sign-sshsig/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A request for an SSHSIG signature (the OpenSSH `PROTOCOL.sshsig` format git uses for SSH commit signing) over a message digest, made with a key the custodian holds. The producer supplies the digest and the namespace; the custodian builds the signed-data structure itself. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"algorithm\": {\n      \"description\": \"Signature algorithm, as a JOSE identifier: `EdDSA` with an `ed25519` key (SSH key type `ssh-ed25519`), `ES256` with a `p256` key (`ecdsa-sha2-nistp256`). These are the custodian-held key types SSHSIG defines a signature for. MUST be compatible with the named key's `keyType`. Closed: an unrecognised algorithm is refused, never substituted.\",\n      \"enum\": [\n        \"EdDSA\",\n        \"ES256\"\n      ],\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"hashAlgorithm\": {\n      \"description\": \"The digest algorithm the producer applied to the message, in the SSHSIG spelling (externally owned, carried verbatim). It is written into the signed data, so the verifier recomputes the digest with the same algorithm.\",\n      \"enum\": [\n        \"sha256\",\n        \"sha512\"\n      ],\n      \"type\": \"string\"\n    },\n    \"keyId\": {\n      \"description\": \"Identifier of the key to sign with. The key MUST be `active`.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"messageHash\": {\n      \"description\": \"The digest of the message, `H(message)` in `PROTOCOL.sshsig`, base64url-encoded without padding: 32 bytes (43 characters) for `sha256`, 64 bytes (86 characters) for `sha512`. The custodian never sees the message itself.\",\n      \"maxLength\": 86,\n      \"minLength\": 43,\n      \"pattern\": \"^[A-Za-z0-9_-]+$\",\n      \"type\": \"string\"\n    },\n    \"namespace\": {\n      \"description\": \"The SSHSIG namespace the signature is bound to — `git` for a git commit or tag, `file` for `ssh-keygen -Y sign` over a file. Printable ASCII without spaces. A signature made under one namespace does not verify under another, so the custodian MAY restrict which namespaces a producer may name.\",\n      \"pattern\": \"^[!-~]{1,128}$\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"keyId\",\n    \"algorithm\",\n    \"namespace\",\n    \"hashAlgorithm\",\n    \"messageHash\"\n  ],\n  \"title\": \"Keys — Sign SSHSIG — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a keys/sign-sshsig request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/sign-sshsig/0.1#response. Failures use trust-task-error, not this shape.\",\"properties\":{\"algorithm\":{\"description\":\"The algorithm the signature was made with — the one the request named.\",\"enum\":[\"EdDSA\",\"ES256\"],\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keyId\":{\"description\":\"The key that produced the signature. Echoed so a response separated from its request is still attributable.\",\"type\":\"string\"},\"signature\":{\"description\":\"The raw signature over the SSHSIG signed data, base64url-encoded without padding: 64 bytes for `EdDSA`; for `ES256`, the 64-byte JOSE `r || s` form, which the producer re-encodes as the two SSH `mpint`s when it assembles the SSHSIG blob.\",\"pattern\":\"^[A-Za-z0-9_-]+$\",\"type\":\"string\"}},\"required\":[\"keyId\",\"algorithm\",\"signature\"],\"title\":\"Keys — Sign SSHSIG — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/keys/sign-sshsig/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A request for an SSHSIG signature (the OpenSSH `PROTOCOL.sshsig` format git uses for SSH commit signing) over a message digest, made with a key the custodian holds. The producer supplies the digest and the namespace; the custodian builds the signed-data structure itself. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"algorithm\":{\"description\":\"Signature algorithm, as a JOSE identifier: `EdDSA` with an `ed25519` key (SSH key type `ssh-ed25519`), `ES256` with a `p256` key (`ecdsa-sha2-nistp256`). These are the custodian-held key types SSHSIG defines a signature for. MUST be compatible with the named key's `keyType`. Closed: an unrecognised algorithm is refused, never substituted.\",\"enum\":[\"EdDSA\",\"ES256\"],\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"hashAlgorithm\":{\"description\":\"The digest algorithm the producer applied to the message, in the SSHSIG spelling (externally owned, carried verbatim). It is written into the signed data, so the verifier recomputes the digest with the same algorithm.\",\"enum\":[\"sha256\",\"sha512\"],\"type\":\"string\"},\"keyId\":{\"description\":\"Identifier of the key to sign with. The key MUST be `active`.\",\"minLength\":1,\"type\":\"string\"},\"messageHash\":{\"description\":\"The digest of the message, `H(message)` in `PROTOCOL.sshsig`, base64url-encoded without padding: 32 bytes (43 characters) for `sha256`, 64 bytes (86 characters) for `sha512`. The custodian never sees the message itself.\",\"maxLength\":86,\"minLength\":43,\"pattern\":\"^[A-Za-z0-9_-]+$\",\"type\":\"string\"},\"namespace\":{\"description\":\"The SSHSIG namespace the signature is bound to — `git` for a git commit or tag, `file` for `ssh-keygen -Y sign` over a file. Printable ASCII without spaces. A signature made under one namespace does not verify under another, so the custodian MAY restrict which namespaces a producer may name.\",\"pattern\":\"^[!-~]{1,128}$\",\"type\":\"string\"}},\"required\":[\"keyId\",\"algorithm\",\"namespace\",\"hashAlgorithm\",\"messageHash\"],\"title\":\"Keys — Sign SSHSIG — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1003,7 +801,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a keys/sign-sshsig request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/sign-sshsig/0.1#response. Failures use trust-task-error, not this shape.\",\n      \"properties\": {\n        \"algorithm\": {\n          \"description\": \"The algorithm the signature was made with — the one the request named.\",\n          \"enum\": [\n            \"EdDSA\",\n            \"ES256\"\n          ],\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"keyId\": {\n          \"description\": \"The key that produced the signature. Echoed so a response separated from its request is still attributable.\",\n          \"type\": \"string\"\n        },\n        \"signature\": {\n          \"description\": \"The raw signature over the SSHSIG signed data, base64url-encoded without padding: 64 bytes for `EdDSA`; for `ES256`, the 64-byte JOSE `r || s` form, which the producer re-encodes as the two SSH `mpint`s when it assembles the SSHSIG blob.\",\n          \"pattern\": \"^[A-Za-z0-9_-]+$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"keyId\",\n        \"algorithm\",\n        \"signature\"\n      ],\n      \"title\": \"Keys — Sign SSHSIG — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a keys/sign-sshsig request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/sign-sshsig/0.1#response. Failures use trust-task-error, not this shape.\",\"properties\":{\"algorithm\":{\"description\":\"The algorithm the signature was made with — the one the request named.\",\"enum\":[\"EdDSA\",\"ES256\"],\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keyId\":{\"description\":\"The key that produced the signature. Echoed so a response separated from its request is still attributable.\",\"type\":\"string\"},\"signature\":{\"description\":\"The raw signature over the SSHSIG signed data, base64url-encoded without padding: 64 bytes for `EdDSA`; for `ES256`, the 64-byte JOSE `r || s` form, which the producer re-encodes as the two SSH `mpint`s when it assembles the SSHSIG blob.\",\"pattern\":\"^[A-Za-z0-9_-]+$\",\"type\":\"string\"}},\"required\":[\"keyId\",\"algorithm\",\"signature\"],\"title\":\"Keys — Sign SSHSIG — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,24 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Where a sent message stands. `queued`: held for the recipient and not yet handed over. `delivered`: handed to the recipient (pickup or live stream) and not yet removed by it. `collected`: removed by the recipient — acknowledged after pickup, fetched with delete, or deleted or purged by it. `withdrawn`: removed by the sender. `discarded`: removed by the mediator before the recipient took it — expired, or its account was removed. `unknown`: the mediator holds neither the message nor a receipt for it under the requester.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "MessageState",
-///  "description": "Where a sent message stands. `queued`: held for the recipient and not yet handed over. `delivered`: handed to the recipient (pickup or live stream) and not yet removed by it. `collected`: removed by the recipient — acknowledged after pickup, fetched with delete, or deleted or purged by it. `withdrawn`: removed by the sender. `discarded`: removed by the mediator before the recipient took it — expired, or its account was removed. `unknown`: the mediator holds neither the message nor a receipt for it under the requester.",
-///  "type": "string",
-///  "enum": [
-///    "queued",
-///    "delivered",
-///    "collected",
-///    "withdrawn",
-///    "discarded",
-///    "unknown"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -237,38 +195,6 @@ impl ::std::convert::TryFrom<::std::string::String> for MessageState {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/messaging/message/status/0.2",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "msgIds"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "msgIds": {
-///      "description": "The messages the requester sent and wants the status of, by the mediator's message identifier.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 256,
-///        "minLength": 1
-///      },
-///      "maxItems": 100,
-///      "minItems": 1,
-///      "uniqueItems": true
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -287,16 +213,6 @@ impl Payload {
 }
 ///`PayloadMsgIdsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadMsgIdsItem(::std::string::String);
@@ -359,54 +275,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadMsgIdsItem {
 }
 ///The success response to a messaging/message/status request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/message/status/0.2#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The success response to a messaging/message/status request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/message/status/0.2#response.",
-///  "type": "object",
-///  "required": [
-///    "statuses"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "statuses": {
-///      "description": "One entry per requested msgId, in request order.",
-///      "type": "array",
-///      "items": {
-///        "type": "object",
-///        "required": [
-///          "msgId",
-///          "state"
-///        ],
-///        "properties": {
-///          "msgId": {
-///            "type": "string",
-///            "maxLength": 256,
-///            "minLength": 1
-///          },
-///          "reachedAt": {
-///            "description": "When the message reached this state: first handed over for `delivered`, removed for `collected`, `withdrawn` and `discarded`. Absent for `queued` and `unknown`, and wherever the mediator does not disclose it.",
-///            "type": "string",
-///            "format": "date-time"
-///          },
-///          "state": {
-///            "$ref": "#/definitions/MessageState"
-///          }
-///        },
-///        "additionalProperties": false
-///      }
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -424,34 +292,6 @@ impl Response {
 }
 ///`ResponseStatusesItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "msgId",
-///    "state"
-///  ],
-///  "properties": {
-///    "msgId": {
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "reachedAt": {
-///      "description": "When the message reached this state: first handed over for `delivered`, removed for `collected`, `withdrawn` and `discarded`. Absent for `queued` and `unknown`, and wherever the mediator does not disclose it.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "state": {
-///      "$ref": "#/definitions/MessageState"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -474,16 +314,6 @@ impl ResponseStatusesItem {
 }
 ///`ResponseStatusesItemMsgId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseStatusesItemMsgId(::std::string::String);
@@ -733,7 +563,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"MessageState\": {\n      \"description\": \"Where a sent message stands. `queued`: held for the recipient and not yet handed over. `delivered`: handed to the recipient (pickup or live stream) and not yet removed by it. `collected`: removed by the recipient — acknowledged after pickup, fetched with delete, or deleted or purged by it. `withdrawn`: removed by the sender. `discarded`: removed by the mediator before the recipient took it — expired, or its account was removed. `unknown`: the mediator holds neither the message nor a receipt for it under the requester.\",\n      \"enum\": [\n        \"queued\",\n        \"delivered\",\n        \"collected\",\n        \"withdrawn\",\n        \"discarded\",\n        \"unknown\"\n      ],\n      \"title\": \"MessageState\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a messaging/message/status request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/message/status/0.2#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"statuses\": {\n          \"description\": \"One entry per requested msgId, in request order.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"msgId\": {\n                \"maxLength\": 256,\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"reachedAt\": {\n                \"description\": \"When the message reached this state: first handed over for `delivered`, removed for `collected`, `withdrawn` and `discarded`. Absent for `queued` and `unknown`, and wherever the mediator does not disclose it.\",\n                \"format\": \"date-time\",\n                \"type\": \"string\"\n              },\n              \"state\": {\n                \"$ref\": \"#/$defs/MessageState\"\n              }\n            },\n            \"required\": [\n              \"msgId\",\n              \"state\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"statuses\"\n      ],\n      \"title\": \"Messaging — Message Status — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/messaging/message/status/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"msgIds\": {\n      \"description\": \"The messages the requester sent and wants the status of, by the mediator's message identifier.\",\n      \"items\": {\n        \"maxLength\": 256,\n        \"minLength\": 1,\n        \"type\": \"string\"\n      },\n      \"maxItems\": 100,\n      \"minItems\": 1,\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    }\n  },\n  \"required\": [\n    \"msgIds\"\n  ],\n  \"title\": \"Messaging — Message Status — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"MessageState\":{\"description\":\"Where a sent message stands. `queued`: held for the recipient and not yet handed over. `delivered`: handed to the recipient (pickup or live stream) and not yet removed by it. `collected`: removed by the recipient — acknowledged after pickup, fetched with delete, or deleted or purged by it. `withdrawn`: removed by the sender. `discarded`: removed by the mediator before the recipient took it — expired, or its account was removed. `unknown`: the mediator holds neither the message nor a receipt for it under the requester.\",\"enum\":[\"queued\",\"delivered\",\"collected\",\"withdrawn\",\"discarded\",\"unknown\"],\"title\":\"MessageState\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a messaging/message/status request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/message/status/0.2#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"statuses\":{\"description\":\"One entry per requested msgId, in request order.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"msgId\":{\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"reachedAt\":{\"description\":\"When the message reached this state: first handed over for `delivered`, removed for `collected`, `withdrawn` and `discarded`. Absent for `queued` and `unknown`, and wherever the mediator does not disclose it.\",\"format\":\"date-time\",\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/MessageState\"}},\"required\":[\"msgId\",\"state\"],\"type\":\"object\"},\"type\":\"array\"}},\"required\":[\"statuses\"],\"title\":\"Messaging — Message Status — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/messaging/message/status/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"msgIds\":{\"description\":\"The messages the requester sent and wants the status of, by the mediator's message identifier.\",\"items\":{\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"maxItems\":100,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"msgIds\"],\"title\":\"Messaging — Message Status — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -742,7 +572,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"MessageState\": {\n      \"description\": \"Where a sent message stands. `queued`: held for the recipient and not yet handed over. `delivered`: handed to the recipient (pickup or live stream) and not yet removed by it. `collected`: removed by the recipient — acknowledged after pickup, fetched with delete, or deleted or purged by it. `withdrawn`: removed by the sender. `discarded`: removed by the mediator before the recipient took it — expired, or its account was removed. `unknown`: the mediator holds neither the message nor a receipt for it under the requester.\",\n      \"enum\": [\n        \"queued\",\n        \"delivered\",\n        \"collected\",\n        \"withdrawn\",\n        \"discarded\",\n        \"unknown\"\n      ],\n      \"title\": \"MessageState\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a messaging/message/status request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/message/status/0.2#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"statuses\": {\n          \"description\": \"One entry per requested msgId, in request order.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"msgId\": {\n                \"maxLength\": 256,\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"reachedAt\": {\n                \"description\": \"When the message reached this state: first handed over for `delivered`, removed for `collected`, `withdrawn` and `discarded`. Absent for `queued` and `unknown`, and wherever the mediator does not disclose it.\",\n                \"format\": \"date-time\",\n                \"type\": \"string\"\n              },\n              \"state\": {\n                \"$ref\": \"#/$defs/MessageState\"\n              }\n            },\n            \"required\": [\n              \"msgId\",\n              \"state\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"statuses\"\n      ],\n      \"title\": \"Messaging — Message Status — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"MessageState\":{\"description\":\"Where a sent message stands. `queued`: held for the recipient and not yet handed over. `delivered`: handed to the recipient (pickup or live stream) and not yet removed by it. `collected`: removed by the recipient — acknowledged after pickup, fetched with delete, or deleted or purged by it. `withdrawn`: removed by the sender. `discarded`: removed by the mediator before the recipient took it — expired, or its account was removed. `unknown`: the mediator holds neither the message nor a receipt for it under the requester.\",\"enum\":[\"queued\",\"delivered\",\"collected\",\"withdrawn\",\"discarded\",\"unknown\"],\"title\":\"MessageState\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a messaging/message/status request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/message/status/0.2#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"statuses\":{\"description\":\"One entry per requested msgId, in request order.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"msgId\":{\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"reachedAt\":{\"description\":\"When the message reached this state: first handed over for `delivered`, removed for `collected`, `withdrawn` and `discarded`. Absent for `queued` and `unknown`, and wherever the mediator does not disclose it.\",\"format\":\"date-time\",\"type\":\"string\"},\"state\":{\"$ref\":\"#/$defs/MessageState\"}},\"required\":[\"msgId\",\"state\"],\"type\":\"object\"},\"type\":\"array\"}},\"required\":[\"statuses\"],\"title\":\"Messaging — Message Status — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

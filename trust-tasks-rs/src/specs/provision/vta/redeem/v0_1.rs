@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,19 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///The Farm-generated handle of one reservation: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is what VTI-LNK-116 recommends). It is the `_id` of the trigger link (VTI-LNK-033) and is compared as a string. In a claim it MUST equal the document's `parentThreadId`. It confers no authority on its holder beyond the right to make one claim.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Handle",
-///  "description": "The Farm-generated handle of one reservation: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is what VTI-LNK-116 recommends). It is the `_id` of the trigger link (VTI-LNK-033) and is compared as a string. In a claim it MUST equal the document's `parentThreadId`. It confers no authority on its holder beyond the right to make one claim.",
-///  "type": "string",
-///  "maxLength": 43,
-///  "minLength": 22,
-///  "pattern": "^[A-Za-z0-9_-]{22,43}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Handle(::std::string::String);
@@ -222,29 +185,6 @@ impl<'de> ::serde::Deserialize<'de> for Handle {
 }
 ///The claimant polls the Farm, with the key that made the claim, for the outcome of its claim on a reservation. Each poll is a freshly signed document carrying the handle. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/provision/vta/redeem/0.1",
-///  "title": "Payload",
-///  "description": "The claimant polls the Farm, with the key that made the claim, for the outcome of its claim on a reservation. Each poll is a freshly signed document carrying the handle. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "handle"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "handle": {
-///      "$ref": "#/definitions/Handle"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -260,60 +200,6 @@ impl Payload {
 }
 ///The hand-over, signed by the Farm's assertionMethod key and sent only once the claimant's key is written into the VTA as its administrator and the VTA answers: which VTA, what the claim did, and where the VTA is reachable. Every earlier state is a `trust-task-error` (`pending`, `rejected`, or a family code), never this document.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The hand-over, signed by the Farm's assertionMethod key and sent only once the claimant's key is written into the VTA as its administrator and the VTA answers: which VTA, what the claim did, and where the VTA is reachable. Every earlier state is a `trust-task-error` (`pending`, `rejected`, or a family code), never this document.",
-///  "type": "object",
-///  "required": [
-///    "handle",
-///    "operation",
-///    "vtaDid"
-///  ],
-///  "properties": {
-///    "didLogUrl": {
-///      "description": "Where the VTA's DID log is served. For `did:webvh` it is the `did.jsonl` URL the DID itself encodes. An `https` URL with no userinfo.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 9,
-///      "pattern": "^https://[^@/?#\\s]+(/[^\\s]*)?$"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "handle": {
-///      "$ref": "#/definitions/Handle"
-///    },
-///    "mediatorDid": {
-///      "description": "The DID of the DIDComm mediator the VTA is reachable through. A convenience: the wallet can also read it from the VTA's own DID document.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 8,
-///      "pattern": "^did:[a-z0-9]+:[^\\s]+$"
-///    },
-///    "operation": {
-///      "description": "What the claim did. `provisionVta`: the claimant is the first administrator of a VTA provisioned for this reservation. `grantAcl`: the claimant was added as an administrator of a VTA that already had one. The Farm derives it from the reservation; the wallet never chooses it.",
-///      "type": "string",
-///      "enum": [
-///        "provisionVta",
-///        "grantAcl"
-///      ]
-///    },
-///    "vtaDid": {
-///      "description": "The DID of the VTA the claimant now administers. The Farm chooses the DID method; the VTA Farm issues `did:webvh`.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 8,
-///      "pattern": "^did:[a-z0-9]+:[^\\s]+$"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -348,18 +234,6 @@ impl Response {
 }
 ///Where the VTA's DID log is served. For `did:webvh` it is the `did.jsonl` URL the DID itself encodes. An `https` URL with no userinfo.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Where the VTA's DID log is served. For `did:webvh` it is the `did.jsonl` URL the DID itself encodes. An `https` URL with no userinfo.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 9,
-///  "pattern": "^https://[^@/?#\\s]+(/[^\\s]*)?$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseDidLogUrl(::std::string::String);
@@ -429,18 +303,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseDidLogUrl {
 }
 ///The DID of the DIDComm mediator the VTA is reachable through. A convenience: the wallet can also read it from the VTA's own DID document.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The DID of the DIDComm mediator the VTA is reachable through. A convenience: the wallet can also read it from the VTA's own DID document.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 8,
-///  "pattern": "^did:[a-z0-9]+:[^\\s]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseMediatorDid(::std::string::String);
@@ -510,19 +372,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseMediatorDid {
 }
 ///What the claim did. `provisionVta`: the claimant is the first administrator of a VTA provisioned for this reservation. `grantAcl`: the claimant was added as an administrator of a VTA that already had one. The Farm derives it from the reservation; the wallet never chooses it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "What the claim did. `provisionVta`: the claimant is the first administrator of a VTA provisioned for this reservation. `grantAcl`: the claimant was added as an administrator of a VTA that already had one. The Farm derives it from the reservation; the wallet never chooses it.",
-///  "type": "string",
-///  "enum": [
-///    "provisionVta",
-///    "grantAcl"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -584,18 +433,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseOperation {
 }
 ///The DID of the VTA the claimant now administers. The Farm chooses the DID method; the VTA Farm issues `did:webvh`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The DID of the VTA the claimant now administers. The Farm chooses the DID method; the VTA Farm issues `did:webvh`.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 8,
-///  "pattern": "^did:[a-z0-9]+:[^\\s]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseVtaDid(::std::string::String);
@@ -838,7 +675,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Handle\": {\n      \"description\": \"The Farm-generated handle of one reservation: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is what VTI-LNK-116 recommends). It is the `_id` of the trigger link (VTI-LNK-033) and is compared as a string. In a claim it MUST equal the document's `parentThreadId`. It confers no authority on its holder beyond the right to make one claim.\",\n      \"maxLength\": 43,\n      \"minLength\": 22,\n      \"pattern\": \"^[A-Za-z0-9_-]{22,43}$\",\n      \"title\": \"Handle\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The hand-over, signed by the Farm's assertionMethod key and sent only once the claimant's key is written into the VTA as its administrator and the VTA answers: which VTA, what the claim did, and where the VTA is reachable. Every earlier state is a `trust-task-error` (`pending`, `rejected`, or a family code), never this document.\",\n      \"properties\": {\n        \"didLogUrl\": {\n          \"description\": \"Where the VTA's DID log is served. For `did:webvh` it is the `did.jsonl` URL the DID itself encodes. An `https` URL with no userinfo.\",\n          \"maxLength\": 2048,\n          \"minLength\": 9,\n          \"pattern\": \"^https://[^@/?#\\\\s]+(/[^\\\\s]*)?$\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"handle\": {\n          \"$ref\": \"#/$defs/Handle\"\n        },\n        \"mediatorDid\": {\n          \"description\": \"The DID of the DIDComm mediator the VTA is reachable through. A convenience: the wallet can also read it from the VTA's own DID document.\",\n          \"maxLength\": 2048,\n          \"minLength\": 8,\n          \"pattern\": \"^did:[a-z0-9]+:[^\\\\s]+$\",\n          \"type\": \"string\"\n        },\n        \"operation\": {\n          \"description\": \"What the claim did. `provisionVta`: the claimant is the first administrator of a VTA provisioned for this reservation. `grantAcl`: the claimant was added as an administrator of a VTA that already had one. The Farm derives it from the reservation; the wallet never chooses it.\",\n          \"enum\": [\n            \"provisionVta\",\n            \"grantAcl\"\n          ],\n          \"type\": \"string\"\n        },\n        \"vtaDid\": {\n          \"description\": \"The DID of the VTA the claimant now administers. The Farm chooses the DID method; the VTA Farm issues `did:webvh`.\",\n          \"maxLength\": 2048,\n          \"minLength\": 8,\n          \"pattern\": \"^did:[a-z0-9]+:[^\\\\s]+$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"handle\",\n        \"vtaDid\",\n        \"operation\"\n      ],\n      \"title\": \"Provision — VTA Redeem — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/provision/vta/redeem/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"The claimant polls the Farm, with the key that made the claim, for the outcome of its claim on a reservation. Each poll is a freshly signed document carrying the handle. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"handle\": {\n      \"$ref\": \"#/$defs/Handle\"\n    }\n  },\n  \"required\": [\n    \"handle\"\n  ],\n  \"title\": \"Provision — VTA Redeem — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Handle\":{\"description\":\"The Farm-generated handle of one reservation: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is what VTI-LNK-116 recommends). It is the `_id` of the trigger link (VTI-LNK-033) and is compared as a string. In a claim it MUST equal the document's `parentThreadId`. It confers no authority on its holder beyond the right to make one claim.\",\"maxLength\":43,\"minLength\":22,\"pattern\":\"^[A-Za-z0-9_-]{22,43}$\",\"title\":\"Handle\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The hand-over, signed by the Farm's assertionMethod key and sent only once the claimant's key is written into the VTA as its administrator and the VTA answers: which VTA, what the claim did, and where the VTA is reachable. Every earlier state is a `trust-task-error` (`pending`, `rejected`, or a family code), never this document.\",\"properties\":{\"didLogUrl\":{\"description\":\"Where the VTA's DID log is served. For `did:webvh` it is the `did.jsonl` URL the DID itself encodes. An `https` URL with no userinfo.\",\"maxLength\":2048,\"minLength\":9,\"pattern\":\"^https://[^@/?#\\\\s]+(/[^\\\\s]*)?$\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"handle\":{\"$ref\":\"#/$defs/Handle\"},\"mediatorDid\":{\"description\":\"The DID of the DIDComm mediator the VTA is reachable through. A convenience: the wallet can also read it from the VTA's own DID document.\",\"maxLength\":2048,\"minLength\":8,\"pattern\":\"^did:[a-z0-9]+:[^\\\\s]+$\",\"type\":\"string\"},\"operation\":{\"description\":\"What the claim did. `provisionVta`: the claimant is the first administrator of a VTA provisioned for this reservation. `grantAcl`: the claimant was added as an administrator of a VTA that already had one. The Farm derives it from the reservation; the wallet never chooses it.\",\"enum\":[\"provisionVta\",\"grantAcl\"],\"type\":\"string\"},\"vtaDid\":{\"description\":\"The DID of the VTA the claimant now administers. The Farm chooses the DID method; the VTA Farm issues `did:webvh`.\",\"maxLength\":2048,\"minLength\":8,\"pattern\":\"^did:[a-z0-9]+:[^\\\\s]+$\",\"type\":\"string\"}},\"required\":[\"handle\",\"vtaDid\",\"operation\"],\"title\":\"Provision — VTA Redeem — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/provision/vta/redeem/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The claimant polls the Farm, with the key that made the claim, for the outcome of its claim on a reservation. Each poll is a freshly signed document carrying the handle. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"handle\":{\"$ref\":\"#/$defs/Handle\"}},\"required\":[\"handle\"],\"title\":\"Provision — VTA Redeem — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -847,7 +684,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Handle\": {\n      \"description\": \"The Farm-generated handle of one reservation: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is what VTI-LNK-116 recommends). It is the `_id` of the trigger link (VTI-LNK-033) and is compared as a string. In a claim it MUST equal the document's `parentThreadId`. It confers no authority on its holder beyond the right to make one claim.\",\n      \"maxLength\": 43,\n      \"minLength\": 22,\n      \"pattern\": \"^[A-Za-z0-9_-]{22,43}$\",\n      \"title\": \"Handle\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The hand-over, signed by the Farm's assertionMethod key and sent only once the claimant's key is written into the VTA as its administrator and the VTA answers: which VTA, what the claim did, and where the VTA is reachable. Every earlier state is a `trust-task-error` (`pending`, `rejected`, or a family code), never this document.\",\n      \"properties\": {\n        \"didLogUrl\": {\n          \"description\": \"Where the VTA's DID log is served. For `did:webvh` it is the `did.jsonl` URL the DID itself encodes. An `https` URL with no userinfo.\",\n          \"maxLength\": 2048,\n          \"minLength\": 9,\n          \"pattern\": \"^https://[^@/?#\\\\s]+(/[^\\\\s]*)?$\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"handle\": {\n          \"$ref\": \"#/$defs/Handle\"\n        },\n        \"mediatorDid\": {\n          \"description\": \"The DID of the DIDComm mediator the VTA is reachable through. A convenience: the wallet can also read it from the VTA's own DID document.\",\n          \"maxLength\": 2048,\n          \"minLength\": 8,\n          \"pattern\": \"^did:[a-z0-9]+:[^\\\\s]+$\",\n          \"type\": \"string\"\n        },\n        \"operation\": {\n          \"description\": \"What the claim did. `provisionVta`: the claimant is the first administrator of a VTA provisioned for this reservation. `grantAcl`: the claimant was added as an administrator of a VTA that already had one. The Farm derives it from the reservation; the wallet never chooses it.\",\n          \"enum\": [\n            \"provisionVta\",\n            \"grantAcl\"\n          ],\n          \"type\": \"string\"\n        },\n        \"vtaDid\": {\n          \"description\": \"The DID of the VTA the claimant now administers. The Farm chooses the DID method; the VTA Farm issues `did:webvh`.\",\n          \"maxLength\": 2048,\n          \"minLength\": 8,\n          \"pattern\": \"^did:[a-z0-9]+:[^\\\\s]+$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"handle\",\n        \"vtaDid\",\n        \"operation\"\n      ],\n      \"title\": \"Provision — VTA Redeem — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Handle\":{\"description\":\"The Farm-generated handle of one reservation: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is what VTI-LNK-116 recommends). It is the `_id` of the trigger link (VTI-LNK-033) and is compared as a string. In a claim it MUST equal the document's `parentThreadId`. It confers no authority on its holder beyond the right to make one claim.\",\"maxLength\":43,\"minLength\":22,\"pattern\":\"^[A-Za-z0-9_-]{22,43}$\",\"title\":\"Handle\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The hand-over, signed by the Farm's assertionMethod key and sent only once the claimant's key is written into the VTA as its administrator and the VTA answers: which VTA, what the claim did, and where the VTA is reachable. Every earlier state is a `trust-task-error` (`pending`, `rejected`, or a family code), never this document.\",\"properties\":{\"didLogUrl\":{\"description\":\"Where the VTA's DID log is served. For `did:webvh` it is the `did.jsonl` URL the DID itself encodes. An `https` URL with no userinfo.\",\"maxLength\":2048,\"minLength\":9,\"pattern\":\"^https://[^@/?#\\\\s]+(/[^\\\\s]*)?$\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"handle\":{\"$ref\":\"#/$defs/Handle\"},\"mediatorDid\":{\"description\":\"The DID of the DIDComm mediator the VTA is reachable through. A convenience: the wallet can also read it from the VTA's own DID document.\",\"maxLength\":2048,\"minLength\":8,\"pattern\":\"^did:[a-z0-9]+:[^\\\\s]+$\",\"type\":\"string\"},\"operation\":{\"description\":\"What the claim did. `provisionVta`: the claimant is the first administrator of a VTA provisioned for this reservation. `grantAcl`: the claimant was added as an administrator of a VTA that already had one. The Farm derives it from the reservation; the wallet never chooses it.\",\"enum\":[\"provisionVta\",\"grantAcl\"],\"type\":\"string\"},\"vtaDid\":{\"description\":\"The DID of the VTA the claimant now administers. The Farm chooses the DID method; the VTA Farm issues `did:webvh`.\",\"maxLength\":2048,\"minLength\":8,\"pattern\":\"^did:[a-z0-9]+:[^\\\\s]+$\",\"type\":\"string\"}},\"required\":[\"handle\",\"vtaDid\",\"operation\"],\"title\":\"Provision — VTA Redeem — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

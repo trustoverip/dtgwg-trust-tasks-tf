@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,40 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/invitations/issue/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "subjectDid"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "role": {
-///      "description": "Role granted on redemption. Must be one this community defines.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "subjectDid": {
-///      "description": "DID the invitation admits.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "validityDays": {
-///      "description": "Credential lifetime in days. Omit for the community default.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -203,16 +145,6 @@ impl Payload {
 }
 ///Role granted on redemption. Must be one this community defines.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Role granted on redemption. Must be one this community defines.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadRole(::std::string::String);
@@ -272,16 +204,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRole {
 }
 ///DID the invitation admits.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "DID the invitation admits.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadSubjectDid(::std::string::String);
@@ -341,43 +263,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubjectDid {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "subjectDid",
-///    "vic"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "subjectDid": {
-///      "description": "The invited DID, echoed.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "validUntil": {
-///      "description": "Expiry, or null when the invitation does not lapse.",
-///      "type": [
-///        "string",
-///        "null"
-///      ],
-///      "format": "date-time"
-///    },
-///    "vic": {
-///      "description": "The signed Invitation Credential (W3C VC). Opaque here; returned once.",
-///      "type": "object"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -404,16 +289,6 @@ impl Response {
 }
 ///The invited DID, echoed.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The invited DID, echoed.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseSubjectDid(::std::string::String);
@@ -654,7 +529,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"subjectDid\": {\n          \"description\": \"The invited DID, echoed.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"validUntil\": {\n          \"description\": \"Expiry, or null when the invitation does not lapse.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"vic\": {\n          \"description\": \"The signed Invitation Credential (W3C VC). Opaque here; returned once.\",\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"subjectDid\",\n        \"vic\"\n      ],\n      \"title\": \"VTC Invitations Issue — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/invitations/issue/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"role\": {\n      \"description\": \"Role granted on redemption. Must be one this community defines.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"subjectDid\": {\n      \"description\": \"DID the invitation admits.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"validityDays\": {\n      \"description\": \"Credential lifetime in days. Omit for the community default.\",\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"subjectDid\"\n  ],\n  \"title\": \"VTC Invitations Issue — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"subjectDid\":{\"description\":\"The invited DID, echoed.\",\"minLength\":1,\"type\":\"string\"},\"validUntil\":{\"description\":\"Expiry, or null when the invitation does not lapse.\",\"format\":\"date-time\",\"type\":[\"string\",\"null\"]},\"vic\":{\"description\":\"The signed Invitation Credential (W3C VC). Opaque here; returned once.\",\"type\":\"object\"}},\"required\":[\"subjectDid\",\"vic\"],\"title\":\"VTC Invitations Issue — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/invitations/issue/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"role\":{\"description\":\"Role granted on redemption. Must be one this community defines.\",\"minLength\":1,\"type\":\"string\"},\"subjectDid\":{\"description\":\"DID the invitation admits.\",\"minLength\":1,\"type\":\"string\"},\"validityDays\":{\"description\":\"Credential lifetime in days. Omit for the community default.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"subjectDid\"],\"title\":\"VTC Invitations Issue — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -663,7 +538,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"subjectDid\": {\n          \"description\": \"The invited DID, echoed.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"validUntil\": {\n          \"description\": \"Expiry, or null when the invitation does not lapse.\",\n          \"format\": \"date-time\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"vic\": {\n          \"description\": \"The signed Invitation Credential (W3C VC). Opaque here; returned once.\",\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"subjectDid\",\n        \"vic\"\n      ],\n      \"title\": \"VTC Invitations Issue — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"subjectDid\":{\"description\":\"The invited DID, echoed.\",\"minLength\":1,\"type\":\"string\"},\"validUntil\":{\"description\":\"Expiry, or null when the invitation does not lapse.\",\"format\":\"date-time\",\"type\":[\"string\",\"null\"]},\"vic\":{\"description\":\"The signed Invitation Credential (W3C VC). Opaque here; returned once.\",\"type\":\"object\"}},\"required\":[\"subjectDid\",\"vic\"],\"title\":\"VTC Invitations Issue — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

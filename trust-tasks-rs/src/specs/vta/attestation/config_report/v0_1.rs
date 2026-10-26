@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,32 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Asks an agent for fresh attestation evidence committing to the configuration it booted, bound to a nonce the verifier chose. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/attestation/config-report/0.1",
-///  "title": "Payload",
-///  "description": "Asks an agent for fresh attestation evidence committing to the configuration it booted, bound to a nonce the verifier chose. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "nonce"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "nonce": {
-///      "description": "Thirty-two bytes the verifier generated for this request, lowercase hex. The agent binds exactly this into the evidence.",
-///      "type": "string",
-///      "pattern": "^[0-9a-f]{64}$"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -185,16 +135,6 @@ impl Payload {
 }
 ///Thirty-two bytes the verifier generated for this request, lowercase hex. The agent binds exactly this into the evidence.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Thirty-two bytes the verifier generated for this request, lowercase hex. The agent binds exactly this into the evidence.",
-///  "type": "string",
-///  "pattern": "^[0-9a-f]{64}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadNonce(::std::string::String);
@@ -256,69 +196,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadNonce {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "configDigestSha384",
-///    "configView",
-///    "evidence",
-///    "generatedAt",
-///    "nonce",
-///    "teeType"
-///  ],
-///  "properties": {
-///    "configDigestSha384": {
-///      "description": "SHA-384 of the decoded configView bytes, base64 (standard). A convenience: the verifier recomputes it, and a mismatch with either the view or the evidence is a refusal.",
-///      "type": "string",
-///      "pattern": "^[A-Za-z0-9+/]{64}$"
-///    },
-///    "configView": {
-///      "description": "The canonical, secret-free view of the configuration the agent booted, base64 (standard): the exact bytes whose SHA-384 the evidence binds as its user data.",
-///      "type": "string",
-///      "maxLength": 65536,
-///      "minLength": 1,
-///      "pattern": "^[A-Za-z0-9+/]+={0,2}$"
-///    },
-///    "evidence": {
-///      "description": "The platform's quote, base64 (a COSE_Sign1 attestation document for nitro).",
-///      "type": "string",
-///      "maxLength": 65536,
-///      "minLength": 1,
-///      "pattern": "^[A-Za-z0-9+/_-]+={0,2}$"
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "generatedAt": {
-///      "description": "When the evidence was produced. Informational: freshness comes from the nonce.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "nonce": {
-///      "description": "The request's nonce, echoed. A verifier checks the nonce inside the evidence, not this.",
-///      "type": "string",
-///      "pattern": "^[0-9a-f]{64}$"
-///    },
-///    "teeType": {
-///      "description": "The platform that produced the evidence. Informational and not covered by the evidence.",
-///      "type": "string",
-///      "enum": [
-///        "nitro",
-///        "sev-snp",
-///        "simulated"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -350,16 +227,6 @@ impl Response {
 }
 ///SHA-384 of the decoded configView bytes, base64 (standard). A convenience: the verifier recomputes it, and a mismatch with either the view or the evidence is a refusal.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "SHA-384 of the decoded configView bytes, base64 (standard). A convenience: the verifier recomputes it, and a mismatch with either the view or the evidence is a refusal.",
-///  "type": "string",
-///  "pattern": "^[A-Za-z0-9+/]{64}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseConfigDigestSha384(::std::string::String);
@@ -421,18 +288,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseConfigDigestSha384 {
 }
 ///The canonical, secret-free view of the configuration the agent booted, base64 (standard): the exact bytes whose SHA-384 the evidence binds as its user data.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The canonical, secret-free view of the configuration the agent booted, base64 (standard): the exact bytes whose SHA-384 the evidence binds as its user data.",
-///  "type": "string",
-///  "maxLength": 65536,
-///  "minLength": 1,
-///  "pattern": "^[A-Za-z0-9+/]+={0,2}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseConfigView(::std::string::String);
@@ -500,18 +355,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseConfigView {
 }
 ///The platform's quote, base64 (a COSE_Sign1 attestation document for nitro).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The platform's quote, base64 (a COSE_Sign1 attestation document for nitro).",
-///  "type": "string",
-///  "maxLength": 65536,
-///  "minLength": 1,
-///  "pattern": "^[A-Za-z0-9+/_-]+={0,2}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseEvidence(::std::string::String);
@@ -581,16 +424,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseEvidence {
 }
 ///The request's nonce, echoed. A verifier checks the nonce inside the evidence, not this.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The request's nonce, echoed. A verifier checks the nonce inside the evidence, not this.",
-///  "type": "string",
-///  "pattern": "^[0-9a-f]{64}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseNonce(::std::string::String);
@@ -652,20 +485,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseNonce {
 }
 ///The platform that produced the evidence. Informational and not covered by the evidence.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The platform that produced the evidence. Informational and not covered by the evidence.",
-///  "type": "string",
-///  "enum": [
-///    "nitro",
-///    "sev-snp",
-///    "simulated"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -912,7 +731,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/attestation/config-report/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"configDigestSha384\": {\n          \"description\": \"SHA-384 of the decoded configView bytes, base64 (standard). A convenience: the verifier recomputes it, and a mismatch with either the view or the evidence is a refusal.\",\n          \"pattern\": \"^[A-Za-z0-9+/]{64}$\",\n          \"type\": \"string\"\n        },\n        \"configView\": {\n          \"description\": \"The canonical, secret-free view of the configuration the agent booted, base64 (standard): the exact bytes whose SHA-384 the evidence binds as its user data.\",\n          \"maxLength\": 65536,\n          \"minLength\": 1,\n          \"pattern\": \"^[A-Za-z0-9+/]+={0,2}$\",\n          \"type\": \"string\"\n        },\n        \"evidence\": {\n          \"description\": \"The platform's quote, base64 (a COSE_Sign1 attestation document for nitro).\",\n          \"maxLength\": 65536,\n          \"minLength\": 1,\n          \"pattern\": \"^[A-Za-z0-9+/_-]+={0,2}$\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"generatedAt\": {\n          \"description\": \"When the evidence was produced. Informational: freshness comes from the nonce.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"nonce\": {\n          \"description\": \"The request's nonce, echoed. A verifier checks the nonce inside the evidence, not this.\",\n          \"pattern\": \"^[0-9a-f]{64}$\",\n          \"type\": \"string\"\n        },\n        \"teeType\": {\n          \"description\": \"The platform that produced the evidence. Informational and not covered by the evidence.\",\n          \"enum\": [\n            \"nitro\",\n            \"sev-snp\",\n            \"simulated\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"configDigestSha384\",\n        \"configView\",\n        \"nonce\",\n        \"teeType\",\n        \"evidence\",\n        \"generatedAt\"\n      ],\n      \"title\": \"VTA Attestation Config Report — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/attestation/config-report/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Asks an agent for fresh attestation evidence committing to the configuration it booted, bound to a nonce the verifier chose. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"nonce\": {\n      \"description\": \"Thirty-two bytes the verifier generated for this request, lowercase hex. The agent binds exactly this into the evidence.\",\n      \"pattern\": \"^[0-9a-f]{64}$\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"nonce\"\n  ],\n  \"title\": \"VTA Attestation — Config Report — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"configDigestSha384\":{\"description\":\"SHA-384 of the decoded configView bytes, base64 (standard). A convenience: the verifier recomputes it, and a mismatch with either the view or the evidence is a refusal.\",\"pattern\":\"^[A-Za-z0-9+/]{64}$\",\"type\":\"string\"},\"configView\":{\"description\":\"The canonical, secret-free view of the configuration the agent booted, base64 (standard): the exact bytes whose SHA-384 the evidence binds as its user data.\",\"maxLength\":65536,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9+/]+={0,2}$\",\"type\":\"string\"},\"evidence\":{\"description\":\"The platform's quote, base64 (a COSE_Sign1 attestation document for nitro).\",\"maxLength\":65536,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9+/_-]+={0,2}$\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"generatedAt\":{\"description\":\"When the evidence was produced. Informational: freshness comes from the nonce.\",\"format\":\"date-time\",\"type\":\"string\"},\"nonce\":{\"description\":\"The request's nonce, echoed. A verifier checks the nonce inside the evidence, not this.\",\"pattern\":\"^[0-9a-f]{64}$\",\"type\":\"string\"},\"teeType\":{\"description\":\"The platform that produced the evidence. Informational and not covered by the evidence.\",\"enum\":[\"nitro\",\"sev-snp\",\"simulated\"],\"type\":\"string\"}},\"required\":[\"configDigestSha384\",\"configView\",\"nonce\",\"teeType\",\"evidence\",\"generatedAt\"],\"title\":\"VTA Attestation Config Report — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/attestation/config-report/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Asks an agent for fresh attestation evidence committing to the configuration it booted, bound to a nonce the verifier chose. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"nonce\":{\"description\":\"Thirty-two bytes the verifier generated for this request, lowercase hex. The agent binds exactly this into the evidence.\",\"pattern\":\"^[0-9a-f]{64}$\",\"type\":\"string\"}},\"required\":[\"nonce\"],\"title\":\"VTA Attestation — Config Report — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -921,7 +740,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"configDigestSha384\": {\n          \"description\": \"SHA-384 of the decoded configView bytes, base64 (standard). A convenience: the verifier recomputes it, and a mismatch with either the view or the evidence is a refusal.\",\n          \"pattern\": \"^[A-Za-z0-9+/]{64}$\",\n          \"type\": \"string\"\n        },\n        \"configView\": {\n          \"description\": \"The canonical, secret-free view of the configuration the agent booted, base64 (standard): the exact bytes whose SHA-384 the evidence binds as its user data.\",\n          \"maxLength\": 65536,\n          \"minLength\": 1,\n          \"pattern\": \"^[A-Za-z0-9+/]+={0,2}$\",\n          \"type\": \"string\"\n        },\n        \"evidence\": {\n          \"description\": \"The platform's quote, base64 (a COSE_Sign1 attestation document for nitro).\",\n          \"maxLength\": 65536,\n          \"minLength\": 1,\n          \"pattern\": \"^[A-Za-z0-9+/_-]+={0,2}$\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"generatedAt\": {\n          \"description\": \"When the evidence was produced. Informational: freshness comes from the nonce.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"nonce\": {\n          \"description\": \"The request's nonce, echoed. A verifier checks the nonce inside the evidence, not this.\",\n          \"pattern\": \"^[0-9a-f]{64}$\",\n          \"type\": \"string\"\n        },\n        \"teeType\": {\n          \"description\": \"The platform that produced the evidence. Informational and not covered by the evidence.\",\n          \"enum\": [\n            \"nitro\",\n            \"sev-snp\",\n            \"simulated\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"configDigestSha384\",\n        \"configView\",\n        \"nonce\",\n        \"teeType\",\n        \"evidence\",\n        \"generatedAt\"\n      ],\n      \"title\": \"VTA Attestation Config Report — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"configDigestSha384\":{\"description\":\"SHA-384 of the decoded configView bytes, base64 (standard). A convenience: the verifier recomputes it, and a mismatch with either the view or the evidence is a refusal.\",\"pattern\":\"^[A-Za-z0-9+/]{64}$\",\"type\":\"string\"},\"configView\":{\"description\":\"The canonical, secret-free view of the configuration the agent booted, base64 (standard): the exact bytes whose SHA-384 the evidence binds as its user data.\",\"maxLength\":65536,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9+/]+={0,2}$\",\"type\":\"string\"},\"evidence\":{\"description\":\"The platform's quote, base64 (a COSE_Sign1 attestation document for nitro).\",\"maxLength\":65536,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9+/_-]+={0,2}$\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"generatedAt\":{\"description\":\"When the evidence was produced. Informational: freshness comes from the nonce.\",\"format\":\"date-time\",\"type\":\"string\"},\"nonce\":{\"description\":\"The request's nonce, echoed. A verifier checks the nonce inside the evidence, not this.\",\"pattern\":\"^[0-9a-f]{64}$\",\"type\":\"string\"},\"teeType\":{\"description\":\"The platform that produced the evidence. Informational and not covered by the evidence.\",\"enum\":[\"nitro\",\"sev-snp\",\"simulated\"],\"type\":\"string\"}},\"required\":[\"configDigestSha384\",\"configView\",\"nonce\",\"teeType\",\"evidence\",\"generatedAt\"],\"title\":\"VTA Attestation Config Report — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

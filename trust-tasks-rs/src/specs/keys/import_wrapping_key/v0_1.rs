@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,24 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Asks a key custodian for a fresh, short-lived, single-use public key to seal a private key to before sending it in a keys/import request's `privateKeySealed` carrier. The request carries nothing. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/keys/import-wrapping-key/0.1",
-///  "title": "Payload",
-///  "description": "Asks a key custodian for a fresh, short-lived, single-use public key to seal a private key to before sending it in a keys/import request's `privateKeySealed` carrier. The request carries nothing. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -182,46 +140,6 @@ impl Payload {
 }
 ///The wrapping key the custodian has just generated, carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/import-wrapping-key/0.1#response. Failures use trust-task-error, not this shape.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The wrapping key the custodian has just generated, carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/import-wrapping-key/0.1#response. Failures use trust-task-error, not this shape.",
-///  "type": "object",
-///  "required": [
-///    "expiresAt",
-///    "keyId",
-///    "wrappingKey"
-///  ],
-///  "properties": {
-///    "expiresAt": {
-///      "description": "The instant after which the custodian will no longer open anything sealed to this key. RFC 3339 with an explicit offset. A producer that cannot complete keys/import before it asks for a new wrapping key rather than sending a bundle it knows will be refused.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "keyId": {
-///      "description": "The custodian's opaque handle for this wrapping key. A `privateKeyJwe` carrier names it as its JWE `kid`. A `privateKeySealed` carrier does not need it: the custodian finds the key by trying the bundle against its unexpired, unused wrapping keys. Carries no meaning to the producer beyond equality.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "wrappingKey": {
-///      "description": "The wrapping key as an Ed25519 did:key. A producer seals to its X25519 counterpart (the birational map of RFC 7748 §4.1 applied to the Ed25519 public key), exactly as the sealed-transfer recipient of vta/attestation/mnemonic-export is addressed. Generated for this response alone: the custodian MUST NOT return the same key twice.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "pattern": "^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -246,17 +164,6 @@ impl Response {
 }
 ///The custodian's opaque handle for this wrapping key. A `privateKeyJwe` carrier names it as its JWE `kid`. A `privateKeySealed` carrier does not need it: the custodian finds the key by trying the bundle against its unexpired, unused wrapping keys. Carries no meaning to the producer beyond equality.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The custodian's opaque handle for this wrapping key. A `privateKeyJwe` carrier names it as its JWE `kid`. A `privateKeySealed` carrier does not need it: the custodian finds the key by trying the bundle against its unexpired, unused wrapping keys. Carries no meaning to the producer beyond equality.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseKeyId(::std::string::String);
@@ -319,17 +226,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseKeyId {
 }
 ///The wrapping key as an Ed25519 did:key. A producer seals to its X25519 counterpart (the birational map of RFC 7748 §4.1 applied to the Ed25519 public key), exactly as the sealed-transfer recipient of vta/attestation/mnemonic-export is addressed. Generated for this response alone: the custodian MUST NOT return the same key twice.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The wrapping key as an Ed25519 did:key. A producer seals to its X25519 counterpart (the birational map of RFC 7748 §4.1 applied to the Ed25519 public key), exactly as the sealed-transfer recipient of vta/attestation/mnemonic-export is addressed. Generated for this response alone: the custodian MUST NOT return the same key twice.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "pattern": "^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseWrappingKey(::std::string::String);
@@ -516,7 +412,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/keys/import-wrapping-key/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The wrapping key the custodian has just generated, carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/import-wrapping-key/0.1#response. Failures use trust-task-error, not this shape.\",\n      \"properties\": {\n        \"expiresAt\": {\n          \"description\": \"The instant after which the custodian will no longer open anything sealed to this key. RFC 3339 with an explicit offset. A producer that cannot complete keys/import before it asks for a new wrapping key rather than sending a bundle it knows will be refused.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"keyId\": {\n          \"description\": \"The custodian's opaque handle for this wrapping key. A `privateKeyJwe` carrier names it as its JWE `kid`. A `privateKeySealed` carrier does not need it: the custodian finds the key by trying the bundle against its unexpired, unused wrapping keys. Carries no meaning to the producer beyond equality.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"wrappingKey\": {\n          \"description\": \"The wrapping key as an Ed25519 did:key. A producer seals to its X25519 counterpart (the birational map of RFC 7748 §4.1 applied to the Ed25519 public key), exactly as the sealed-transfer recipient of vta/attestation/mnemonic-export is addressed. Generated for this response alone: the custodian MUST NOT return the same key twice.\",\n          \"maxLength\": 128,\n          \"pattern\": \"^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"wrappingKey\",\n        \"keyId\",\n        \"expiresAt\"\n      ],\n      \"title\": \"Keys — Import Wrapping Key — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/keys/import-wrapping-key/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Asks a key custodian for a fresh, short-lived, single-use public key to seal a private key to before sending it in a keys/import request's `privateKeySealed` carrier. The request carries nothing. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    }\n  },\n  \"title\": \"Keys — Import Wrapping Key — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The wrapping key the custodian has just generated, carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/import-wrapping-key/0.1#response. Failures use trust-task-error, not this shape.\",\"properties\":{\"expiresAt\":{\"description\":\"The instant after which the custodian will no longer open anything sealed to this key. RFC 3339 with an explicit offset. A producer that cannot complete keys/import before it asks for a new wrapping key rather than sending a bundle it knows will be refused.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"keyId\":{\"description\":\"The custodian's opaque handle for this wrapping key. A `privateKeyJwe` carrier names it as its JWE `kid`. A `privateKeySealed` carrier does not need it: the custodian finds the key by trying the bundle against its unexpired, unused wrapping keys. Carries no meaning to the producer beyond equality.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"wrappingKey\":{\"description\":\"The wrapping key as an Ed25519 did:key. A producer seals to its X25519 counterpart (the birational map of RFC 7748 §4.1 applied to the Ed25519 public key), exactly as the sealed-transfer recipient of vta/attestation/mnemonic-export is addressed. Generated for this response alone: the custodian MUST NOT return the same key twice.\",\"maxLength\":128,\"pattern\":\"^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"}},\"required\":[\"wrappingKey\",\"keyId\",\"expiresAt\"],\"title\":\"Keys — Import Wrapping Key — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/keys/import-wrapping-key/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Asks a key custodian for a fresh, short-lived, single-use public key to seal a private key to before sending it in a keys/import request's `privateKeySealed` carrier. The request carries nothing. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"title\":\"Keys — Import Wrapping Key — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -525,7 +421,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The wrapping key the custodian has just generated, carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/import-wrapping-key/0.1#response. Failures use trust-task-error, not this shape.\",\n      \"properties\": {\n        \"expiresAt\": {\n          \"description\": \"The instant after which the custodian will no longer open anything sealed to this key. RFC 3339 with an explicit offset. A producer that cannot complete keys/import before it asks for a new wrapping key rather than sending a bundle it knows will be refused.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"keyId\": {\n          \"description\": \"The custodian's opaque handle for this wrapping key. A `privateKeyJwe` carrier names it as its JWE `kid`. A `privateKeySealed` carrier does not need it: the custodian finds the key by trying the bundle against its unexpired, unused wrapping keys. Carries no meaning to the producer beyond equality.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"wrappingKey\": {\n          \"description\": \"The wrapping key as an Ed25519 did:key. A producer seals to its X25519 counterpart (the birational map of RFC 7748 §4.1 applied to the Ed25519 public key), exactly as the sealed-transfer recipient of vta/attestation/mnemonic-export is addressed. Generated for this response alone: the custodian MUST NOT return the same key twice.\",\n          \"maxLength\": 128,\n          \"pattern\": \"^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"wrappingKey\",\n        \"keyId\",\n        \"expiresAt\"\n      ],\n      \"title\": \"Keys — Import Wrapping Key — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The wrapping key the custodian has just generated, carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/import-wrapping-key/0.1#response. Failures use trust-task-error, not this shape.\",\"properties\":{\"expiresAt\":{\"description\":\"The instant after which the custodian will no longer open anything sealed to this key. RFC 3339 with an explicit offset. A producer that cannot complete keys/import before it asks for a new wrapping key rather than sending a bundle it knows will be refused.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"keyId\":{\"description\":\"The custodian's opaque handle for this wrapping key. A `privateKeyJwe` carrier names it as its JWE `kid`. A `privateKeySealed` carrier does not need it: the custodian finds the key by trying the bundle against its unexpired, unused wrapping keys. Carries no meaning to the producer beyond equality.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"wrappingKey\":{\"description\":\"The wrapping key as an Ed25519 did:key. A producer seals to its X25519 counterpart (the birational map of RFC 7748 §4.1 applied to the Ed25519 public key), exactly as the sealed-transfer recipient of vta/attestation/mnemonic-export is addressed. Generated for this response alone: the custodian MUST NOT return the same key twice.\",\"maxLength\":128,\"pattern\":\"^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"}},\"required\":[\"wrappingKey\",\"keyId\",\"expiresAt\"],\"title\":\"Keys — Import Wrapping Key — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

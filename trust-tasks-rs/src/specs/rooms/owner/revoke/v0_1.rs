@@ -34,43 +34,6 @@ pub mod error {
 }
 ///Withdraws one credential — a membership credential or any authority link — by its `id`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "CredentialRevocation",
-///  "description": "Withdraws one credential — a membership credential or any authority link — by its `id`.",
-///  "type": "object",
-///  "required": [
-///    "credentialId",
-///    "kind",
-///    "revokedAt"
-///  ],
-///  "properties": {
-///    "credentialId": {
-///      "description": "The `id` of the credential withdrawn, as `rooms/owner/issue-authority` and `rooms/owner/issue-membership` return it, or as an attenuated credential carries it.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1
-///    },
-///    "kind": {
-///      "const": "credential"
-///    },
-///    "revokedAt": {
-///      "description": "When the room made this withdrawal.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "until": {
-///      "description": "OPTIONAL. After this instant every credential the entry matches has expired anyway, so a host MAY discard the entry and the room MAY omit it from later lists. Absent means the entry is kept for as long as the room keeps a list.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -93,17 +56,6 @@ impl CredentialRevocation {
 }
 ///The `id` of the credential withdrawn, as `rooms/owner/issue-authority` and `rooms/owner/issue-membership` return it, or as an attenuated credential carries it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The `id` of the credential withdrawn, as `rooms/owner/issue-authority` and `rooms/owner/issue-membership` return it, or as an attenuated credential carries it.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CredentialRevocationCredentialId(::std::string::String);
@@ -166,51 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for CredentialRevocationCredentialId {
 }
 ///What one host did with the list.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Delivery",
-///  "description": "What one host did with the list.",
-///  "type": "object",
-///  "required": [
-///    "host",
-///    "outcome"
-///  ],
-///  "properties": {
-///    "code": {
-///      "description": "The host's error code. Present when `refused`.",
-///      "type": "string",
-///      "maxLength": 128
-///    },
-///    "head": {
-///      "description": "The head the host answered with. Present when `accepted`.",
-///      "$ref": "#/definitions/RevocationHead"
-///    },
-///    "host": {
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    },
-///    "inForceAt": {
-///      "description": "When the host began enforcing the list. Present when `accepted`.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "outcome": {
-///      "description": "`accepted`: the host holds this list, or answered it as a repeat, and enforces it from `inForceAt`. `refused`: it answered and declined; its code is in `code`. `unreachable`: no answer, so the outcome is unknown — repeat the request with no `withdraw` to deliver again.",
-///      "type": "string",
-///      "enum": [
-///        "accepted",
-///        "refused",
-///        "unreachable"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -239,16 +146,6 @@ impl Delivery {
 }
 ///The host's error code. Present when `refused`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The host's error code. Present when `refused`.",
-///  "type": "string",
-///  "maxLength": 128
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DeliveryCode(::std::string::String);
@@ -308,16 +205,6 @@ impl<'de> ::serde::Deserialize<'de> for DeliveryCode {
 }
 ///`DeliveryHost`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DeliveryHost(::std::string::String);
@@ -382,20 +269,6 @@ impl<'de> ::serde::Deserialize<'de> for DeliveryHost {
 }
 ///`accepted`: the host holds this list, or answered it as a repeat, and enforces it from `inForceAt`. `refused`: it answered and declined; its code is in `code`. `unreachable`: no answer, so the outcome is unknown — repeat the request with no `withdraw` to deliver again.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`accepted`: the host holds this list, or answered it as a repeat, and enforces it from `inForceAt`. `refused`: it answered and declined; its code is in `code`. `unreachable`: no answer, so the outcome is unknown — repeat the request with no `withdraw` to deliver again.",
-///  "type": "string",
-///  "enum": [
-///    "accepted",
-///    "refused",
-///    "unreachable"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -468,21 +341,6 @@ This definition constrains the *encoding only*. What the digest is computed over
 
 Restricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that "interoperability is not guaranteed between implementations using such values", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DigestMultibase",
-///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-///  "examples": [
-///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-///  ],
-///  "type": "string",
-///  "minLength": 16,
-///  "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DigestMultibase(::std::string::String);
@@ -551,21 +409,6 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -587,15 +430,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -659,67 +493,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A room's owner asks their own agent to withdraw credentials the room issued: sign the room's next revocation list as the room, keep it, and deliver it to each host serving the room.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/rooms/owner/revoke/0.1",
-///  "title": "Payload",
-///  "description": "A room's owner asks their own agent to withdraw credentials the room issued: sign the room's next revocation list as the room, keep it, and deliver it to each host serving the room.",
-///  "type": "object",
-///  "required": [
-///    "hosts",
-///    "roomId",
-///    "signingKeyId"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "hosts": {
-///      "description": "Every host serving the room, as DIDs: its primary, any mirror, and a host it is moving to. A withdrawal binds only the hosts that hold it, so a host left off this list honours what the room withdrew.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 2048,
-///        "pattern": "^did:"
-///      },
-///      "maxItems": 8,
-///      "minItems": 1,
-///      "uniqueItems": true
-///    },
-///    "reason": {
-///      "description": "Why, for the owner's own record. Never put into the list, which reaches every host: it MUST NOT carry personal data or a credential.",
-///      "type": "string",
-///      "maxLength": 500,
-///      "minLength": 1
-///    },
-///    "roomId": {
-///      "description": "The room whose credentials are withdrawn. The recipient signs as this room.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    },
-///    "signingKeyId": {
-///      "description": "Which held key signs as the room — named explicitly, as for rooms/owner/issue-authority, because nothing maps a DID to the key it was minted with. A key that is not one the room's DID document lists for `assertionMethod` produces a list every host refuses.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "withdraw": {
-///      "description": "What to withdraw now. Absent or empty: sign nothing new, and deliver the list the recipient holds — how a host the room has moved to, or one that missed a delivery, is brought up to date.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Withdrawal"
-///      },
-///      "maxItems": 64
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -749,16 +522,6 @@ impl Payload {
 }
 ///`PayloadHostsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadHostsItem(::std::string::String);
@@ -823,17 +586,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadHostsItem {
 }
 ///Why, for the owner's own record. Never put into the list, which reaches every host: it MUST NOT carry personal data or a credential.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Why, for the owner's own record. Never put into the list, which reaches every host: it MUST NOT carry personal data or a credential.",
-///  "type": "string",
-///  "maxLength": 500,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadReason(::std::string::String);
@@ -896,17 +648,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 }
 ///The room whose credentials are withdrawn. The recipient signs as this room.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The room whose credentials are withdrawn. The recipient signs as this room.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadRoomId(::std::string::String);
@@ -969,17 +710,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRoomId {
 }
 ///Which held key signs as the room — named explicitly, as for rooms/owner/issue-authority, because nothing maps a DID to the key it was minted with. A key that is not one the room's DID document lists for `assertionMethod` produces a list every host refuses.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Which held key signs as the room — named explicitly, as for rooms/owner/issue-authority, because nothing maps a DID to the key it was minted with. A key that is not one the room's DID document lists for `assertionMethod` produces a list every host refuses.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadSigningKeyId(::std::string::String);
@@ -1042,50 +772,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSigningKeyId {
 }
 ///Success response to rooms/owner/revoke. Type https://trusttasks.org/spec/rooms/owner/revoke/0.1#response. The list the recipient now holds for the room, and what each host did with it. A success says the list was signed and kept; only a delivery whose outcome is `accepted` says a host enforces it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to rooms/owner/revoke. Type https://trusttasks.org/spec/rooms/owner/revoke/0.1#response. The list the recipient now holds for the room, and what each host did with it. A success says the list was signed and kept; only a delivery whose outcome is `accepted` says a host enforces it.",
-///  "type": "object",
-///  "required": [
-///    "deliveries",
-///    "head",
-///    "list",
-///    "roomId"
-///  ],
-///  "properties": {
-///    "deliveries": {
-///      "description": "One per host in the request, in its order.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Delivery"
-///      },
-///      "maxItems": 8,
-///      "minItems": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "head": {
-///      "$ref": "#/definitions/RevocationHead"
-///    },
-///    "list": {
-///      "description": "The room's current list, as signed. Returned so the owner holds a copy that does not depend on the recipient.",
-///      "$ref": "#/definitions/RevocationList"
-///    },
-///    "roomId": {
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1107,16 +793,6 @@ impl Response {
 }
 ///`ResponseRoomId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseRoomId(::std::string::String);
@@ -1188,26 +864,6 @@ One withdrawal in a `RevocationList`, discriminated by `kind`.
 
 **Tiers.** On a `private` room a host MUST refuse a list carrying a `credential` or `subject` entry: a presentation there withholds the credential and its subject, so such an entry is one the host cannot apply and a disclosure of who was in the room. Only `room` entries are permitted, and a host serving a `private` room MUST refuse any presentation for which it cannot establish that no credential in it has a `validFrom` earlier than the latest `room` entry's `revokedAt`.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RevocationEntry",
-///  "description": "One withdrawal in a `RevocationList`, discriminated by `kind`.\n\n  - `credential` withdraws one credential, named by its `id`. It matches the membership credential or any authority link whose `id` equals `credentialId`.\n  - `subject` withdraws a party: every credential the room's chain gave them **before** `revokedAt`. It matches the membership credential or any authority link whose `credentialSubject` id **or** `issuer` is `subject` and whose `validFrom` is earlier than `revokedAt`. Matching the issuer as well as the subject withdraws what the party delegated before their removal, which no re-admission revives. A credential carrying no `validFrom` is treated as issued before every entry.\n  - `room` withdraws every credential whose `validFrom` is earlier than `revokedAt`, whoever holds it. It is how a room resets access — after a compromise, or on a `private` room, where naming a party would disclose who was a member.\n\n**Keyed on time, so a party can come back.** A `subject` or `room` entry withdraws what was issued before it and nothing after, so a room that re-admits a removed party issues fresh credentials and they verify. A `credential` entry is permanent for that one credential, which nobody re-issues.\n\n**Tiers.** On a `private` room a host MUST refuse a list carrying a `credential` or `subject` entry: a presentation there withholds the credential and its subject, so such an entry is one the host cannot apply and a disclosure of who was in the room. Only `room` entries are permitted, and a host serving a `private` room MUST refuse any presentation for which it cannot establish that no credential in it has a `validFrom` earlier than the latest `room` entry's `revokedAt`.",
-///  "oneOf": [
-///    {
-///      "$ref": "#/definitions/CredentialRevocation"
-///    },
-///    {
-///      "$ref": "#/definitions/SubjectRevocation"
-///    },
-///    {
-///      "$ref": "#/definitions/RoomRevocation"
-///    }
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged)]
 #[non_exhaustive]
@@ -1233,32 +889,6 @@ impl ::std::convert::From<RoomRevocation> for RevocationEntry {
 }
 ///Which `RevocationList` a party holds, without its entries: comparable between the room's key holder and a host, and between two hosts, without disclosing whom the room withdrew.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RevocationHead",
-///  "description": "Which `RevocationList` a party holds, without its entries: comparable between the room's key holder and a host, and between two hosts, without disclosing whom the room withdrew.",
-///  "type": "object",
-///  "required": [
-///    "digest",
-///    "sequence"
-///  ],
-///  "properties": {
-///    "digest": {
-///      "description": "SHA-256 multihash of the list's RFC 8785 (JCS) canonicalization, `proof` included. Two parties holding one sequence with different digests have been given two lists the room signed at one sequence.",
-///      "$ref": "#/definitions/DigestMultibase"
-///    },
-///    "sequence": {
-///      "description": "The list's `sequence`.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1286,54 +916,6 @@ The room's own statement of which credentials it has withdrawn before they expir
 
 **Size.** A list is bounded at 4096 entries. A room that would exceed it uses a `room` entry, which withdraws everything issued before it and lets the room re-issue to those who remain.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RevocationList",
-///  "description": "The room's own statement of which credentials it has withdrawn before they expire — signed by the room, cumulative, and numbered, so that it means the same thing at every host it is delivered to.\n\n**Why the room signs it, and why it is cumulative.** A host authorizes from credentials the room issued and keeps no roster; a withdrawal kept only as a host's own state would make the room unmovable and the host part of the membership. A list the room signed is room state: it moves with the room, any host it is delivered to reaches the same decision, and nothing a host invents can be mistaken for it. It is cumulative — every list carries every entry still in force — so a host holding any one list holds the room's whole withdrawal state, and a host that missed a list loses nothing once it receives a later one.\n\n**Producing.** The room's key holder builds the object without `proof` and signs it with a W3C Data Integrity proof whose `verificationMethod` is a key the room's DID document lists for `assertionMethod` and whose `proofPurpose` is `assertionMethod`. A producer MUST support `eddsa-jcs-2022`. Each list's `sequence` is exactly one greater than the last list the room signed, and the producer MUST NOT sign two different lists at one `sequence`.\n\n**Accepting.** A host MUST refuse a list unless: (1) `roomId` is the room it is delivered for; (2) `proof` verifies with a key of `roomId` listed for `assertionMethod` — a list signed by any other key, however valid the signature, is not the room's; (3) `sequence` is greater than that of the list it holds, or equal with an identical list (a repeat, answered as accepted and changing nothing); (4) it is **append-only** against the list it holds: every entry of the held list appears in it unchanged, unless that entry's `until` has passed. A list that lowers the sequence is a rollback and one that drops a live entry is a reinstatement nobody signed for, and both are refused; two different lists at one `sequence` is the room's key equivocating, and the host keeps the list it holds.\n\n**Applying.** A credential is revoked by an accepted list when any entry matches it (see `RevocationEntry`). An entry whose `until` has passed MAY be discarded by a host and omitted from later lists; no other entry is ever dropped.\n\n**Size.** A list is bounded at 4096 entries. A room that would exceed it uses a `room` entry, which withdraws everything issued before it and lets the room re-issue to those who remain.",
-///  "type": "object",
-///  "required": [
-///    "entries",
-///    "issuedAt",
-///    "proof",
-///    "roomId",
-///    "sequence"
-///  ],
-///  "properties": {
-///    "entries": {
-///      "description": "Every withdrawal still in force, in the order the room made them. Empty is valid: a room that has revoked nothing, or whose every entry has lapsed, can still state its sequence.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/RevocationEntry"
-///      },
-///      "maxItems": 4096
-///    },
-///    "issuedAt": {
-///      "description": "When the room signed this list.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "proof": {
-///      "description": "The room's Data Integrity proof over every other member, made with a key the room's DID document lists for `assertionMethod`.",
-///      "type": "object"
-///    },
-///    "roomId": {
-///      "description": "The room whose credentials this list withdraws, exactly as on the wire. Signed, so a list cannot be replayed against another room.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    },
-///    "sequence": {
-///      "description": "The list's position in the room's sequence: exactly one greater than the last list the room signed. A host accepts only a list whose sequence is above the one it holds, which is what stops a host, a relayer or an attacker holding an old list from rolling the room's withdrawals back.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1358,17 +940,6 @@ impl RevocationList {
 }
 ///The room whose credentials this list withdraws, exactly as on the wire. Signed, so a list cannot be replayed against another room.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The room whose credentials this list withdraws, exactly as on the wire. Signed, so a list cannot be replayed against another room.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RevocationListRoomId(::std::string::String);
@@ -1431,36 +1002,6 @@ impl<'de> ::serde::Deserialize<'de> for RevocationListRoomId {
 }
 ///Withdraws every credential whose `validFrom` is earlier than `revokedAt`, whoever holds it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RoomRevocation",
-///  "description": "Withdraws every credential whose `validFrom` is earlier than `revokedAt`, whoever holds it.",
-///  "type": "object",
-///  "required": [
-///    "kind",
-///    "revokedAt"
-///  ],
-///  "properties": {
-///    "kind": {
-///      "const": "room"
-///    },
-///    "revokedAt": {
-///      "description": "When the room made this withdrawal.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "until": {
-///      "description": "OPTIONAL. After this instant every credential the entry matches has expired anyway, so a host MAY discard the entry and the room MAY omit it from later lists. Absent means the entry is kept for as long as the room keeps a list.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1480,43 +1021,6 @@ impl RoomRevocation {
 }
 ///Withdraws a party: every credential naming them as subject or issuer whose `validFrom` is earlier than `revokedAt`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "SubjectRevocation",
-///  "description": "Withdraws a party: every credential naming them as subject or issuer whose `validFrom` is earlier than `revokedAt`.",
-///  "type": "object",
-///  "required": [
-///    "kind",
-///    "revokedAt",
-///    "subject"
-///  ],
-///  "properties": {
-///    "kind": {
-///      "const": "subject"
-///    },
-///    "revokedAt": {
-///      "description": "When the room made this withdrawal.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "subject": {
-///      "description": "The party withdrawn. Never the room itself.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    },
-///    "until": {
-///      "description": "OPTIONAL. After this instant every credential the entry matches has expired anyway, so a host MAY discard the entry and the room MAY omit it from later lists. Absent means the entry is kept for as long as the room keeps a list.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1538,17 +1042,6 @@ impl SubjectRevocation {
 }
 ///The party withdrawn. Never the room itself.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The party withdrawn. Never the room itself.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SubjectRevocationSubject(::std::string::String);
@@ -1613,36 +1106,6 @@ impl<'de> ::serde::Deserialize<'de> for SubjectRevocationSubject {
 }
 ///`WithdrawCredential`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "WithdrawCredential",
-///  "type": "object",
-///  "required": [
-///    "credentialId",
-///    "kind"
-///  ],
-///  "properties": {
-///    "credentialId": {
-///      "description": "The `id` of the credential withdrawn.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1
-///    },
-///    "kind": {
-///      "const": "credential"
-///    },
-///    "until": {
-///      "description": "OPTIONAL. The credential's own `validUntil`, after which the entry can be dropped.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1662,17 +1125,6 @@ impl WithdrawCredential {
 }
 ///The `id` of the credential withdrawn.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The `id` of the credential withdrawn.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct WithdrawCredentialCredentialId(::std::string::String);
@@ -1735,29 +1187,6 @@ impl<'de> ::serde::Deserialize<'de> for WithdrawCredentialCredentialId {
 }
 ///`WithdrawRoom`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "WithdrawRoom",
-///  "type": "object",
-///  "required": [
-///    "kind"
-///  ],
-///  "properties": {
-///    "kind": {
-///      "const": "room"
-///    },
-///    "until": {
-///      "description": "OPTIONAL. When the last credential the room issued before now expires.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1774,36 +1203,6 @@ impl WithdrawRoom {
 }
 ///`WithdrawSubject`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "WithdrawSubject",
-///  "type": "object",
-///  "required": [
-///    "kind",
-///    "subject"
-///  ],
-///  "properties": {
-///    "kind": {
-///      "const": "subject"
-///    },
-///    "subject": {
-///      "description": "The party withdrawn: every credential naming them as subject or issuer that the room's chain gave them before now. Never the room.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    },
-///    "until": {
-///      "description": "OPTIONAL. When the last credential the room issued them expires, after which the entry can be dropped.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1822,17 +1221,6 @@ impl WithdrawSubject {
 }
 ///The party withdrawn: every credential naming them as subject or issuer that the room's chain gave them before now. Never the room.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The party withdrawn: every credential naming them as subject or issuer that the room's chain gave them before now. Never the room.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct WithdrawSubjectSubject(::std::string::String);
@@ -1897,26 +1285,6 @@ impl<'de> ::serde::Deserialize<'de> for WithdrawSubjectSubject {
 }
 ///One withdrawal to add, discriminated by `kind` as a RevocationEntry is. It carries no `revokedAt`: the recipient stamps the time it signs, so that a subject or room entry withdraws exactly what the room had issued until then and nothing the caller dated.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Withdrawal",
-///  "description": "One withdrawal to add, discriminated by `kind` as a RevocationEntry is. It carries no `revokedAt`: the recipient stamps the time it signs, so that a subject or room entry withdraws exactly what the room had issued until then and nothing the caller dated.",
-///  "oneOf": [
-///    {
-///      "$ref": "#/definitions/WithdrawCredential"
-///    },
-///    {
-///      "$ref": "#/definitions/WithdrawSubject"
-///    },
-///    {
-///      "$ref": "#/definitions/WithdrawRoom"
-///    }
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged)]
 #[non_exhaustive]
@@ -2873,7 +2241,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CredentialRevocation\": {\n      \"additionalProperties\": false,\n      \"description\": \"Withdraws one credential — a membership credential or any authority link — by its `id`.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"description\": \"The `id` of the credential withdrawn, as `rooms/owner/issue-authority` and `rooms/owner/issue-membership` return it, or as an attenuated credential carries it.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"kind\": {\n          \"const\": \"credential\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the room made this withdrawal.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"until\": {\n          \"description\": \"OPTIONAL. After this instant every credential the entry matches has expired anyway, so a host MAY discard the entry and the room MAY omit it from later lists. Absent means the entry is kept for as long as the room keeps a list.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"credentialId\",\n        \"revokedAt\"\n      ],\n      \"title\": \"CredentialRevocation\",\n      \"type\": \"object\"\n    },\n    \"Delivery\": {\n      \"additionalProperties\": false,\n      \"description\": \"What one host did with the list.\",\n      \"properties\": {\n        \"code\": {\n          \"description\": \"The host's error code. Present when `refused`.\",\n          \"maxLength\": 128,\n          \"type\": \"string\"\n        },\n        \"head\": {\n          \"$ref\": \"#/$defs/RevocationHead\",\n          \"description\": \"The head the host answered with. Present when `accepted`.\"\n        },\n        \"host\": {\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"inForceAt\": {\n          \"description\": \"When the host began enforcing the list. Present when `accepted`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"outcome\": {\n          \"description\": \"`accepted`: the host holds this list, or answered it as a repeat, and enforces it from `inForceAt`. `refused`: it answered and declined; its code is in `code`. `unreachable`: no answer, so the outcome is unknown — repeat the request with no `withdraw` to deliver again.\",\n          \"enum\": [\n            \"accepted\",\n            \"refused\",\n            \"unreachable\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"host\",\n        \"outcome\"\n      ],\n      \"title\": \"Delivery\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/owner/revoke. Type https://trusttasks.org/spec/rooms/owner/revoke/0.1#response. The list the recipient now holds for the room, and what each host did with it. A success says the list was signed and kept; only a delivery whose outcome is `accepted` says a host enforces it.\",\n      \"properties\": {\n        \"deliveries\": {\n          \"description\": \"One per host in the request, in its order.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Delivery\"\n          },\n          \"maxItems\": 8,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"head\": {\n          \"$ref\": \"#/$defs/RevocationHead\"\n        },\n        \"list\": {\n          \"$ref\": \"#/$defs/RevocationList\",\n          \"description\": \"The room's current list, as signed. Returned so the owner holds a copy that does not depend on the recipient.\"\n        },\n        \"roomId\": {\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"list\",\n        \"head\",\n        \"deliveries\"\n      ],\n      \"title\": \"Rooms Owner Revoke — response payload\",\n      \"type\": \"object\"\n    },\n    \"RevocationEntry\": {\n      \"description\": \"One withdrawal in a `RevocationList`, discriminated by `kind`.\\n\\n  - `credential` withdraws one credential, named by its `id`. It matches the membership credential or any authority link whose `id` equals `credentialId`.\\n  - `subject` withdraws a party: every credential the room's chain gave them **before** `revokedAt`. It matches the membership credential or any authority link whose `credentialSubject` id **or** `issuer` is `subject` and whose `validFrom` is earlier than `revokedAt`. Matching the issuer as well as the subject withdraws what the party delegated before their removal, which no re-admission revives. A credential carrying no `validFrom` is treated as issued before every entry.\\n  - `room` withdraws every credential whose `validFrom` is earlier than `revokedAt`, whoever holds it. It is how a room resets access — after a compromise, or on a `private` room, where naming a party would disclose who was a member.\\n\\n**Keyed on time, so a party can come back.** A `subject` or `room` entry withdraws what was issued before it and nothing after, so a room that re-admits a removed party issues fresh credentials and they verify. A `credential` entry is permanent for that one credential, which nobody re-issues.\\n\\n**Tiers.** On a `private` room a host MUST refuse a list carrying a `credential` or `subject` entry: a presentation there withholds the credential and its subject, so such an entry is one the host cannot apply and a disclosure of who was in the room. Only `room` entries are permitted, and a host serving a `private` room MUST refuse any presentation for which it cannot establish that no credential in it has a `validFrom` earlier than the latest `room` entry's `revokedAt`.\",\n      \"oneOf\": [\n        {\n          \"$ref\": \"#/$defs/CredentialRevocation\"\n        },\n        {\n          \"$ref\": \"#/$defs/SubjectRevocation\"\n        },\n        {\n          \"$ref\": \"#/$defs/RoomRevocation\"\n        }\n      ],\n      \"title\": \"RevocationEntry\"\n    },\n    \"RevocationHead\": {\n      \"additionalProperties\": false,\n      \"description\": \"Which `RevocationList` a party holds, without its entries: comparable between the room's key holder and a host, and between two hosts, without disclosing whom the room withdrew.\",\n      \"properties\": {\n        \"digest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"SHA-256 multihash of the list's RFC 8785 (JCS) canonicalization, `proof` included. Two parties holding one sequence with different digests have been given two lists the room signed at one sequence.\"\n        },\n        \"sequence\": {\n          \"description\": \"The list's `sequence`.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"sequence\",\n        \"digest\"\n      ],\n      \"title\": \"RevocationHead\",\n      \"type\": \"object\"\n    },\n    \"RevocationList\": {\n      \"additionalProperties\": false,\n      \"description\": \"The room's own statement of which credentials it has withdrawn before they expire — signed by the room, cumulative, and numbered, so that it means the same thing at every host it is delivered to.\\n\\n**Why the room signs it, and why it is cumulative.** A host authorizes from credentials the room issued and keeps no roster; a withdrawal kept only as a host's own state would make the room unmovable and the host part of the membership. A list the room signed is room state: it moves with the room, any host it is delivered to reaches the same decision, and nothing a host invents can be mistaken for it. It is cumulative — every list carries every entry still in force — so a host holding any one list holds the room's whole withdrawal state, and a host that missed a list loses nothing once it receives a later one.\\n\\n**Producing.** The room's key holder builds the object without `proof` and signs it with a W3C Data Integrity proof whose `verificationMethod` is a key the room's DID document lists for `assertionMethod` and whose `proofPurpose` is `assertionMethod`. A producer MUST support `eddsa-jcs-2022`. Each list's `sequence` is exactly one greater than the last list the room signed, and the producer MUST NOT sign two different lists at one `sequence`.\\n\\n**Accepting.** A host MUST refuse a list unless: (1) `roomId` is the room it is delivered for; (2) `proof` verifies with a key of `roomId` listed for `assertionMethod` — a list signed by any other key, however valid the signature, is not the room's; (3) `sequence` is greater than that of the list it holds, or equal with an identical list (a repeat, answered as accepted and changing nothing); (4) it is **append-only** against the list it holds: every entry of the held list appears in it unchanged, unless that entry's `until` has passed. A list that lowers the sequence is a rollback and one that drops a live entry is a reinstatement nobody signed for, and both are refused; two different lists at one `sequence` is the room's key equivocating, and the host keeps the list it holds.\\n\\n**Applying.** A credential is revoked by an accepted list when any entry matches it (see `RevocationEntry`). An entry whose `until` has passed MAY be discarded by a host and omitted from later lists; no other entry is ever dropped.\\n\\n**Size.** A list is bounded at 4096 entries. A room that would exceed it uses a `room` entry, which withdraws everything issued before it and lets the room re-issue to those who remain.\",\n      \"properties\": {\n        \"entries\": {\n          \"description\": \"Every withdrawal still in force, in the order the room made them. Empty is valid: a room that has revoked nothing, or whose every entry has lapsed, can still state its sequence.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/RevocationEntry\"\n          },\n          \"maxItems\": 4096,\n          \"type\": \"array\"\n        },\n        \"issuedAt\": {\n          \"description\": \"When the room signed this list.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"proof\": {\n          \"description\": \"The room's Data Integrity proof over every other member, made with a key the room's DID document lists for `assertionMethod`.\",\n          \"type\": \"object\"\n        },\n        \"roomId\": {\n          \"description\": \"The room whose credentials this list withdraws, exactly as on the wire. Signed, so a list cannot be replayed against another room.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"sequence\": {\n          \"description\": \"The list's position in the room's sequence: exactly one greater than the last list the room signed. A host accepts only a list whose sequence is above the one it holds, which is what stops a host, a relayer or an attacker holding an old list from rolling the room's withdrawals back.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"sequence\",\n        \"issuedAt\",\n        \"entries\",\n        \"proof\"\n      ],\n      \"title\": \"RevocationList\",\n      \"type\": \"object\"\n    },\n    \"RoomRevocation\": {\n      \"additionalProperties\": false,\n      \"description\": \"Withdraws every credential whose `validFrom` is earlier than `revokedAt`, whoever holds it.\",\n      \"properties\": {\n        \"kind\": {\n          \"const\": \"room\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the room made this withdrawal.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"until\": {\n          \"description\": \"OPTIONAL. After this instant every credential the entry matches has expired anyway, so a host MAY discard the entry and the room MAY omit it from later lists. Absent means the entry is kept for as long as the room keeps a list.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"revokedAt\"\n      ],\n      \"title\": \"RoomRevocation\",\n      \"type\": \"object\"\n    },\n    \"SubjectRevocation\": {\n      \"additionalProperties\": false,\n      \"description\": \"Withdraws a party: every credential naming them as subject or issuer whose `validFrom` is earlier than `revokedAt`.\",\n      \"properties\": {\n        \"kind\": {\n          \"const\": \"subject\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the room made this withdrawal.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"subject\": {\n          \"description\": \"The party withdrawn. Never the room itself.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"until\": {\n          \"description\": \"OPTIONAL. After this instant every credential the entry matches has expired anyway, so a host MAY discard the entry and the room MAY omit it from later lists. Absent means the entry is kept for as long as the room keeps a list.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"subject\",\n        \"revokedAt\"\n      ],\n      \"title\": \"SubjectRevocation\",\n      \"type\": \"object\"\n    },\n    \"WithdrawCredential\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"credentialId\": {\n          \"description\": \"The `id` of the credential withdrawn.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"kind\": {\n          \"const\": \"credential\"\n        },\n        \"until\": {\n          \"description\": \"OPTIONAL. The credential's own `validUntil`, after which the entry can be dropped.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"credentialId\"\n      ],\n      \"title\": \"WithdrawCredential\",\n      \"type\": \"object\"\n    },\n    \"WithdrawRoom\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"kind\": {\n          \"const\": \"room\"\n        },\n        \"until\": {\n          \"description\": \"OPTIONAL. When the last credential the room issued before now expires.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\"\n      ],\n      \"title\": \"WithdrawRoom\",\n      \"type\": \"object\"\n    },\n    \"WithdrawSubject\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"kind\": {\n          \"const\": \"subject\"\n        },\n        \"subject\": {\n          \"description\": \"The party withdrawn: every credential naming them as subject or issuer that the room's chain gave them before now. Never the room.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"until\": {\n          \"description\": \"OPTIONAL. When the last credential the room issued them expires, after which the entry can be dropped.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"subject\"\n      ],\n      \"title\": \"WithdrawSubject\",\n      \"type\": \"object\"\n    },\n    \"Withdrawal\": {\n      \"description\": \"One withdrawal to add, discriminated by `kind` as a RevocationEntry is. It carries no `revokedAt`: the recipient stamps the time it signs, so that a subject or room entry withdraws exactly what the room had issued until then and nothing the caller dated.\",\n      \"oneOf\": [\n        {\n          \"$ref\": \"#/$defs/WithdrawCredential\"\n        },\n        {\n          \"$ref\": \"#/$defs/WithdrawSubject\"\n        },\n        {\n          \"$ref\": \"#/$defs/WithdrawRoom\"\n        }\n      ],\n      \"title\": \"Withdrawal\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/rooms/owner/revoke/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A room's owner asks their own agent to withdraw credentials the room issued: sign the room's next revocation list as the room, keep it, and deliver it to each host serving the room.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"hosts\": {\n      \"description\": \"Every host serving the room, as DIDs: its primary, any mirror, and a host it is moving to. A withdrawal binds only the hosts that hold it, so a host left off this list honours what the room withdrew.\",\n      \"items\": {\n        \"maxLength\": 2048,\n        \"pattern\": \"^did:\",\n        \"type\": \"string\"\n      },\n      \"maxItems\": 8,\n      \"minItems\": 1,\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    },\n    \"reason\": {\n      \"description\": \"Why, for the owner's own record. Never put into the list, which reaches every host: it MUST NOT carry personal data or a credential.\",\n      \"maxLength\": 500,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"roomId\": {\n      \"description\": \"The room whose credentials are withdrawn. The recipient signs as this room.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"signingKeyId\": {\n      \"description\": \"Which held key signs as the room — named explicitly, as for rooms/owner/issue-authority, because nothing maps a DID to the key it was minted with. A key that is not one the room's DID document lists for `assertionMethod` produces a list every host refuses.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"withdraw\": {\n      \"description\": \"What to withdraw now. Absent or empty: sign nothing new, and deliver the list the recipient holds — how a host the room has moved to, or one that missed a delivery, is brought up to date.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/Withdrawal\"\n      },\n      \"maxItems\": 64,\n      \"type\": \"array\"\n    }\n  },\n  \"required\": [\n    \"roomId\",\n    \"signingKeyId\",\n    \"hosts\"\n  ],\n  \"title\": \"Rooms Owner Revoke — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"CredentialRevocation\":{\"additionalProperties\":false,\"description\":\"Withdraws one credential — a membership credential or any authority link — by its `id`.\",\"properties\":{\"credentialId\":{\"description\":\"The `id` of the credential withdrawn, as `rooms/owner/issue-authority` and `rooms/owner/issue-membership` return it, or as an attenuated credential carries it.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"kind\":{\"const\":\"credential\"},\"revokedAt\":{\"description\":\"When the room made this withdrawal.\",\"format\":\"date-time\",\"type\":\"string\"},\"until\":{\"description\":\"OPTIONAL. After this instant every credential the entry matches has expired anyway, so a host MAY discard the entry and the room MAY omit it from later lists. Absent means the entry is kept for as long as the room keeps a list.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"kind\",\"credentialId\",\"revokedAt\"],\"title\":\"CredentialRevocation\",\"type\":\"object\"},\"Delivery\":{\"additionalProperties\":false,\"description\":\"What one host did with the list.\",\"properties\":{\"code\":{\"description\":\"The host's error code. Present when `refused`.\",\"maxLength\":128,\"type\":\"string\"},\"head\":{\"$ref\":\"#/$defs/RevocationHead\",\"description\":\"The head the host answered with. Present when `accepted`.\"},\"host\":{\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"inForceAt\":{\"description\":\"When the host began enforcing the list. Present when `accepted`.\",\"format\":\"date-time\",\"type\":\"string\"},\"outcome\":{\"description\":\"`accepted`: the host holds this list, or answered it as a repeat, and enforces it from `inForceAt`. `refused`: it answered and declined; its code is in `code`. `unreachable`: no answer, so the outcome is unknown — repeat the request with no `withdraw` to deliver again.\",\"enum\":[\"accepted\",\"refused\",\"unreachable\"],\"type\":\"string\"}},\"required\":[\"host\",\"outcome\"],\"title\":\"Delivery\",\"type\":\"object\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/owner/revoke. Type https://trusttasks.org/spec/rooms/owner/revoke/0.1#response. The list the recipient now holds for the room, and what each host did with it. A success says the list was signed and kept; only a delivery whose outcome is `accepted` says a host enforces it.\",\"properties\":{\"deliveries\":{\"description\":\"One per host in the request, in its order.\",\"items\":{\"$ref\":\"#/$defs/Delivery\"},\"maxItems\":8,\"minItems\":1,\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"head\":{\"$ref\":\"#/$defs/RevocationHead\"},\"list\":{\"$ref\":\"#/$defs/RevocationList\",\"description\":\"The room's current list, as signed. Returned so the owner holds a copy that does not depend on the recipient.\"},\"roomId\":{\"maxLength\":512,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"roomId\",\"list\",\"head\",\"deliveries\"],\"title\":\"Rooms Owner Revoke — response payload\",\"type\":\"object\"},\"RevocationEntry\":{\"description\":\"One withdrawal in a `RevocationList`, discriminated by `kind`.\\n\\n  - `credential` withdraws one credential, named by its `id`. It matches the membership credential or any authority link whose `id` equals `credentialId`.\\n  - `subject` withdraws a party: every credential the room's chain gave them **before** `revokedAt`. It matches the membership credential or any authority link whose `credentialSubject` id **or** `issuer` is `subject` and whose `validFrom` is earlier than `revokedAt`. Matching the issuer as well as the subject withdraws what the party delegated before their removal, which no re-admission revives. A credential carrying no `validFrom` is treated as issued before every entry.\\n  - `room` withdraws every credential whose `validFrom` is earlier than `revokedAt`, whoever holds it. It is how a room resets access — after a compromise, or on a `private` room, where naming a party would disclose who was a member.\\n\\n**Keyed on time, so a party can come back.** A `subject` or `room` entry withdraws what was issued before it and nothing after, so a room that re-admits a removed party issues fresh credentials and they verify. A `credential` entry is permanent for that one credential, which nobody re-issues.\\n\\n**Tiers.** On a `private` room a host MUST refuse a list carrying a `credential` or `subject` entry: a presentation there withholds the credential and its subject, so such an entry is one the host cannot apply and a disclosure of who was in the room. Only `room` entries are permitted, and a host serving a `private` room MUST refuse any presentation for which it cannot establish that no credential in it has a `validFrom` earlier than the latest `room` entry's `revokedAt`.\",\"oneOf\":[{\"$ref\":\"#/$defs/CredentialRevocation\"},{\"$ref\":\"#/$defs/SubjectRevocation\"},{\"$ref\":\"#/$defs/RoomRevocation\"}],\"title\":\"RevocationEntry\"},\"RevocationHead\":{\"additionalProperties\":false,\"description\":\"Which `RevocationList` a party holds, without its entries: comparable between the room's key holder and a host, and between two hosts, without disclosing whom the room withdrew.\",\"properties\":{\"digest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"SHA-256 multihash of the list's RFC 8785 (JCS) canonicalization, `proof` included. Two parties holding one sequence with different digests have been given two lists the room signed at one sequence.\"},\"sequence\":{\"description\":\"The list's `sequence`.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"sequence\",\"digest\"],\"title\":\"RevocationHead\",\"type\":\"object\"},\"RevocationList\":{\"additionalProperties\":false,\"description\":\"The room's own statement of which credentials it has withdrawn before they expire — signed by the room, cumulative, and numbered, so that it means the same thing at every host it is delivered to.\\n\\n**Why the room signs it, and why it is cumulative.** A host authorizes from credentials the room issued and keeps no roster; a withdrawal kept only as a host's own state would make the room unmovable and the host part of the membership. A list the room signed is room state: it moves with the room, any host it is delivered to reaches the same decision, and nothing a host invents can be mistaken for it. It is cumulative — every list carries every entry still in force — so a host holding any one list holds the room's whole withdrawal state, and a host that missed a list loses nothing once it receives a later one.\\n\\n**Producing.** The room's key holder builds the object without `proof` and signs it with a W3C Data Integrity proof whose `verificationMethod` is a key the room's DID document lists for `assertionMethod` and whose `proofPurpose` is `assertionMethod`. A producer MUST support `eddsa-jcs-2022`. Each list's `sequence` is exactly one greater than the last list the room signed, and the producer MUST NOT sign two different lists at one `sequence`.\\n\\n**Accepting.** A host MUST refuse a list unless: (1) `roomId` is the room it is delivered for; (2) `proof` verifies with a key of `roomId` listed for `assertionMethod` — a list signed by any other key, however valid the signature, is not the room's; (3) `sequence` is greater than that of the list it holds, or equal with an identical list (a repeat, answered as accepted and changing nothing); (4) it is **append-only** against the list it holds: every entry of the held list appears in it unchanged, unless that entry's `until` has passed. A list that lowers the sequence is a rollback and one that drops a live entry is a reinstatement nobody signed for, and both are refused; two different lists at one `sequence` is the room's key equivocating, and the host keeps the list it holds.\\n\\n**Applying.** A credential is revoked by an accepted list when any entry matches it (see `RevocationEntry`). An entry whose `until` has passed MAY be discarded by a host and omitted from later lists; no other entry is ever dropped.\\n\\n**Size.** A list is bounded at 4096 entries. A room that would exceed it uses a `room` entry, which withdraws everything issued before it and lets the room re-issue to those who remain.\",\"properties\":{\"entries\":{\"description\":\"Every withdrawal still in force, in the order the room made them. Empty is valid: a room that has revoked nothing, or whose every entry has lapsed, can still state its sequence.\",\"items\":{\"$ref\":\"#/$defs/RevocationEntry\"},\"maxItems\":4096,\"type\":\"array\"},\"issuedAt\":{\"description\":\"When the room signed this list.\",\"format\":\"date-time\",\"type\":\"string\"},\"proof\":{\"description\":\"The room's Data Integrity proof over every other member, made with a key the room's DID document lists for `assertionMethod`.\",\"type\":\"object\"},\"roomId\":{\"description\":\"The room whose credentials this list withdraws, exactly as on the wire. Signed, so a list cannot be replayed against another room.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"sequence\":{\"description\":\"The list's position in the room's sequence: exactly one greater than the last list the room signed. A host accepts only a list whose sequence is above the one it holds, which is what stops a host, a relayer or an attacker holding an old list from rolling the room's withdrawals back.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"roomId\",\"sequence\",\"issuedAt\",\"entries\",\"proof\"],\"title\":\"RevocationList\",\"type\":\"object\"},\"RoomRevocation\":{\"additionalProperties\":false,\"description\":\"Withdraws every credential whose `validFrom` is earlier than `revokedAt`, whoever holds it.\",\"properties\":{\"kind\":{\"const\":\"room\"},\"revokedAt\":{\"description\":\"When the room made this withdrawal.\",\"format\":\"date-time\",\"type\":\"string\"},\"until\":{\"description\":\"OPTIONAL. After this instant every credential the entry matches has expired anyway, so a host MAY discard the entry and the room MAY omit it from later lists. Absent means the entry is kept for as long as the room keeps a list.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"kind\",\"revokedAt\"],\"title\":\"RoomRevocation\",\"type\":\"object\"},\"SubjectRevocation\":{\"additionalProperties\":false,\"description\":\"Withdraws a party: every credential naming them as subject or issuer whose `validFrom` is earlier than `revokedAt`.\",\"properties\":{\"kind\":{\"const\":\"subject\"},\"revokedAt\":{\"description\":\"When the room made this withdrawal.\",\"format\":\"date-time\",\"type\":\"string\"},\"subject\":{\"description\":\"The party withdrawn. Never the room itself.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"until\":{\"description\":\"OPTIONAL. After this instant every credential the entry matches has expired anyway, so a host MAY discard the entry and the room MAY omit it from later lists. Absent means the entry is kept for as long as the room keeps a list.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"kind\",\"subject\",\"revokedAt\"],\"title\":\"SubjectRevocation\",\"type\":\"object\"},\"WithdrawCredential\":{\"additionalProperties\":false,\"properties\":{\"credentialId\":{\"description\":\"The `id` of the credential withdrawn.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"kind\":{\"const\":\"credential\"},\"until\":{\"description\":\"OPTIONAL. The credential's own `validUntil`, after which the entry can be dropped.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"kind\",\"credentialId\"],\"title\":\"WithdrawCredential\",\"type\":\"object\"},\"WithdrawRoom\":{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"room\"},\"until\":{\"description\":\"OPTIONAL. When the last credential the room issued before now expires.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"kind\"],\"title\":\"WithdrawRoom\",\"type\":\"object\"},\"WithdrawSubject\":{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"subject\"},\"subject\":{\"description\":\"The party withdrawn: every credential naming them as subject or issuer that the room's chain gave them before now. Never the room.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"until\":{\"description\":\"OPTIONAL. When the last credential the room issued them expires, after which the entry can be dropped.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"kind\",\"subject\"],\"title\":\"WithdrawSubject\",\"type\":\"object\"},\"Withdrawal\":{\"description\":\"One withdrawal to add, discriminated by `kind` as a RevocationEntry is. It carries no `revokedAt`: the recipient stamps the time it signs, so that a subject or room entry withdraws exactly what the room had issued until then and nothing the caller dated.\",\"oneOf\":[{\"$ref\":\"#/$defs/WithdrawCredential\"},{\"$ref\":\"#/$defs/WithdrawSubject\"},{\"$ref\":\"#/$defs/WithdrawRoom\"}],\"title\":\"Withdrawal\"}},\"$id\":\"https://trusttasks.org/spec/rooms/owner/revoke/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A room's owner asks their own agent to withdraw credentials the room issued: sign the room's next revocation list as the room, keep it, and deliver it to each host serving the room.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"hosts\":{\"description\":\"Every host serving the room, as DIDs: its primary, any mirror, and a host it is moving to. A withdrawal binds only the hosts that hold it, so a host left off this list honours what the room withdrew.\",\"items\":{\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"maxItems\":8,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"reason\":{\"description\":\"Why, for the owner's own record. Never put into the list, which reaches every host: it MUST NOT carry personal data or a credential.\",\"maxLength\":500,\"minLength\":1,\"type\":\"string\"},\"roomId\":{\"description\":\"The room whose credentials are withdrawn. The recipient signs as this room.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"signingKeyId\":{\"description\":\"Which held key signs as the room — named explicitly, as for rooms/owner/issue-authority, because nothing maps a DID to the key it was minted with. A key that is not one the room's DID document lists for `assertionMethod` produces a list every host refuses.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"withdraw\":{\"description\":\"What to withdraw now. Absent or empty: sign nothing new, and deliver the list the recipient holds — how a host the room has moved to, or one that missed a delivery, is brought up to date.\",\"items\":{\"$ref\":\"#/$defs/Withdrawal\"},\"maxItems\":64,\"type\":\"array\"}},\"required\":[\"roomId\",\"signingKeyId\",\"hosts\"],\"title\":\"Rooms Owner Revoke — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -2882,7 +2250,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CredentialRevocation\": {\n      \"additionalProperties\": false,\n      \"description\": \"Withdraws one credential — a membership credential or any authority link — by its `id`.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"description\": \"The `id` of the credential withdrawn, as `rooms/owner/issue-authority` and `rooms/owner/issue-membership` return it, or as an attenuated credential carries it.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"kind\": {\n          \"const\": \"credential\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the room made this withdrawal.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"until\": {\n          \"description\": \"OPTIONAL. After this instant every credential the entry matches has expired anyway, so a host MAY discard the entry and the room MAY omit it from later lists. Absent means the entry is kept for as long as the room keeps a list.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"credentialId\",\n        \"revokedAt\"\n      ],\n      \"title\": \"CredentialRevocation\",\n      \"type\": \"object\"\n    },\n    \"Delivery\": {\n      \"additionalProperties\": false,\n      \"description\": \"What one host did with the list.\",\n      \"properties\": {\n        \"code\": {\n          \"description\": \"The host's error code. Present when `refused`.\",\n          \"maxLength\": 128,\n          \"type\": \"string\"\n        },\n        \"head\": {\n          \"$ref\": \"#/$defs/RevocationHead\",\n          \"description\": \"The head the host answered with. Present when `accepted`.\"\n        },\n        \"host\": {\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"inForceAt\": {\n          \"description\": \"When the host began enforcing the list. Present when `accepted`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"outcome\": {\n          \"description\": \"`accepted`: the host holds this list, or answered it as a repeat, and enforces it from `inForceAt`. `refused`: it answered and declined; its code is in `code`. `unreachable`: no answer, so the outcome is unknown — repeat the request with no `withdraw` to deliver again.\",\n          \"enum\": [\n            \"accepted\",\n            \"refused\",\n            \"unreachable\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"host\",\n        \"outcome\"\n      ],\n      \"title\": \"Delivery\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/owner/revoke. Type https://trusttasks.org/spec/rooms/owner/revoke/0.1#response. The list the recipient now holds for the room, and what each host did with it. A success says the list was signed and kept; only a delivery whose outcome is `accepted` says a host enforces it.\",\n      \"properties\": {\n        \"deliveries\": {\n          \"description\": \"One per host in the request, in its order.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Delivery\"\n          },\n          \"maxItems\": 8,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"head\": {\n          \"$ref\": \"#/$defs/RevocationHead\"\n        },\n        \"list\": {\n          \"$ref\": \"#/$defs/RevocationList\",\n          \"description\": \"The room's current list, as signed. Returned so the owner holds a copy that does not depend on the recipient.\"\n        },\n        \"roomId\": {\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"list\",\n        \"head\",\n        \"deliveries\"\n      ],\n      \"title\": \"Rooms Owner Revoke — response payload\",\n      \"type\": \"object\"\n    },\n    \"RevocationEntry\": {\n      \"description\": \"One withdrawal in a `RevocationList`, discriminated by `kind`.\\n\\n  - `credential` withdraws one credential, named by its `id`. It matches the membership credential or any authority link whose `id` equals `credentialId`.\\n  - `subject` withdraws a party: every credential the room's chain gave them **before** `revokedAt`. It matches the membership credential or any authority link whose `credentialSubject` id **or** `issuer` is `subject` and whose `validFrom` is earlier than `revokedAt`. Matching the issuer as well as the subject withdraws what the party delegated before their removal, which no re-admission revives. A credential carrying no `validFrom` is treated as issued before every entry.\\n  - `room` withdraws every credential whose `validFrom` is earlier than `revokedAt`, whoever holds it. It is how a room resets access — after a compromise, or on a `private` room, where naming a party would disclose who was a member.\\n\\n**Keyed on time, so a party can come back.** A `subject` or `room` entry withdraws what was issued before it and nothing after, so a room that re-admits a removed party issues fresh credentials and they verify. A `credential` entry is permanent for that one credential, which nobody re-issues.\\n\\n**Tiers.** On a `private` room a host MUST refuse a list carrying a `credential` or `subject` entry: a presentation there withholds the credential and its subject, so such an entry is one the host cannot apply and a disclosure of who was in the room. Only `room` entries are permitted, and a host serving a `private` room MUST refuse any presentation for which it cannot establish that no credential in it has a `validFrom` earlier than the latest `room` entry's `revokedAt`.\",\n      \"oneOf\": [\n        {\n          \"$ref\": \"#/$defs/CredentialRevocation\"\n        },\n        {\n          \"$ref\": \"#/$defs/SubjectRevocation\"\n        },\n        {\n          \"$ref\": \"#/$defs/RoomRevocation\"\n        }\n      ],\n      \"title\": \"RevocationEntry\"\n    },\n    \"RevocationHead\": {\n      \"additionalProperties\": false,\n      \"description\": \"Which `RevocationList` a party holds, without its entries: comparable between the room's key holder and a host, and between two hosts, without disclosing whom the room withdrew.\",\n      \"properties\": {\n        \"digest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"SHA-256 multihash of the list's RFC 8785 (JCS) canonicalization, `proof` included. Two parties holding one sequence with different digests have been given two lists the room signed at one sequence.\"\n        },\n        \"sequence\": {\n          \"description\": \"The list's `sequence`.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"sequence\",\n        \"digest\"\n      ],\n      \"title\": \"RevocationHead\",\n      \"type\": \"object\"\n    },\n    \"RevocationList\": {\n      \"additionalProperties\": false,\n      \"description\": \"The room's own statement of which credentials it has withdrawn before they expire — signed by the room, cumulative, and numbered, so that it means the same thing at every host it is delivered to.\\n\\n**Why the room signs it, and why it is cumulative.** A host authorizes from credentials the room issued and keeps no roster; a withdrawal kept only as a host's own state would make the room unmovable and the host part of the membership. A list the room signed is room state: it moves with the room, any host it is delivered to reaches the same decision, and nothing a host invents can be mistaken for it. It is cumulative — every list carries every entry still in force — so a host holding any one list holds the room's whole withdrawal state, and a host that missed a list loses nothing once it receives a later one.\\n\\n**Producing.** The room's key holder builds the object without `proof` and signs it with a W3C Data Integrity proof whose `verificationMethod` is a key the room's DID document lists for `assertionMethod` and whose `proofPurpose` is `assertionMethod`. A producer MUST support `eddsa-jcs-2022`. Each list's `sequence` is exactly one greater than the last list the room signed, and the producer MUST NOT sign two different lists at one `sequence`.\\n\\n**Accepting.** A host MUST refuse a list unless: (1) `roomId` is the room it is delivered for; (2) `proof` verifies with a key of `roomId` listed for `assertionMethod` — a list signed by any other key, however valid the signature, is not the room's; (3) `sequence` is greater than that of the list it holds, or equal with an identical list (a repeat, answered as accepted and changing nothing); (4) it is **append-only** against the list it holds: every entry of the held list appears in it unchanged, unless that entry's `until` has passed. A list that lowers the sequence is a rollback and one that drops a live entry is a reinstatement nobody signed for, and both are refused; two different lists at one `sequence` is the room's key equivocating, and the host keeps the list it holds.\\n\\n**Applying.** A credential is revoked by an accepted list when any entry matches it (see `RevocationEntry`). An entry whose `until` has passed MAY be discarded by a host and omitted from later lists; no other entry is ever dropped.\\n\\n**Size.** A list is bounded at 4096 entries. A room that would exceed it uses a `room` entry, which withdraws everything issued before it and lets the room re-issue to those who remain.\",\n      \"properties\": {\n        \"entries\": {\n          \"description\": \"Every withdrawal still in force, in the order the room made them. Empty is valid: a room that has revoked nothing, or whose every entry has lapsed, can still state its sequence.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/RevocationEntry\"\n          },\n          \"maxItems\": 4096,\n          \"type\": \"array\"\n        },\n        \"issuedAt\": {\n          \"description\": \"When the room signed this list.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"proof\": {\n          \"description\": \"The room's Data Integrity proof over every other member, made with a key the room's DID document lists for `assertionMethod`.\",\n          \"type\": \"object\"\n        },\n        \"roomId\": {\n          \"description\": \"The room whose credentials this list withdraws, exactly as on the wire. Signed, so a list cannot be replayed against another room.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"sequence\": {\n          \"description\": \"The list's position in the room's sequence: exactly one greater than the last list the room signed. A host accepts only a list whose sequence is above the one it holds, which is what stops a host, a relayer or an attacker holding an old list from rolling the room's withdrawals back.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"sequence\",\n        \"issuedAt\",\n        \"entries\",\n        \"proof\"\n      ],\n      \"title\": \"RevocationList\",\n      \"type\": \"object\"\n    },\n    \"RoomRevocation\": {\n      \"additionalProperties\": false,\n      \"description\": \"Withdraws every credential whose `validFrom` is earlier than `revokedAt`, whoever holds it.\",\n      \"properties\": {\n        \"kind\": {\n          \"const\": \"room\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the room made this withdrawal.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"until\": {\n          \"description\": \"OPTIONAL. After this instant every credential the entry matches has expired anyway, so a host MAY discard the entry and the room MAY omit it from later lists. Absent means the entry is kept for as long as the room keeps a list.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"revokedAt\"\n      ],\n      \"title\": \"RoomRevocation\",\n      \"type\": \"object\"\n    },\n    \"SubjectRevocation\": {\n      \"additionalProperties\": false,\n      \"description\": \"Withdraws a party: every credential naming them as subject or issuer whose `validFrom` is earlier than `revokedAt`.\",\n      \"properties\": {\n        \"kind\": {\n          \"const\": \"subject\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the room made this withdrawal.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"subject\": {\n          \"description\": \"The party withdrawn. Never the room itself.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"until\": {\n          \"description\": \"OPTIONAL. After this instant every credential the entry matches has expired anyway, so a host MAY discard the entry and the room MAY omit it from later lists. Absent means the entry is kept for as long as the room keeps a list.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"subject\",\n        \"revokedAt\"\n      ],\n      \"title\": \"SubjectRevocation\",\n      \"type\": \"object\"\n    },\n    \"WithdrawCredential\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"credentialId\": {\n          \"description\": \"The `id` of the credential withdrawn.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"kind\": {\n          \"const\": \"credential\"\n        },\n        \"until\": {\n          \"description\": \"OPTIONAL. The credential's own `validUntil`, after which the entry can be dropped.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"credentialId\"\n      ],\n      \"title\": \"WithdrawCredential\",\n      \"type\": \"object\"\n    },\n    \"WithdrawRoom\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"kind\": {\n          \"const\": \"room\"\n        },\n        \"until\": {\n          \"description\": \"OPTIONAL. When the last credential the room issued before now expires.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\"\n      ],\n      \"title\": \"WithdrawRoom\",\n      \"type\": \"object\"\n    },\n    \"WithdrawSubject\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"kind\": {\n          \"const\": \"subject\"\n        },\n        \"subject\": {\n          \"description\": \"The party withdrawn: every credential naming them as subject or issuer that the room's chain gave them before now. Never the room.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"until\": {\n          \"description\": \"OPTIONAL. When the last credential the room issued them expires, after which the entry can be dropped.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"subject\"\n      ],\n      \"title\": \"WithdrawSubject\",\n      \"type\": \"object\"\n    },\n    \"Withdrawal\": {\n      \"description\": \"One withdrawal to add, discriminated by `kind` as a RevocationEntry is. It carries no `revokedAt`: the recipient stamps the time it signs, so that a subject or room entry withdraws exactly what the room had issued until then and nothing the caller dated.\",\n      \"oneOf\": [\n        {\n          \"$ref\": \"#/$defs/WithdrawCredential\"\n        },\n        {\n          \"$ref\": \"#/$defs/WithdrawSubject\"\n        },\n        {\n          \"$ref\": \"#/$defs/WithdrawRoom\"\n        }\n      ],\n      \"title\": \"Withdrawal\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"CredentialRevocation\":{\"additionalProperties\":false,\"description\":\"Withdraws one credential — a membership credential or any authority link — by its `id`.\",\"properties\":{\"credentialId\":{\"description\":\"The `id` of the credential withdrawn, as `rooms/owner/issue-authority` and `rooms/owner/issue-membership` return it, or as an attenuated credential carries it.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"kind\":{\"const\":\"credential\"},\"revokedAt\":{\"description\":\"When the room made this withdrawal.\",\"format\":\"date-time\",\"type\":\"string\"},\"until\":{\"description\":\"OPTIONAL. After this instant every credential the entry matches has expired anyway, so a host MAY discard the entry and the room MAY omit it from later lists. Absent means the entry is kept for as long as the room keeps a list.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"kind\",\"credentialId\",\"revokedAt\"],\"title\":\"CredentialRevocation\",\"type\":\"object\"},\"Delivery\":{\"additionalProperties\":false,\"description\":\"What one host did with the list.\",\"properties\":{\"code\":{\"description\":\"The host's error code. Present when `refused`.\",\"maxLength\":128,\"type\":\"string\"},\"head\":{\"$ref\":\"#/$defs/RevocationHead\",\"description\":\"The head the host answered with. Present when `accepted`.\"},\"host\":{\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"inForceAt\":{\"description\":\"When the host began enforcing the list. Present when `accepted`.\",\"format\":\"date-time\",\"type\":\"string\"},\"outcome\":{\"description\":\"`accepted`: the host holds this list, or answered it as a repeat, and enforces it from `inForceAt`. `refused`: it answered and declined; its code is in `code`. `unreachable`: no answer, so the outcome is unknown — repeat the request with no `withdraw` to deliver again.\",\"enum\":[\"accepted\",\"refused\",\"unreachable\"],\"type\":\"string\"}},\"required\":[\"host\",\"outcome\"],\"title\":\"Delivery\",\"type\":\"object\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/owner/revoke. Type https://trusttasks.org/spec/rooms/owner/revoke/0.1#response. The list the recipient now holds for the room, and what each host did with it. A success says the list was signed and kept; only a delivery whose outcome is `accepted` says a host enforces it.\",\"properties\":{\"deliveries\":{\"description\":\"One per host in the request, in its order.\",\"items\":{\"$ref\":\"#/$defs/Delivery\"},\"maxItems\":8,\"minItems\":1,\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"head\":{\"$ref\":\"#/$defs/RevocationHead\"},\"list\":{\"$ref\":\"#/$defs/RevocationList\",\"description\":\"The room's current list, as signed. Returned so the owner holds a copy that does not depend on the recipient.\"},\"roomId\":{\"maxLength\":512,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"roomId\",\"list\",\"head\",\"deliveries\"],\"title\":\"Rooms Owner Revoke — response payload\",\"type\":\"object\"},\"RevocationEntry\":{\"description\":\"One withdrawal in a `RevocationList`, discriminated by `kind`.\\n\\n  - `credential` withdraws one credential, named by its `id`. It matches the membership credential or any authority link whose `id` equals `credentialId`.\\n  - `subject` withdraws a party: every credential the room's chain gave them **before** `revokedAt`. It matches the membership credential or any authority link whose `credentialSubject` id **or** `issuer` is `subject` and whose `validFrom` is earlier than `revokedAt`. Matching the issuer as well as the subject withdraws what the party delegated before their removal, which no re-admission revives. A credential carrying no `validFrom` is treated as issued before every entry.\\n  - `room` withdraws every credential whose `validFrom` is earlier than `revokedAt`, whoever holds it. It is how a room resets access — after a compromise, or on a `private` room, where naming a party would disclose who was a member.\\n\\n**Keyed on time, so a party can come back.** A `subject` or `room` entry withdraws what was issued before it and nothing after, so a room that re-admits a removed party issues fresh credentials and they verify. A `credential` entry is permanent for that one credential, which nobody re-issues.\\n\\n**Tiers.** On a `private` room a host MUST refuse a list carrying a `credential` or `subject` entry: a presentation there withholds the credential and its subject, so such an entry is one the host cannot apply and a disclosure of who was in the room. Only `room` entries are permitted, and a host serving a `private` room MUST refuse any presentation for which it cannot establish that no credential in it has a `validFrom` earlier than the latest `room` entry's `revokedAt`.\",\"oneOf\":[{\"$ref\":\"#/$defs/CredentialRevocation\"},{\"$ref\":\"#/$defs/SubjectRevocation\"},{\"$ref\":\"#/$defs/RoomRevocation\"}],\"title\":\"RevocationEntry\"},\"RevocationHead\":{\"additionalProperties\":false,\"description\":\"Which `RevocationList` a party holds, without its entries: comparable between the room's key holder and a host, and between two hosts, without disclosing whom the room withdrew.\",\"properties\":{\"digest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"SHA-256 multihash of the list's RFC 8785 (JCS) canonicalization, `proof` included. Two parties holding one sequence with different digests have been given two lists the room signed at one sequence.\"},\"sequence\":{\"description\":\"The list's `sequence`.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"sequence\",\"digest\"],\"title\":\"RevocationHead\",\"type\":\"object\"},\"RevocationList\":{\"additionalProperties\":false,\"description\":\"The room's own statement of which credentials it has withdrawn before they expire — signed by the room, cumulative, and numbered, so that it means the same thing at every host it is delivered to.\\n\\n**Why the room signs it, and why it is cumulative.** A host authorizes from credentials the room issued and keeps no roster; a withdrawal kept only as a host's own state would make the room unmovable and the host part of the membership. A list the room signed is room state: it moves with the room, any host it is delivered to reaches the same decision, and nothing a host invents can be mistaken for it. It is cumulative — every list carries every entry still in force — so a host holding any one list holds the room's whole withdrawal state, and a host that missed a list loses nothing once it receives a later one.\\n\\n**Producing.** The room's key holder builds the object without `proof` and signs it with a W3C Data Integrity proof whose `verificationMethod` is a key the room's DID document lists for `assertionMethod` and whose `proofPurpose` is `assertionMethod`. A producer MUST support `eddsa-jcs-2022`. Each list's `sequence` is exactly one greater than the last list the room signed, and the producer MUST NOT sign two different lists at one `sequence`.\\n\\n**Accepting.** A host MUST refuse a list unless: (1) `roomId` is the room it is delivered for; (2) `proof` verifies with a key of `roomId` listed for `assertionMethod` — a list signed by any other key, however valid the signature, is not the room's; (3) `sequence` is greater than that of the list it holds, or equal with an identical list (a repeat, answered as accepted and changing nothing); (4) it is **append-only** against the list it holds: every entry of the held list appears in it unchanged, unless that entry's `until` has passed. A list that lowers the sequence is a rollback and one that drops a live entry is a reinstatement nobody signed for, and both are refused; two different lists at one `sequence` is the room's key equivocating, and the host keeps the list it holds.\\n\\n**Applying.** A credential is revoked by an accepted list when any entry matches it (see `RevocationEntry`). An entry whose `until` has passed MAY be discarded by a host and omitted from later lists; no other entry is ever dropped.\\n\\n**Size.** A list is bounded at 4096 entries. A room that would exceed it uses a `room` entry, which withdraws everything issued before it and lets the room re-issue to those who remain.\",\"properties\":{\"entries\":{\"description\":\"Every withdrawal still in force, in the order the room made them. Empty is valid: a room that has revoked nothing, or whose every entry has lapsed, can still state its sequence.\",\"items\":{\"$ref\":\"#/$defs/RevocationEntry\"},\"maxItems\":4096,\"type\":\"array\"},\"issuedAt\":{\"description\":\"When the room signed this list.\",\"format\":\"date-time\",\"type\":\"string\"},\"proof\":{\"description\":\"The room's Data Integrity proof over every other member, made with a key the room's DID document lists for `assertionMethod`.\",\"type\":\"object\"},\"roomId\":{\"description\":\"The room whose credentials this list withdraws, exactly as on the wire. Signed, so a list cannot be replayed against another room.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"sequence\":{\"description\":\"The list's position in the room's sequence: exactly one greater than the last list the room signed. A host accepts only a list whose sequence is above the one it holds, which is what stops a host, a relayer or an attacker holding an old list from rolling the room's withdrawals back.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"roomId\",\"sequence\",\"issuedAt\",\"entries\",\"proof\"],\"title\":\"RevocationList\",\"type\":\"object\"},\"RoomRevocation\":{\"additionalProperties\":false,\"description\":\"Withdraws every credential whose `validFrom` is earlier than `revokedAt`, whoever holds it.\",\"properties\":{\"kind\":{\"const\":\"room\"},\"revokedAt\":{\"description\":\"When the room made this withdrawal.\",\"format\":\"date-time\",\"type\":\"string\"},\"until\":{\"description\":\"OPTIONAL. After this instant every credential the entry matches has expired anyway, so a host MAY discard the entry and the room MAY omit it from later lists. Absent means the entry is kept for as long as the room keeps a list.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"kind\",\"revokedAt\"],\"title\":\"RoomRevocation\",\"type\":\"object\"},\"SubjectRevocation\":{\"additionalProperties\":false,\"description\":\"Withdraws a party: every credential naming them as subject or issuer whose `validFrom` is earlier than `revokedAt`.\",\"properties\":{\"kind\":{\"const\":\"subject\"},\"revokedAt\":{\"description\":\"When the room made this withdrawal.\",\"format\":\"date-time\",\"type\":\"string\"},\"subject\":{\"description\":\"The party withdrawn. Never the room itself.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"until\":{\"description\":\"OPTIONAL. After this instant every credential the entry matches has expired anyway, so a host MAY discard the entry and the room MAY omit it from later lists. Absent means the entry is kept for as long as the room keeps a list.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"kind\",\"subject\",\"revokedAt\"],\"title\":\"SubjectRevocation\",\"type\":\"object\"},\"WithdrawCredential\":{\"additionalProperties\":false,\"properties\":{\"credentialId\":{\"description\":\"The `id` of the credential withdrawn.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"kind\":{\"const\":\"credential\"},\"until\":{\"description\":\"OPTIONAL. The credential's own `validUntil`, after which the entry can be dropped.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"kind\",\"credentialId\"],\"title\":\"WithdrawCredential\",\"type\":\"object\"},\"WithdrawRoom\":{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"room\"},\"until\":{\"description\":\"OPTIONAL. When the last credential the room issued before now expires.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"kind\"],\"title\":\"WithdrawRoom\",\"type\":\"object\"},\"WithdrawSubject\":{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"subject\"},\"subject\":{\"description\":\"The party withdrawn: every credential naming them as subject or issuer that the room's chain gave them before now. Never the room.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"until\":{\"description\":\"OPTIONAL. When the last credential the room issued them expires, after which the entry can be dropped.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"kind\",\"subject\"],\"title\":\"WithdrawSubject\",\"type\":\"object\"},\"Withdrawal\":{\"description\":\"One withdrawal to add, discriminated by `kind` as a RevocationEntry is. It carries no `revokedAt`: the recipient stamps the time it signs, so that a subject or room entry withdraws exactly what the room had issued until then and nothing the caller dated.\",\"oneOf\":[{\"$ref\":\"#/$defs/WithdrawCredential\"},{\"$ref\":\"#/$defs/WithdrawSubject\"},{\"$ref\":\"#/$defs/WithdrawRoom\"}],\"title\":\"Withdrawal\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

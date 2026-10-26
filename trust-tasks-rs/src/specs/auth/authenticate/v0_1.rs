@@ -35,21 +35,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -71,15 +56,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -143,46 +119,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///The subject presents a previously-issued challenge along with the framework `proof` that binds the document to their VID. The proof IS the authentication.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/auth/authenticate/0.1",
-///  "title": "Payload",
-///  "description": "The subject presents a previously-issued challenge along with the framework `proof` that binds the document to their VID. The proof IS the authentication.",
-///  "type": "object",
-///  "required": [
-///    "challenge",
-///    "sessionId"
-///  ],
-///  "properties": {
-///    "challenge": {
-///      "description": "The exact challenge value returned by a prior auth/challenge call. Consumers MUST reject mismatch, expired, or re-used challenges.",
-///      "type": "string",
-///      "minLength": 16
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "scope": {
-///      "description": "Optional capability tags the subject is requesting on the issued tokens. The consumer's authorization layer decides which are granted; the issued TokenBundle's `scope` MAY be a subset.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "minLength": 1
-///      }
-///    },
-///    "sessionId": {
-///      "description": "The sessionId returned alongside the challenge. Consumers use it to look up the server-side challenge binding.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -207,16 +143,6 @@ impl Payload {
 }
 ///The exact challenge value returned by a prior auth/challenge call. Consumers MUST reject mismatch, expired, or re-used challenges.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The exact challenge value returned by a prior auth/challenge call. Consumers MUST reject mismatch, expired, or re-used challenges.",
-///  "type": "string",
-///  "minLength": 16
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadChallenge(::std::string::String);
@@ -276,15 +202,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadChallenge {
 }
 ///`PayloadScopeItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadScopeItem(::std::string::String);
@@ -344,16 +261,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadScopeItem {
 }
 ///The sessionId returned alongside the challenge. Consumers use it to look up the server-side challenge binding.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The sessionId returned alongside the challenge. Consumers use it to look up the server-side challenge binding.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadSessionId(::std::string::String);
@@ -413,36 +320,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSessionId {
 }
 ///Issued by the auth service after verifying the proof on the authenticate document. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/authenticate/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Issued by the auth service after verifying the proof on the authenticate document. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/authenticate/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "session",
-///    "tokens"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "session": {
-///      "description": "The session the consumer has just created or refreshed for this subject.",
-///      "$ref": "#/definitions/Session"
-///    },
-///    "tokens": {
-///      "description": "Access + optional refresh tokens. Consumers MAY omit a refresh token when their policy doesn't support refresh.",
-///      "$ref": "#/definitions/TokenBundle"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -463,63 +340,6 @@ impl Response {
 }
 ///A logical authentication context bound to a subject. Producers and consumers exchange Session-shaped data in challenge issuance, authentication responses, and introspection (whoami).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Session",
-///  "description": "A logical authentication context bound to a subject. Producers and consumers exchange Session-shaped data in challenge issuance, authentication responses, and introspection (whoami).",
-///  "type": "object",
-///  "required": [
-///    "expiresAt",
-///    "id",
-///    "issuedAt",
-///    "subject"
-///  ],
-///  "properties": {
-///    "acr": {
-///      "description": "Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is \"aal1\" (single-factor DID auth), \"aal2\" (a second possession-or-biometric factor confirmed), and \"aal3\" (hardware-bound second factor).",
-///      "type": "string"
-///    },
-///    "amr": {
-///      "description": "Authentication Methods References per [RFC 8176]. Typical values: \"did\" (challenge-response), \"passkey\" (WebAuthn), \"vta\" (verifiable-trust agent approval). Multi-factor sessions list every method used.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "minLength": 1
-///      },
-///      "minItems": 1
-///    },
-///    "expiresAt": {
-///      "description": "ISO-8601 timestamp when the session ceases to be valid. Producers SHOULD refresh before this time; consumers MUST reject after.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "id": {
-///      "description": "Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "issuedAt": {
-///      "description": "ISO-8601 timestamp when the session was created.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "subject": {
-///      "description": "The authenticated party's VID (typically a DID URL).",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "session"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -551,15 +371,6 @@ impl Session {
 }
 ///`SessionAmrItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SessionAmrItem(::std::string::String);
@@ -619,16 +430,6 @@ impl<'de> ::serde::Deserialize<'de> for SessionAmrItem {
 }
 ///Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SessionId(::std::string::String);
@@ -688,16 +489,6 @@ impl<'de> ::serde::Deserialize<'de> for SessionId {
 }
 ///The authenticated party's VID (typically a DID URL).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The authenticated party's VID (typically a DID URL).",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SessionSubject(::std::string::String);
@@ -757,62 +548,6 @@ impl<'de> ::serde::Deserialize<'de> for SessionSubject {
 }
 ///An access token (typically short-lived JWT) paired with an optional refresh token (typically long-lived opaque string). The shapes follow OAuth 2.0 (RFC 6749 §5.1) conventions but are not coupled to any particular OAuth profile.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "TokenBundle",
-///  "description": "An access token (typically short-lived JWT) paired with an optional refresh token (typically long-lived opaque string). The shapes follow OAuth 2.0 (RFC 6749 §5.1) conventions but are not coupled to any particular OAuth profile.",
-///  "type": "object",
-///  "required": [
-///    "accessToken",
-///    "expiresIn",
-///    "tokenType"
-///  ],
-///  "properties": {
-///    "accessToken": {
-///      "description": "Bearer-style access token. Consumers presenting this token to downstream services prove the holder of the original session. Format is consumer-defined — JWT is common, but opaque strings are also valid.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "expiresIn": {
-///      "description": "Seconds from issuance until the access token expires.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "refreshExpiresIn": {
-///      "description": "Seconds from issuance until the refresh token expires, when one was issued.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "refreshToken": {
-///      "description": "Long-lived token redeemable via auth/refresh for a new access token. MAY be absent when the issuer does not support refresh.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "scope": {
-///      "description": "Capability tags effective on this token. Format is consumer-defined; the framework imposes no syntax.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "minLength": 1
-///      }
-///    },
-///    "tokenType": {
-///      "description": "Token presentation scheme. Almost always \"Bearer\"; reserved for future schemes.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "tokenBundle"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -854,16 +589,6 @@ impl TokenBundle {
 }
 ///Bearer-style access token. Consumers presenting this token to downstream services prove the holder of the original session. Format is consumer-defined — JWT is common, but opaque strings are also valid.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Bearer-style access token. Consumers presenting this token to downstream services prove the holder of the original session. Format is consumer-defined — JWT is common, but opaque strings are also valid.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct TokenBundleAccessToken(::std::string::String);
@@ -923,16 +648,6 @@ impl<'de> ::serde::Deserialize<'de> for TokenBundleAccessToken {
 }
 ///Long-lived token redeemable via auth/refresh for a new access token. MAY be absent when the issuer does not support refresh.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Long-lived token redeemable via auth/refresh for a new access token. MAY be absent when the issuer does not support refresh.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct TokenBundleRefreshToken(::std::string::String);
@@ -992,15 +707,6 @@ impl<'de> ::serde::Deserialize<'de> for TokenBundleRefreshToken {
 }
 ///`TokenBundleScopeItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct TokenBundleScopeItem(::std::string::String);
@@ -1060,16 +766,6 @@ impl<'de> ::serde::Deserialize<'de> for TokenBundleScopeItem {
 }
 ///Token presentation scheme. Almost always "Bearer"; reserved for future schemes.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Token presentation scheme. Almost always \"Bearer\"; reserved for future schemes.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct TokenBundleTokenType(::std::string::String);
@@ -1543,7 +1239,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Issued by the auth service after verifying the proof on the authenticate document. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/authenticate/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"session\": {\n          \"$ref\": \"#/$defs/Session\",\n          \"description\": \"The session the consumer has just created or refreshed for this subject.\"\n        },\n        \"tokens\": {\n          \"$ref\": \"#/$defs/TokenBundle\",\n          \"description\": \"Access + optional refresh tokens. Consumers MAY omit a refresh token when their policy doesn't support refresh.\"\n        }\n      },\n      \"required\": [\n        \"session\",\n        \"tokens\"\n      ],\n      \"title\": \"Auth Authenticate — response payload\",\n      \"type\": \"object\"\n    },\n    \"Session\": {\n      \"$anchor\": \"session\",\n      \"additionalProperties\": false,\n      \"description\": \"A logical authentication context bound to a subject. Producers and consumers exchange Session-shaped data in challenge issuance, authentication responses, and introspection (whoami).\",\n      \"properties\": {\n        \"acr\": {\n          \"description\": \"Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is \\\"aal1\\\" (single-factor DID auth), \\\"aal2\\\" (a second possession-or-biometric factor confirmed), and \\\"aal3\\\" (hardware-bound second factor).\",\n          \"type\": \"string\"\n        },\n        \"amr\": {\n          \"description\": \"Authentication Methods References per [RFC 8176]. Typical values: \\\"did\\\" (challenge-response), \\\"passkey\\\" (WebAuthn), \\\"vta\\\" (verifiable-trust agent approval). Multi-factor sessions list every method used.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"expiresAt\": {\n          \"description\": \"ISO-8601 timestamp when the session ceases to be valid. Producers SHOULD refresh before this time; consumers MUST reject after.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"id\": {\n          \"description\": \"Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issuedAt\": {\n          \"description\": \"ISO-8601 timestamp when the session was created.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"subject\": {\n          \"description\": \"The authenticated party's VID (typically a DID URL).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"subject\",\n        \"issuedAt\",\n        \"expiresAt\"\n      ],\n      \"title\": \"Session\",\n      \"type\": \"object\"\n    },\n    \"TokenBundle\": {\n      \"$anchor\": \"tokenBundle\",\n      \"additionalProperties\": false,\n      \"description\": \"An access token (typically short-lived JWT) paired with an optional refresh token (typically long-lived opaque string). The shapes follow OAuth 2.0 (RFC 6749 §5.1) conventions but are not coupled to any particular OAuth profile.\",\n      \"properties\": {\n        \"accessToken\": {\n          \"description\": \"Bearer-style access token. Consumers presenting this token to downstream services prove the holder of the original session. Format is consumer-defined — JWT is common, but opaque strings are also valid.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"expiresIn\": {\n          \"description\": \"Seconds from issuance until the access token expires.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"refreshExpiresIn\": {\n          \"description\": \"Seconds from issuance until the refresh token expires, when one was issued.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"refreshToken\": {\n          \"description\": \"Long-lived token redeemable via auth/refresh for a new access token. MAY be absent when the issuer does not support refresh.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"scope\": {\n          \"description\": \"Capability tags effective on this token. Format is consumer-defined; the framework imposes no syntax.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"tokenType\": {\n          \"description\": \"Token presentation scheme. Almost always \\\"Bearer\\\"; reserved for future schemes.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"accessToken\",\n        \"tokenType\",\n        \"expiresIn\"\n      ],\n      \"title\": \"TokenBundle\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/authenticate/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"The subject presents a previously-issued challenge along with the framework `proof` that binds the document to their VID. The proof IS the authentication.\",\n  \"properties\": {\n    \"challenge\": {\n      \"description\": \"The exact challenge value returned by a prior auth/challenge call. Consumers MUST reject mismatch, expired, or re-used challenges.\",\n      \"minLength\": 16,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"scope\": {\n      \"description\": \"Optional capability tags the subject is requesting on the issued tokens. The consumer's authorization layer decides which are granted; the issued TokenBundle's `scope` MAY be a subset.\",\n      \"items\": {\n        \"minLength\": 1,\n        \"type\": \"string\"\n      },\n      \"type\": \"array\"\n    },\n    \"sessionId\": {\n      \"description\": \"The sessionId returned alongside the challenge. Consumers use it to look up the server-side challenge binding.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"challenge\",\n    \"sessionId\"\n  ],\n  \"title\": \"Auth — Authenticate\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Issued by the auth service after verifying the proof on the authenticate document. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/authenticate/0.1#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"session\":{\"$ref\":\"#/$defs/Session\",\"description\":\"The session the consumer has just created or refreshed for this subject.\"},\"tokens\":{\"$ref\":\"#/$defs/TokenBundle\",\"description\":\"Access + optional refresh tokens. Consumers MAY omit a refresh token when their policy doesn't support refresh.\"}},\"required\":[\"session\",\"tokens\"],\"title\":\"Auth Authenticate — response payload\",\"type\":\"object\"},\"Session\":{\"$anchor\":\"session\",\"additionalProperties\":false,\"description\":\"A logical authentication context bound to a subject. Producers and consumers exchange Session-shaped data in challenge issuance, authentication responses, and introspection (whoami).\",\"properties\":{\"acr\":{\"description\":\"Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is \\\"aal1\\\" (single-factor DID auth), \\\"aal2\\\" (a second possession-or-biometric factor confirmed), and \\\"aal3\\\" (hardware-bound second factor).\",\"type\":\"string\"},\"amr\":{\"description\":\"Authentication Methods References per [RFC 8176]. Typical values: \\\"did\\\" (challenge-response), \\\"passkey\\\" (WebAuthn), \\\"vta\\\" (verifiable-trust agent approval). Multi-factor sessions list every method used.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"},\"expiresAt\":{\"description\":\"ISO-8601 timestamp when the session ceases to be valid. Producers SHOULD refresh before this time; consumers MUST reject after.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"id\":{\"description\":\"Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied.\",\"minLength\":1,\"type\":\"string\"},\"issuedAt\":{\"description\":\"ISO-8601 timestamp when the session was created.\",\"format\":\"date-time\",\"type\":\"string\"},\"subject\":{\"description\":\"The authenticated party's VID (typically a DID URL).\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\",\"subject\",\"issuedAt\",\"expiresAt\"],\"title\":\"Session\",\"type\":\"object\"},\"TokenBundle\":{\"$anchor\":\"tokenBundle\",\"additionalProperties\":false,\"description\":\"An access token (typically short-lived JWT) paired with an optional refresh token (typically long-lived opaque string). The shapes follow OAuth 2.0 (RFC 6749 §5.1) conventions but are not coupled to any particular OAuth profile.\",\"properties\":{\"accessToken\":{\"description\":\"Bearer-style access token. Consumers presenting this token to downstream services prove the holder of the original session. Format is consumer-defined — JWT is common, but opaque strings are also valid.\",\"minLength\":1,\"type\":\"string\"},\"expiresIn\":{\"description\":\"Seconds from issuance until the access token expires.\",\"minimum\":1,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"refreshExpiresIn\":{\"description\":\"Seconds from issuance until the refresh token expires, when one was issued.\",\"minimum\":1,\"type\":\"integer\"},\"refreshToken\":{\"description\":\"Long-lived token redeemable via auth/refresh for a new access token. MAY be absent when the issuer does not support refresh.\",\"minLength\":1,\"type\":\"string\"},\"scope\":{\"description\":\"Capability tags effective on this token. Format is consumer-defined; the framework imposes no syntax.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"},\"tokenType\":{\"description\":\"Token presentation scheme. Almost always \\\"Bearer\\\"; reserved for future schemes.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"accessToken\",\"tokenType\",\"expiresIn\"],\"title\":\"TokenBundle\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/auth/authenticate/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The subject presents a previously-issued challenge along with the framework `proof` that binds the document to their VID. The proof IS the authentication.\",\"properties\":{\"challenge\":{\"description\":\"The exact challenge value returned by a prior auth/challenge call. Consumers MUST reject mismatch, expired, or re-used challenges.\",\"minLength\":16,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"scope\":{\"description\":\"Optional capability tags the subject is requesting on the issued tokens. The consumer's authorization layer decides which are granted; the issued TokenBundle's `scope` MAY be a subset.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"},\"sessionId\":{\"description\":\"The sessionId returned alongside the challenge. Consumers use it to look up the server-side challenge binding.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"challenge\",\"sessionId\"],\"title\":\"Auth — Authenticate\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1552,7 +1248,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Issued by the auth service after verifying the proof on the authenticate document. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/authenticate/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"session\": {\n          \"$ref\": \"#/$defs/Session\",\n          \"description\": \"The session the consumer has just created or refreshed for this subject.\"\n        },\n        \"tokens\": {\n          \"$ref\": \"#/$defs/TokenBundle\",\n          \"description\": \"Access + optional refresh tokens. Consumers MAY omit a refresh token when their policy doesn't support refresh.\"\n        }\n      },\n      \"required\": [\n        \"session\",\n        \"tokens\"\n      ],\n      \"title\": \"Auth Authenticate — response payload\",\n      \"type\": \"object\"\n    },\n    \"Session\": {\n      \"$anchor\": \"session\",\n      \"additionalProperties\": false,\n      \"description\": \"A logical authentication context bound to a subject. Producers and consumers exchange Session-shaped data in challenge issuance, authentication responses, and introspection (whoami).\",\n      \"properties\": {\n        \"acr\": {\n          \"description\": \"Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is \\\"aal1\\\" (single-factor DID auth), \\\"aal2\\\" (a second possession-or-biometric factor confirmed), and \\\"aal3\\\" (hardware-bound second factor).\",\n          \"type\": \"string\"\n        },\n        \"amr\": {\n          \"description\": \"Authentication Methods References per [RFC 8176]. Typical values: \\\"did\\\" (challenge-response), \\\"passkey\\\" (WebAuthn), \\\"vta\\\" (verifiable-trust agent approval). Multi-factor sessions list every method used.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"expiresAt\": {\n          \"description\": \"ISO-8601 timestamp when the session ceases to be valid. Producers SHOULD refresh before this time; consumers MUST reject after.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"id\": {\n          \"description\": \"Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issuedAt\": {\n          \"description\": \"ISO-8601 timestamp when the session was created.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"subject\": {\n          \"description\": \"The authenticated party's VID (typically a DID URL).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"subject\",\n        \"issuedAt\",\n        \"expiresAt\"\n      ],\n      \"title\": \"Session\",\n      \"type\": \"object\"\n    },\n    \"TokenBundle\": {\n      \"$anchor\": \"tokenBundle\",\n      \"additionalProperties\": false,\n      \"description\": \"An access token (typically short-lived JWT) paired with an optional refresh token (typically long-lived opaque string). The shapes follow OAuth 2.0 (RFC 6749 §5.1) conventions but are not coupled to any particular OAuth profile.\",\n      \"properties\": {\n        \"accessToken\": {\n          \"description\": \"Bearer-style access token. Consumers presenting this token to downstream services prove the holder of the original session. Format is consumer-defined — JWT is common, but opaque strings are also valid.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"expiresIn\": {\n          \"description\": \"Seconds from issuance until the access token expires.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"refreshExpiresIn\": {\n          \"description\": \"Seconds from issuance until the refresh token expires, when one was issued.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"refreshToken\": {\n          \"description\": \"Long-lived token redeemable via auth/refresh for a new access token. MAY be absent when the issuer does not support refresh.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"scope\": {\n          \"description\": \"Capability tags effective on this token. Format is consumer-defined; the framework imposes no syntax.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"tokenType\": {\n          \"description\": \"Token presentation scheme. Almost always \\\"Bearer\\\"; reserved for future schemes.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"accessToken\",\n        \"tokenType\",\n        \"expiresIn\"\n      ],\n      \"title\": \"TokenBundle\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Issued by the auth service after verifying the proof on the authenticate document. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/authenticate/0.1#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"session\":{\"$ref\":\"#/$defs/Session\",\"description\":\"The session the consumer has just created or refreshed for this subject.\"},\"tokens\":{\"$ref\":\"#/$defs/TokenBundle\",\"description\":\"Access + optional refresh tokens. Consumers MAY omit a refresh token when their policy doesn't support refresh.\"}},\"required\":[\"session\",\"tokens\"],\"title\":\"Auth Authenticate — response payload\",\"type\":\"object\"},\"Session\":{\"$anchor\":\"session\",\"additionalProperties\":false,\"description\":\"A logical authentication context bound to a subject. Producers and consumers exchange Session-shaped data in challenge issuance, authentication responses, and introspection (whoami).\",\"properties\":{\"acr\":{\"description\":\"Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is \\\"aal1\\\" (single-factor DID auth), \\\"aal2\\\" (a second possession-or-biometric factor confirmed), and \\\"aal3\\\" (hardware-bound second factor).\",\"type\":\"string\"},\"amr\":{\"description\":\"Authentication Methods References per [RFC 8176]. Typical values: \\\"did\\\" (challenge-response), \\\"passkey\\\" (WebAuthn), \\\"vta\\\" (verifiable-trust agent approval). Multi-factor sessions list every method used.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"},\"expiresAt\":{\"description\":\"ISO-8601 timestamp when the session ceases to be valid. Producers SHOULD refresh before this time; consumers MUST reject after.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"id\":{\"description\":\"Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied.\",\"minLength\":1,\"type\":\"string\"},\"issuedAt\":{\"description\":\"ISO-8601 timestamp when the session was created.\",\"format\":\"date-time\",\"type\":\"string\"},\"subject\":{\"description\":\"The authenticated party's VID (typically a DID URL).\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\",\"subject\",\"issuedAt\",\"expiresAt\"],\"title\":\"Session\",\"type\":\"object\"},\"TokenBundle\":{\"$anchor\":\"tokenBundle\",\"additionalProperties\":false,\"description\":\"An access token (typically short-lived JWT) paired with an optional refresh token (typically long-lived opaque string). The shapes follow OAuth 2.0 (RFC 6749 §5.1) conventions but are not coupled to any particular OAuth profile.\",\"properties\":{\"accessToken\":{\"description\":\"Bearer-style access token. Consumers presenting this token to downstream services prove the holder of the original session. Format is consumer-defined — JWT is common, but opaque strings are also valid.\",\"minLength\":1,\"type\":\"string\"},\"expiresIn\":{\"description\":\"Seconds from issuance until the access token expires.\",\"minimum\":1,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"refreshExpiresIn\":{\"description\":\"Seconds from issuance until the refresh token expires, when one was issued.\",\"minimum\":1,\"type\":\"integer\"},\"refreshToken\":{\"description\":\"Long-lived token redeemable via auth/refresh for a new access token. MAY be absent when the issuer does not support refresh.\",\"minLength\":1,\"type\":\"string\"},\"scope\":{\"description\":\"Capability tags effective on this token. Format is consumer-defined; the framework imposes no syntax.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"},\"tokenType\":{\"description\":\"Token presentation scheme. Almost always \\\"Bearer\\\"; reserved for future schemes.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"accessToken\",\"tokenType\",\"expiresIn\"],\"title\":\"TokenBundle\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

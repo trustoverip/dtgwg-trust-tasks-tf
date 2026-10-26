@@ -18,6 +18,11 @@ readme = "README.md"
 keywords = ["trust-tasks", "trustoverip", "did", "json-schema", "verifiable"]
 categories = ["data-structures", "encoding"]
 publish = true
+# The generated per-spec conformance tests (1,057 files, 7.3 MB) run in this
+# repository's CI and nowhere else: a consumer never compiles another crate's
+# integration tests. Shipping them took the .crate to 9.96 MB of crates.io's
+# 10 MB upload limit.
+exclude = ["tests/conformance/"]
 
 [features]
 # Enables runtime payload validation against the JSON Schema bundled with

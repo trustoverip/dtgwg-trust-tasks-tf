@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,36 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Opens one participating party's witness session as its own exchange, nested in a relationship exchange via parentThreadId. A session is bilateral — a witnessed exchange between two parties runs two sessions with the same witness, each naming the same parties pair. The response issues the session challenge; the request document's id is the value that party's VWC later carries as taskContext.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/witness/session/0.2",
-///  "title": "Payload",
-///  "description": "Opens one participating party's witness session as its own exchange, nested in a relationship exchange via parentThreadId. A session is bilateral — a witnessed exchange between two parties runs two sessions with the same witness, each naming the same parties pair. The response issues the session challenge; the request document's id is the value that party's VWC later carries as taskContext.",
-///  "type": "object",
-///  "required": [
-///    "parties"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "parties": {
-///      "description": "The relationship DIDs of the exchange to be witnessed — the pairwise values the relationship proposal exchanged, in either order.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "pattern": "^did:"
-///      },
-///      "maxItems": 2,
-///      "minItems": 2
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -188,15 +134,6 @@ impl Payload {
 }
 ///`PayloadPartiesItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadPartiesItem(::std::string::String);
@@ -258,37 +195,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPartiesItem {
 }
 ///The session challenge, issued under the REQUIRED proof. The presentation under witness/session/submit binds to {challenge, domain}. It reaches only the party that opened this session — which is why each party opens its own.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The session challenge, issued under the REQUIRED proof. The presentation under witness/session/submit binds to {challenge, domain}. It reaches only the party that opened this session — which is why each party opens its own.",
-///  "type": "object",
-///  "required": [
-///    "challenge",
-///    "domain"
-///  ],
-///  "properties": {
-///    "challenge": {
-///      "description": "A fresh, unpredictable, single-use value this session's presentation binds to. A witness MUST NOT reuse a challenge across sessions — including across the two sessions of one witnessed exchange, where a shared value would let either party's presentation satisfy the other's session.",
-///      "type": "string",
-///      "minLength": 16
-///    },
-///    "domain": {
-///      "description": "The domain the presentations bind alongside the challenge, identifying this witness's verification context.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -307,16 +213,6 @@ impl Response {
 }
 ///A fresh, unpredictable, single-use value this session's presentation binds to. A witness MUST NOT reuse a challenge across sessions — including across the two sessions of one witnessed exchange, where a shared value would let either party's presentation satisfy the other's session.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "A fresh, unpredictable, single-use value this session's presentation binds to. A witness MUST NOT reuse a challenge across sessions — including across the two sessions of one witnessed exchange, where a shared value would let either party's presentation satisfy the other's session.",
-///  "type": "string",
-///  "minLength": 16
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseChallenge(::std::string::String);
@@ -376,16 +272,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseChallenge {
 }
 ///The domain the presentations bind alongside the challenge, identifying this witness's verification context.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The domain the presentations bind alongside the challenge, identifying this witness's verification context.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseDomain(::std::string::String);
@@ -569,7 +455,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The session challenge, issued under the REQUIRED proof. The presentation under witness/session/submit binds to {challenge, domain}. It reaches only the party that opened this session — which is why each party opens its own.\",\n      \"properties\": {\n        \"challenge\": {\n          \"description\": \"A fresh, unpredictable, single-use value this session's presentation binds to. A witness MUST NOT reuse a challenge across sessions — including across the two sessions of one witnessed exchange, where a shared value would let either party's presentation satisfy the other's session.\",\n          \"minLength\": 16,\n          \"type\": \"string\"\n        },\n        \"domain\": {\n          \"description\": \"The domain the presentations bind alongside the challenge, identifying this witness's verification context.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"challenge\",\n        \"domain\"\n      ],\n      \"title\": \"Witness Session — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/witness/session/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Opens one participating party's witness session as its own exchange, nested in a relationship exchange via parentThreadId. A session is bilateral — a witnessed exchange between two parties runs two sessions with the same witness, each naming the same parties pair. The response issues the session challenge; the request document's id is the value that party's VWC later carries as taskContext.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"parties\": {\n      \"description\": \"The relationship DIDs of the exchange to be witnessed — the pairwise values the relationship proposal exchanged, in either order.\",\n      \"items\": {\n        \"pattern\": \"^did:\",\n        \"type\": \"string\"\n      },\n      \"maxItems\": 2,\n      \"minItems\": 2,\n      \"type\": \"array\"\n    }\n  },\n  \"required\": [\n    \"parties\"\n  ],\n  \"title\": \"Witness Session — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The session challenge, issued under the REQUIRED proof. The presentation under witness/session/submit binds to {challenge, domain}. It reaches only the party that opened this session — which is why each party opens its own.\",\"properties\":{\"challenge\":{\"description\":\"A fresh, unpredictable, single-use value this session's presentation binds to. A witness MUST NOT reuse a challenge across sessions — including across the two sessions of one witnessed exchange, where a shared value would let either party's presentation satisfy the other's session.\",\"minLength\":16,\"type\":\"string\"},\"domain\":{\"description\":\"The domain the presentations bind alongside the challenge, identifying this witness's verification context.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"challenge\",\"domain\"],\"title\":\"Witness Session — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/witness/session/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Opens one participating party's witness session as its own exchange, nested in a relationship exchange via parentThreadId. A session is bilateral — a witnessed exchange between two parties runs two sessions with the same witness, each naming the same parties pair. The response issues the session challenge; the request document's id is the value that party's VWC later carries as taskContext.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"parties\":{\"description\":\"The relationship DIDs of the exchange to be witnessed — the pairwise values the relationship proposal exchanged, in either order.\",\"items\":{\"pattern\":\"^did:\",\"type\":\"string\"},\"maxItems\":2,\"minItems\":2,\"type\":\"array\"}},\"required\":[\"parties\"],\"title\":\"Witness Session — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -578,7 +464,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The session challenge, issued under the REQUIRED proof. The presentation under witness/session/submit binds to {challenge, domain}. It reaches only the party that opened this session — which is why each party opens its own.\",\n      \"properties\": {\n        \"challenge\": {\n          \"description\": \"A fresh, unpredictable, single-use value this session's presentation binds to. A witness MUST NOT reuse a challenge across sessions — including across the two sessions of one witnessed exchange, where a shared value would let either party's presentation satisfy the other's session.\",\n          \"minLength\": 16,\n          \"type\": \"string\"\n        },\n        \"domain\": {\n          \"description\": \"The domain the presentations bind alongside the challenge, identifying this witness's verification context.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"challenge\",\n        \"domain\"\n      ],\n      \"title\": \"Witness Session — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The session challenge, issued under the REQUIRED proof. The presentation under witness/session/submit binds to {challenge, domain}. It reaches only the party that opened this session — which is why each party opens its own.\",\"properties\":{\"challenge\":{\"description\":\"A fresh, unpredictable, single-use value this session's presentation binds to. A witness MUST NOT reuse a challenge across sessions — including across the two sessions of one witnessed exchange, where a shared value would let either party's presentation satisfy the other's session.\",\"minLength\":16,\"type\":\"string\"},\"domain\":{\"description\":\"The domain the presentations bind alongside the challenge, identifying this witness's verification context.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"challenge\",\"domain\"],\"title\":\"Witness Session — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

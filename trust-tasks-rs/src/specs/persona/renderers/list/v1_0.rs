@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,23 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Enumerate the output formats this agent can present in, and what each one discards. A client cannot negotiate a format it cannot discover.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/persona/renderers/list/1.0",
-///  "title": "Payload",
-///  "description": "Enumerate the output formats this agent can present in, and what each one discards. A client cannot negotiate a format it cannot discover.",
-///  "type": "object",
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -180,66 +139,6 @@ impl Payload {
 }
 ///Success response to persona/renderers/list. Type https://trusttasks.org/spec/persona/renderers/list/1.0#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to persona/renderers/list. Type https://trusttasks.org/spec/persona/renderers/list/1.0#response.",
-///  "type": "object",
-///  "required": [
-///    "renderers"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "renderers": {
-///      "type": "array",
-///      "items": {
-///        "type": "object",
-///        "required": [
-///          "canCarryPredicates",
-///          "drops",
-///          "id"
-///        ],
-///        "properties": {
-///          "canCarryPredicates": {
-///            "description": "Whether the format can represent a claim proven rather than shown. Most cannot: there is no field in a general contact format for 'over the threshold'. A disclosure containing a predicate through a renderer that cannot carry one fails at negotiation rather than silently dropping the claim.",
-///            "type": "boolean"
-///          },
-///          "canonical": {
-///            "description": "True for the maintainer's lossless native form, used when a producer names no renderer. Exactly one renderer is canonical.",
-///            "type": "boolean"
-///          },
-///          "description": {
-///            "type": "string",
-///            "maxLength": 512
-///          },
-///          "drops": {
-///            "description": "What this format discards — commonly provenance, because most general-purpose contact formats have nowhere to put it. Declared here so that lossiness is negotiated rather than discovered by a holder afterwards.",
-///            "type": "array",
-///            "items": {
-///              "type": "string",
-///              "maxLength": 64
-///            },
-///            "maxItems": 32
-///          },
-///          "id": {
-///            "type": "string",
-///            "maxLength": 64
-///          }
-///        },
-///        "additionalProperties": false
-///      },
-///      "maxItems": 32
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -255,47 +154,6 @@ impl Response {
 }
 ///`ResponseRenderersItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "canCarryPredicates",
-///    "drops",
-///    "id"
-///  ],
-///  "properties": {
-///    "canCarryPredicates": {
-///      "description": "Whether the format can represent a claim proven rather than shown. Most cannot: there is no field in a general contact format for 'over the threshold'. A disclosure containing a predicate through a renderer that cannot carry one fails at negotiation rather than silently dropping the claim.",
-///      "type": "boolean"
-///    },
-///    "canonical": {
-///      "description": "True for the maintainer's lossless native form, used when a producer names no renderer. Exactly one renderer is canonical.",
-///      "type": "boolean"
-///    },
-///    "description": {
-///      "type": "string",
-///      "maxLength": 512
-///    },
-///    "drops": {
-///      "description": "What this format discards — commonly provenance, because most general-purpose contact formats have nowhere to put it. Declared here so that lossiness is negotiated rather than discovered by a holder afterwards.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 64
-///      },
-///      "maxItems": 32
-///    },
-///    "id": {
-///      "type": "string",
-///      "maxLength": 64
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -319,15 +177,6 @@ impl ResponseRenderersItem {
 }
 ///`ResponseRenderersItemDescription`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 512
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseRenderersItemDescription(::std::string::String);
@@ -387,15 +236,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseRenderersItemDescription {
 }
 ///`ResponseRenderersItemDropsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 64
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseRenderersItemDropsItem(::std::string::String);
@@ -455,15 +295,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseRenderersItemDropsItem {
 }
 ///`ResponseRenderersItemId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 64
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseRenderersItemId(::std::string::String);
@@ -722,7 +553,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/renderers/list. Type https://trusttasks.org/spec/persona/renderers/list/1.0#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"renderers\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"canCarryPredicates\": {\n                \"description\": \"Whether the format can represent a claim proven rather than shown. Most cannot: there is no field in a general contact format for 'over the threshold'. A disclosure containing a predicate through a renderer that cannot carry one fails at negotiation rather than silently dropping the claim.\",\n                \"type\": \"boolean\"\n              },\n              \"canonical\": {\n                \"description\": \"True for the maintainer's lossless native form, used when a producer names no renderer. Exactly one renderer is canonical.\",\n                \"type\": \"boolean\"\n              },\n              \"description\": {\n                \"maxLength\": 512,\n                \"type\": \"string\"\n              },\n              \"drops\": {\n                \"description\": \"What this format discards — commonly provenance, because most general-purpose contact formats have nowhere to put it. Declared here so that lossiness is negotiated rather than discovered by a holder afterwards.\",\n                \"items\": {\n                  \"maxLength\": 64,\n                  \"type\": \"string\"\n                },\n                \"maxItems\": 32,\n                \"type\": \"array\"\n              },\n              \"id\": {\n                \"maxLength\": 64,\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"id\",\n              \"drops\",\n              \"canCarryPredicates\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 32,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"renderers\"\n      ],\n      \"title\": \"Persona Renderers List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/persona/renderers/list/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Enumerate the output formats this agent can present in, and what each one discards. A client cannot negotiate a format it cannot discover.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"title\": \"Persona Renderers List — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to persona/renderers/list. Type https://trusttasks.org/spec/persona/renderers/list/1.0#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"renderers\":{\"items\":{\"additionalProperties\":false,\"properties\":{\"canCarryPredicates\":{\"description\":\"Whether the format can represent a claim proven rather than shown. Most cannot: there is no field in a general contact format for 'over the threshold'. A disclosure containing a predicate through a renderer that cannot carry one fails at negotiation rather than silently dropping the claim.\",\"type\":\"boolean\"},\"canonical\":{\"description\":\"True for the maintainer's lossless native form, used when a producer names no renderer. Exactly one renderer is canonical.\",\"type\":\"boolean\"},\"description\":{\"maxLength\":512,\"type\":\"string\"},\"drops\":{\"description\":\"What this format discards — commonly provenance, because most general-purpose contact formats have nowhere to put it. Declared here so that lossiness is negotiated rather than discovered by a holder afterwards.\",\"items\":{\"maxLength\":64,\"type\":\"string\"},\"maxItems\":32,\"type\":\"array\"},\"id\":{\"maxLength\":64,\"type\":\"string\"}},\"required\":[\"id\",\"drops\",\"canCarryPredicates\"],\"type\":\"object\"},\"maxItems\":32,\"type\":\"array\"}},\"required\":[\"renderers\"],\"title\":\"Persona Renderers List — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/persona/renderers/list/1.0\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Enumerate the output formats this agent can present in, and what each one discards. A client cannot negotiate a format it cannot discover.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"title\":\"Persona Renderers List — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -731,7 +562,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/renderers/list. Type https://trusttasks.org/spec/persona/renderers/list/1.0#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"renderers\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"canCarryPredicates\": {\n                \"description\": \"Whether the format can represent a claim proven rather than shown. Most cannot: there is no field in a general contact format for 'over the threshold'. A disclosure containing a predicate through a renderer that cannot carry one fails at negotiation rather than silently dropping the claim.\",\n                \"type\": \"boolean\"\n              },\n              \"canonical\": {\n                \"description\": \"True for the maintainer's lossless native form, used when a producer names no renderer. Exactly one renderer is canonical.\",\n                \"type\": \"boolean\"\n              },\n              \"description\": {\n                \"maxLength\": 512,\n                \"type\": \"string\"\n              },\n              \"drops\": {\n                \"description\": \"What this format discards — commonly provenance, because most general-purpose contact formats have nowhere to put it. Declared here so that lossiness is negotiated rather than discovered by a holder afterwards.\",\n                \"items\": {\n                  \"maxLength\": 64,\n                  \"type\": \"string\"\n                },\n                \"maxItems\": 32,\n                \"type\": \"array\"\n              },\n              \"id\": {\n                \"maxLength\": 64,\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"id\",\n              \"drops\",\n              \"canCarryPredicates\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 32,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"renderers\"\n      ],\n      \"title\": \"Persona Renderers List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to persona/renderers/list. Type https://trusttasks.org/spec/persona/renderers/list/1.0#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"renderers\":{\"items\":{\"additionalProperties\":false,\"properties\":{\"canCarryPredicates\":{\"description\":\"Whether the format can represent a claim proven rather than shown. Most cannot: there is no field in a general contact format for 'over the threshold'. A disclosure containing a predicate through a renderer that cannot carry one fails at negotiation rather than silently dropping the claim.\",\"type\":\"boolean\"},\"canonical\":{\"description\":\"True for the maintainer's lossless native form, used when a producer names no renderer. Exactly one renderer is canonical.\",\"type\":\"boolean\"},\"description\":{\"maxLength\":512,\"type\":\"string\"},\"drops\":{\"description\":\"What this format discards — commonly provenance, because most general-purpose contact formats have nowhere to put it. Declared here so that lossiness is negotiated rather than discovered by a holder afterwards.\",\"items\":{\"maxLength\":64,\"type\":\"string\"},\"maxItems\":32,\"type\":\"array\"},\"id\":{\"maxLength\":64,\"type\":\"string\"}},\"required\":[\"id\",\"drops\",\"canCarryPredicates\"],\"type\":\"object\"},\"maxItems\":32,\"type\":\"array\"}},\"required\":[\"renderers\"],\"title\":\"Persona Renderers List — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

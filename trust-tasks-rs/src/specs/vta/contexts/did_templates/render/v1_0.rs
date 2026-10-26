@@ -35,21 +35,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -71,15 +56,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -143,44 +119,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Render a context-scoped DID template to a DID document on a VTA. Gated on context access. The VTA fills `{TOKEN}` placeholders with caller-supplied variables plus ambient values it injects server-side. The success response is the rendered DID document.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/contexts/did-templates/render/1.0",
-///  "title": "Payload",
-///  "description": "Render a context-scoped DID template to a DID document on a VTA. Gated on context access. The VTA fills `{TOKEN}` placeholders with caller-supplied variables plus ambient values it injects server-side. The success response is the rendered DID document.",
-///  "type": "object",
-///  "required": [
-///    "contextId",
-///    "name"
-///  ],
-///  "properties": {
-///    "contextId": {
-///      "description": "The context the template is scoped to.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "name": {
-///      "description": "Resource id of the template to render within the context scope.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "vars": {
-///      "description": "Caller-supplied variables; the VTA also injects ambient VTA_DID, VTA_URL, NOW, CONTEXT_ID, and CONTEXT_DID (if set on the context) server-side.",
-///      "default": {},
-///      "type": "object",
-///      "additionalProperties": true
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -205,16 +143,6 @@ impl Payload {
 }
 ///The context the template is scoped to.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The context the template is scoped to.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadContextId(::std::string::String);
@@ -274,16 +202,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 }
 ///Resource id of the template to render within the context scope.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Resource id of the template to render within the context scope.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadName(::std::string::String);
@@ -343,31 +261,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadName {
 }
 ///The rendered DID document with all placeholders filled.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The rendered DID document with all placeholders filled.",
-///  "type": "object",
-///  "required": [
-///    "document"
-///  ],
-///  "properties": {
-///    "document": {
-///      "description": "The rendered DID document.",
-///      "type": "object"
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -535,7 +428,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The rendered DID document with all placeholders filled.\",\n      \"properties\": {\n        \"document\": {\n          \"description\": \"The rendered DID document.\",\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        }\n      },\n      \"required\": [\n        \"document\"\n      ],\n      \"title\": \"VTA Context DID-Template Render — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/contexts/did-templates/render/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Render a context-scoped DID template to a DID document on a VTA. Gated on context access. The VTA fills `{TOKEN}` placeholders with caller-supplied variables plus ambient values it injects server-side. The success response is the rendered DID document.\",\n  \"properties\": {\n    \"contextId\": {\n      \"description\": \"The context the template is scoped to.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"name\": {\n      \"description\": \"Resource id of the template to render within the context scope.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"vars\": {\n      \"additionalProperties\": true,\n      \"default\": {},\n      \"description\": \"Caller-supplied variables; the VTA also injects ambient VTA_DID, VTA_URL, NOW, CONTEXT_ID, and CONTEXT_DID (if set on the context) server-side.\",\n      \"type\": \"object\"\n    }\n  },\n  \"required\": [\n    \"contextId\",\n    \"name\"\n  ],\n  \"title\": \"VTA Context DID-Template Render — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The rendered DID document with all placeholders filled.\",\"properties\":{\"document\":{\"description\":\"The rendered DID document.\",\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"required\":[\"document\"],\"title\":\"VTA Context DID-Template Render — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/contexts/did-templates/render/1.0\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Render a context-scoped DID template to a DID document on a VTA. Gated on context access. The VTA fills `{TOKEN}` placeholders with caller-supplied variables plus ambient values it injects server-side. The success response is the rendered DID document.\",\"properties\":{\"contextId\":{\"description\":\"The context the template is scoped to.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"name\":{\"description\":\"Resource id of the template to render within the context scope.\",\"minLength\":1,\"type\":\"string\"},\"vars\":{\"additionalProperties\":true,\"default\":{},\"description\":\"Caller-supplied variables; the VTA also injects ambient VTA_DID, VTA_URL, NOW, CONTEXT_ID, and CONTEXT_DID (if set on the context) server-side.\",\"type\":\"object\"}},\"required\":[\"contextId\",\"name\"],\"title\":\"VTA Context DID-Template Render — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -544,7 +437,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The rendered DID document with all placeholders filled.\",\n      \"properties\": {\n        \"document\": {\n          \"description\": \"The rendered DID document.\",\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        }\n      },\n      \"required\": [\n        \"document\"\n      ],\n      \"title\": \"VTA Context DID-Template Render — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The rendered DID document with all placeholders filled.\",\"properties\":{\"document\":{\"description\":\"The rendered DID document.\",\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"required\":[\"document\"],\"title\":\"VTA Context DID-Template Render — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

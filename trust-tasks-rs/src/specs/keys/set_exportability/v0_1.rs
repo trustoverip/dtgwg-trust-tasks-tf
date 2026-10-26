@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,22 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "KeyOrigin",
-///  "description": "Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.",
-///  "default": "derived",
-///  "type": "string",
-///  "enum": [
-///    "derived",
-///    "imported",
-///    "internal"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -228,80 +188,6 @@ impl ::std::default::Default for KeyOrigin {
 }
 ///`KeyRecord`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "KeyRecord",
-///  "type": "object",
-///  "required": [
-///    "createdAt",
-///    "keyId",
-///    "keyType",
-///    "publicKey",
-///    "status"
-///  ],
-///  "properties": {
-///    "contextId": {
-///      "description": "Scope the key belongs to. **Absence is not 'every scope'** — a key with no context is reachable only by a caller with unrestricted authority over the maintainer, which is the more restrictive reading, and a consumer that treats absence as a wildcard inverts the guarantee.",
-///      "type": "string"
-///    },
-///    "createdAt": {
-///      "description": "RFC 3339 timestamp at which the key was created or imported.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "derivationPath": {
-///      "description": "Hierarchical-deterministic path the key was derived at, when `origin` is `derived`. Absent for imported keys, which have no path.",
-///      "type": "string"
-///    },
-///    "exportable": {
-///      "description": "Whether the private half may be released to a caller. `false` means the custodian refuses every export of this key and can only be asked to *use* it — signing, key agreement — so the material never leaves. **Absence means the key may be exported.** That is the permissive reading, and it is deliberate: it is what every record written before this member existed already meant, so a custodian adding the member cannot silently retract access to keys its callers already hold. A consumer MUST NOT infer the converse — absence is not a statement that export was considered and allowed. Marking a key non-exportable does not make it unrecoverable: a custodian's own whole-store backup is a different mechanism from an export to a caller, and this member does not speak to it.",
-///      "type": "boolean",
-///      "$comment": "No JSON Schema `default` is declared here on purpose. A declared default is materialised by the generated bindings — the field becomes non-optional with a serde default — so an absent member reappears as an explicit `true` on re-serialisation, which breaks round-trip idempotence for every record written before this member existed. The permissive reading is stated in prose above, where a binding cannot act on it."
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "keyId": {
-///      "description": "Maintainer-scoped identifier for the key. Stable for the key's lifetime except through an explicit `keys/rename`.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "keyType": {
-///      "$ref": "#/definitions/KeyType"
-///    },
-///    "label": {
-///      "description": "Optional human-readable label. Operator-facing only; carries no authorization meaning.",
-///      "type": "string",
-///      "maxLength": 256
-///    },
-///    "origin": {
-///      "$ref": "#/definitions/KeyOrigin"
-///    },
-///    "publicKey": {
-///      "description": "The public half, multibase-encoded. The private half is never carried by any keys/* response.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "seedId": {
-///      "description": "Identifier of the seed the key was derived from, when the maintainer holds more than one. Absent for imported keys.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "status": {
-///      "$ref": "#/definitions/KeyStatus"
-///    },
-///    "updatedAt": {
-///      "description": "RFC 3339 timestamp of the last change to the record (rename, revocation).",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -364,16 +250,6 @@ impl KeyRecord {
 }
 ///Maintainer-scoped identifier for the key. Stable for the key's lifetime except through an explicit `keys/rename`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Maintainer-scoped identifier for the key. Stable for the key's lifetime except through an explicit `keys/rename`.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct KeyRecordKeyId(::std::string::String);
@@ -433,16 +309,6 @@ impl<'de> ::serde::Deserialize<'de> for KeyRecordKeyId {
 }
 ///Optional human-readable label. Operator-facing only; carries no authorization meaning.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Optional human-readable label. Operator-facing only; carries no authorization meaning.",
-///  "type": "string",
-///  "maxLength": 256
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct KeyRecordLabel(::std::string::String);
@@ -502,16 +368,6 @@ impl<'de> ::serde::Deserialize<'de> for KeyRecordLabel {
 }
 ///The public half, multibase-encoded. The private half is never carried by any keys/* response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The public half, multibase-encoded. The private half is never carried by any keys/* response.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct KeyRecordPublicKey(::std::string::String);
@@ -571,20 +427,6 @@ impl<'de> ::serde::Deserialize<'de> for KeyRecordPublicKey {
 }
 ///Lifecycle state. Only an `active` key may be named in a signing request; a `revoked` key is retained so historic signatures remain attributable, and MUST NOT be reactivated.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "KeyStatus",
-///  "description": "Lifecycle state. Only an `active` key may be named in a signing request; a `revoked` key is retained so historic signatures remain attributable, and MUST NOT be reactivated.",
-///  "type": "string",
-///  "enum": [
-///    "active",
-///    "revoked"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -646,23 +488,6 @@ impl ::std::convert::TryFrom<::std::string::String> for KeyStatus {
 }
 ///Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "KeyType",
-///  "description": "Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support.",
-///  "type": "string",
-///  "enum": [
-///    "ed25519",
-///    "x25519",
-///    "p256",
-///    "mldsa44",
-///    "mldsa65"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -736,36 +561,6 @@ impl ::std::convert::TryFrom<::std::string::String> for KeyType {
 }
 ///Names one key and the exportability it should carry afterwards. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/keys/set-exportability/0.1",
-///  "title": "Payload",
-///  "description": "Names one key and the exportability it should carry afterwards. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "exportable",
-///    "keyId"
-///  ],
-///  "properties": {
-///    "exportable": {
-///      "description": "The state the key should be in when this request succeeds — not a delta. `false` asks the custodian to refuse every future export of the key; `true` asks it to allow them again. Stated absolutely so a repeat of the same request is a no-op rather than a toggle: a producer that retried a lost reply must not discover it has undone itself.",
-///      "type": "boolean"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "keyId": {
-///      "description": "The key whose exportability changes. Custodian-scoped, as everywhere in `keys/*`.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -785,16 +580,6 @@ impl Payload {
 }
 ///The key whose exportability changes. Custodian-scoped, as everywhere in `keys/*`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The key whose exportability changes. Custodian-scoped, as everywhere in `keys/*`.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadKeyId(::std::string::String);
@@ -854,27 +639,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadKeyId {
 }
 ///The success response: the key record as it now stands. Returning the whole record rather than an acknowledgement lets a producer confirm the state it asked for without a second round trip. Wrapped in `key` to match the rest of the family (`keys/show`, `keys/create`). Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/set-exportability/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The success response: the key record as it now stands. Returning the whole record rather than an acknowledgement lets a producer confirm the state it asked for without a second round trip. Wrapped in `key` to match the rest of the family (`keys/show`, `keys/create`). Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/set-exportability/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "key"
-///  ],
-///  "properties": {
-///    "key": {
-///      "description": "The record the custodian now holds. Never null — a request naming a key the custodian does not hold is `keys:notFound`, not a successful answer with no record. This differs from `keys/show`, where 'no such key' is a legitimate success.",
-///      "$ref": "#/definitions/KeyRecord"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1220,7 +984,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"KeyOrigin\": {\n      \"default\": \"derived\",\n      \"description\": \"Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.\",\n      \"enum\": [\n        \"derived\",\n        \"imported\",\n        \"internal\"\n      ],\n      \"title\": \"KeyOrigin\",\n      \"type\": \"string\"\n    },\n    \"KeyRecord\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"contextId\": {\n          \"description\": \"Scope the key belongs to. **Absence is not 'every scope'** — a key with no context is reachable only by a caller with unrestricted authority over the maintainer, which is the more restrictive reading, and a consumer that treats absence as a wildcard inverts the guarantee.\",\n          \"type\": \"string\"\n        },\n        \"createdAt\": {\n          \"description\": \"RFC 3339 timestamp at which the key was created or imported.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"derivationPath\": {\n          \"description\": \"Hierarchical-deterministic path the key was derived at, when `origin` is `derived`. Absent for imported keys, which have no path.\",\n          \"type\": \"string\"\n        },\n        \"exportable\": {\n          \"$comment\": \"No JSON Schema `default` is declared here on purpose. A declared default is materialised by the generated bindings — the field becomes non-optional with a serde default — so an absent member reappears as an explicit `true` on re-serialisation, which breaks round-trip idempotence for every record written before this member existed. The permissive reading is stated in prose above, where a binding cannot act on it.\",\n          \"description\": \"Whether the private half may be released to a caller. `false` means the custodian refuses every export of this key and can only be asked to *use* it — signing, key agreement — so the material never leaves. **Absence means the key may be exported.** That is the permissive reading, and it is deliberate: it is what every record written before this member existed already meant, so a custodian adding the member cannot silently retract access to keys its callers already hold. A consumer MUST NOT infer the converse — absence is not a statement that export was considered and allowed. Marking a key non-exportable does not make it unrecoverable: a custodian's own whole-store backup is a different mechanism from an export to a caller, and this member does not speak to it.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"keyId\": {\n          \"description\": \"Maintainer-scoped identifier for the key. Stable for the key's lifetime except through an explicit `keys/rename`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"keyType\": {\n          \"$ref\": \"#/$defs/KeyType\"\n        },\n        \"label\": {\n          \"description\": \"Optional human-readable label. Operator-facing only; carries no authorization meaning.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"origin\": {\n          \"$ref\": \"#/$defs/KeyOrigin\"\n        },\n        \"publicKey\": {\n          \"description\": \"The public half, multibase-encoded. The private half is never carried by any keys/* response.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"seedId\": {\n          \"description\": \"Identifier of the seed the key was derived from, when the maintainer holds more than one. Absent for imported keys.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"status\": {\n          \"$ref\": \"#/$defs/KeyStatus\"\n        },\n        \"updatedAt\": {\n          \"description\": \"RFC 3339 timestamp of the last change to the record (rename, revocation).\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"keyId\",\n        \"keyType\",\n        \"status\",\n        \"publicKey\",\n        \"createdAt\"\n      ],\n      \"title\": \"KeyRecord\",\n      \"type\": \"object\"\n    },\n    \"KeyStatus\": {\n      \"description\": \"Lifecycle state. Only an `active` key may be named in a signing request; a `revoked` key is retained so historic signatures remain attributable, and MUST NOT be reactivated.\",\n      \"enum\": [\n        \"active\",\n        \"revoked\"\n      ],\n      \"title\": \"KeyStatus\",\n      \"type\": \"string\"\n    },\n    \"KeyType\": {\n      \"description\": \"Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support.\",\n      \"enum\": [\n        \"ed25519\",\n        \"x25519\",\n        \"p256\",\n        \"mldsa44\",\n        \"mldsa65\"\n      ],\n      \"title\": \"KeyType\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response: the key record as it now stands. Returning the whole record rather than an acknowledgement lets a producer confirm the state it asked for without a second round trip. Wrapped in `key` to match the rest of the family (`keys/show`, `keys/create`). Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/set-exportability/0.1#response.\",\n      \"properties\": {\n        \"key\": {\n          \"$ref\": \"#/$defs/KeyRecord\",\n          \"description\": \"The record the custodian now holds. Never null — a request naming a key the custodian does not hold is `keys:notFound`, not a successful answer with no record. This differs from `keys/show`, where 'no such key' is a legitimate success.\"\n        }\n      },\n      \"required\": [\n        \"key\"\n      ],\n      \"title\": \"Keys Set Exportability — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/keys/set-exportability/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Names one key and the exportability it should carry afterwards. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"exportable\": {\n      \"description\": \"The state the key should be in when this request succeeds — not a delta. `false` asks the custodian to refuse every future export of the key; `true` asks it to allow them again. Stated absolutely so a repeat of the same request is a no-op rather than a toggle: a producer that retried a lost reply must not discover it has undone itself.\",\n      \"type\": \"boolean\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"keyId\": {\n      \"description\": \"The key whose exportability changes. Custodian-scoped, as everywhere in `keys/*`.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"keyId\",\n    \"exportable\"\n  ],\n  \"title\": \"Keys Set Exportability — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"KeyOrigin\":{\"default\":\"derived\",\"description\":\"Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.\",\"enum\":[\"derived\",\"imported\",\"internal\"],\"title\":\"KeyOrigin\",\"type\":\"string\"},\"KeyRecord\":{\"additionalProperties\":false,\"properties\":{\"contextId\":{\"description\":\"Scope the key belongs to. **Absence is not 'every scope'** — a key with no context is reachable only by a caller with unrestricted authority over the maintainer, which is the more restrictive reading, and a consumer that treats absence as a wildcard inverts the guarantee.\",\"type\":\"string\"},\"createdAt\":{\"description\":\"RFC 3339 timestamp at which the key was created or imported.\",\"format\":\"date-time\",\"type\":\"string\"},\"derivationPath\":{\"description\":\"Hierarchical-deterministic path the key was derived at, when `origin` is `derived`. Absent for imported keys, which have no path.\",\"type\":\"string\"},\"exportable\":{\"$comment\":\"No JSON Schema `default` is declared here on purpose. A declared default is materialised by the generated bindings — the field becomes non-optional with a serde default — so an absent member reappears as an explicit `true` on re-serialisation, which breaks round-trip idempotence for every record written before this member existed. The permissive reading is stated in prose above, where a binding cannot act on it.\",\"description\":\"Whether the private half may be released to a caller. `false` means the custodian refuses every export of this key and can only be asked to *use* it — signing, key agreement — so the material never leaves. **Absence means the key may be exported.** That is the permissive reading, and it is deliberate: it is what every record written before this member existed already meant, so a custodian adding the member cannot silently retract access to keys its callers already hold. A consumer MUST NOT infer the converse — absence is not a statement that export was considered and allowed. Marking a key non-exportable does not make it unrecoverable: a custodian's own whole-store backup is a different mechanism from an export to a caller, and this member does not speak to it.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keyId\":{\"description\":\"Maintainer-scoped identifier for the key. Stable for the key's lifetime except through an explicit `keys/rename`.\",\"minLength\":1,\"type\":\"string\"},\"keyType\":{\"$ref\":\"#/$defs/KeyType\"},\"label\":{\"description\":\"Optional human-readable label. Operator-facing only; carries no authorization meaning.\",\"maxLength\":256,\"type\":\"string\"},\"origin\":{\"$ref\":\"#/$defs/KeyOrigin\"},\"publicKey\":{\"description\":\"The public half, multibase-encoded. The private half is never carried by any keys/* response.\",\"minLength\":1,\"type\":\"string\"},\"seedId\":{\"description\":\"Identifier of the seed the key was derived from, when the maintainer holds more than one. Absent for imported keys.\",\"minimum\":0,\"type\":\"integer\"},\"status\":{\"$ref\":\"#/$defs/KeyStatus\"},\"updatedAt\":{\"description\":\"RFC 3339 timestamp of the last change to the record (rename, revocation).\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"keyId\",\"keyType\",\"status\",\"publicKey\",\"createdAt\"],\"title\":\"KeyRecord\",\"type\":\"object\"},\"KeyStatus\":{\"description\":\"Lifecycle state. Only an `active` key may be named in a signing request; a `revoked` key is retained so historic signatures remain attributable, and MUST NOT be reactivated.\",\"enum\":[\"active\",\"revoked\"],\"title\":\"KeyStatus\",\"type\":\"string\"},\"KeyType\":{\"description\":\"Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support.\",\"enum\":[\"ed25519\",\"x25519\",\"p256\",\"mldsa44\",\"mldsa65\"],\"title\":\"KeyType\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response: the key record as it now stands. Returning the whole record rather than an acknowledgement lets a producer confirm the state it asked for without a second round trip. Wrapped in `key` to match the rest of the family (`keys/show`, `keys/create`). Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/set-exportability/0.1#response.\",\"properties\":{\"key\":{\"$ref\":\"#/$defs/KeyRecord\",\"description\":\"The record the custodian now holds. Never null — a request naming a key the custodian does not hold is `keys:notFound`, not a successful answer with no record. This differs from `keys/show`, where 'no such key' is a legitimate success.\"}},\"required\":[\"key\"],\"title\":\"Keys Set Exportability — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/keys/set-exportability/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Names one key and the exportability it should carry afterwards. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"exportable\":{\"description\":\"The state the key should be in when this request succeeds — not a delta. `false` asks the custodian to refuse every future export of the key; `true` asks it to allow them again. Stated absolutely so a repeat of the same request is a no-op rather than a toggle: a producer that retried a lost reply must not discover it has undone itself.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keyId\":{\"description\":\"The key whose exportability changes. Custodian-scoped, as everywhere in `keys/*`.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"keyId\",\"exportable\"],\"title\":\"Keys Set Exportability — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1230,7 +994,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"KeyOrigin\": {\n      \"default\": \"derived\",\n      \"description\": \"Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.\",\n      \"enum\": [\n        \"derived\",\n        \"imported\",\n        \"internal\"\n      ],\n      \"title\": \"KeyOrigin\",\n      \"type\": \"string\"\n    },\n    \"KeyRecord\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"contextId\": {\n          \"description\": \"Scope the key belongs to. **Absence is not 'every scope'** — a key with no context is reachable only by a caller with unrestricted authority over the maintainer, which is the more restrictive reading, and a consumer that treats absence as a wildcard inverts the guarantee.\",\n          \"type\": \"string\"\n        },\n        \"createdAt\": {\n          \"description\": \"RFC 3339 timestamp at which the key was created or imported.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"derivationPath\": {\n          \"description\": \"Hierarchical-deterministic path the key was derived at, when `origin` is `derived`. Absent for imported keys, which have no path.\",\n          \"type\": \"string\"\n        },\n        \"exportable\": {\n          \"$comment\": \"No JSON Schema `default` is declared here on purpose. A declared default is materialised by the generated bindings — the field becomes non-optional with a serde default — so an absent member reappears as an explicit `true` on re-serialisation, which breaks round-trip idempotence for every record written before this member existed. The permissive reading is stated in prose above, where a binding cannot act on it.\",\n          \"description\": \"Whether the private half may be released to a caller. `false` means the custodian refuses every export of this key and can only be asked to *use* it — signing, key agreement — so the material never leaves. **Absence means the key may be exported.** That is the permissive reading, and it is deliberate: it is what every record written before this member existed already meant, so a custodian adding the member cannot silently retract access to keys its callers already hold. A consumer MUST NOT infer the converse — absence is not a statement that export was considered and allowed. Marking a key non-exportable does not make it unrecoverable: a custodian's own whole-store backup is a different mechanism from an export to a caller, and this member does not speak to it.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"keyId\": {\n          \"description\": \"Maintainer-scoped identifier for the key. Stable for the key's lifetime except through an explicit `keys/rename`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"keyType\": {\n          \"$ref\": \"#/$defs/KeyType\"\n        },\n        \"label\": {\n          \"description\": \"Optional human-readable label. Operator-facing only; carries no authorization meaning.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"origin\": {\n          \"$ref\": \"#/$defs/KeyOrigin\"\n        },\n        \"publicKey\": {\n          \"description\": \"The public half, multibase-encoded. The private half is never carried by any keys/* response.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"seedId\": {\n          \"description\": \"Identifier of the seed the key was derived from, when the maintainer holds more than one. Absent for imported keys.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"status\": {\n          \"$ref\": \"#/$defs/KeyStatus\"\n        },\n        \"updatedAt\": {\n          \"description\": \"RFC 3339 timestamp of the last change to the record (rename, revocation).\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"keyId\",\n        \"keyType\",\n        \"status\",\n        \"publicKey\",\n        \"createdAt\"\n      ],\n      \"title\": \"KeyRecord\",\n      \"type\": \"object\"\n    },\n    \"KeyStatus\": {\n      \"description\": \"Lifecycle state. Only an `active` key may be named in a signing request; a `revoked` key is retained so historic signatures remain attributable, and MUST NOT be reactivated.\",\n      \"enum\": [\n        \"active\",\n        \"revoked\"\n      ],\n      \"title\": \"KeyStatus\",\n      \"type\": \"string\"\n    },\n    \"KeyType\": {\n      \"description\": \"Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support.\",\n      \"enum\": [\n        \"ed25519\",\n        \"x25519\",\n        \"p256\",\n        \"mldsa44\",\n        \"mldsa65\"\n      ],\n      \"title\": \"KeyType\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response: the key record as it now stands. Returning the whole record rather than an acknowledgement lets a producer confirm the state it asked for without a second round trip. Wrapped in `key` to match the rest of the family (`keys/show`, `keys/create`). Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/set-exportability/0.1#response.\",\n      \"properties\": {\n        \"key\": {\n          \"$ref\": \"#/$defs/KeyRecord\",\n          \"description\": \"The record the custodian now holds. Never null — a request naming a key the custodian does not hold is `keys:notFound`, not a successful answer with no record. This differs from `keys/show`, where 'no such key' is a legitimate success.\"\n        }\n      },\n      \"required\": [\n        \"key\"\n      ],\n      \"title\": \"Keys Set Exportability — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"KeyOrigin\":{\"default\":\"derived\",\"description\":\"Where the private key came from. `derived` means the maintainer generated it from a seed it holds and can reproduce it from `derivationPath`; `imported` means it arrived from outside and exists only as stored material; `internal` means the maintainer generated it from a CSPRNG and it is reproducible from nothing at all. The distinction is operationally load-bearing: a `derived` key survives a seed restore, an `imported` one is lost unless it was backed up separately, and an `internal` one cannot be recovered by any means once the maintainer's storage is gone. This member is also the only way a consumer can confirm that a `keys/create` request for an `internal` key was honoured rather than silently downgraded to a derived one — see that specification's `internal` member.\",\"enum\":[\"derived\",\"imported\",\"internal\"],\"title\":\"KeyOrigin\",\"type\":\"string\"},\"KeyRecord\":{\"additionalProperties\":false,\"properties\":{\"contextId\":{\"description\":\"Scope the key belongs to. **Absence is not 'every scope'** — a key with no context is reachable only by a caller with unrestricted authority over the maintainer, which is the more restrictive reading, and a consumer that treats absence as a wildcard inverts the guarantee.\",\"type\":\"string\"},\"createdAt\":{\"description\":\"RFC 3339 timestamp at which the key was created or imported.\",\"format\":\"date-time\",\"type\":\"string\"},\"derivationPath\":{\"description\":\"Hierarchical-deterministic path the key was derived at, when `origin` is `derived`. Absent for imported keys, which have no path.\",\"type\":\"string\"},\"exportable\":{\"$comment\":\"No JSON Schema `default` is declared here on purpose. A declared default is materialised by the generated bindings — the field becomes non-optional with a serde default — so an absent member reappears as an explicit `true` on re-serialisation, which breaks round-trip idempotence for every record written before this member existed. The permissive reading is stated in prose above, where a binding cannot act on it.\",\"description\":\"Whether the private half may be released to a caller. `false` means the custodian refuses every export of this key and can only be asked to *use* it — signing, key agreement — so the material never leaves. **Absence means the key may be exported.** That is the permissive reading, and it is deliberate: it is what every record written before this member existed already meant, so a custodian adding the member cannot silently retract access to keys its callers already hold. A consumer MUST NOT infer the converse — absence is not a statement that export was considered and allowed. Marking a key non-exportable does not make it unrecoverable: a custodian's own whole-store backup is a different mechanism from an export to a caller, and this member does not speak to it.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keyId\":{\"description\":\"Maintainer-scoped identifier for the key. Stable for the key's lifetime except through an explicit `keys/rename`.\",\"minLength\":1,\"type\":\"string\"},\"keyType\":{\"$ref\":\"#/$defs/KeyType\"},\"label\":{\"description\":\"Optional human-readable label. Operator-facing only; carries no authorization meaning.\",\"maxLength\":256,\"type\":\"string\"},\"origin\":{\"$ref\":\"#/$defs/KeyOrigin\"},\"publicKey\":{\"description\":\"The public half, multibase-encoded. The private half is never carried by any keys/* response.\",\"minLength\":1,\"type\":\"string\"},\"seedId\":{\"description\":\"Identifier of the seed the key was derived from, when the maintainer holds more than one. Absent for imported keys.\",\"minimum\":0,\"type\":\"integer\"},\"status\":{\"$ref\":\"#/$defs/KeyStatus\"},\"updatedAt\":{\"description\":\"RFC 3339 timestamp of the last change to the record (rename, revocation).\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"keyId\",\"keyType\",\"status\",\"publicKey\",\"createdAt\"],\"title\":\"KeyRecord\",\"type\":\"object\"},\"KeyStatus\":{\"description\":\"Lifecycle state. Only an `active` key may be named in a signing request; a `revoked` key is retained so historic signatures remain attributable, and MUST NOT be reactivated.\",\"enum\":[\"active\",\"revoked\"],\"title\":\"KeyStatus\",\"type\":\"string\"},\"KeyType\":{\"description\":\"Cryptographic algorithm the key material belongs to. `ed25519` signs (EdDSA), `x25519` performs key agreement and never signs, `p256` signs (ES256), and `mldsa44` and `mldsa65` sign with the post-quantum ML-DSA scheme of US NIST FIPS 204. The set is expected to grow as algorithms are standardised, and growing it is a MINOR change under SPEC.md §5.2: `keyType` selects no schema branch, so adding a value relaxes a constraint rather than narrowing one, and the generated libraries mark this enumeration non-exhaustive so that a consumer absorbs a new value rather than failing to compile. Two ML-DSA parameter sets are carried because two specifications require different ones — W3C Quantum-Resistant Cryptosuites defines Data Integrity suites only for ML-DSA-44, while Trust Spanning Protocol Rev 3 §8.1 mandates ML-DSA-65 — so the parameter set is chosen by whatever consumes the key and the two are not redundant. A consumer that does not implement a value it receives MUST refuse the document rather than substitute one it does support.\",\"enum\":[\"ed25519\",\"x25519\",\"p256\",\"mldsa44\",\"mldsa65\"],\"title\":\"KeyType\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response: the key record as it now stands. Returning the whole record rather than an acknowledgement lets a producer confirm the state it asked for without a second round trip. Wrapped in `key` to match the rest of the family (`keys/show`, `keys/create`). Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/set-exportability/0.1#response.\",\"properties\":{\"key\":{\"$ref\":\"#/$defs/KeyRecord\",\"description\":\"The record the custodian now holds. Never null — a request naming a key the custodian does not hold is `keys:notFound`, not a successful answer with no record. This differs from `keys/show`, where 'no such key' is a legitimate success.\"}},\"required\":[\"key\"],\"title\":\"Keys Set Exportability — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

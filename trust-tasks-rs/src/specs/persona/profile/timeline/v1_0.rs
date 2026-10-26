@@ -40,19 +40,6 @@ The token is the maintainer's own; no external vocabulary is primary. External v
 
 The `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ClaimType",
-///  "description": "The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\n\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\n\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1,
-///  "pattern": "^(x:)?[a-z][a-zA-Z0-9]*(\\.[a-z][a-zA-Z0-9]*)*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ClaimType(::std::string::String);
@@ -124,21 +111,6 @@ impl<'de> ::serde::Deserialize<'de> for ClaimType {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -160,15 +132,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -232,50 +195,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///What one face has done, in order: composed, worn and taken off, what it told whom, when a value it shows changed, retired and reinstated. Types, versions, contexts and parties — never a value, never one of the holder's private labels.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/persona/profile/timeline/1.0",
-///  "title": "Payload",
-///  "description": "What one face has done, in order: composed, worn and taken off, what it told whom, when a value it shows changed, retired and reinstated. Types, versions, contexts and parties — never a value, never one of the holder's private labels.",
-///  "type": "object",
-///  "required": [
-///    "profileId"
-///  ],
-///  "properties": {
-///    "contextId": {
-///      "description": "The context of a context-local face. Omit for a pool face.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "cursor": {
-///      "description": "Opaque continuation token from a prior response. A producer MUST NOT construct or parse one.",
-///      "type": "string",
-///      "maxLength": 4096
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "limit": {
-///      "default": 100,
-///      "type": "integer",
-///      "maximum": 500.0,
-///      "minimum": 1.0
-///    },
-///    "profileId": {
-///      "$ref": "#/definitions/Ulid"
-///    },
-///    "since": {
-///      "description": "Only events at or after this time.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -308,16 +227,6 @@ impl Payload {
 }
 ///The context of a context-local face. Omit for a pool face.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The context of a context-local face. Omit for a pool face.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadContextId(::std::string::String);
@@ -377,16 +286,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 }
 ///Opaque continuation token from a prior response. A producer MUST NOT construct or parse one.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Opaque continuation token from a prior response. A producer MUST NOT construct or parse one.",
-///  "type": "string",
-///  "maxLength": 4096
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCursor(::std::string::String);
@@ -446,42 +345,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCursor {
 }
 ///Success response to persona/profile/timeline. Type https://trusttasks.org/spec/persona/profile/timeline/1.0#response. Oldest first.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to persona/profile/timeline. Type https://trusttasks.org/spec/persona/profile/timeline/1.0#response. Oldest first.",
-///  "type": "object",
-///  "required": [
-///    "events",
-///    "profileId"
-///  ],
-///  "properties": {
-///    "events": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/TimelineEvent"
-///      },
-///      "maxItems": 500
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "nextCursor": {
-///      "description": "Present when more events follow. Absent at the end — a producer MUST NOT infer the end from a short page.",
-///      "type": "string",
-///      "maxLength": 4096
-///    },
-///    "profileId": {
-///      "$ref": "#/definitions/Ulid"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -507,16 +370,6 @@ impl Response {
 }
 ///Present when more events follow. Absent at the end — a producer MUST NOT infer the end from a short page.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Present when more events follow. Absent at the end — a producer MUST NOT infer the end from a short page.",
-///  "type": "string",
-///  "maxLength": 4096
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseNextCursor(::std::string::String);
@@ -576,64 +429,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseNextCursor {
 }
 ///One thing that happened to a face. Which members are present depends on `kind`; none carries a value or a private label.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "TimelineEvent",
-///  "description": "One thing that happened to a face. Which members are present depends on `kind`; none carries a value or a private label.",
-///  "type": "object",
-///  "required": [
-///    "at",
-///    "kind"
-///  ],
-///  "properties": {
-///    "at": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "claimTypes": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/ClaimType"
-///      },
-///      "maxItems": 64
-///    },
-///    "contextId": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "kind": {
-///      "description": "`composed` — the face was made. `worn` / `unworn` — a persona began or stopped wearing it in a context. `expired` — a binding's `until` passed. `disclosed` — it told a party something (`verifierDid`, `claimTypes`). `valueChanged` — a value it shows changed (`claimTypes`, `version`). `promoted` — it moved from one context into the pool. `retired` / `reinstated`.",
-///      "type": "string",
-///      "enum": [
-///        "composed",
-///        "worn",
-///        "unworn",
-///        "expired",
-///        "disclosed",
-///        "valueChanged",
-///        "promoted",
-///        "retired",
-///        "reinstated"
-///      ]
-///    },
-///    "personaDid": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "verifierDid": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "version": {
-///      "$ref": "#/definitions/Version"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -675,15 +470,6 @@ impl TimelineEvent {
 }
 ///`TimelineEventContextId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct TimelineEventContextId(::std::string::String);
@@ -743,26 +529,6 @@ impl<'de> ::serde::Deserialize<'de> for TimelineEventContextId {
 }
 ///`composed` — the face was made. `worn` / `unworn` — a persona began or stopped wearing it in a context. `expired` — a binding's `until` passed. `disclosed` — it told a party something (`verifierDid`, `claimTypes`). `valueChanged` — a value it shows changed (`claimTypes`, `version`). `promoted` — it moved from one context into the pool. `retired` / `reinstated`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`composed` — the face was made. `worn` / `unworn` — a persona began or stopped wearing it in a context. `expired` — a binding's `until` passed. `disclosed` — it told a party something (`verifierDid`, `claimTypes`). `valueChanged` — a value it shows changed (`claimTypes`, `version`). `promoted` — it moved from one context into the pool. `retired` / `reinstated`.",
-///  "type": "string",
-///  "enum": [
-///    "composed",
-///    "worn",
-///    "unworn",
-///    "expired",
-///    "disclosed",
-///    "valueChanged",
-///    "promoted",
-///    "retired",
-///    "reinstated"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -852,15 +618,6 @@ impl ::std::convert::TryFrom<::std::string::String> for TimelineEventKind {
 }
 ///`TimelineEventPersonaDid`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct TimelineEventPersonaDid(::std::string::String);
@@ -920,15 +677,6 @@ impl<'de> ::serde::Deserialize<'de> for TimelineEventPersonaDid {
 }
 ///`TimelineEventVerifierDid`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct TimelineEventVerifierDid(::std::string::String);
@@ -988,17 +736,6 @@ impl<'de> ::serde::Deserialize<'de> for TimelineEventVerifierDid {
 }
 ///A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ulid",
-///  "description": "A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.",
-///  "type": "string",
-///  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Ulid(::std::string::String);
@@ -1062,17 +799,6 @@ impl<'de> ::serde::Deserialize<'de> for Ulid {
 }
 ///A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Version",
-///  "description": "A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.",
-///  "type": "integer",
-///  "minimum": 1.0
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Version(pub ::std::num::NonZeroU64);
@@ -1469,7 +1195,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/persona/profile/timeline/1.0";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ClaimType\": {\n      \"description\": \"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\n      \"title\": \"ClaimType\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/profile/timeline. Type https://trusttasks.org/spec/persona/profile/timeline/1.0#response. Oldest first.\",\n      \"properties\": {\n        \"events\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/TimelineEvent\"\n          },\n          \"maxItems\": 500,\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Present when more events follow. Absent at the end — a producer MUST NOT infer the end from a short page.\",\n          \"maxLength\": 4096,\n          \"type\": \"string\"\n        },\n        \"profileId\": {\n          \"$ref\": \"#/$defs/Ulid\"\n        }\n      },\n      \"required\": [\n        \"profileId\",\n        \"events\"\n      ],\n      \"title\": \"Persona Profile Timeline — response payload\",\n      \"type\": \"object\"\n    },\n    \"TimelineEvent\": {\n      \"additionalProperties\": false,\n      \"description\": \"One thing that happened to a face. Which members are present depends on `kind`; none carries a value or a private label.\",\n      \"properties\": {\n        \"at\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"claimTypes\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/ClaimType\"\n          },\n          \"maxItems\": 64,\n          \"type\": \"array\"\n        },\n        \"contextId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"kind\": {\n          \"description\": \"`composed` — the face was made. `worn` / `unworn` — a persona began or stopped wearing it in a context. `expired` — a binding's `until` passed. `disclosed` — it told a party something (`verifierDid`, `claimTypes`). `valueChanged` — a value it shows changed (`claimTypes`, `version`). `promoted` — it moved from one context into the pool. `retired` / `reinstated`.\",\n          \"enum\": [\n            \"composed\",\n            \"worn\",\n            \"unworn\",\n            \"expired\",\n            \"disclosed\",\n            \"valueChanged\",\n            \"promoted\",\n            \"retired\",\n            \"reinstated\"\n          ],\n          \"type\": \"string\"\n        },\n        \"personaDid\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"verifierDid\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"$ref\": \"#/$defs/Version\"\n        }\n      },\n      \"required\": [\n        \"at\",\n        \"kind\"\n      ],\n      \"title\": \"TimelineEvent\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    },\n    \"Version\": {\n      \"description\": \"A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.\",\n      \"minimum\": 1,\n      \"title\": \"Version\",\n      \"type\": \"integer\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/persona/profile/timeline/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"What one face has done, in order: composed, worn and taken off, what it told whom, when a value it shows changed, retired and reinstated. Types, versions, contexts and parties — never a value, never one of the holder's private labels.\",\n  \"properties\": {\n    \"contextId\": {\n      \"description\": \"The context of a context-local face. Omit for a pool face.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"cursor\": {\n      \"description\": \"Opaque continuation token from a prior response. A producer MUST NOT construct or parse one.\",\n      \"maxLength\": 4096,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"limit\": {\n      \"default\": 100,\n      \"maximum\": 500,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"profileId\": {\n      \"$ref\": \"#/$defs/Ulid\"\n    },\n    \"since\": {\n      \"description\": \"Only events at or after this time.\",\n      \"format\": \"date-time\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"profileId\"\n  ],\n  \"title\": \"Persona Profile Timeline — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"ClaimType\":{\"description\":\"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\"title\":\"ClaimType\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to persona/profile/timeline. Type https://trusttasks.org/spec/persona/profile/timeline/1.0#response. Oldest first.\",\"properties\":{\"events\":{\"items\":{\"$ref\":\"#/$defs/TimelineEvent\"},\"maxItems\":500,\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"nextCursor\":{\"description\":\"Present when more events follow. Absent at the end — a producer MUST NOT infer the end from a short page.\",\"maxLength\":4096,\"type\":\"string\"},\"profileId\":{\"$ref\":\"#/$defs/Ulid\"}},\"required\":[\"profileId\",\"events\"],\"title\":\"Persona Profile Timeline — response payload\",\"type\":\"object\"},\"TimelineEvent\":{\"additionalProperties\":false,\"description\":\"One thing that happened to a face. Which members are present depends on `kind`; none carries a value or a private label.\",\"properties\":{\"at\":{\"format\":\"date-time\",\"type\":\"string\"},\"claimTypes\":{\"items\":{\"$ref\":\"#/$defs/ClaimType\"},\"maxItems\":64,\"type\":\"array\"},\"contextId\":{\"minLength\":1,\"type\":\"string\"},\"kind\":{\"description\":\"`composed` — the face was made. `worn` / `unworn` — a persona began or stopped wearing it in a context. `expired` — a binding's `until` passed. `disclosed` — it told a party something (`verifierDid`, `claimTypes`). `valueChanged` — a value it shows changed (`claimTypes`, `version`). `promoted` — it moved from one context into the pool. `retired` / `reinstated`.\",\"enum\":[\"composed\",\"worn\",\"unworn\",\"expired\",\"disclosed\",\"valueChanged\",\"promoted\",\"retired\",\"reinstated\"],\"type\":\"string\"},\"personaDid\":{\"minLength\":1,\"type\":\"string\"},\"verifierDid\":{\"minLength\":1,\"type\":\"string\"},\"version\":{\"$ref\":\"#/$defs/Version\"}},\"required\":[\"at\",\"kind\"],\"title\":\"TimelineEvent\",\"type\":\"object\"},\"Ulid\":{\"description\":\"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\"pattern\":\"^[0-9A-HJKMNP-TV-Z]{26}$\",\"title\":\"Ulid\",\"type\":\"string\"},\"Version\":{\"description\":\"A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.\",\"minimum\":1,\"title\":\"Version\",\"type\":\"integer\"}},\"$id\":\"https://trusttasks.org/spec/persona/profile/timeline/1.0\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"What one face has done, in order: composed, worn and taken off, what it told whom, when a value it shows changed, retired and reinstated. Types, versions, contexts and parties — never a value, never one of the holder's private labels.\",\"properties\":{\"contextId\":{\"description\":\"The context of a context-local face. Omit for a pool face.\",\"minLength\":1,\"type\":\"string\"},\"cursor\":{\"description\":\"Opaque continuation token from a prior response. A producer MUST NOT construct or parse one.\",\"maxLength\":4096,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"limit\":{\"default\":100,\"maximum\":500,\"minimum\":1,\"type\":\"integer\"},\"profileId\":{\"$ref\":\"#/$defs/Ulid\"},\"since\":{\"description\":\"Only events at or after this time.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"profileId\"],\"title\":\"Persona Profile Timeline — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1477,7 +1203,7 @@ impl crate::Payload for Response {
         "https://trusttasks.org/spec/persona/profile/timeline/1.0#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ClaimType\": {\n      \"description\": \"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\n      \"title\": \"ClaimType\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/profile/timeline. Type https://trusttasks.org/spec/persona/profile/timeline/1.0#response. Oldest first.\",\n      \"properties\": {\n        \"events\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/TimelineEvent\"\n          },\n          \"maxItems\": 500,\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Present when more events follow. Absent at the end — a producer MUST NOT infer the end from a short page.\",\n          \"maxLength\": 4096,\n          \"type\": \"string\"\n        },\n        \"profileId\": {\n          \"$ref\": \"#/$defs/Ulid\"\n        }\n      },\n      \"required\": [\n        \"profileId\",\n        \"events\"\n      ],\n      \"title\": \"Persona Profile Timeline — response payload\",\n      \"type\": \"object\"\n    },\n    \"TimelineEvent\": {\n      \"additionalProperties\": false,\n      \"description\": \"One thing that happened to a face. Which members are present depends on `kind`; none carries a value or a private label.\",\n      \"properties\": {\n        \"at\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"claimTypes\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/ClaimType\"\n          },\n          \"maxItems\": 64,\n          \"type\": \"array\"\n        },\n        \"contextId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"kind\": {\n          \"description\": \"`composed` — the face was made. `worn` / `unworn` — a persona began or stopped wearing it in a context. `expired` — a binding's `until` passed. `disclosed` — it told a party something (`verifierDid`, `claimTypes`). `valueChanged` — a value it shows changed (`claimTypes`, `version`). `promoted` — it moved from one context into the pool. `retired` / `reinstated`.\",\n          \"enum\": [\n            \"composed\",\n            \"worn\",\n            \"unworn\",\n            \"expired\",\n            \"disclosed\",\n            \"valueChanged\",\n            \"promoted\",\n            \"retired\",\n            \"reinstated\"\n          ],\n          \"type\": \"string\"\n        },\n        \"personaDid\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"verifierDid\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"$ref\": \"#/$defs/Version\"\n        }\n      },\n      \"required\": [\n        \"at\",\n        \"kind\"\n      ],\n      \"title\": \"TimelineEvent\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    },\n    \"Version\": {\n      \"description\": \"A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.\",\n      \"minimum\": 1,\n      \"title\": \"Version\",\n      \"type\": \"integer\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"ClaimType\":{\"description\":\"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\"title\":\"ClaimType\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to persona/profile/timeline. Type https://trusttasks.org/spec/persona/profile/timeline/1.0#response. Oldest first.\",\"properties\":{\"events\":{\"items\":{\"$ref\":\"#/$defs/TimelineEvent\"},\"maxItems\":500,\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"nextCursor\":{\"description\":\"Present when more events follow. Absent at the end — a producer MUST NOT infer the end from a short page.\",\"maxLength\":4096,\"type\":\"string\"},\"profileId\":{\"$ref\":\"#/$defs/Ulid\"}},\"required\":[\"profileId\",\"events\"],\"title\":\"Persona Profile Timeline — response payload\",\"type\":\"object\"},\"TimelineEvent\":{\"additionalProperties\":false,\"description\":\"One thing that happened to a face. Which members are present depends on `kind`; none carries a value or a private label.\",\"properties\":{\"at\":{\"format\":\"date-time\",\"type\":\"string\"},\"claimTypes\":{\"items\":{\"$ref\":\"#/$defs/ClaimType\"},\"maxItems\":64,\"type\":\"array\"},\"contextId\":{\"minLength\":1,\"type\":\"string\"},\"kind\":{\"description\":\"`composed` — the face was made. `worn` / `unworn` — a persona began or stopped wearing it in a context. `expired` — a binding's `until` passed. `disclosed` — it told a party something (`verifierDid`, `claimTypes`). `valueChanged` — a value it shows changed (`claimTypes`, `version`). `promoted` — it moved from one context into the pool. `retired` / `reinstated`.\",\"enum\":[\"composed\",\"worn\",\"unworn\",\"expired\",\"disclosed\",\"valueChanged\",\"promoted\",\"retired\",\"reinstated\"],\"type\":\"string\"},\"personaDid\":{\"minLength\":1,\"type\":\"string\"},\"verifierDid\":{\"minLength\":1,\"type\":\"string\"},\"version\":{\"$ref\":\"#/$defs/Version\"}},\"required\":[\"at\",\"kind\"],\"title\":\"TimelineEvent\",\"type\":\"object\"},\"Ulid\":{\"description\":\"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\"pattern\":\"^[0-9A-HJKMNP-TV-Z]{26}$\",\"title\":\"Ulid\",\"type\":\"string\"},\"Version\":{\"description\":\"A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.\",\"minimum\":1,\"title\":\"Version\",\"type\":\"integer\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

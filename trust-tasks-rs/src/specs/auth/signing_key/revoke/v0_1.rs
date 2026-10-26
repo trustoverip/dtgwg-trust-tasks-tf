@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,29 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Revoke one signing-key delegation, by its key. The next document the key signs is refused. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/auth/signing-key/revoke/0.1",
-///  "title": "Payload",
-///  "description": "Revoke one signing-key delegation, by its key. The next document the key signs is refused. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "signingKeyDid"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "signingKeyDid": {
-///      "$ref": "#/definitions/SigningKeyDid"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -181,40 +134,6 @@ impl Payload {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "remainingActive",
-///    "revokedAt",
-///    "signingKeyDid"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "remainingActive": {
-///      "description": "How many of the owning identity's delegations are still active. Zero is a legitimate state: losing every delegated key costs an identity the delegated signing path, not its own standing or its other credentials.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "revokedAt": {
-///      "description": "When the delegation was revoked. For a delegation that was already revoked, the original instant: a revoke of a revoked key succeeds and changes nothing.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "signingKeyDid": {
-///      "$ref": "#/definitions/SigningKeyDid"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -237,19 +156,6 @@ impl Response {
 }
 ///The delegated key, as a `did:key` — an Ed25519 multikey (`z6Mk…`) derived from the public half of a keypair the holder generated for itself, typically a non-extractable browser key. `did:key` only, because its document is a function of the key and resolves with no network: a key whose DID document could be rewritten after enrolment is not the key that was enrolled.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "SigningKeyDid",
-///  "description": "The delegated key, as a `did:key` — an Ed25519 multikey (`z6Mk…`) derived from the public half of a keypair the holder generated for itself, typically a non-extractable browser key. `did:key` only, because its document is a function of the key and resolves with no network: a key whose DID document could be rewritten after enrolment is not the key that was enrolled.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 9,
-///  "pattern": "^did:key:z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SigningKeyDid(::std::string::String);
@@ -459,7 +365,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"remainingActive\": {\n          \"description\": \"How many of the owning identity's delegations are still active. Zero is a legitimate state: losing every delegated key costs an identity the delegated signing path, not its own standing or its other credentials.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the delegation was revoked. For a delegation that was already revoked, the original instant: a revoke of a revoked key succeeds and changes nothing.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"signingKeyDid\": {\n          \"$ref\": \"#/$defs/SigningKeyDid\"\n        }\n      },\n      \"required\": [\n        \"signingKeyDid\",\n        \"revokedAt\",\n        \"remainingActive\"\n      ],\n      \"title\": \"Auth — Signing Key Revoke — response payload\",\n      \"type\": \"object\"\n    },\n    \"SigningKeyDid\": {\n      \"description\": \"The delegated key, as a `did:key` — an Ed25519 multikey (`z6Mk…`) derived from the public half of a keypair the holder generated for itself, typically a non-extractable browser key. `did:key` only, because its document is a function of the key and resolves with no network: a key whose DID document could be rewritten after enrolment is not the key that was enrolled.\",\n      \"maxLength\": 256,\n      \"minLength\": 9,\n      \"pattern\": \"^did:key:z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"SigningKeyDid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/signing-key/revoke/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Revoke one signing-key delegation, by its key. The next document the key signs is refused. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"signingKeyDid\": {\n      \"$ref\": \"#/$defs/SigningKeyDid\"\n    }\n  },\n  \"required\": [\n    \"signingKeyDid\"\n  ],\n  \"title\": \"Auth — Signing Key Revoke — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"remainingActive\":{\"description\":\"How many of the owning identity's delegations are still active. Zero is a legitimate state: losing every delegated key costs an identity the delegated signing path, not its own standing or its other credentials.\",\"minimum\":0,\"type\":\"integer\"},\"revokedAt\":{\"description\":\"When the delegation was revoked. For a delegation that was already revoked, the original instant: a revoke of a revoked key succeeds and changes nothing.\",\"format\":\"date-time\",\"type\":\"string\"},\"signingKeyDid\":{\"$ref\":\"#/$defs/SigningKeyDid\"}},\"required\":[\"signingKeyDid\",\"revokedAt\",\"remainingActive\"],\"title\":\"Auth — Signing Key Revoke — response payload\",\"type\":\"object\"},\"SigningKeyDid\":{\"description\":\"The delegated key, as a `did:key` — an Ed25519 multikey (`z6Mk…`) derived from the public half of a keypair the holder generated for itself, typically a non-extractable browser key. `did:key` only, because its document is a function of the key and resolves with no network: a key whose DID document could be rewritten after enrolment is not the key that was enrolled.\",\"maxLength\":256,\"minLength\":9,\"pattern\":\"^did:key:z[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"SigningKeyDid\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/auth/signing-key/revoke/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Revoke one signing-key delegation, by its key. The next document the key signs is refused. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"signingKeyDid\":{\"$ref\":\"#/$defs/SigningKeyDid\"}},\"required\":[\"signingKeyDid\"],\"title\":\"Auth — Signing Key Revoke — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -469,7 +375,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"remainingActive\": {\n          \"description\": \"How many of the owning identity's delegations are still active. Zero is a legitimate state: losing every delegated key costs an identity the delegated signing path, not its own standing or its other credentials.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the delegation was revoked. For a delegation that was already revoked, the original instant: a revoke of a revoked key succeeds and changes nothing.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"signingKeyDid\": {\n          \"$ref\": \"#/$defs/SigningKeyDid\"\n        }\n      },\n      \"required\": [\n        \"signingKeyDid\",\n        \"revokedAt\",\n        \"remainingActive\"\n      ],\n      \"title\": \"Auth — Signing Key Revoke — response payload\",\n      \"type\": \"object\"\n    },\n    \"SigningKeyDid\": {\n      \"description\": \"The delegated key, as a `did:key` — an Ed25519 multikey (`z6Mk…`) derived from the public half of a keypair the holder generated for itself, typically a non-extractable browser key. `did:key` only, because its document is a function of the key and resolves with no network: a key whose DID document could be rewritten after enrolment is not the key that was enrolled.\",\n      \"maxLength\": 256,\n      \"minLength\": 9,\n      \"pattern\": \"^did:key:z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"SigningKeyDid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"remainingActive\":{\"description\":\"How many of the owning identity's delegations are still active. Zero is a legitimate state: losing every delegated key costs an identity the delegated signing path, not its own standing or its other credentials.\",\"minimum\":0,\"type\":\"integer\"},\"revokedAt\":{\"description\":\"When the delegation was revoked. For a delegation that was already revoked, the original instant: a revoke of a revoked key succeeds and changes nothing.\",\"format\":\"date-time\",\"type\":\"string\"},\"signingKeyDid\":{\"$ref\":\"#/$defs/SigningKeyDid\"}},\"required\":[\"signingKeyDid\",\"revokedAt\",\"remainingActive\"],\"title\":\"Auth — Signing Key Revoke — response payload\",\"type\":\"object\"},\"SigningKeyDid\":{\"description\":\"The delegated key, as a `did:key` — an Ed25519 multikey (`z6Mk…`) derived from the public half of a keypair the holder generated for itself, typically a non-extractable browser key. `did:key` only, because its document is a function of the key and resolves with no network: a key whose DID document could be rewritten after enrolment is not the key that was enrolled.\",\"maxLength\":256,\"minLength\":9,\"pattern\":\"^did:key:z[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"SigningKeyDid\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

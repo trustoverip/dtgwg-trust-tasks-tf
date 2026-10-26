@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,44 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A vetter asks to vet at a named event, at one of the rates the community publishes. The community answers where the request stands; it does not answer whether it was granted, because a vetter cannot raise its own cap and the group it would join may not exist yet.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/vetting/vetters/event-mode/0.1",
-///  "title": "Payload",
-///  "description": "A vetter asks to vet at a named event, at one of the rates the community publishes. The community answers where the request stands; it does not answer whether it was granted, because a vetter cannot raise its own cap and the group it would join may not exist yet.",
-///  "type": "object",
-///  "required": [
-///    "eventId",
-///    "tier",
-///    "window"
-///  ],
-///  "properties": {
-///    "eventId": {
-///      "description": "The event, as the community names it. It is the whole anonymity set for anything spent under this event's tokens, so it names a gathering people attend — never one desk, one day or one vetter.",
-///      "type": "string",
-///      "maxLength": 64,
-///      "minLength": 1,
-///      "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "tier": {
-///      "description": "One of the tiers the community publishes. A tier is picked from a menu rather than a number being named, so that no vetter's requested rate is itself a distinguishing detail.",
-///      "type": "string",
-///      "maxLength": 64,
-///      "minLength": 1
-///    },
-///    "window": {
-///      "$ref": "#/definitions/Window"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -200,18 +138,6 @@ impl Payload {
 }
 ///The event, as the community names it. It is the whole anonymity set for anything spent under this event's tokens, so it names a gathering people attend — never one desk, one day or one vetter.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The event, as the community names it. It is the whole anonymity set for anything spent under this event's tokens, so it names a gathering people attend — never one desk, one day or one vetter.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1,
-///  "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadEventId(::std::string::String);
@@ -281,17 +207,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadEventId {
 }
 ///One of the tiers the community publishes. A tier is picked from a menu rather than a number being named, so that no vetter's requested rate is itself a distinguishing detail.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "One of the tiers the community publishes. A tier is picked from a menu rather than a number being named, so that no vetter's requested rate is itself a distinguishing detail.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadTier(::std::string::String);
@@ -354,80 +269,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadTier {
 }
 ///Where the request stands. `pending` is the ordinary answer to a first request and is not a refusal — a refusal is a `trust-task-error`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Where the request stands. `pending` is the ordinary answer to a first request and is not a refusal — a refusal is a `trust-task-error`.",
-///  "type": "object",
-///  "required": [
-///    "eventId",
-///    "groupFloor",
-///    "groupSize",
-///    "state",
-///    "tier",
-///    "window"
-///  ],
-///  "properties": {
-///    "closesAfter": {
-///      "description": "Present when `state` is `approved`: the last day this label will be accepted. It is after `window.endDate` by the community's grace period, so an applicant met on the final day still has time to submit.",
-///      "type": "string",
-///      "format": "date"
-///    },
-///    "dripPerTick": {
-///      "description": "Present when `state` is `approved`: how many tokens a tick under this label yields. It is the tier's rate, and it is the community's cap, not the vetter's request.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "eventId": {
-///      "description": "The event the request names.",
-///      "type": "string",
-///      "maxLength": 64,
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "groupFloor": {
-///      "description": "How many vetters this community requires before an event may be approved at all. A one-vetter event is an event key with one holder, which is a name.",
-///      "type": "integer",
-///      "minimum": 2.0
-///    },
-///    "groupSize": {
-///      "description": "How many vetters have asked for this event so far, including this one. A count, never a list: who else is at the event is the anonymity set, and naming its members would hand out the very thing the set exists to hide.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "label": {
-///      "description": "Present when `state` is `approved`: the token label to draw under, for `vtc/vetting/vetters/pcs-tokens`.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "state": {
-///      "description": "`pending`: recorded, awaiting an approver and the group floor. `approved`: the event's label is live and this vetter may draw under it.",
-///      "type": "string",
-///      "enum": [
-///        "pending",
-///        "approved"
-///      ]
-///    },
-///    "tier": {
-///      "description": "The tier recorded for this vetter at this event.",
-///      "type": "string",
-///      "maxLength": 64,
-///      "minLength": 1
-///    },
-///    "window": {
-///      "$ref": "#/definitions/Window"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -473,17 +314,6 @@ impl Response {
 }
 ///The event the request names.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The event the request names.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseEventId(::std::string::String);
@@ -546,17 +376,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseEventId {
 }
 ///Present when `state` is `approved`: the token label to draw under, for `vtc/vetting/vetters/pcs-tokens`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Present when `state` is `approved`: the token label to draw under, for `vtc/vetting/vetters/pcs-tokens`.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseLabel(::std::string::String);
@@ -619,19 +438,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseLabel {
 }
 ///`pending`: recorded, awaiting an approver and the group floor. `approved`: the event's label is live and this vetter may draw under it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`pending`: recorded, awaiting an approver and the group floor. `approved`: the event's label is live and this vetter may draw under it.",
-///  "type": "string",
-///  "enum": [
-///    "pending",
-///    "approved"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -693,17 +499,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseState {
 }
 ///The tier recorded for this vetter at this event.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The tier recorded for this vetter at this event.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseTier(::std::string::String);
@@ -766,33 +561,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseTier {
 }
 ///The days the event runs. Dates, not timestamps: an hour would say when a vetter expects to be at a desk, and the tokens are day-scale anyway.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Event window",
-///  "description": "The days the event runs. Dates, not timestamps: an hour would say when a vetter expects to be at a desk, and the tokens are day-scale anyway.",
-///  "type": "object",
-///  "required": [
-///    "endDate",
-///    "startDate"
-///  ],
-///  "properties": {
-///    "endDate": {
-///      "description": "Last day of the event, inclusive. It is not before `startDate`.",
-///      "type": "string",
-///      "format": "date"
-///    },
-///    "startDate": {
-///      "description": "First day of the event, inclusive.",
-///      "type": "string",
-///      "format": "date"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1123,7 +891,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Where the request stands. `pending` is the ordinary answer to a first request and is not a refusal — a refusal is a `trust-task-error`.\",\n      \"properties\": {\n        \"closesAfter\": {\n          \"description\": \"Present when `state` is `approved`: the last day this label will be accepted. It is after `window.endDate` by the community's grace period, so an applicant met on the final day still has time to submit.\",\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"dripPerTick\": {\n          \"description\": \"Present when `state` is `approved`: how many tokens a tick under this label yields. It is the tier's rate, and it is the community's cap, not the vetter's request.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"eventId\": {\n          \"description\": \"The event the request names.\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"groupFloor\": {\n          \"description\": \"How many vetters this community requires before an event may be approved at all. A one-vetter event is an event key with one holder, which is a name.\",\n          \"minimum\": 2,\n          \"type\": \"integer\"\n        },\n        \"groupSize\": {\n          \"description\": \"How many vetters have asked for this event so far, including this one. A count, never a list: who else is at the event is the anonymity set, and naming its members would hand out the very thing the set exists to hide.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"label\": {\n          \"description\": \"Present when `state` is `approved`: the token label to draw under, for `vtc/vetting/vetters/pcs-tokens`.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"state\": {\n          \"description\": \"`pending`: recorded, awaiting an approver and the group floor. `approved`: the event's label is live and this vetter may draw under it.\",\n          \"enum\": [\n            \"pending\",\n            \"approved\"\n          ],\n          \"type\": \"string\"\n        },\n        \"tier\": {\n          \"description\": \"The tier recorded for this vetter at this event.\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"window\": {\n          \"$ref\": \"#/$defs/Window\"\n        }\n      },\n      \"required\": [\n        \"eventId\",\n        \"state\",\n        \"tier\",\n        \"window\",\n        \"groupSize\",\n        \"groupFloor\"\n      ],\n      \"title\": \"VTC Vetting Event Mode — response payload\",\n      \"type\": \"object\"\n    },\n    \"Window\": {\n      \"additionalProperties\": false,\n      \"description\": \"The days the event runs. Dates, not timestamps: an hour would say when a vetter expects to be at a desk, and the tokens are day-scale anyway.\",\n      \"properties\": {\n        \"endDate\": {\n          \"description\": \"Last day of the event, inclusive. It is not before `startDate`.\",\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"startDate\": {\n          \"description\": \"First day of the event, inclusive.\",\n          \"format\": \"date\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"startDate\",\n        \"endDate\"\n      ],\n      \"title\": \"Event window\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/vetting/vetters/event-mode/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A vetter asks to vet at a named event, at one of the rates the community publishes. The community answers where the request stands; it does not answer whether it was granted, because a vetter cannot raise its own cap and the group it would join may not exist yet.\",\n  \"properties\": {\n    \"eventId\": {\n      \"description\": \"The event, as the community names it. It is the whole anonymity set for anything spent under this event's tokens, so it names a gathering people attend — never one desk, one day or one vetter.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9]([a-z0-9-]*[a-z0-9])?$\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"tier\": {\n      \"description\": \"One of the tiers the community publishes. A tier is picked from a menu rather than a number being named, so that no vetter's requested rate is itself a distinguishing detail.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"window\": {\n      \"$ref\": \"#/$defs/Window\"\n    }\n  },\n  \"required\": [\n    \"eventId\",\n    \"tier\",\n    \"window\"\n  ],\n  \"title\": \"VTC — Vetting Event Mode — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Where the request stands. `pending` is the ordinary answer to a first request and is not a refusal — a refusal is a `trust-task-error`.\",\"properties\":{\"closesAfter\":{\"description\":\"Present when `state` is `approved`: the last day this label will be accepted. It is after `window.endDate` by the community's grace period, so an applicant met on the final day still has time to submit.\",\"format\":\"date\",\"type\":\"string\"},\"dripPerTick\":{\"description\":\"Present when `state` is `approved`: how many tokens a tick under this label yields. It is the tier's rate, and it is the community's cap, not the vetter's request.\",\"minimum\":1,\"type\":\"integer\"},\"eventId\":{\"description\":\"The event the request names.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"groupFloor\":{\"description\":\"How many vetters this community requires before an event may be approved at all. A one-vetter event is an event key with one holder, which is a name.\",\"minimum\":2,\"type\":\"integer\"},\"groupSize\":{\"description\":\"How many vetters have asked for this event so far, including this one. A count, never a list: who else is at the event is the anonymity set, and naming its members would hand out the very thing the set exists to hide.\",\"minimum\":0,\"type\":\"integer\"},\"label\":{\"description\":\"Present when `state` is `approved`: the token label to draw under, for `vtc/vetting/vetters/pcs-tokens`.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"state\":{\"description\":\"`pending`: recorded, awaiting an approver and the group floor. `approved`: the event's label is live and this vetter may draw under it.\",\"enum\":[\"pending\",\"approved\"],\"type\":\"string\"},\"tier\":{\"description\":\"The tier recorded for this vetter at this event.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"window\":{\"$ref\":\"#/$defs/Window\"}},\"required\":[\"eventId\",\"state\",\"tier\",\"window\",\"groupSize\",\"groupFloor\"],\"title\":\"VTC Vetting Event Mode — response payload\",\"type\":\"object\"},\"Window\":{\"additionalProperties\":false,\"description\":\"The days the event runs. Dates, not timestamps: an hour would say when a vetter expects to be at a desk, and the tokens are day-scale anyway.\",\"properties\":{\"endDate\":{\"description\":\"Last day of the event, inclusive. It is not before `startDate`.\",\"format\":\"date\",\"type\":\"string\"},\"startDate\":{\"description\":\"First day of the event, inclusive.\",\"format\":\"date\",\"type\":\"string\"}},\"required\":[\"startDate\",\"endDate\"],\"title\":\"Event window\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/vetting/vetters/event-mode/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A vetter asks to vet at a named event, at one of the rates the community publishes. The community answers where the request stands; it does not answer whether it was granted, because a vetter cannot raise its own cap and the group it would join may not exist yet.\",\"properties\":{\"eventId\":{\"description\":\"The event, as the community names it. It is the whole anonymity set for anything spent under this event's tokens, so it names a gathering people attend — never one desk, one day or one vetter.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9]([a-z0-9-]*[a-z0-9])?$\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"tier\":{\"description\":\"One of the tiers the community publishes. A tier is picked from a menu rather than a number being named, so that no vetter's requested rate is itself a distinguishing detail.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"window\":{\"$ref\":\"#/$defs/Window\"}},\"required\":[\"eventId\",\"tier\",\"window\"],\"title\":\"VTC — Vetting Event Mode — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1133,7 +901,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Where the request stands. `pending` is the ordinary answer to a first request and is not a refusal — a refusal is a `trust-task-error`.\",\n      \"properties\": {\n        \"closesAfter\": {\n          \"description\": \"Present when `state` is `approved`: the last day this label will be accepted. It is after `window.endDate` by the community's grace period, so an applicant met on the final day still has time to submit.\",\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"dripPerTick\": {\n          \"description\": \"Present when `state` is `approved`: how many tokens a tick under this label yields. It is the tier's rate, and it is the community's cap, not the vetter's request.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"eventId\": {\n          \"description\": \"The event the request names.\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"groupFloor\": {\n          \"description\": \"How many vetters this community requires before an event may be approved at all. A one-vetter event is an event key with one holder, which is a name.\",\n          \"minimum\": 2,\n          \"type\": \"integer\"\n        },\n        \"groupSize\": {\n          \"description\": \"How many vetters have asked for this event so far, including this one. A count, never a list: who else is at the event is the anonymity set, and naming its members would hand out the very thing the set exists to hide.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"label\": {\n          \"description\": \"Present when `state` is `approved`: the token label to draw under, for `vtc/vetting/vetters/pcs-tokens`.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"state\": {\n          \"description\": \"`pending`: recorded, awaiting an approver and the group floor. `approved`: the event's label is live and this vetter may draw under it.\",\n          \"enum\": [\n            \"pending\",\n            \"approved\"\n          ],\n          \"type\": \"string\"\n        },\n        \"tier\": {\n          \"description\": \"The tier recorded for this vetter at this event.\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"window\": {\n          \"$ref\": \"#/$defs/Window\"\n        }\n      },\n      \"required\": [\n        \"eventId\",\n        \"state\",\n        \"tier\",\n        \"window\",\n        \"groupSize\",\n        \"groupFloor\"\n      ],\n      \"title\": \"VTC Vetting Event Mode — response payload\",\n      \"type\": \"object\"\n    },\n    \"Window\": {\n      \"additionalProperties\": false,\n      \"description\": \"The days the event runs. Dates, not timestamps: an hour would say when a vetter expects to be at a desk, and the tokens are day-scale anyway.\",\n      \"properties\": {\n        \"endDate\": {\n          \"description\": \"Last day of the event, inclusive. It is not before `startDate`.\",\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"startDate\": {\n          \"description\": \"First day of the event, inclusive.\",\n          \"format\": \"date\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"startDate\",\n        \"endDate\"\n      ],\n      \"title\": \"Event window\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Where the request stands. `pending` is the ordinary answer to a first request and is not a refusal — a refusal is a `trust-task-error`.\",\"properties\":{\"closesAfter\":{\"description\":\"Present when `state` is `approved`: the last day this label will be accepted. It is after `window.endDate` by the community's grace period, so an applicant met on the final day still has time to submit.\",\"format\":\"date\",\"type\":\"string\"},\"dripPerTick\":{\"description\":\"Present when `state` is `approved`: how many tokens a tick under this label yields. It is the tier's rate, and it is the community's cap, not the vetter's request.\",\"minimum\":1,\"type\":\"integer\"},\"eventId\":{\"description\":\"The event the request names.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"groupFloor\":{\"description\":\"How many vetters this community requires before an event may be approved at all. A one-vetter event is an event key with one holder, which is a name.\",\"minimum\":2,\"type\":\"integer\"},\"groupSize\":{\"description\":\"How many vetters have asked for this event so far, including this one. A count, never a list: who else is at the event is the anonymity set, and naming its members would hand out the very thing the set exists to hide.\",\"minimum\":0,\"type\":\"integer\"},\"label\":{\"description\":\"Present when `state` is `approved`: the token label to draw under, for `vtc/vetting/vetters/pcs-tokens`.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"state\":{\"description\":\"`pending`: recorded, awaiting an approver and the group floor. `approved`: the event's label is live and this vetter may draw under it.\",\"enum\":[\"pending\",\"approved\"],\"type\":\"string\"},\"tier\":{\"description\":\"The tier recorded for this vetter at this event.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"window\":{\"$ref\":\"#/$defs/Window\"}},\"required\":[\"eventId\",\"state\",\"tier\",\"window\",\"groupSize\",\"groupFloor\"],\"title\":\"VTC Vetting Event Mode — response payload\",\"type\":\"object\"},\"Window\":{\"additionalProperties\":false,\"description\":\"The days the event runs. Dates, not timestamps: an hour would say when a vetter expects to be at a desk, and the tokens are day-scale anyway.\",\"properties\":{\"endDate\":{\"description\":\"Last day of the event, inclusive. It is not before `startDate`.\",\"format\":\"date\",\"type\":\"string\"},\"startDate\":{\"description\":\"First day of the event, inclusive.\",\"format\":\"date\",\"type\":\"string\"}},\"required\":[\"startDate\",\"endDate\"],\"title\":\"Event window\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

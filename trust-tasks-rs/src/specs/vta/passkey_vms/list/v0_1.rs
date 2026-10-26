@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,64 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`PasskeyVerificationMethod`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "PasskeyVerificationMethod",
-///  "type": "object",
-///  "required": [
-///    "controller",
-///    "id",
-///    "publicKeyMultibase",
-///    "type",
-///    "webauthnCredentialId"
-///  ],
-///  "properties": {
-///    "controller": {
-///      "description": "The DID this verificationMethod is published on (the DID being augmented).",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "id": {
-///      "description": "The verificationMethod id as it appears in the DID document: `<did>#passkey-<base64url(sha256(credentialId))>`. The fragment is content-derived so a verifier can locate this VM by recomputing `sha256(credential.id)`.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "label": {
-///      "description": "Optional operator-supplied human-readable label (e.g. \"MacBook Touch ID\"). Informational; not authoritative and not a security input.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "publicKeyMultibase": {
-///      "description": "W3C Multikey (multibase) encoding of the WebAuthn credential public key. This is the value a verifier validates a WebAuthn assertion against. Re-derived server-side from the attestation at enrolment — never trusted from the browser (see vta/passkey-vms/enroll-submit).",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "type": {
-///      "description": "Always `Multikey`. The WebAuthn public key is published in W3C Multikey form so DID resolvers and verifiers need no WebAuthn-specific knowledge to consume it.",
-///      "type": "string",
-///      "const": "Multikey"
-///    },
-///    "webauthnCredentialId": {
-///      "description": "The WebAuthn `credential.id` (base64url, no padding). Lets a verifier recompute `sha256(credentialId)` and match the assertion to this VM's `id` fragment.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "webauthnTransports": {
-///      "description": "Transport hints reported by the authenticator (e.g. `internal`, `hybrid`, `usb`, `nfc`, `ble`). Advisory only — verifiers MUST NOT make trust decisions based on transport hints.",
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      },
-///      "uniqueItems": true
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -235,16 +153,6 @@ impl PasskeyVerificationMethod {
 }
 ///The DID this verificationMethod is published on (the DID being augmented).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The DID this verificationMethod is published on (the DID being augmented).",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PasskeyVerificationMethodController(::std::string::String);
@@ -304,16 +212,6 @@ impl<'de> ::serde::Deserialize<'de> for PasskeyVerificationMethodController {
 }
 ///The verificationMethod id as it appears in the DID document: `<did>#passkey-<base64url(sha256(credentialId))>`. The fragment is content-derived so a verifier can locate this VM by recomputing `sha256(credential.id)`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The verificationMethod id as it appears in the DID document: `<did>#passkey-<base64url(sha256(credentialId))>`. The fragment is content-derived so a verifier can locate this VM by recomputing `sha256(credential.id)`.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PasskeyVerificationMethodId(::std::string::String);
@@ -373,17 +271,6 @@ impl<'de> ::serde::Deserialize<'de> for PasskeyVerificationMethodId {
 }
 ///Optional operator-supplied human-readable label (e.g. "MacBook Touch ID"). Informational; not authoritative and not a security input.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Optional operator-supplied human-readable label (e.g. \"MacBook Touch ID\"). Informational; not authoritative and not a security input.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PasskeyVerificationMethodLabel(::std::string::String);
@@ -446,16 +333,6 @@ impl<'de> ::serde::Deserialize<'de> for PasskeyVerificationMethodLabel {
 }
 ///W3C Multikey (multibase) encoding of the WebAuthn credential public key. This is the value a verifier validates a WebAuthn assertion against. Re-derived server-side from the attestation at enrolment — never trusted from the browser (see vta/passkey-vms/enroll-submit).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "W3C Multikey (multibase) encoding of the WebAuthn credential public key. This is the value a verifier validates a WebAuthn assertion against. Re-derived server-side from the attestation at enrolment — never trusted from the browser (see vta/passkey-vms/enroll-submit).",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PasskeyVerificationMethodPublicKeyMultibase(::std::string::String);
@@ -519,16 +396,6 @@ impl<'de> ::serde::Deserialize<'de> for PasskeyVerificationMethodPublicKeyMultib
 }
 ///The WebAuthn `credential.id` (base64url, no padding). Lets a verifier recompute `sha256(credentialId)` and match the assertion to this VM's `id` fragment.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The WebAuthn `credential.id` (base64url, no padding). Lets a verifier recompute `sha256(credentialId)` and match the assertion to this VM's `id` fragment.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PasskeyVerificationMethodWebauthnCredentialId(::std::string::String);
@@ -592,32 +459,6 @@ impl<'de> ::serde::Deserialize<'de> for PasskeyVerificationMethodWebauthnCredent
 }
 ///List every passkey verificationMethod currently published on a VTA-managed DID. Admin-gated read. The returned entries are the same Multikey verificationMethods that appear in the DID document.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/passkey-vms/list/0.1",
-///  "title": "Payload",
-///  "description": "List every passkey verificationMethod currently published on a VTA-managed DID. Admin-gated read. The returned entries are the same Multikey verificationMethods that appear in the DID document.",
-///  "type": "object",
-///  "required": [
-///    "did"
-///  ],
-///  "properties": {
-///    "did": {
-///      "description": "The DID whose passkey verificationMethods to enumerate. The producer MUST hold the admin role on this DID's context.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -635,16 +476,6 @@ impl Payload {
 }
 ///The DID whose passkey verificationMethods to enumerate. The producer MUST hold the admin role on this DID's context.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The DID whose passkey verificationMethods to enumerate. The producer MUST hold the admin role on this DID's context.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadDid(::std::string::String);
@@ -704,34 +535,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDid {
 }
 ///The passkey verificationMethods currently on the DID.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The passkey verificationMethods currently on the DID.",
-///  "type": "object",
-///  "required": [
-///    "verificationMethods"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "verificationMethods": {
-///      "description": "Every passkey verificationMethod published on the DID. Empty when none are enrolled.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/PasskeyVerificationMethod"
-///      }
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1006,7 +809,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"PasskeyVerificationMethod\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"controller\": {\n          \"description\": \"The DID this verificationMethod is published on (the DID being augmented).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"description\": \"The verificationMethod id as it appears in the DID document: `<did>#passkey-<base64url(sha256(credentialId))>`. The fragment is content-derived so a verifier can locate this VM by recomputing `sha256(credential.id)`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"label\": {\n          \"description\": \"Optional operator-supplied human-readable label (e.g. \\\"MacBook Touch ID\\\"). Informational; not authoritative and not a security input.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"publicKeyMultibase\": {\n          \"description\": \"W3C Multikey (multibase) encoding of the WebAuthn credential public key. This is the value a verifier validates a WebAuthn assertion against. Re-derived server-side from the attestation at enrolment — never trusted from the browser (see vta/passkey-vms/enroll-submit).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"type\": {\n          \"const\": \"Multikey\",\n          \"description\": \"Always `Multikey`. The WebAuthn public key is published in W3C Multikey form so DID resolvers and verifiers need no WebAuthn-specific knowledge to consume it.\",\n          \"type\": \"string\"\n        },\n        \"webauthnCredentialId\": {\n          \"description\": \"The WebAuthn `credential.id` (base64url, no padding). Lets a verifier recompute `sha256(credentialId)` and match the assertion to this VM's `id` fragment.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"webauthnTransports\": {\n          \"description\": \"Transport hints reported by the authenticator (e.g. `internal`, `hybrid`, `usb`, `nfc`, `ble`). Advisory only — verifiers MUST NOT make trust decisions based on transport hints.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"type\",\n        \"controller\",\n        \"publicKeyMultibase\",\n        \"webauthnCredentialId\"\n      ],\n      \"title\": \"PasskeyVerificationMethod\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The passkey verificationMethods currently on the DID.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"verificationMethods\": {\n          \"description\": \"Every passkey verificationMethod published on the DID. Empty when none are enrolled.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/PasskeyVerificationMethod\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"verificationMethods\"\n      ],\n      \"title\": \"VTA Passkey-VM List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/passkey-vms/list/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"List every passkey verificationMethod currently published on a VTA-managed DID. Admin-gated read. The returned entries are the same Multikey verificationMethods that appear in the DID document.\",\n  \"properties\": {\n    \"did\": {\n      \"description\": \"The DID whose passkey verificationMethods to enumerate. The producer MUST hold the admin role on this DID's context.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    }\n  },\n  \"required\": [\n    \"did\"\n  ],\n  \"title\": \"VTA Passkey-VM List — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"PasskeyVerificationMethod\":{\"additionalProperties\":false,\"properties\":{\"controller\":{\"description\":\"The DID this verificationMethod is published on (the DID being augmented).\",\"minLength\":1,\"type\":\"string\"},\"id\":{\"description\":\"The verificationMethod id as it appears in the DID document: `<did>#passkey-<base64url(sha256(credentialId))>`. The fragment is content-derived so a verifier can locate this VM by recomputing `sha256(credential.id)`.\",\"minLength\":1,\"type\":\"string\"},\"label\":{\"description\":\"Optional operator-supplied human-readable label (e.g. \\\"MacBook Touch ID\\\"). Informational; not authoritative and not a security input.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"publicKeyMultibase\":{\"description\":\"W3C Multikey (multibase) encoding of the WebAuthn credential public key. This is the value a verifier validates a WebAuthn assertion against. Re-derived server-side from the attestation at enrolment — never trusted from the browser (see vta/passkey-vms/enroll-submit).\",\"minLength\":1,\"type\":\"string\"},\"type\":{\"const\":\"Multikey\",\"description\":\"Always `Multikey`. The WebAuthn public key is published in W3C Multikey form so DID resolvers and verifiers need no WebAuthn-specific knowledge to consume it.\",\"type\":\"string\"},\"webauthnCredentialId\":{\"description\":\"The WebAuthn `credential.id` (base64url, no padding). Lets a verifier recompute `sha256(credentialId)` and match the assertion to this VM's `id` fragment.\",\"minLength\":1,\"type\":\"string\"},\"webauthnTransports\":{\"description\":\"Transport hints reported by the authenticator (e.g. `internal`, `hybrid`, `usb`, `nfc`, `ble`). Advisory only — verifiers MUST NOT make trust decisions based on transport hints.\",\"items\":{\"type\":\"string\"},\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"id\",\"type\",\"controller\",\"publicKeyMultibase\",\"webauthnCredentialId\"],\"title\":\"PasskeyVerificationMethod\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The passkey verificationMethods currently on the DID.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"verificationMethods\":{\"description\":\"Every passkey verificationMethod published on the DID. Empty when none are enrolled.\",\"items\":{\"$ref\":\"#/$defs/PasskeyVerificationMethod\"},\"type\":\"array\"}},\"required\":[\"verificationMethods\"],\"title\":\"VTA Passkey-VM List — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/passkey-vms/list/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"List every passkey verificationMethod currently published on a VTA-managed DID. Admin-gated read. The returned entries are the same Multikey verificationMethods that appear in the DID document.\",\"properties\":{\"did\":{\"description\":\"The DID whose passkey verificationMethods to enumerate. The producer MUST hold the admin role on this DID's context.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"required\":[\"did\"],\"title\":\"VTA Passkey-VM List — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1014,7 +817,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"PasskeyVerificationMethod\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"controller\": {\n          \"description\": \"The DID this verificationMethod is published on (the DID being augmented).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"description\": \"The verificationMethod id as it appears in the DID document: `<did>#passkey-<base64url(sha256(credentialId))>`. The fragment is content-derived so a verifier can locate this VM by recomputing `sha256(credential.id)`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"label\": {\n          \"description\": \"Optional operator-supplied human-readable label (e.g. \\\"MacBook Touch ID\\\"). Informational; not authoritative and not a security input.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"publicKeyMultibase\": {\n          \"description\": \"W3C Multikey (multibase) encoding of the WebAuthn credential public key. This is the value a verifier validates a WebAuthn assertion against. Re-derived server-side from the attestation at enrolment — never trusted from the browser (see vta/passkey-vms/enroll-submit).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"type\": {\n          \"const\": \"Multikey\",\n          \"description\": \"Always `Multikey`. The WebAuthn public key is published in W3C Multikey form so DID resolvers and verifiers need no WebAuthn-specific knowledge to consume it.\",\n          \"type\": \"string\"\n        },\n        \"webauthnCredentialId\": {\n          \"description\": \"The WebAuthn `credential.id` (base64url, no padding). Lets a verifier recompute `sha256(credentialId)` and match the assertion to this VM's `id` fragment.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"webauthnTransports\": {\n          \"description\": \"Transport hints reported by the authenticator (e.g. `internal`, `hybrid`, `usb`, `nfc`, `ble`). Advisory only — verifiers MUST NOT make trust decisions based on transport hints.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"type\",\n        \"controller\",\n        \"publicKeyMultibase\",\n        \"webauthnCredentialId\"\n      ],\n      \"title\": \"PasskeyVerificationMethod\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The passkey verificationMethods currently on the DID.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"verificationMethods\": {\n          \"description\": \"Every passkey verificationMethod published on the DID. Empty when none are enrolled.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/PasskeyVerificationMethod\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"verificationMethods\"\n      ],\n      \"title\": \"VTA Passkey-VM List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"PasskeyVerificationMethod\":{\"additionalProperties\":false,\"properties\":{\"controller\":{\"description\":\"The DID this verificationMethod is published on (the DID being augmented).\",\"minLength\":1,\"type\":\"string\"},\"id\":{\"description\":\"The verificationMethod id as it appears in the DID document: `<did>#passkey-<base64url(sha256(credentialId))>`. The fragment is content-derived so a verifier can locate this VM by recomputing `sha256(credential.id)`.\",\"minLength\":1,\"type\":\"string\"},\"label\":{\"description\":\"Optional operator-supplied human-readable label (e.g. \\\"MacBook Touch ID\\\"). Informational; not authoritative and not a security input.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"publicKeyMultibase\":{\"description\":\"W3C Multikey (multibase) encoding of the WebAuthn credential public key. This is the value a verifier validates a WebAuthn assertion against. Re-derived server-side from the attestation at enrolment — never trusted from the browser (see vta/passkey-vms/enroll-submit).\",\"minLength\":1,\"type\":\"string\"},\"type\":{\"const\":\"Multikey\",\"description\":\"Always `Multikey`. The WebAuthn public key is published in W3C Multikey form so DID resolvers and verifiers need no WebAuthn-specific knowledge to consume it.\",\"type\":\"string\"},\"webauthnCredentialId\":{\"description\":\"The WebAuthn `credential.id` (base64url, no padding). Lets a verifier recompute `sha256(credentialId)` and match the assertion to this VM's `id` fragment.\",\"minLength\":1,\"type\":\"string\"},\"webauthnTransports\":{\"description\":\"Transport hints reported by the authenticator (e.g. `internal`, `hybrid`, `usb`, `nfc`, `ble`). Advisory only — verifiers MUST NOT make trust decisions based on transport hints.\",\"items\":{\"type\":\"string\"},\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"id\",\"type\",\"controller\",\"publicKeyMultibase\",\"webauthnCredentialId\"],\"title\":\"PasskeyVerificationMethod\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The passkey verificationMethods currently on the DID.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"verificationMethods\":{\"description\":\"Every passkey verificationMethod published on the DID. Empty when none are enrolled.\",\"items\":{\"$ref\":\"#/$defs/PasskeyVerificationMethod\"},\"type\":\"array\"}},\"required\":[\"verificationMethods\"],\"title\":\"VTA Passkey-VM List — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

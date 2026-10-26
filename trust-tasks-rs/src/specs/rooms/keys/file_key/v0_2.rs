@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,51 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A caller asks the party holding its principal's room keys for the key of ONE file in a room: derived from the room's storage key for an epoch, bound to the room, the epoch and the file's identifier, and opening that file and nothing else.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/rooms/keys/file-key/0.2",
-///  "title": "Payload",
-///  "description": "A caller asks the party holding its principal's room keys for the key of ONE file in a room: derived from the room's storage key for an epoch, bound to the room, the epoch and the file's identifier, and opening that file and nothing else.",
-///  "type": "object",
-///  "required": [
-///    "fileId",
-///    "purpose",
-///    "roomId"
-///  ],
-///  "properties": {
-///    "epoch": {
-///      "description": "The epoch the file key derives from, as FileManifest.epoch states it. REQUIRED for `open` and forbidden for `seal` — a rule over two members this schema does not express; the custodian refuses a violation with `malformedRequest`. A sealing caller never chooses the epoch: sealing under anything but the current one would produce a file members who joined later could not open, or one a removed member still could.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "fileId": {
-///      "description": "The file's identifier: 32 random bytes, base64url without padding, as in FileManifest.fileId. The salt of the derivation. For `seal` the caller mints it fresh and MUST NOT reuse it; for `open` it is read from the sealed record's file manifest.",
-///      "type": "string",
-///      "pattern": "^[A-Za-z0-9_-]{43}$"
-///    },
-///    "purpose": {
-///      "description": "`seal`: a key for a file about to be uploaded, derived under the room's CURRENT epoch, which the response names. `open`: a key for a file already in the room, derived under the epoch its manifest names.",
-///      "type": "string",
-///      "enum": [
-///        "seal",
-///        "open"
-///      ]
-///    },
-///    "roomId": {
-///      "description": "The room the file belongs to. Bound into the derivation, so a key released for one room cannot open a blob relocated from another.",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -213,16 +144,6 @@ impl Payload {
 }
 ///The file's identifier: 32 random bytes, base64url without padding, as in FileManifest.fileId. The salt of the derivation. For `seal` the caller mints it fresh and MUST NOT reuse it; for `open` it is read from the sealed record's file manifest.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The file's identifier: 32 random bytes, base64url without padding, as in FileManifest.fileId. The salt of the derivation. For `seal` the caller mints it fresh and MUST NOT reuse it; for `open` it is read from the sealed record's file manifest.",
-///  "type": "string",
-///  "pattern": "^[A-Za-z0-9_-]{43}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadFileId(::std::string::String);
@@ -284,19 +205,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadFileId {
 }
 ///`seal`: a key for a file about to be uploaded, derived under the room's CURRENT epoch, which the response names. `open`: a key for a file already in the room, derived under the epoch its manifest names.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`seal`: a key for a file about to be uploaded, derived under the room's CURRENT epoch, which the response names. `open`: a key for a file already in the room, derived under the epoch its manifest names.",
-///  "type": "string",
-///  "enum": [
-///    "seal",
-///    "open"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -358,37 +266,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadPurpose {
 }
 ///Success response to rooms/keys/file-key. Type https://trusttasks.org/spec/rooms/keys/file-key/0.2#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to rooms/keys/file-key. Type https://trusttasks.org/spec/rooms/keys/file-key/0.2#response.",
-///  "type": "object",
-///  "required": [
-///    "epoch",
-///    "key"
-///  ],
-///  "properties": {
-///    "epoch": {
-///      "description": "The epoch the key was derived under. For `seal`, the room's current epoch, which the caller writes into the file's manifest; for `open`, the epoch requested.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "key": {
-///      "description": "The 32-byte file key, base64url without padding. Opens exactly one file. The caller holds it in memory for as long as the file is being sealed or opened and then discards it; it never stores, logs or forwards it.",
-///      "type": "string",
-///      "pattern": "^[A-Za-z0-9_-]{43}$"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -407,16 +284,6 @@ impl Response {
 }
 ///The 32-byte file key, base64url without padding. Opens exactly one file. The caller holds it in memory for as long as the file is being sealed or opened and then discards it; it never stores, logs or forwards it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The 32-byte file key, base64url without padding. Opens exactly one file. The caller holds it in memory for as long as the file is being sealed or opened and then discards it; it never stores, logs or forwards it.",
-///  "type": "string",
-///  "pattern": "^[A-Za-z0-9_-]{43}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseKey(::std::string::String);
@@ -648,7 +515,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/keys/file-key. Type https://trusttasks.org/spec/rooms/keys/file-key/0.2#response.\",\n      \"properties\": {\n        \"epoch\": {\n          \"description\": \"The epoch the key was derived under. For `seal`, the room's current epoch, which the caller writes into the file's manifest; for `open`, the epoch requested.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"key\": {\n          \"description\": \"The 32-byte file key, base64url without padding. Opens exactly one file. The caller holds it in memory for as long as the file is being sealed or opened and then discards it; it never stores, logs or forwards it.\",\n          \"pattern\": \"^[A-Za-z0-9_-]{43}$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"key\",\n        \"epoch\"\n      ],\n      \"title\": \"Rooms Keys File Key — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/rooms/keys/file-key/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A caller asks the party holding its principal's room keys for the key of ONE file in a room: derived from the room's storage key for an epoch, bound to the room, the epoch and the file's identifier, and opening that file and nothing else.\",\n  \"properties\": {\n    \"epoch\": {\n      \"description\": \"The epoch the file key derives from, as FileManifest.epoch states it. REQUIRED for `open` and forbidden for `seal` — a rule over two members this schema does not express; the custodian refuses a violation with `malformedRequest`. A sealing caller never chooses the epoch: sealing under anything but the current one would produce a file members who joined later could not open, or one a removed member still could.\",\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"fileId\": {\n      \"description\": \"The file's identifier: 32 random bytes, base64url without padding, as in FileManifest.fileId. The salt of the derivation. For `seal` the caller mints it fresh and MUST NOT reuse it; for `open` it is read from the sealed record's file manifest.\",\n      \"pattern\": \"^[A-Za-z0-9_-]{43}$\",\n      \"type\": \"string\"\n    },\n    \"purpose\": {\n      \"description\": \"`seal`: a key for a file about to be uploaded, derived under the room's CURRENT epoch, which the response names. `open`: a key for a file already in the room, derived under the epoch its manifest names.\",\n      \"enum\": [\n        \"seal\",\n        \"open\"\n      ],\n      \"type\": \"string\"\n    },\n    \"roomId\": {\n      \"description\": \"The room the file belongs to. Bound into the derivation, so a key released for one room cannot open a blob relocated from another.\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"roomId\",\n    \"fileId\",\n    \"purpose\"\n  ],\n  \"title\": \"Rooms Keys File Key — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/keys/file-key. Type https://trusttasks.org/spec/rooms/keys/file-key/0.2#response.\",\"properties\":{\"epoch\":{\"description\":\"The epoch the key was derived under. For `seal`, the room's current epoch, which the caller writes into the file's manifest; for `open`, the epoch requested.\",\"minimum\":1,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"key\":{\"description\":\"The 32-byte file key, base64url without padding. Opens exactly one file. The caller holds it in memory for as long as the file is being sealed or opened and then discards it; it never stores, logs or forwards it.\",\"pattern\":\"^[A-Za-z0-9_-]{43}$\",\"type\":\"string\"}},\"required\":[\"key\",\"epoch\"],\"title\":\"Rooms Keys File Key — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/rooms/keys/file-key/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A caller asks the party holding its principal's room keys for the key of ONE file in a room: derived from the room's storage key for an epoch, bound to the room, the epoch and the file's identifier, and opening that file and nothing else.\",\"properties\":{\"epoch\":{\"description\":\"The epoch the file key derives from, as FileManifest.epoch states it. REQUIRED for `open` and forbidden for `seal` — a rule over two members this schema does not express; the custodian refuses a violation with `malformedRequest`. A sealing caller never chooses the epoch: sealing under anything but the current one would produce a file members who joined later could not open, or one a removed member still could.\",\"minimum\":1,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"fileId\":{\"description\":\"The file's identifier: 32 random bytes, base64url without padding, as in FileManifest.fileId. The salt of the derivation. For `seal` the caller mints it fresh and MUST NOT reuse it; for `open` it is read from the sealed record's file manifest.\",\"pattern\":\"^[A-Za-z0-9_-]{43}$\",\"type\":\"string\"},\"purpose\":{\"description\":\"`seal`: a key for a file about to be uploaded, derived under the room's CURRENT epoch, which the response names. `open`: a key for a file already in the room, derived under the epoch its manifest names.\",\"enum\":[\"seal\",\"open\"],\"type\":\"string\"},\"roomId\":{\"description\":\"The room the file belongs to. Bound into the derivation, so a key released for one room cannot open a blob relocated from another.\",\"type\":\"string\"}},\"required\":[\"roomId\",\"fileId\",\"purpose\"],\"title\":\"Rooms Keys File Key — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -657,7 +524,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/keys/file-key. Type https://trusttasks.org/spec/rooms/keys/file-key/0.2#response.\",\n      \"properties\": {\n        \"epoch\": {\n          \"description\": \"The epoch the key was derived under. For `seal`, the room's current epoch, which the caller writes into the file's manifest; for `open`, the epoch requested.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"key\": {\n          \"description\": \"The 32-byte file key, base64url without padding. Opens exactly one file. The caller holds it in memory for as long as the file is being sealed or opened and then discards it; it never stores, logs or forwards it.\",\n          \"pattern\": \"^[A-Za-z0-9_-]{43}$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"key\",\n        \"epoch\"\n      ],\n      \"title\": \"Rooms Keys File Key — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/keys/file-key. Type https://trusttasks.org/spec/rooms/keys/file-key/0.2#response.\",\"properties\":{\"epoch\":{\"description\":\"The epoch the key was derived under. For `seal`, the room's current epoch, which the caller writes into the file's manifest; for `open`, the epoch requested.\",\"minimum\":1,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"key\":{\"description\":\"The 32-byte file key, base64url without padding. Opens exactly one file. The caller holds it in memory for as long as the file is being sealed or opened and then discards it; it never stores, logs or forwards it.\",\"pattern\":\"^[A-Za-z0-9_-]{43}$\",\"type\":\"string\"}},\"required\":[\"key\",\"epoch\"],\"title\":\"Rooms Keys File Key — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

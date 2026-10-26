@@ -34,70 +34,6 @@ pub mod error {
 }
 ///The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "AuthenticatorAssertionResponse (login)",
-///  "description": "The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.",
-///  "type": "object",
-///  "required": [
-///    "id",
-///    "rawId",
-///    "response",
-///    "type"
-///  ],
-///  "properties": {
-///    "authenticatorAttachment": {
-///      "enum": [
-///        "platform",
-///        "cross-platform"
-///      ]
-///    },
-///    "clientExtensionResults": {
-///      "type": "object"
-///    },
-///    "id": {
-///      "type": "string"
-///    },
-///    "rawId": {
-///      "type": "string"
-///    },
-///    "response": {
-///      "type": "object",
-///      "required": [
-///        "authenticatorData",
-///        "clientDataJSON",
-///        "signature"
-///      ],
-///      "properties": {
-///        "authenticatorData": {
-///          "type": "string"
-///        },
-///        "clientDataJSON": {
-///          "type": "string"
-///        },
-///        "signature": {
-///          "type": "string"
-///        },
-///        "userHandle": {
-///          "type": [
-///            "string",
-///            "null"
-///          ]
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "type": {
-///      "const": "public-key"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "assertionResponse"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -128,17 +64,6 @@ impl AssertionResponse {
 }
 ///`AssertionResponseAuthenticatorAttachment`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "enum": [
-///    "platform",
-///    "cross-platform"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -200,37 +125,6 @@ impl ::std::convert::TryFrom<::std::string::String> for AssertionResponseAuthent
 }
 ///`AssertionResponseResponse`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "authenticatorData",
-///    "clientDataJSON",
-///    "signature"
-///  ],
-///  "properties": {
-///    "authenticatorData": {
-///      "type": "string"
-///    },
-///    "clientDataJSON": {
-///      "type": "string"
-///    },
-///    "signature": {
-///      "type": "string"
-///    },
-///    "userHandle": {
-///      "type": [
-///        "string",
-///        "null"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -254,20 +148,6 @@ impl AssertionResponseResponse {
 }
 ///The approver's answer. `deny` aborts the pending request; a subsequent submit of the same task starts a fresh one.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Decision",
-///  "description": "The approver's answer. `deny` aborts the pending request; a subsequent submit of the same task starts a fresh one.",
-///  "type": "string",
-///  "enum": [
-///    "approve",
-///    "deny"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -336,21 +216,6 @@ This definition constrains the *encoding only*. What the digest is computed over
 
 Restricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that "interoperability is not guaranteed between implementations using such values", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DigestMultibase",
-///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-///  "examples": [
-///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-///  ],
-///  "type": "string",
-///  "minLength": 16,
-///  "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DigestMultibase(::std::string::String);
@@ -419,54 +284,6 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
 }
 ///An additional factor backing the decision, tagged on `kind`. It never replaces the document's proof — that proof is still REQUIRED and is by the approver's own DID — and it is verified by the executor on top of it. Absent, the proof alone is the authorization, exactly as in 0.1.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Decision Evidence",
-///  "description": "An additional factor backing the decision, tagged on `kind`. It never replaces the document's proof — that proof is still REQUIRED and is by the approver's own DID — and it is verified by the executor on top of it. Absent, the proof alone is the authorization, exactly as in 0.1.",
-///  "oneOf": [
-///    {
-///      "title": "WebAuthn",
-///      "type": "object",
-///      "required": [
-///        "assertion",
-///        "kind"
-///      ],
-///      "properties": {
-///        "assertion": {
-///          "description": "The unmodified AuthenticatorAssertionResponse from the platform WebAuthn API, the same shape auth/step-up/approve-response/0.6 carries. The WebAuthn challenge the approver's client passed to the authenticator MUST be the UTF-8 bytes of this decision's `challenge` value, so `clientDataJSON.challenge` is their base64url (no padding) encoding; the executor, as relying party, verifies it per WebAuthn Level 2 §7.2 against a credential enrolled to the approver whose DID made the document's proof. The commitment to the payload is the executor's binding: it issued that challenge for exactly one pending request, whose `payloadDigest` is salted with it.",
-///          "$ref": "#/definitions/AssertionResponse"
-///        },
-///        "kind": {
-///          "const": "webauthn"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "ApproverSigned",
-///      "type": "object",
-///      "required": [
-///        "kind",
-///        "statement"
-///      ],
-///      "properties": {
-///        "kind": {
-///          "const": "approverSigned"
-///        },
-///        "statement": {
-///          "description": "A complete, signed https://trusttasks.org/spec/auth/step-up/approver/attest/0.1 Trust Task document whose `purpose` is `decision`, issued by a step-up approver enrolled to the decision's signer: its `subject` is the DID that made this document's proof, its `audience` the executor, its `challenge` this decision's `challenge`, and its `boundTo` this decision's `payloadDigest`. The executor verifies it as a document in its own right — envelope, proof and payload against that specification's schemas — and over its members exactly as received: its proof covers every member, including ones this schema does not name, so it is deliberately an open object here rather than a typed one a binding could narrow.",
-///          "type": "object"
-///        }
-///      },
-///      "additionalProperties": false
-///    }
-///  ],
-///  "$anchor": "evidence"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(tag = "kind", deny_unknown_fields)]
 #[non_exhaustive]
@@ -486,21 +303,6 @@ pub enum Evidence {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -522,15 +324,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -594,54 +387,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///An enrolled approver authorizes (or refuses) one pending privileged task, bound to the exact payload it was shown. The proof on this document — not the transport session that carried it — is the authorization, and it is always made by the approver's own DID. Additive over 0.1: an OPTIONAL `evidence` member carries an additional factor (a WebAuthn assertion, or a signed step-up approver statement) the executor verifies on top of the proof, and an OPTIONAL `actionId` links the decision to a Verifiable Trust Community action (vtc/admin/actions/list/0.3). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/task-consent/decision/0.2",
-///  "title": "Payload",
-///  "description": "An enrolled approver authorizes (or refuses) one pending privileged task, bound to the exact payload it was shown. The proof on this document — not the transport session that carried it — is the authorization, and it is always made by the approver's own DID. Additive over 0.1: an OPTIONAL `evidence` member carries an additional factor (a WebAuthn assertion, or a signed step-up approver statement) the executor verifies on top of the proof, and an OPTIONAL `actionId` links the decision to a Verifiable Trust Community action (vtc/admin/actions/list/0.3). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "challenge",
-///    "decision",
-///    "payloadDigest"
-///  ],
-///  "properties": {
-///    "actionId": {
-///      "description": "OPTIONAL identifier of the Verifiable Trust Community action (vtc/admin/actions/_shared/0.1 ActionId) this decision answers. A locator only: the executor finds the pending request by `payloadDigest` and checks `challenge` against it exactly as without this member, and refuses a decision whose `actionId` names a different action than the one those resolve to.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "challenge": {
-///      "description": "Echoes the challenge of the pending request this decision answers — a task-consent/request's `challenge`, or the `challenge` on a VTC action the approver may decide — binding the decision to that one pending request and that one approver. An executor MUST consume the challenge at execution rather than on receipt of this decision: a decision authorizes exactly one execution, and consuming it earlier lets an executor's own retry legitimately replay it.",
-///      "type": "string",
-///      "minLength": 16
-///    },
-///    "decision": {
-///      "$ref": "#/definitions/Decision"
-///    },
-///    "evidence": {
-///      "$ref": "#/definitions/Evidence"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "payloadDigest": {
-///      "description": "Echoes the challenge-salted digest of the task being authorized, in the encoding the pending request carried it. The executor re-derives it from the payload it is about to execute and refuses on mismatch — this is what makes the approved payload the executed payload, cryptographically rather than by convention.",
-///      "$ref": "#/definitions/DigestMultibase"
-///    },
-///    "reason": {
-///      "description": "OPTIONAL human-facing note, most useful on a `deny`.",
-///      "type": "string",
-///      "maxLength": 500
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -674,17 +419,6 @@ impl Payload {
 }
 ///OPTIONAL identifier of the Verifiable Trust Community action (vtc/admin/actions/_shared/0.1 ActionId) this decision answers. A locator only: the executor finds the pending request by `payloadDigest` and checks `challenge` against it exactly as without this member, and refuses a decision whose `actionId` names a different action than the one those resolve to.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "OPTIONAL identifier of the Verifiable Trust Community action (vtc/admin/actions/_shared/0.1 ActionId) this decision answers. A locator only: the executor finds the pending request by `payloadDigest` and checks `challenge` against it exactly as without this member, and refuses a decision whose `actionId` names a different action than the one those resolve to.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadActionId(::std::string::String);
@@ -747,16 +481,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadActionId {
 }
 ///Echoes the challenge of the pending request this decision answers — a task-consent/request's `challenge`, or the `challenge` on a VTC action the approver may decide — binding the decision to that one pending request and that one approver. An executor MUST consume the challenge at execution rather than on receipt of this decision: a decision authorizes exactly one execution, and consuming it earlier lets an executor's own retry legitimately replay it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Echoes the challenge of the pending request this decision answers — a task-consent/request's `challenge`, or the `challenge` on a VTC action the approver may decide — binding the decision to that one pending request and that one approver. An executor MUST consume the challenge at execution rather than on receipt of this decision: a decision authorizes exactly one execution, and consuming it earlier lets an executor's own retry legitimately replay it.",
-///  "type": "string",
-///  "minLength": 16
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadChallenge(::std::string::String);
@@ -816,16 +540,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadChallenge {
 }
 ///OPTIONAL human-facing note, most useful on a `deny`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "OPTIONAL human-facing note, most useful on a `deny`.",
-///  "type": "string",
-///  "maxLength": 500
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadReason(::std::string::String);
@@ -885,56 +599,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 }
 ///Acknowledgement of the recorded decision, and whether the approval threshold is now met.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Acknowledgement of the recorded decision, and whether the approval threshold is now met.",
-///  "type": "object",
-///  "required": [
-///    "payloadDigest",
-///    "status"
-///  ],
-///  "properties": {
-///    "actionId": {
-///      "description": "Echoed when the decision carried one.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "approvals": {
-///      "description": "Distinct approvals recorded so far.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "needed": {
-///      "description": "Distinct approvals required. Present when status is `pending`.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "payloadDigest": {
-///      "description": "The digest this decision concerned, in the encoding the pending request carried it.",
-///      "$ref": "#/definitions/DigestMultibase"
-///    },
-///    "status": {
-///      "description": "`granted` = the threshold is met: the requester's re-submit will now execute, or — for a VTC action — the executor has executed (or is executing) the parked operation itself. `pending` = the approval was recorded but more are needed. `denied` = the request was aborted.",
-///      "type": "string",
-///      "enum": [
-///        "granted",
-///        "pending",
-///        "denied"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -967,17 +631,6 @@ impl Response {
 }
 ///Echoed when the decision carried one.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Echoed when the decision carried one.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseActionId(::std::string::String);
@@ -1040,20 +693,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseActionId {
 }
 ///`granted` = the threshold is met: the requester's re-submit will now execute, or — for a VTC action — the executor has executed (or is executing) the parked operation itself. `pending` = the approval was recorded but more are needed. `denied` = the request was aborted.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`granted` = the threshold is met: the requester's re-submit will now execute, or — for a VTC action — the executor has executed (or is executing) the parked operation itself. `pending` = the approval was recorded but more are needed. `denied` = the request was aborted.",
-///  "type": "string",
-///  "enum": [
-///    "granted",
-///    "pending",
-///    "denied"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1574,7 +1213,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AssertionResponse\": {\n      \"$anchor\": \"assertionResponse\",\n      \"additionalProperties\": false,\n      \"description\": \"The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.\",\n      \"properties\": {\n        \"authenticatorAttachment\": {\n          \"enum\": [\n            \"platform\",\n            \"cross-platform\"\n          ]\n        },\n        \"clientExtensionResults\": {\n          \"type\": \"object\"\n        },\n        \"id\": {\n          \"type\": \"string\"\n        },\n        \"rawId\": {\n          \"type\": \"string\"\n        },\n        \"response\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"authenticatorData\": {\n              \"type\": \"string\"\n            },\n            \"clientDataJSON\": {\n              \"type\": \"string\"\n            },\n            \"signature\": {\n              \"type\": \"string\"\n            },\n            \"userHandle\": {\n              \"type\": [\n                \"string\",\n                \"null\"\n              ]\n            }\n          },\n          \"required\": [\n            \"clientDataJSON\",\n            \"authenticatorData\",\n            \"signature\"\n          ],\n          \"type\": \"object\"\n        },\n        \"type\": {\n          \"const\": \"public-key\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"rawId\",\n        \"type\",\n        \"response\"\n      ],\n      \"title\": \"AuthenticatorAssertionResponse (login)\",\n      \"type\": \"object\"\n    },\n    \"Decision\": {\n      \"description\": \"The approver's answer. `deny` aborts the pending request; a subsequent submit of the same task starts a fresh one.\",\n      \"enum\": [\n        \"approve\",\n        \"deny\"\n      ],\n      \"title\": \"Decision\",\n      \"type\": \"string\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Evidence\": {\n      \"$anchor\": \"evidence\",\n      \"description\": \"An additional factor backing the decision, tagged on `kind`. It never replaces the document's proof — that proof is still REQUIRED and is by the approver's own DID — and it is verified by the executor on top of it. Absent, the proof alone is the authorization, exactly as in 0.1.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"assertion\": {\n              \"$ref\": \"#/$defs/AssertionResponse\",\n              \"description\": \"The unmodified AuthenticatorAssertionResponse from the platform WebAuthn API, the same shape auth/step-up/approve-response/0.6 carries. The WebAuthn challenge the approver's client passed to the authenticator MUST be the UTF-8 bytes of this decision's `challenge` value, so `clientDataJSON.challenge` is their base64url (no padding) encoding; the executor, as relying party, verifies it per WebAuthn Level 2 §7.2 against a credential enrolled to the approver whose DID made the document's proof. The commitment to the payload is the executor's binding: it issued that challenge for exactly one pending request, whose `payloadDigest` is salted with it.\"\n            },\n            \"kind\": {\n              \"const\": \"webauthn\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"assertion\"\n          ],\n          \"title\": \"WebAuthn\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"approverSigned\"\n            },\n            \"statement\": {\n              \"description\": \"A complete, signed https://trusttasks.org/spec/auth/step-up/approver/attest/0.1 Trust Task document whose `purpose` is `decision`, issued by a step-up approver enrolled to the decision's signer: its `subject` is the DID that made this document's proof, its `audience` the executor, its `challenge` this decision's `challenge`, and its `boundTo` this decision's `payloadDigest`. The executor verifies it as a document in its own right — envelope, proof and payload against that specification's schemas — and over its members exactly as received: its proof covers every member, including ones this schema does not name, so it is deliberately an open object here rather than a typed one a binding could narrow.\",\n              \"type\": \"object\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"statement\"\n          ],\n          \"title\": \"ApproverSigned\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"Decision Evidence\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Acknowledgement of the recorded decision, and whether the approval threshold is now met.\",\n      \"properties\": {\n        \"actionId\": {\n          \"description\": \"Echoed when the decision carried one.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"approvals\": {\n          \"description\": \"Distinct approvals recorded so far.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"needed\": {\n          \"description\": \"Distinct approvals required. Present when status is `pending`.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"payloadDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"The digest this decision concerned, in the encoding the pending request carried it.\"\n        },\n        \"status\": {\n          \"description\": \"`granted` = the threshold is met: the requester's re-submit will now execute, or — for a VTC action — the executor has executed (or is executing) the parked operation itself. `pending` = the approval was recorded but more are needed. `denied` = the request was aborted.\",\n          \"enum\": [\n            \"granted\",\n            \"pending\",\n            \"denied\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\",\n        \"payloadDigest\"\n      ],\n      \"title\": \"Task Consent Decision — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/task-consent/decision/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An enrolled approver authorizes (or refuses) one pending privileged task, bound to the exact payload it was shown. The proof on this document — not the transport session that carried it — is the authorization, and it is always made by the approver's own DID. Additive over 0.1: an OPTIONAL `evidence` member carries an additional factor (a WebAuthn assertion, or a signed step-up approver statement) the executor verifies on top of the proof, and an OPTIONAL `actionId` links the decision to a Verifiable Trust Community action (vtc/admin/actions/list/0.3). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"actionId\": {\n      \"description\": \"OPTIONAL identifier of the Verifiable Trust Community action (vtc/admin/actions/_shared/0.1 ActionId) this decision answers. A locator only: the executor finds the pending request by `payloadDigest` and checks `challenge` against it exactly as without this member, and refuses a decision whose `actionId` names a different action than the one those resolve to.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"challenge\": {\n      \"description\": \"Echoes the challenge of the pending request this decision answers — a task-consent/request's `challenge`, or the `challenge` on a VTC action the approver may decide — binding the decision to that one pending request and that one approver. An executor MUST consume the challenge at execution rather than on receipt of this decision: a decision authorizes exactly one execution, and consuming it earlier lets an executor's own retry legitimately replay it.\",\n      \"minLength\": 16,\n      \"type\": \"string\"\n    },\n    \"decision\": {\n      \"$ref\": \"#/$defs/Decision\"\n    },\n    \"evidence\": {\n      \"$ref\": \"#/$defs/Evidence\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"payloadDigest\": {\n      \"$ref\": \"#/$defs/DigestMultibase\",\n      \"description\": \"Echoes the challenge-salted digest of the task being authorized, in the encoding the pending request carried it. The executor re-derives it from the payload it is about to execute and refuses on mismatch — this is what makes the approved payload the executed payload, cryptographically rather than by convention.\"\n    },\n    \"reason\": {\n      \"description\": \"OPTIONAL human-facing note, most useful on a `deny`.\",\n      \"maxLength\": 500,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"challenge\",\n    \"payloadDigest\",\n    \"decision\"\n  ],\n  \"title\": \"Task Consent Decision — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"AssertionResponse\":{\"$anchor\":\"assertionResponse\",\"additionalProperties\":false,\"description\":\"The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.\",\"properties\":{\"authenticatorAttachment\":{\"enum\":[\"platform\",\"cross-platform\"]},\"clientExtensionResults\":{\"type\":\"object\"},\"id\":{\"type\":\"string\"},\"rawId\":{\"type\":\"string\"},\"response\":{\"additionalProperties\":false,\"properties\":{\"authenticatorData\":{\"type\":\"string\"},\"clientDataJSON\":{\"type\":\"string\"},\"signature\":{\"type\":\"string\"},\"userHandle\":{\"type\":[\"string\",\"null\"]}},\"required\":[\"clientDataJSON\",\"authenticatorData\",\"signature\"],\"type\":\"object\"},\"type\":{\"const\":\"public-key\"}},\"required\":[\"id\",\"rawId\",\"type\",\"response\"],\"title\":\"AuthenticatorAssertionResponse (login)\",\"type\":\"object\"},\"Decision\":{\"description\":\"The approver's answer. `deny` aborts the pending request; a subsequent submit of the same task starts a fresh one.\",\"enum\":[\"approve\",\"deny\"],\"title\":\"Decision\",\"type\":\"string\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Evidence\":{\"$anchor\":\"evidence\",\"description\":\"An additional factor backing the decision, tagged on `kind`. It never replaces the document's proof — that proof is still REQUIRED and is by the approver's own DID — and it is verified by the executor on top of it. Absent, the proof alone is the authorization, exactly as in 0.1.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"assertion\":{\"$ref\":\"#/$defs/AssertionResponse\",\"description\":\"The unmodified AuthenticatorAssertionResponse from the platform WebAuthn API, the same shape auth/step-up/approve-response/0.6 carries. The WebAuthn challenge the approver's client passed to the authenticator MUST be the UTF-8 bytes of this decision's `challenge` value, so `clientDataJSON.challenge` is their base64url (no padding) encoding; the executor, as relying party, verifies it per WebAuthn Level 2 §7.2 against a credential enrolled to the approver whose DID made the document's proof. The commitment to the payload is the executor's binding: it issued that challenge for exactly one pending request, whose `payloadDigest` is salted with it.\"},\"kind\":{\"const\":\"webauthn\"}},\"required\":[\"kind\",\"assertion\"],\"title\":\"WebAuthn\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"approverSigned\"},\"statement\":{\"description\":\"A complete, signed https://trusttasks.org/spec/auth/step-up/approver/attest/0.1 Trust Task document whose `purpose` is `decision`, issued by a step-up approver enrolled to the decision's signer: its `subject` is the DID that made this document's proof, its `audience` the executor, its `challenge` this decision's `challenge`, and its `boundTo` this decision's `payloadDigest`. The executor verifies it as a document in its own right — envelope, proof and payload against that specification's schemas — and over its members exactly as received: its proof covers every member, including ones this schema does not name, so it is deliberately an open object here rather than a typed one a binding could narrow.\",\"type\":\"object\"}},\"required\":[\"kind\",\"statement\"],\"title\":\"ApproverSigned\",\"type\":\"object\"}],\"title\":\"Decision Evidence\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Acknowledgement of the recorded decision, and whether the approval threshold is now met.\",\"properties\":{\"actionId\":{\"description\":\"Echoed when the decision carried one.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"approvals\":{\"description\":\"Distinct approvals recorded so far.\",\"minimum\":0,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"needed\":{\"description\":\"Distinct approvals required. Present when status is `pending`.\",\"minimum\":1,\"type\":\"integer\"},\"payloadDigest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The digest this decision concerned, in the encoding the pending request carried it.\"},\"status\":{\"description\":\"`granted` = the threshold is met: the requester's re-submit will now execute, or — for a VTC action — the executor has executed (or is executing) the parked operation itself. `pending` = the approval was recorded but more are needed. `denied` = the request was aborted.\",\"enum\":[\"granted\",\"pending\",\"denied\"],\"type\":\"string\"}},\"required\":[\"status\",\"payloadDigest\"],\"title\":\"Task Consent Decision — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/task-consent/decision/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"An enrolled approver authorizes (or refuses) one pending privileged task, bound to the exact payload it was shown. The proof on this document — not the transport session that carried it — is the authorization, and it is always made by the approver's own DID. Additive over 0.1: an OPTIONAL `evidence` member carries an additional factor (a WebAuthn assertion, or a signed step-up approver statement) the executor verifies on top of the proof, and an OPTIONAL `actionId` links the decision to a Verifiable Trust Community action (vtc/admin/actions/list/0.3). The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"actionId\":{\"description\":\"OPTIONAL identifier of the Verifiable Trust Community action (vtc/admin/actions/_shared/0.1 ActionId) this decision answers. A locator only: the executor finds the pending request by `payloadDigest` and checks `challenge` against it exactly as without this member, and refuses a decision whose `actionId` names a different action than the one those resolve to.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"challenge\":{\"description\":\"Echoes the challenge of the pending request this decision answers — a task-consent/request's `challenge`, or the `challenge` on a VTC action the approver may decide — binding the decision to that one pending request and that one approver. An executor MUST consume the challenge at execution rather than on receipt of this decision: a decision authorizes exactly one execution, and consuming it earlier lets an executor's own retry legitimately replay it.\",\"minLength\":16,\"type\":\"string\"},\"decision\":{\"$ref\":\"#/$defs/Decision\"},\"evidence\":{\"$ref\":\"#/$defs/Evidence\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"payloadDigest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Echoes the challenge-salted digest of the task being authorized, in the encoding the pending request carried it. The executor re-derives it from the payload it is about to execute and refuses on mismatch — this is what makes the approved payload the executed payload, cryptographically rather than by convention.\"},\"reason\":{\"description\":\"OPTIONAL human-facing note, most useful on a `deny`.\",\"maxLength\":500,\"type\":\"string\"}},\"required\":[\"challenge\",\"payloadDigest\",\"decision\"],\"title\":\"Task Consent Decision — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1583,7 +1222,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AssertionResponse\": {\n      \"$anchor\": \"assertionResponse\",\n      \"additionalProperties\": false,\n      \"description\": \"The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.\",\n      \"properties\": {\n        \"authenticatorAttachment\": {\n          \"enum\": [\n            \"platform\",\n            \"cross-platform\"\n          ]\n        },\n        \"clientExtensionResults\": {\n          \"type\": \"object\"\n        },\n        \"id\": {\n          \"type\": \"string\"\n        },\n        \"rawId\": {\n          \"type\": \"string\"\n        },\n        \"response\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"authenticatorData\": {\n              \"type\": \"string\"\n            },\n            \"clientDataJSON\": {\n              \"type\": \"string\"\n            },\n            \"signature\": {\n              \"type\": \"string\"\n            },\n            \"userHandle\": {\n              \"type\": [\n                \"string\",\n                \"null\"\n              ]\n            }\n          },\n          \"required\": [\n            \"clientDataJSON\",\n            \"authenticatorData\",\n            \"signature\"\n          ],\n          \"type\": \"object\"\n        },\n        \"type\": {\n          \"const\": \"public-key\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"rawId\",\n        \"type\",\n        \"response\"\n      ],\n      \"title\": \"AuthenticatorAssertionResponse (login)\",\n      \"type\": \"object\"\n    },\n    \"Decision\": {\n      \"description\": \"The approver's answer. `deny` aborts the pending request; a subsequent submit of the same task starts a fresh one.\",\n      \"enum\": [\n        \"approve\",\n        \"deny\"\n      ],\n      \"title\": \"Decision\",\n      \"type\": \"string\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Evidence\": {\n      \"$anchor\": \"evidence\",\n      \"description\": \"An additional factor backing the decision, tagged on `kind`. It never replaces the document's proof — that proof is still REQUIRED and is by the approver's own DID — and it is verified by the executor on top of it. Absent, the proof alone is the authorization, exactly as in 0.1.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"assertion\": {\n              \"$ref\": \"#/$defs/AssertionResponse\",\n              \"description\": \"The unmodified AuthenticatorAssertionResponse from the platform WebAuthn API, the same shape auth/step-up/approve-response/0.6 carries. The WebAuthn challenge the approver's client passed to the authenticator MUST be the UTF-8 bytes of this decision's `challenge` value, so `clientDataJSON.challenge` is their base64url (no padding) encoding; the executor, as relying party, verifies it per WebAuthn Level 2 §7.2 against a credential enrolled to the approver whose DID made the document's proof. The commitment to the payload is the executor's binding: it issued that challenge for exactly one pending request, whose `payloadDigest` is salted with it.\"\n            },\n            \"kind\": {\n              \"const\": \"webauthn\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"assertion\"\n          ],\n          \"title\": \"WebAuthn\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"approverSigned\"\n            },\n            \"statement\": {\n              \"description\": \"A complete, signed https://trusttasks.org/spec/auth/step-up/approver/attest/0.1 Trust Task document whose `purpose` is `decision`, issued by a step-up approver enrolled to the decision's signer: its `subject` is the DID that made this document's proof, its `audience` the executor, its `challenge` this decision's `challenge`, and its `boundTo` this decision's `payloadDigest`. The executor verifies it as a document in its own right — envelope, proof and payload against that specification's schemas — and over its members exactly as received: its proof covers every member, including ones this schema does not name, so it is deliberately an open object here rather than a typed one a binding could narrow.\",\n              \"type\": \"object\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"statement\"\n          ],\n          \"title\": \"ApproverSigned\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"Decision Evidence\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Acknowledgement of the recorded decision, and whether the approval threshold is now met.\",\n      \"properties\": {\n        \"actionId\": {\n          \"description\": \"Echoed when the decision carried one.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"approvals\": {\n          \"description\": \"Distinct approvals recorded so far.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"needed\": {\n          \"description\": \"Distinct approvals required. Present when status is `pending`.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"payloadDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"The digest this decision concerned, in the encoding the pending request carried it.\"\n        },\n        \"status\": {\n          \"description\": \"`granted` = the threshold is met: the requester's re-submit will now execute, or — for a VTC action — the executor has executed (or is executing) the parked operation itself. `pending` = the approval was recorded but more are needed. `denied` = the request was aborted.\",\n          \"enum\": [\n            \"granted\",\n            \"pending\",\n            \"denied\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\",\n        \"payloadDigest\"\n      ],\n      \"title\": \"Task Consent Decision — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"AssertionResponse\":{\"$anchor\":\"assertionResponse\",\"additionalProperties\":false,\"description\":\"The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.\",\"properties\":{\"authenticatorAttachment\":{\"enum\":[\"platform\",\"cross-platform\"]},\"clientExtensionResults\":{\"type\":\"object\"},\"id\":{\"type\":\"string\"},\"rawId\":{\"type\":\"string\"},\"response\":{\"additionalProperties\":false,\"properties\":{\"authenticatorData\":{\"type\":\"string\"},\"clientDataJSON\":{\"type\":\"string\"},\"signature\":{\"type\":\"string\"},\"userHandle\":{\"type\":[\"string\",\"null\"]}},\"required\":[\"clientDataJSON\",\"authenticatorData\",\"signature\"],\"type\":\"object\"},\"type\":{\"const\":\"public-key\"}},\"required\":[\"id\",\"rawId\",\"type\",\"response\"],\"title\":\"AuthenticatorAssertionResponse (login)\",\"type\":\"object\"},\"Decision\":{\"description\":\"The approver's answer. `deny` aborts the pending request; a subsequent submit of the same task starts a fresh one.\",\"enum\":[\"approve\",\"deny\"],\"title\":\"Decision\",\"type\":\"string\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Evidence\":{\"$anchor\":\"evidence\",\"description\":\"An additional factor backing the decision, tagged on `kind`. It never replaces the document's proof — that proof is still REQUIRED and is by the approver's own DID — and it is verified by the executor on top of it. Absent, the proof alone is the authorization, exactly as in 0.1.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"assertion\":{\"$ref\":\"#/$defs/AssertionResponse\",\"description\":\"The unmodified AuthenticatorAssertionResponse from the platform WebAuthn API, the same shape auth/step-up/approve-response/0.6 carries. The WebAuthn challenge the approver's client passed to the authenticator MUST be the UTF-8 bytes of this decision's `challenge` value, so `clientDataJSON.challenge` is their base64url (no padding) encoding; the executor, as relying party, verifies it per WebAuthn Level 2 §7.2 against a credential enrolled to the approver whose DID made the document's proof. The commitment to the payload is the executor's binding: it issued that challenge for exactly one pending request, whose `payloadDigest` is salted with it.\"},\"kind\":{\"const\":\"webauthn\"}},\"required\":[\"kind\",\"assertion\"],\"title\":\"WebAuthn\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"approverSigned\"},\"statement\":{\"description\":\"A complete, signed https://trusttasks.org/spec/auth/step-up/approver/attest/0.1 Trust Task document whose `purpose` is `decision`, issued by a step-up approver enrolled to the decision's signer: its `subject` is the DID that made this document's proof, its `audience` the executor, its `challenge` this decision's `challenge`, and its `boundTo` this decision's `payloadDigest`. The executor verifies it as a document in its own right — envelope, proof and payload against that specification's schemas — and over its members exactly as received: its proof covers every member, including ones this schema does not name, so it is deliberately an open object here rather than a typed one a binding could narrow.\",\"type\":\"object\"}},\"required\":[\"kind\",\"statement\"],\"title\":\"ApproverSigned\",\"type\":\"object\"}],\"title\":\"Decision Evidence\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Acknowledgement of the recorded decision, and whether the approval threshold is now met.\",\"properties\":{\"actionId\":{\"description\":\"Echoed when the decision carried one.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"approvals\":{\"description\":\"Distinct approvals recorded so far.\",\"minimum\":0,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"needed\":{\"description\":\"Distinct approvals required. Present when status is `pending`.\",\"minimum\":1,\"type\":\"integer\"},\"payloadDigest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The digest this decision concerned, in the encoding the pending request carried it.\"},\"status\":{\"description\":\"`granted` = the threshold is met: the requester's re-submit will now execute, or — for a VTC action — the executor has executed (or is executing) the parked operation itself. `pending` = the approval was recorded but more are needed. `denied` = the request was aborted.\",\"enum\":[\"granted\",\"pending\",\"denied\"],\"type\":\"string\"}},\"required\":[\"status\",\"payloadDigest\"],\"title\":\"Task Consent Decision — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

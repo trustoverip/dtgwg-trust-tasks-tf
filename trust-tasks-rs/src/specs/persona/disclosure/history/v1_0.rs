@@ -39,19 +39,6 @@ The token is the maintainer's own; no external vocabulary is primary. External v
 
 The `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ClaimType",
-///  "description": "The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\n\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\n\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1,
-///  "pattern": "^(x:)?[a-z][a-zA-Z0-9]*(\\.[a-z][a-zA-Z0-9]*)*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ClaimType(::std::string::String);
@@ -123,21 +110,6 @@ impl<'de> ::serde::Deserialize<'de> for ClaimType {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -159,15 +131,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -231,51 +194,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///What the holder has shared, with whom, when, and — because the pool sits above the context boundary — which contexts a given attribute has reached.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/persona/disclosure/history/1.0",
-///  "title": "Payload",
-///  "description": "What the holder has shared, with whom, when, and — because the pool sits above the context boundary — which contexts a given attribute has reached.",
-///  "type": "object",
-///  "properties": {
-///    "attributeType": {
-///      "description": "Narrow to one claim type — 'where has my home address gone'. Answering this is the obligation the agent-scoped pool takes on: having put the holder's facts above the context boundary, it owes them an account of which contexts each fact has reached.",
-///      "$ref": "#/definitions/ClaimType"
-///    },
-///    "contextId": {
-///      "description": "Narrow to one context. Omit to query across all of them, which only the holder can do and which is the whole reason this task is holder-authorized.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "cursor": {
-///      "type": "string",
-///      "maxLength": 4096
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "limit": {
-///      "default": 100,
-///      "type": "integer",
-///      "maximum": 500.0,
-///      "minimum": 1.0
-///    },
-///    "since": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "verifierDid": {
-///      "description": "Narrow to one verifier — 'what does this site have of mine'.",
-///      "type": "string",
-///      "maxLength": 2048
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -330,16 +248,6 @@ impl Payload {
 }
 ///Narrow to one context. Omit to query across all of them, which only the holder can do and which is the whole reason this task is holder-authorized.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Narrow to one context. Omit to query across all of them, which only the holder can do and which is the whole reason this task is holder-authorized.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadContextId(::std::string::String);
@@ -399,15 +307,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 }
 ///`PayloadCursor`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 4096
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCursor(::std::string::String);
@@ -467,16 +366,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCursor {
 }
 ///Narrow to one verifier — 'what does this site have of mine'.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Narrow to one verifier — 'what does this site have of mine'.",
-///  "type": "string",
-///  "maxLength": 2048
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadVerifierDid(::std::string::String);
@@ -539,22 +428,6 @@ How strongly a credential-backed claim is hidden when presented, ordered most pr
 
 The distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ProofRung",
-///  "description": "How strongly a credential-backed claim is hidden when presented, ordered most private first. `predicate` proves a statement over a claim without disclosing the claim. `derived` discloses exactly the claims needed via an unlinkable derived proof, so two presentations cannot be joined. `selectiveDisclosure` discloses exactly the claims needed but carries the issuer's signature unchanged, so two presentations ARE linkable. `whole` discloses the entire credential.\n\nThe distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.",
-///  "type": "string",
-///  "enum": [
-///    "predicate",
-///    "derived",
-///    "selectiveDisclosure",
-///    "whole"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -624,112 +497,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ProofRung {
 }
 ///Success response to persona/disclosure/history. Type https://trusttasks.org/spec/persona/disclosure/history/1.0#response. Records name claim TYPES and never values: the history says what kind of thing went where, and re-storing the values would double the exposure it exists to describe.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to persona/disclosure/history. Type https://trusttasks.org/spec/persona/disclosure/history/1.0#response. Records name claim TYPES and never values: the history says what kind of thing went where, and re-storing the values would double the exposure it exists to describe.",
-///  "type": "object",
-///  "required": [
-///    "disclosures"
-///  ],
-///  "properties": {
-///    "disclosures": {
-///      "type": "array",
-///      "items": {
-///        "type": "object",
-///        "required": [
-///          "claimTypes",
-///          "contextId",
-///          "disclosedAt",
-///          "disclosureId",
-///          "personaDid",
-///          "verifierDid"
-///        ],
-///        "properties": {
-///          "claimCurrency": {
-///            "description": "Positionally aligned with claimTypes: whether the value the verifier received is still what this persona presents in this context. `current` — it is. `changed` — the persona now presents a different value of that type, so the verifier holds an outdated copy; this is what a re-present list is built from. `removed` — the persona no longer presents that type at all; the verifier still holds what it received, because a disclosure cannot be recalled. `unknown` — the maintainer cannot tell, as for a record made before it began fingerprinting disclosed values. Computed at read time by comparing a keyed hash of the disclosed value with the persona's current projection in the same context: no value is stored and nothing above the context boundary is read.",
-///            "type": "array",
-///            "items": {
-///              "type": "string",
-///              "enum": [
-///                "current",
-///                "changed",
-///                "removed",
-///                "unknown"
-///              ]
-///            },
-///            "maxItems": 128
-///          },
-///          "claimTypes": {
-///            "type": "array",
-///            "items": {
-///              "$ref": "#/definitions/ClaimType"
-///            },
-///            "maxItems": 128
-///          },
-///          "contextId": {
-///            "type": "string",
-///            "minLength": 1
-///          },
-///          "disclosedAt": {
-///            "type": "string",
-///            "format": "date-time"
-///          },
-///          "disclosureId": {
-///            "$ref": "#/definitions/Ulid"
-///          },
-///          "durableCredentialId": {
-///            "description": "Present when the disclosure minted a durable credential — the one kind of disclosure that is still live and still revocable, which is why the history names it.",
-///            "type": "string"
-///          },
-///          "personaDid": {
-///            "type": "string",
-///            "minLength": 1
-///          },
-///          "purpose": {
-///            "type": "string",
-///            "maxLength": 512
-///          },
-///          "renderer": {
-///            "type": "string",
-///            "maxLength": 64
-///          },
-///          "rungs": {
-///            "description": "Positionally aligned with claimTypes. A holder reviewing history needs to know not only what went but how strongly it was hidden — the same claim type at two rungs is two very different disclosures.",
-///            "type": "array",
-///            "items": {
-///              "$ref": "#/definitions/ProofRung"
-///            },
-///            "maxItems": 128
-///          },
-///          "subject": {
-///            "description": "The pairwise identifier the disclosure was made under, so a holder can tell two disclosures to the same verifier apart.",
-///            "type": "string"
-///          },
-///          "verifierDid": {
-///            "type": "string",
-///            "minLength": 1
-///          }
-///        },
-///        "additionalProperties": false
-///      },
-///      "maxItems": 500
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "nextCursor": {
-///      "type": "string",
-///      "maxLength": 4096
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -751,89 +518,6 @@ impl Response {
 }
 ///`ResponseDisclosuresItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "claimTypes",
-///    "contextId",
-///    "disclosedAt",
-///    "disclosureId",
-///    "personaDid",
-///    "verifierDid"
-///  ],
-///  "properties": {
-///    "claimCurrency": {
-///      "description": "Positionally aligned with claimTypes: whether the value the verifier received is still what this persona presents in this context. `current` — it is. `changed` — the persona now presents a different value of that type, so the verifier holds an outdated copy; this is what a re-present list is built from. `removed` — the persona no longer presents that type at all; the verifier still holds what it received, because a disclosure cannot be recalled. `unknown` — the maintainer cannot tell, as for a record made before it began fingerprinting disclosed values. Computed at read time by comparing a keyed hash of the disclosed value with the persona's current projection in the same context: no value is stored and nothing above the context boundary is read.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "enum": [
-///          "current",
-///          "changed",
-///          "removed",
-///          "unknown"
-///        ]
-///      },
-///      "maxItems": 128
-///    },
-///    "claimTypes": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/ClaimType"
-///      },
-///      "maxItems": 128
-///    },
-///    "contextId": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "disclosedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "disclosureId": {
-///      "$ref": "#/definitions/Ulid"
-///    },
-///    "durableCredentialId": {
-///      "description": "Present when the disclosure minted a durable credential — the one kind of disclosure that is still live and still revocable, which is why the history names it.",
-///      "type": "string"
-///    },
-///    "personaDid": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "purpose": {
-///      "type": "string",
-///      "maxLength": 512
-///    },
-///    "renderer": {
-///      "type": "string",
-///      "maxLength": 64
-///    },
-///    "rungs": {
-///      "description": "Positionally aligned with claimTypes. A holder reviewing history needs to know not only what went but how strongly it was hidden — the same claim type at two rungs is two very different disclosures.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/ProofRung"
-///      },
-///      "maxItems": 128
-///    },
-///    "subject": {
-///      "description": "The pairwise identifier the disclosure was made under, so a holder can tell two disclosures to the same verifier apart.",
-///      "type": "string"
-///    },
-///    "verifierDid": {
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -882,20 +566,6 @@ impl ResponseDisclosuresItem {
 }
 ///`ResponseDisclosuresItemClaimCurrencyItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "enum": [
-///    "current",
-///    "changed",
-///    "removed",
-///    "unknown"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -965,15 +635,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseDisclosuresItemC
 }
 ///`ResponseDisclosuresItemContextId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseDisclosuresItemContextId(::std::string::String);
@@ -1033,15 +694,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseDisclosuresItemContextId {
 }
 ///`ResponseDisclosuresItemPersonaDid`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseDisclosuresItemPersonaDid(::std::string::String);
@@ -1101,15 +753,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseDisclosuresItemPersonaDid {
 }
 ///`ResponseDisclosuresItemPurpose`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 512
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseDisclosuresItemPurpose(::std::string::String);
@@ -1169,15 +812,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseDisclosuresItemPurpose {
 }
 ///`ResponseDisclosuresItemRenderer`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 64
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseDisclosuresItemRenderer(::std::string::String);
@@ -1237,15 +871,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseDisclosuresItemRenderer {
 }
 ///`ResponseDisclosuresItemVerifierDid`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseDisclosuresItemVerifierDid(::std::string::String);
@@ -1305,15 +930,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseDisclosuresItemVerifierDid {
 }
 ///`ResponseNextCursor`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 4096
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseNextCursor(::std::string::String);
@@ -1373,17 +989,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseNextCursor {
 }
 ///A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ulid",
-///  "description": "A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.",
-///  "type": "string",
-///  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Ulid(::std::string::String);
@@ -1892,7 +1497,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ClaimType\": {\n      \"description\": \"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\n      \"title\": \"ClaimType\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ProofRung\": {\n      \"description\": \"How strongly a credential-backed claim is hidden when presented, ordered most private first. `predicate` proves a statement over a claim without disclosing the claim. `derived` discloses exactly the claims needed via an unlinkable derived proof, so two presentations cannot be joined. `selectiveDisclosure` discloses exactly the claims needed but carries the issuer's signature unchanged, so two presentations ARE linkable. `whole` discloses the entire credential.\\n\\nThe distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.\",\n      \"enum\": [\n        \"predicate\",\n        \"derived\",\n        \"selectiveDisclosure\",\n        \"whole\"\n      ],\n      \"title\": \"ProofRung\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/disclosure/history. Type https://trusttasks.org/spec/persona/disclosure/history/1.0#response. Records name claim TYPES and never values: the history says what kind of thing went where, and re-storing the values would double the exposure it exists to describe.\",\n      \"properties\": {\n        \"disclosures\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"claimCurrency\": {\n                \"description\": \"Positionally aligned with claimTypes: whether the value the verifier received is still what this persona presents in this context. `current` — it is. `changed` — the persona now presents a different value of that type, so the verifier holds an outdated copy; this is what a re-present list is built from. `removed` — the persona no longer presents that type at all; the verifier still holds what it received, because a disclosure cannot be recalled. `unknown` — the maintainer cannot tell, as for a record made before it began fingerprinting disclosed values. Computed at read time by comparing a keyed hash of the disclosed value with the persona's current projection in the same context: no value is stored and nothing above the context boundary is read.\",\n                \"items\": {\n                  \"enum\": [\n                    \"current\",\n                    \"changed\",\n                    \"removed\",\n                    \"unknown\"\n                  ],\n                  \"type\": \"string\"\n                },\n                \"maxItems\": 128,\n                \"type\": \"array\"\n              },\n              \"claimTypes\": {\n                \"items\": {\n                  \"$ref\": \"#/$defs/ClaimType\"\n                },\n                \"maxItems\": 128,\n                \"type\": \"array\"\n              },\n              \"contextId\": {\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"disclosedAt\": {\n                \"format\": \"date-time\",\n                \"type\": \"string\"\n              },\n              \"disclosureId\": {\n                \"$ref\": \"#/$defs/Ulid\"\n              },\n              \"durableCredentialId\": {\n                \"description\": \"Present when the disclosure minted a durable credential — the one kind of disclosure that is still live and still revocable, which is why the history names it.\",\n                \"type\": \"string\"\n              },\n              \"personaDid\": {\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"purpose\": {\n                \"maxLength\": 512,\n                \"type\": \"string\"\n              },\n              \"renderer\": {\n                \"maxLength\": 64,\n                \"type\": \"string\"\n              },\n              \"rungs\": {\n                \"description\": \"Positionally aligned with claimTypes. A holder reviewing history needs to know not only what went but how strongly it was hidden — the same claim type at two rungs is two very different disclosures.\",\n                \"items\": {\n                  \"$ref\": \"#/$defs/ProofRung\"\n                },\n                \"maxItems\": 128,\n                \"type\": \"array\"\n              },\n              \"subject\": {\n                \"description\": \"The pairwise identifier the disclosure was made under, so a holder can tell two disclosures to the same verifier apart.\",\n                \"type\": \"string\"\n              },\n              \"verifierDid\": {\n                \"minLength\": 1,\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"disclosureId\",\n              \"contextId\",\n              \"verifierDid\",\n              \"personaDid\",\n              \"claimTypes\",\n              \"disclosedAt\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 500,\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"nextCursor\": {\n          \"maxLength\": 4096,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"disclosures\"\n      ],\n      \"title\": \"Persona Disclosure History — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/persona/disclosure/history/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"What the holder has shared, with whom, when, and — because the pool sits above the context boundary — which contexts a given attribute has reached.\",\n  \"properties\": {\n    \"attributeType\": {\n      \"$ref\": \"#/$defs/ClaimType\",\n      \"description\": \"Narrow to one claim type — 'where has my home address gone'. Answering this is the obligation the agent-scoped pool takes on: having put the holder's facts above the context boundary, it owes them an account of which contexts each fact has reached.\"\n    },\n    \"contextId\": {\n      \"description\": \"Narrow to one context. Omit to query across all of them, which only the holder can do and which is the whole reason this task is holder-authorized.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"cursor\": {\n      \"maxLength\": 4096,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"limit\": {\n      \"default\": 100,\n      \"maximum\": 500,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"since\": {\n      \"format\": \"date-time\",\n      \"type\": \"string\"\n    },\n    \"verifierDid\": {\n      \"description\": \"Narrow to one verifier — 'what does this site have of mine'.\",\n      \"maxLength\": 2048,\n      \"type\": \"string\"\n    }\n  },\n  \"title\": \"Persona Disclosure History — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"ClaimType\":{\"description\":\"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\"title\":\"ClaimType\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ProofRung\":{\"description\":\"How strongly a credential-backed claim is hidden when presented, ordered most private first. `predicate` proves a statement over a claim without disclosing the claim. `derived` discloses exactly the claims needed via an unlinkable derived proof, so two presentations cannot be joined. `selectiveDisclosure` discloses exactly the claims needed but carries the issuer's signature unchanged, so two presentations ARE linkable. `whole` discloses the entire credential.\\n\\nThe distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.\",\"enum\":[\"predicate\",\"derived\",\"selectiveDisclosure\",\"whole\"],\"title\":\"ProofRung\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to persona/disclosure/history. Type https://trusttasks.org/spec/persona/disclosure/history/1.0#response. Records name claim TYPES and never values: the history says what kind of thing went where, and re-storing the values would double the exposure it exists to describe.\",\"properties\":{\"disclosures\":{\"items\":{\"additionalProperties\":false,\"properties\":{\"claimCurrency\":{\"description\":\"Positionally aligned with claimTypes: whether the value the verifier received is still what this persona presents in this context. `current` — it is. `changed` — the persona now presents a different value of that type, so the verifier holds an outdated copy; this is what a re-present list is built from. `removed` — the persona no longer presents that type at all; the verifier still holds what it received, because a disclosure cannot be recalled. `unknown` — the maintainer cannot tell, as for a record made before it began fingerprinting disclosed values. Computed at read time by comparing a keyed hash of the disclosed value with the persona's current projection in the same context: no value is stored and nothing above the context boundary is read.\",\"items\":{\"enum\":[\"current\",\"changed\",\"removed\",\"unknown\"],\"type\":\"string\"},\"maxItems\":128,\"type\":\"array\"},\"claimTypes\":{\"items\":{\"$ref\":\"#/$defs/ClaimType\"},\"maxItems\":128,\"type\":\"array\"},\"contextId\":{\"minLength\":1,\"type\":\"string\"},\"disclosedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"disclosureId\":{\"$ref\":\"#/$defs/Ulid\"},\"durableCredentialId\":{\"description\":\"Present when the disclosure minted a durable credential — the one kind of disclosure that is still live and still revocable, which is why the history names it.\",\"type\":\"string\"},\"personaDid\":{\"minLength\":1,\"type\":\"string\"},\"purpose\":{\"maxLength\":512,\"type\":\"string\"},\"renderer\":{\"maxLength\":64,\"type\":\"string\"},\"rungs\":{\"description\":\"Positionally aligned with claimTypes. A holder reviewing history needs to know not only what went but how strongly it was hidden — the same claim type at two rungs is two very different disclosures.\",\"items\":{\"$ref\":\"#/$defs/ProofRung\"},\"maxItems\":128,\"type\":\"array\"},\"subject\":{\"description\":\"The pairwise identifier the disclosure was made under, so a holder can tell two disclosures to the same verifier apart.\",\"type\":\"string\"},\"verifierDid\":{\"minLength\":1,\"type\":\"string\"}},\"required\":[\"disclosureId\",\"contextId\",\"verifierDid\",\"personaDid\",\"claimTypes\",\"disclosedAt\"],\"type\":\"object\"},\"maxItems\":500,\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"nextCursor\":{\"maxLength\":4096,\"type\":\"string\"}},\"required\":[\"disclosures\"],\"title\":\"Persona Disclosure History — response payload\",\"type\":\"object\"},\"Ulid\":{\"description\":\"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\"pattern\":\"^[0-9A-HJKMNP-TV-Z]{26}$\",\"title\":\"Ulid\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/persona/disclosure/history/1.0\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"What the holder has shared, with whom, when, and — because the pool sits above the context boundary — which contexts a given attribute has reached.\",\"properties\":{\"attributeType\":{\"$ref\":\"#/$defs/ClaimType\",\"description\":\"Narrow to one claim type — 'where has my home address gone'. Answering this is the obligation the agent-scoped pool takes on: having put the holder's facts above the context boundary, it owes them an account of which contexts each fact has reached.\"},\"contextId\":{\"description\":\"Narrow to one context. Omit to query across all of them, which only the holder can do and which is the whole reason this task is holder-authorized.\",\"minLength\":1,\"type\":\"string\"},\"cursor\":{\"maxLength\":4096,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"limit\":{\"default\":100,\"maximum\":500,\"minimum\":1,\"type\":\"integer\"},\"since\":{\"format\":\"date-time\",\"type\":\"string\"},\"verifierDid\":{\"description\":\"Narrow to one verifier — 'what does this site have of mine'.\",\"maxLength\":2048,\"type\":\"string\"}},\"title\":\"Persona Disclosure History — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1901,7 +1506,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ClaimType\": {\n      \"description\": \"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\n      \"title\": \"ClaimType\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ProofRung\": {\n      \"description\": \"How strongly a credential-backed claim is hidden when presented, ordered most private first. `predicate` proves a statement over a claim without disclosing the claim. `derived` discloses exactly the claims needed via an unlinkable derived proof, so two presentations cannot be joined. `selectiveDisclosure` discloses exactly the claims needed but carries the issuer's signature unchanged, so two presentations ARE linkable. `whole` discloses the entire credential.\\n\\nThe distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.\",\n      \"enum\": [\n        \"predicate\",\n        \"derived\",\n        \"selectiveDisclosure\",\n        \"whole\"\n      ],\n      \"title\": \"ProofRung\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/disclosure/history. Type https://trusttasks.org/spec/persona/disclosure/history/1.0#response. Records name claim TYPES and never values: the history says what kind of thing went where, and re-storing the values would double the exposure it exists to describe.\",\n      \"properties\": {\n        \"disclosures\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"claimCurrency\": {\n                \"description\": \"Positionally aligned with claimTypes: whether the value the verifier received is still what this persona presents in this context. `current` — it is. `changed` — the persona now presents a different value of that type, so the verifier holds an outdated copy; this is what a re-present list is built from. `removed` — the persona no longer presents that type at all; the verifier still holds what it received, because a disclosure cannot be recalled. `unknown` — the maintainer cannot tell, as for a record made before it began fingerprinting disclosed values. Computed at read time by comparing a keyed hash of the disclosed value with the persona's current projection in the same context: no value is stored and nothing above the context boundary is read.\",\n                \"items\": {\n                  \"enum\": [\n                    \"current\",\n                    \"changed\",\n                    \"removed\",\n                    \"unknown\"\n                  ],\n                  \"type\": \"string\"\n                },\n                \"maxItems\": 128,\n                \"type\": \"array\"\n              },\n              \"claimTypes\": {\n                \"items\": {\n                  \"$ref\": \"#/$defs/ClaimType\"\n                },\n                \"maxItems\": 128,\n                \"type\": \"array\"\n              },\n              \"contextId\": {\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"disclosedAt\": {\n                \"format\": \"date-time\",\n                \"type\": \"string\"\n              },\n              \"disclosureId\": {\n                \"$ref\": \"#/$defs/Ulid\"\n              },\n              \"durableCredentialId\": {\n                \"description\": \"Present when the disclosure minted a durable credential — the one kind of disclosure that is still live and still revocable, which is why the history names it.\",\n                \"type\": \"string\"\n              },\n              \"personaDid\": {\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"purpose\": {\n                \"maxLength\": 512,\n                \"type\": \"string\"\n              },\n              \"renderer\": {\n                \"maxLength\": 64,\n                \"type\": \"string\"\n              },\n              \"rungs\": {\n                \"description\": \"Positionally aligned with claimTypes. A holder reviewing history needs to know not only what went but how strongly it was hidden — the same claim type at two rungs is two very different disclosures.\",\n                \"items\": {\n                  \"$ref\": \"#/$defs/ProofRung\"\n                },\n                \"maxItems\": 128,\n                \"type\": \"array\"\n              },\n              \"subject\": {\n                \"description\": \"The pairwise identifier the disclosure was made under, so a holder can tell two disclosures to the same verifier apart.\",\n                \"type\": \"string\"\n              },\n              \"verifierDid\": {\n                \"minLength\": 1,\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"disclosureId\",\n              \"contextId\",\n              \"verifierDid\",\n              \"personaDid\",\n              \"claimTypes\",\n              \"disclosedAt\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 500,\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"nextCursor\": {\n          \"maxLength\": 4096,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"disclosures\"\n      ],\n      \"title\": \"Persona Disclosure History — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"ClaimType\":{\"description\":\"The vocabulary token naming what a value IS — `name.legal`, `phone.mobile`, `address.postal`, `person.birthDate`. Dotted, most-general segment first, so that a consumer with no knowledge of the specific token can still group by its prefix.\\n\\nThe token is the maintainer's own; no external vocabulary is primary. External vocabularies (vCard/jCard, OIDC standard claims, schema.org) are mappings applied at PRESENTATION by a renderer, not at rest, so that a query written in any of them can be matched without the store having to live inside any one of them.\\n\\nThe `x:` prefix is an open extension namespace and is not decoration. The closest prior art — Windows CardSpace's self-issued card — supported exactly fifteen predefined claim types with no extensibility, and that is the specific way it failed the requirement a holder actually has. An `x:` attribute stores, composes, binds and discloses exactly like a known one; it renders generically and matches only an explicit query.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^(x:)?[a-z][a-zA-Z0-9]*(\\\\.[a-z][a-zA-Z0-9]*)*$\",\"title\":\"ClaimType\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ProofRung\":{\"description\":\"How strongly a credential-backed claim is hidden when presented, ordered most private first. `predicate` proves a statement over a claim without disclosing the claim. `derived` discloses exactly the claims needed via an unlinkable derived proof, so two presentations cannot be joined. `selectiveDisclosure` discloses exactly the claims needed but carries the issuer's signature unchanged, so two presentations ARE linkable. `whole` discloses the entire credential.\\n\\nThe distinction between the first two and the last two is of kind, not degree: only `predicate` and `derived` avoid handing two verifiers a join key. A maintainer MUST default to the highest rung the credential's format supports, and MUST NOT silently fall to a lower one — a request that cannot be satisfied at the rung a producer asked for is refused, because a silent privacy downgrade discloses material the holder believed was hidden.\",\"enum\":[\"predicate\",\"derived\",\"selectiveDisclosure\",\"whole\"],\"title\":\"ProofRung\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to persona/disclosure/history. Type https://trusttasks.org/spec/persona/disclosure/history/1.0#response. Records name claim TYPES and never values: the history says what kind of thing went where, and re-storing the values would double the exposure it exists to describe.\",\"properties\":{\"disclosures\":{\"items\":{\"additionalProperties\":false,\"properties\":{\"claimCurrency\":{\"description\":\"Positionally aligned with claimTypes: whether the value the verifier received is still what this persona presents in this context. `current` — it is. `changed` — the persona now presents a different value of that type, so the verifier holds an outdated copy; this is what a re-present list is built from. `removed` — the persona no longer presents that type at all; the verifier still holds what it received, because a disclosure cannot be recalled. `unknown` — the maintainer cannot tell, as for a record made before it began fingerprinting disclosed values. Computed at read time by comparing a keyed hash of the disclosed value with the persona's current projection in the same context: no value is stored and nothing above the context boundary is read.\",\"items\":{\"enum\":[\"current\",\"changed\",\"removed\",\"unknown\"],\"type\":\"string\"},\"maxItems\":128,\"type\":\"array\"},\"claimTypes\":{\"items\":{\"$ref\":\"#/$defs/ClaimType\"},\"maxItems\":128,\"type\":\"array\"},\"contextId\":{\"minLength\":1,\"type\":\"string\"},\"disclosedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"disclosureId\":{\"$ref\":\"#/$defs/Ulid\"},\"durableCredentialId\":{\"description\":\"Present when the disclosure minted a durable credential — the one kind of disclosure that is still live and still revocable, which is why the history names it.\",\"type\":\"string\"},\"personaDid\":{\"minLength\":1,\"type\":\"string\"},\"purpose\":{\"maxLength\":512,\"type\":\"string\"},\"renderer\":{\"maxLength\":64,\"type\":\"string\"},\"rungs\":{\"description\":\"Positionally aligned with claimTypes. A holder reviewing history needs to know not only what went but how strongly it was hidden — the same claim type at two rungs is two very different disclosures.\",\"items\":{\"$ref\":\"#/$defs/ProofRung\"},\"maxItems\":128,\"type\":\"array\"},\"subject\":{\"description\":\"The pairwise identifier the disclosure was made under, so a holder can tell two disclosures to the same verifier apart.\",\"type\":\"string\"},\"verifierDid\":{\"minLength\":1,\"type\":\"string\"}},\"required\":[\"disclosureId\",\"contextId\",\"verifierDid\",\"personaDid\",\"claimTypes\",\"disclosedAt\"],\"type\":\"object\"},\"maxItems\":500,\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"nextCursor\":{\"maxLength\":4096,\"type\":\"string\"}},\"required\":[\"disclosures\"],\"title\":\"Persona Disclosure History — response payload\",\"type\":\"object\"},\"Ulid\":{\"description\":\"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\"pattern\":\"^[0-9A-HJKMNP-TV-Z]{26}$\",\"title\":\"Ulid\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

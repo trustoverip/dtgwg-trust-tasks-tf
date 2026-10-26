@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,61 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A voter's client asks its VTA for a vtc/elections/list or vtc/elections/show request signed as the voter's membership DID, so the client can read the community's elections as the member without holding the member's key.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/pcs/voter/read/0.2",
-///  "title": "Payload",
-///  "description": "A voter's client asks its VTA for a vtc/elections/list or vtc/elections/show request signed as the voter's membership DID, so the client can read the community's elections as the member without holding the member's key.",
-///  "type": "object",
-///  "required": [
-///    "community",
-///    "contextId",
-///    "member",
-///    "payload",
-///    "read"
-///  ],
-///  "properties": {
-///    "community": {
-///      "description": "The community's DID: the recipient of the signed request.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1
-///    },
-///    "contextId": {
-///      "description": "The context the voter belongs to.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "member": {
-///      "description": "The voter's membership DID at the community. MUST be a DID the engine holds an authentication key of that the caller may act as.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1,
-///      "pattern": "^did:"
-///    },
-///    "payload": {
-///      "description": "The request payload of that task, validated against its own schema.",
-///      "type": "object"
-///    },
-///    "read": {
-///      "description": "Which read to sign: vtc/elections/list/0.3 or vtc/elections/show/0.2.",
-///      "type": "string",
-///      "enum": [
-///        "list",
-///        "show"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -222,17 +143,6 @@ impl Payload {
 }
 ///The community's DID: the recipient of the signed request.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The community's DID: the recipient of the signed request.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCommunity(::std::string::String);
@@ -295,17 +205,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCommunity {
 }
 ///The context the voter belongs to.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The context the voter belongs to.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadContextId(::std::string::String);
@@ -368,18 +267,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 }
 ///The voter's membership DID at the community. MUST be a DID the engine holds an authentication key of that the caller may act as.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The voter's membership DID at the community. MUST be a DID the engine holds an authentication key of that the caller may act as.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadMember(::std::string::String);
@@ -447,19 +334,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadMember {
 }
 ///Which read to sign: vtc/elections/list/0.3 or vtc/elections/show/0.2.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Which read to sign: vtc/elections/list/0.3 or vtc/elections/show/0.2.",
-///  "type": "string",
-///  "enum": [
-///    "list",
-///    "show"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -521,66 +395,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadRead {
 }
 ///A complete, signed vtc/elections/list/0.3 or vtc/elections/show/0.2 request document, ready to send to the community unchanged.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ReadDocument",
-///  "description": "A complete, signed vtc/elections/list/0.3 or vtc/elections/show/0.2 request document, ready to send to the community unchanged.",
-///  "type": "object",
-///  "required": [
-///    "id",
-///    "issuedAt",
-///    "issuer",
-///    "payload",
-///    "proof",
-///    "recipient",
-///    "type"
-///  ],
-///  "properties": {
-///    "expiresAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "id": {
-///      "type": "string",
-///      "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
-///    },
-///    "issuedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "issuer": {
-///      "description": "The request's `member`.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1
-///    },
-///    "payload": {
-///      "description": "The request's `payload`, exactly.",
-///      "type": "object"
-///    },
-///    "proof": {
-///      "description": "A Data Integrity proof by an `authentication` key of `issuer`.",
-///      "type": "object"
-///    },
-///    "recipient": {
-///      "description": "The request's `community`.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1
-///    },
-///    "type": {
-///      "type": "string",
-///      "enum": [
-///        "https://trusttasks.org/spec/vtc/elections/list/0.3",
-///        "https://trusttasks.org/spec/vtc/elections/show/0.2"
-///      ]
-///    }
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
 pub struct ReadDocument {
@@ -611,15 +425,6 @@ impl ReadDocument {
 }
 ///`ReadDocumentId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ReadDocumentId(::std::string::String);
@@ -690,17 +495,6 @@ impl<'de> ::serde::Deserialize<'de> for ReadDocumentId {
 }
 ///The request's `member`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The request's `member`.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ReadDocumentIssuer(::std::string::String);
@@ -763,17 +557,6 @@ impl<'de> ::serde::Deserialize<'de> for ReadDocumentIssuer {
 }
 ///The request's `community`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The request's `community`.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ReadDocumentRecipient(::std::string::String);
@@ -836,18 +619,6 @@ impl<'de> ::serde::Deserialize<'de> for ReadDocumentRecipient {
 }
 ///`ReadDocumentType`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "enum": [
-///    "https://trusttasks.org/spec/vtc/elections/list/0.3",
-///    "https://trusttasks.org/spec/vtc/elections/show/0.2"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -917,29 +688,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ReadDocumentType {
 }
 ///The signed read, to send to the community.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The signed read, to send to the community.",
-///  "type": "object",
-///  "required": [
-///    "document"
-///  ],
-///  "properties": {
-///    "document": {
-///      "$ref": "#/definitions/ReadDocument"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1281,7 +1029,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ReadDocument\": {\n      \"description\": \"A complete, signed vtc/elections/list/0.3 or vtc/elections/show/0.2 request document, ready to send to the community unchanged.\",\n      \"properties\": {\n        \"expiresAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"pattern\": \"^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$\",\n          \"type\": \"string\"\n        },\n        \"issuedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"issuer\": {\n          \"description\": \"The request's `member`.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"payload\": {\n          \"description\": \"The request's `payload`, exactly.\",\n          \"type\": \"object\"\n        },\n        \"proof\": {\n          \"description\": \"A Data Integrity proof by an `authentication` key of `issuer`.\",\n          \"type\": \"object\"\n        },\n        \"recipient\": {\n          \"description\": \"The request's `community`.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"type\": {\n          \"enum\": [\n            \"https://trusttasks.org/spec/vtc/elections/list/0.3\",\n            \"https://trusttasks.org/spec/vtc/elections/show/0.2\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"type\",\n        \"issuer\",\n        \"recipient\",\n        \"issuedAt\",\n        \"payload\",\n        \"proof\"\n      ],\n      \"title\": \"ReadDocument\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The signed read, to send to the community.\",\n      \"properties\": {\n        \"document\": {\n          \"$ref\": \"#/$defs/ReadDocument\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"document\"\n      ],\n      \"title\": \"VTA PCS — Voter Read — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/pcs/voter/read/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A voter's client asks its VTA for a vtc/elections/list or vtc/elections/show request signed as the voter's membership DID, so the client can read the community's elections as the member without holding the member's key.\",\n  \"properties\": {\n    \"community\": {\n      \"description\": \"The community's DID: the recipient of the signed request.\",\n      \"maxLength\": 2048,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"contextId\": {\n      \"description\": \"The context the voter belongs to.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"member\": {\n      \"description\": \"The voter's membership DID at the community. MUST be a DID the engine holds an authentication key of that the caller may act as.\",\n      \"maxLength\": 2048,\n      \"minLength\": 1,\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    },\n    \"payload\": {\n      \"description\": \"The request payload of that task, validated against its own schema.\",\n      \"type\": \"object\"\n    },\n    \"read\": {\n      \"description\": \"Which read to sign: vtc/elections/list/0.3 or vtc/elections/show/0.2.\",\n      \"enum\": [\n        \"list\",\n        \"show\"\n      ],\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"contextId\",\n    \"community\",\n    \"member\",\n    \"read\",\n    \"payload\"\n  ],\n  \"title\": \"VTA PCS — Voter Read — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ReadDocument\":{\"description\":\"A complete, signed vtc/elections/list/0.3 or vtc/elections/show/0.2 request document, ready to send to the community unchanged.\",\"properties\":{\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"id\":{\"pattern\":\"^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$\",\"type\":\"string\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"issuer\":{\"description\":\"The request's `member`.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"payload\":{\"description\":\"The request's `payload`, exactly.\",\"type\":\"object\"},\"proof\":{\"description\":\"A Data Integrity proof by an `authentication` key of `issuer`.\",\"type\":\"object\"},\"recipient\":{\"description\":\"The request's `community`.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"type\":{\"enum\":[\"https://trusttasks.org/spec/vtc/elections/list/0.3\",\"https://trusttasks.org/spec/vtc/elections/show/0.2\"],\"type\":\"string\"}},\"required\":[\"id\",\"type\",\"issuer\",\"recipient\",\"issuedAt\",\"payload\",\"proof\"],\"title\":\"ReadDocument\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The signed read, to send to the community.\",\"properties\":{\"document\":{\"$ref\":\"#/$defs/ReadDocument\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"document\"],\"title\":\"VTA PCS — Voter Read — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/pcs/voter/read/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A voter's client asks its VTA for a vtc/elections/list or vtc/elections/show request signed as the voter's membership DID, so the client can read the community's elections as the member without holding the member's key.\",\"properties\":{\"community\":{\"description\":\"The community's DID: the recipient of the signed request.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"contextId\":{\"description\":\"The context the voter belongs to.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"member\":{\"description\":\"The voter's membership DID at the community. MUST be a DID the engine holds an authentication key of that the caller may act as.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^did:\",\"type\":\"string\"},\"payload\":{\"description\":\"The request payload of that task, validated against its own schema.\",\"type\":\"object\"},\"read\":{\"description\":\"Which read to sign: vtc/elections/list/0.3 or vtc/elections/show/0.2.\",\"enum\":[\"list\",\"show\"],\"type\":\"string\"}},\"required\":[\"contextId\",\"community\",\"member\",\"read\",\"payload\"],\"title\":\"VTA PCS — Voter Read — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1289,7 +1037,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ReadDocument\": {\n      \"description\": \"A complete, signed vtc/elections/list/0.3 or vtc/elections/show/0.2 request document, ready to send to the community unchanged.\",\n      \"properties\": {\n        \"expiresAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"pattern\": \"^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$\",\n          \"type\": \"string\"\n        },\n        \"issuedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"issuer\": {\n          \"description\": \"The request's `member`.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"payload\": {\n          \"description\": \"The request's `payload`, exactly.\",\n          \"type\": \"object\"\n        },\n        \"proof\": {\n          \"description\": \"A Data Integrity proof by an `authentication` key of `issuer`.\",\n          \"type\": \"object\"\n        },\n        \"recipient\": {\n          \"description\": \"The request's `community`.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"type\": {\n          \"enum\": [\n            \"https://trusttasks.org/spec/vtc/elections/list/0.3\",\n            \"https://trusttasks.org/spec/vtc/elections/show/0.2\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"type\",\n        \"issuer\",\n        \"recipient\",\n        \"issuedAt\",\n        \"payload\",\n        \"proof\"\n      ],\n      \"title\": \"ReadDocument\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The signed read, to send to the community.\",\n      \"properties\": {\n        \"document\": {\n          \"$ref\": \"#/$defs/ReadDocument\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"document\"\n      ],\n      \"title\": \"VTA PCS — Voter Read — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ReadDocument\":{\"description\":\"A complete, signed vtc/elections/list/0.3 or vtc/elections/show/0.2 request document, ready to send to the community unchanged.\",\"properties\":{\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"id\":{\"pattern\":\"^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$\",\"type\":\"string\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"issuer\":{\"description\":\"The request's `member`.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"payload\":{\"description\":\"The request's `payload`, exactly.\",\"type\":\"object\"},\"proof\":{\"description\":\"A Data Integrity proof by an `authentication` key of `issuer`.\",\"type\":\"object\"},\"recipient\":{\"description\":\"The request's `community`.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"type\":{\"enum\":[\"https://trusttasks.org/spec/vtc/elections/list/0.3\",\"https://trusttasks.org/spec/vtc/elections/show/0.2\"],\"type\":\"string\"}},\"required\":[\"id\",\"type\",\"issuer\",\"recipient\",\"issuedAt\",\"payload\",\"proof\"],\"title\":\"ReadDocument\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The signed read, to send to the community.\",\"properties\":{\"document\":{\"$ref\":\"#/$defs/ReadDocument\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"document\"],\"title\":\"VTA PCS — Voter Read — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

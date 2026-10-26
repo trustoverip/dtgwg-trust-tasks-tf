@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,23 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/messaging/stats/show/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -181,53 +140,6 @@ impl Payload {
 }
 ///The depth of one queue and its effective limit.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "QueueDepth",
-///  "description": "The depth of one queue and its effective limit.",
-///  "type": "object",
-///  "required": [
-///    "bytes",
-///    "count"
-///  ],
-///  "properties": {
-///    "bytes": {
-///      "description": "Total stored size of those messages, in bytes.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "count": {
-///      "description": "Messages currently in the queue.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "deliveredUnacked": {
-///      "description": "Messages in the queue whose state is `delivered` — handed out but not yet deleted by the recipient. Absent when the mediator did not measure it.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "limit": {
-///      "description": "The effective message-count limit for this queue after account overrides and mediator defaults are applied; -1 = unlimited.",
-///      "type": "integer",
-///      "minimum": -1.0
-///    },
-///    "oldestAgeSeconds": {
-///      "description": "Age of the oldest message in the queue, in seconds. Absent when the queue is empty or the mediator did not measure it.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "saturation": {
-///      "description": "count ÷ limit. Absent when the limit is unlimited. May exceed 1 when a limit was lowered below the current depth.",
-///      "type": "number",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -264,183 +176,6 @@ impl QueueDepth {
 }
 ///The success response to a messaging/stats/show request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/stats/show/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The success response to a messaging/stats/show request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/stats/show/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "connections",
-///    "forwarding",
-///    "totals",
-///    "uptimeSeconds",
-///    "version"
-///  ],
-///  "properties": {
-///    "connections": {
-///      "type": "object",
-///      "required": [
-///        "websocketActive"
-///      ],
-///      "properties": {
-///        "websocketActive": {
-///          "type": "integer",
-///          "minimum": 0.0
-///        },
-///        "websocketMax": {
-///          "description": "Configured ceiling; absent when unlimited.",
-///          "type": "integer",
-///          "minimum": 0.0
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "forwarding": {
-///      "type": "object",
-///      "required": [
-///        "queueLength"
-///      ],
-///      "properties": {
-///        "circuitBreaker": {
-///          "description": "State of the store circuit breaker. `open` means the mediator is shedding store operations.",
-///          "type": "string",
-///          "enum": [
-///            "closed",
-///            "open",
-///            "halfOpen"
-///          ]
-///        },
-///        "queueLength": {
-///          "description": "Messages waiting to be forwarded to other mediators.",
-///          "type": "integer",
-///          "minimum": 0.0
-///        },
-///        "queueLimit": {
-///          "type": "integer",
-///          "minimum": 0.0
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "queues": {
-///      "description": "Aggregate of the mediator's most recent queue survey. Absent when no survey has completed.",
-///      "type": "object",
-///      "required": [
-///        "accounts",
-///        "surveyedAt"
-///      ],
-///      "properties": {
-///        "accounts": {
-///          "description": "Accounts the survey covered.",
-///          "type": "integer",
-///          "minimum": 0.0
-///        },
-///        "receive": {
-///          "description": "Totals across every surveyed receive queue; `saturation` is the maximum of any single queue.",
-///          "$ref": "#/definitions/QueueDepth"
-///        },
-///        "send": {
-///          "description": "Totals across every surveyed send queue; `saturation` is the maximum of any single queue.",
-///          "$ref": "#/definitions/QueueDepth"
-///        },
-///        "surveyedAt": {
-///          "type": "string",
-///          "format": "date-time"
-///        },
-///        "truncated": {
-///          "description": "The survey stopped before covering every account.",
-///          "type": "boolean"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "startedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "totals": {
-///      "description": "Lifetime counters since the mediator's store was created. Monotonic; a client derives rates from successive readings.",
-///      "type": "object",
-///      "required": [
-///        "deletedCount",
-///        "receivedBytes",
-///        "receivedCount",
-///        "sentBytes",
-///        "sentCount"
-///      ],
-///      "properties": {
-///        "deletedBytes": {
-///          "type": "integer",
-///          "minimum": 0.0
-///        },
-///        "deletedCount": {
-///          "type": "integer",
-///          "minimum": 0.0
-///        },
-///        "invitationsClaimed": {
-///          "type": "integer",
-///          "minimum": 0.0
-///        },
-///        "invitationsCreated": {
-///          "type": "integer",
-///          "minimum": 0.0
-///        },
-///        "receivedBytes": {
-///          "type": "integer",
-///          "minimum": 0.0
-///        },
-///        "receivedCount": {
-///          "type": "integer",
-///          "minimum": 0.0
-///        },
-///        "sentBytes": {
-///          "type": "integer",
-///          "minimum": 0.0
-///        },
-///        "sentCount": {
-///          "type": "integer",
-///          "minimum": 0.0
-///        },
-///        "sessionsAuthenticated": {
-///          "type": "integer",
-///          "minimum": 0.0
-///        },
-///        "sessionsCreated": {
-///          "type": "integer",
-///          "minimum": 0.0
-///        },
-///        "websocketClosed": {
-///          "type": "integer",
-///          "minimum": 0.0
-///        },
-///        "websocketOpened": {
-///          "type": "integer",
-///          "minimum": 0.0
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "uptimeSeconds": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "version": {
-///      "description": "The mediator software's version string.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -471,29 +206,6 @@ impl Response {
 }
 ///`ResponseConnections`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "websocketActive"
-///  ],
-///  "properties": {
-///    "websocketActive": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "websocketMax": {
-///      "description": "Configured ceiling; absent when unlimited.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -515,38 +227,6 @@ impl ResponseConnections {
 }
 ///`ResponseForwarding`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "queueLength"
-///  ],
-///  "properties": {
-///    "circuitBreaker": {
-///      "description": "State of the store circuit breaker. `open` means the mediator is shedding store operations.",
-///      "type": "string",
-///      "enum": [
-///        "closed",
-///        "open",
-///        "halfOpen"
-///      ]
-///    },
-///    "queueLength": {
-///      "description": "Messages waiting to be forwarded to other mediators.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "queueLimit": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -575,20 +255,6 @@ impl ResponseForwarding {
 }
 ///State of the store circuit breaker. `open` means the mediator is shedding store operations.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "State of the store circuit breaker. `open` means the mediator is shedding store operations.",
-///  "type": "string",
-///  "enum": [
-///    "closed",
-///    "open",
-///    "halfOpen"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -654,43 +320,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseForwardingCircui
 }
 ///Aggregate of the mediator's most recent queue survey. Absent when no survey has completed.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Aggregate of the mediator's most recent queue survey. Absent when no survey has completed.",
-///  "type": "object",
-///  "required": [
-///    "accounts",
-///    "surveyedAt"
-///  ],
-///  "properties": {
-///    "accounts": {
-///      "description": "Accounts the survey covered.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "receive": {
-///      "description": "Totals across every surveyed receive queue; `saturation` is the maximum of any single queue.",
-///      "$ref": "#/definitions/QueueDepth"
-///    },
-///    "send": {
-///      "description": "Totals across every surveyed send queue; `saturation` is the maximum of any single queue.",
-///      "$ref": "#/definitions/QueueDepth"
-///    },
-///    "surveyedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "truncated": {
-///      "description": "The survey stopped before covering every account.",
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -716,73 +345,6 @@ impl ResponseQueues {
 }
 ///Lifetime counters since the mediator's store was created. Monotonic; a client derives rates from successive readings.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Lifetime counters since the mediator's store was created. Monotonic; a client derives rates from successive readings.",
-///  "type": "object",
-///  "required": [
-///    "deletedCount",
-///    "receivedBytes",
-///    "receivedCount",
-///    "sentBytes",
-///    "sentCount"
-///  ],
-///  "properties": {
-///    "deletedBytes": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "deletedCount": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "invitationsClaimed": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "invitationsCreated": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "receivedBytes": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "receivedCount": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "sentBytes": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "sentCount": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "sessionsAuthenticated": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "sessionsCreated": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "websocketClosed": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "websocketOpened": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -847,16 +409,6 @@ impl ResponseTotals {
 }
 ///The mediator software's version string.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The mediator software's version string.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseVersion(::std::string::String);
@@ -1635,7 +1187,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"QueueDepth\": {\n      \"additionalProperties\": false,\n      \"description\": \"The depth of one queue and its effective limit.\",\n      \"properties\": {\n        \"bytes\": {\n          \"description\": \"Total stored size of those messages, in bytes.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"count\": {\n          \"description\": \"Messages currently in the queue.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"deliveredUnacked\": {\n          \"description\": \"Messages in the queue whose state is `delivered` — handed out but not yet deleted by the recipient. Absent when the mediator did not measure it.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"limit\": {\n          \"description\": \"The effective message-count limit for this queue after account overrides and mediator defaults are applied; -1 = unlimited.\",\n          \"minimum\": -1,\n          \"type\": \"integer\"\n        },\n        \"oldestAgeSeconds\": {\n          \"description\": \"Age of the oldest message in the queue, in seconds. Absent when the queue is empty or the mediator did not measure it.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"saturation\": {\n          \"description\": \"count ÷ limit. Absent when the limit is unlimited. May exceed 1 when a limit was lowered below the current depth.\",\n          \"minimum\": 0,\n          \"type\": \"number\"\n        }\n      },\n      \"required\": [\n        \"count\",\n        \"bytes\"\n      ],\n      \"title\": \"QueueDepth\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a messaging/stats/show request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/stats/show/0.1#response.\",\n      \"properties\": {\n        \"connections\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"websocketActive\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"websocketMax\": {\n              \"description\": \"Configured ceiling; absent when unlimited.\",\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            }\n          },\n          \"required\": [\n            \"websocketActive\"\n          ],\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"forwarding\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"circuitBreaker\": {\n              \"description\": \"State of the store circuit breaker. `open` means the mediator is shedding store operations.\",\n              \"enum\": [\n                \"closed\",\n                \"open\",\n                \"halfOpen\"\n              ],\n              \"type\": \"string\"\n            },\n            \"queueLength\": {\n              \"description\": \"Messages waiting to be forwarded to other mediators.\",\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"queueLimit\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            }\n          },\n          \"required\": [\n            \"queueLength\"\n          ],\n          \"type\": \"object\"\n        },\n        \"queues\": {\n          \"additionalProperties\": false,\n          \"description\": \"Aggregate of the mediator's most recent queue survey. Absent when no survey has completed.\",\n          \"properties\": {\n            \"accounts\": {\n              \"description\": \"Accounts the survey covered.\",\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"receive\": {\n              \"$ref\": \"#/$defs/QueueDepth\",\n              \"description\": \"Totals across every surveyed receive queue; `saturation` is the maximum of any single queue.\"\n            },\n            \"send\": {\n              \"$ref\": \"#/$defs/QueueDepth\",\n              \"description\": \"Totals across every surveyed send queue; `saturation` is the maximum of any single queue.\"\n            },\n            \"surveyedAt\": {\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"truncated\": {\n              \"description\": \"The survey stopped before covering every account.\",\n              \"type\": \"boolean\"\n            }\n          },\n          \"required\": [\n            \"surveyedAt\",\n            \"accounts\"\n          ],\n          \"type\": \"object\"\n        },\n        \"startedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"totals\": {\n          \"additionalProperties\": false,\n          \"description\": \"Lifetime counters since the mediator's store was created. Monotonic; a client derives rates from successive readings.\",\n          \"properties\": {\n            \"deletedBytes\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"deletedCount\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"invitationsClaimed\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"invitationsCreated\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"receivedBytes\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"receivedCount\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"sentBytes\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"sentCount\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"sessionsAuthenticated\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"sessionsCreated\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"websocketClosed\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"websocketOpened\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            }\n          },\n          \"required\": [\n            \"receivedCount\",\n            \"receivedBytes\",\n            \"sentCount\",\n            \"sentBytes\",\n            \"deletedCount\"\n          ],\n          \"type\": \"object\"\n        },\n        \"uptimeSeconds\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"version\": {\n          \"description\": \"The mediator software's version string.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"version\",\n        \"uptimeSeconds\",\n        \"connections\",\n        \"totals\",\n        \"forwarding\"\n      ],\n      \"title\": \"Messaging — Show Mediator Statistics — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/messaging/stats/show/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    }\n  },\n  \"title\": \"Messaging — Show Mediator Statistics — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"QueueDepth\":{\"additionalProperties\":false,\"description\":\"The depth of one queue and its effective limit.\",\"properties\":{\"bytes\":{\"description\":\"Total stored size of those messages, in bytes.\",\"minimum\":0,\"type\":\"integer\"},\"count\":{\"description\":\"Messages currently in the queue.\",\"minimum\":0,\"type\":\"integer\"},\"deliveredUnacked\":{\"description\":\"Messages in the queue whose state is `delivered` — handed out but not yet deleted by the recipient. Absent when the mediator did not measure it.\",\"minimum\":0,\"type\":\"integer\"},\"limit\":{\"description\":\"The effective message-count limit for this queue after account overrides and mediator defaults are applied; -1 = unlimited.\",\"minimum\":-1,\"type\":\"integer\"},\"oldestAgeSeconds\":{\"description\":\"Age of the oldest message in the queue, in seconds. Absent when the queue is empty or the mediator did not measure it.\",\"minimum\":0,\"type\":\"integer\"},\"saturation\":{\"description\":\"count ÷ limit. Absent when the limit is unlimited. May exceed 1 when a limit was lowered below the current depth.\",\"minimum\":0,\"type\":\"number\"}},\"required\":[\"count\",\"bytes\"],\"title\":\"QueueDepth\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a messaging/stats/show request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/stats/show/0.1#response.\",\"properties\":{\"connections\":{\"additionalProperties\":false,\"properties\":{\"websocketActive\":{\"minimum\":0,\"type\":\"integer\"},\"websocketMax\":{\"description\":\"Configured ceiling; absent when unlimited.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"websocketActive\"],\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"forwarding\":{\"additionalProperties\":false,\"properties\":{\"circuitBreaker\":{\"description\":\"State of the store circuit breaker. `open` means the mediator is shedding store operations.\",\"enum\":[\"closed\",\"open\",\"halfOpen\"],\"type\":\"string\"},\"queueLength\":{\"description\":\"Messages waiting to be forwarded to other mediators.\",\"minimum\":0,\"type\":\"integer\"},\"queueLimit\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"queueLength\"],\"type\":\"object\"},\"queues\":{\"additionalProperties\":false,\"description\":\"Aggregate of the mediator's most recent queue survey. Absent when no survey has completed.\",\"properties\":{\"accounts\":{\"description\":\"Accounts the survey covered.\",\"minimum\":0,\"type\":\"integer\"},\"receive\":{\"$ref\":\"#/$defs/QueueDepth\",\"description\":\"Totals across every surveyed receive queue; `saturation` is the maximum of any single queue.\"},\"send\":{\"$ref\":\"#/$defs/QueueDepth\",\"description\":\"Totals across every surveyed send queue; `saturation` is the maximum of any single queue.\"},\"surveyedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"truncated\":{\"description\":\"The survey stopped before covering every account.\",\"type\":\"boolean\"}},\"required\":[\"surveyedAt\",\"accounts\"],\"type\":\"object\"},\"startedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"totals\":{\"additionalProperties\":false,\"description\":\"Lifetime counters since the mediator's store was created. Monotonic; a client derives rates from successive readings.\",\"properties\":{\"deletedBytes\":{\"minimum\":0,\"type\":\"integer\"},\"deletedCount\":{\"minimum\":0,\"type\":\"integer\"},\"invitationsClaimed\":{\"minimum\":0,\"type\":\"integer\"},\"invitationsCreated\":{\"minimum\":0,\"type\":\"integer\"},\"receivedBytes\":{\"minimum\":0,\"type\":\"integer\"},\"receivedCount\":{\"minimum\":0,\"type\":\"integer\"},\"sentBytes\":{\"minimum\":0,\"type\":\"integer\"},\"sentCount\":{\"minimum\":0,\"type\":\"integer\"},\"sessionsAuthenticated\":{\"minimum\":0,\"type\":\"integer\"},\"sessionsCreated\":{\"minimum\":0,\"type\":\"integer\"},\"websocketClosed\":{\"minimum\":0,\"type\":\"integer\"},\"websocketOpened\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"receivedCount\",\"receivedBytes\",\"sentCount\",\"sentBytes\",\"deletedCount\"],\"type\":\"object\"},\"uptimeSeconds\":{\"minimum\":0,\"type\":\"integer\"},\"version\":{\"description\":\"The mediator software's version string.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"version\",\"uptimeSeconds\",\"connections\",\"totals\",\"forwarding\"],\"title\":\"Messaging — Show Mediator Statistics — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/messaging/stats/show/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"title\":\"Messaging — Show Mediator Statistics — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1643,7 +1195,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"QueueDepth\": {\n      \"additionalProperties\": false,\n      \"description\": \"The depth of one queue and its effective limit.\",\n      \"properties\": {\n        \"bytes\": {\n          \"description\": \"Total stored size of those messages, in bytes.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"count\": {\n          \"description\": \"Messages currently in the queue.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"deliveredUnacked\": {\n          \"description\": \"Messages in the queue whose state is `delivered` — handed out but not yet deleted by the recipient. Absent when the mediator did not measure it.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"limit\": {\n          \"description\": \"The effective message-count limit for this queue after account overrides and mediator defaults are applied; -1 = unlimited.\",\n          \"minimum\": -1,\n          \"type\": \"integer\"\n        },\n        \"oldestAgeSeconds\": {\n          \"description\": \"Age of the oldest message in the queue, in seconds. Absent when the queue is empty or the mediator did not measure it.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"saturation\": {\n          \"description\": \"count ÷ limit. Absent when the limit is unlimited. May exceed 1 when a limit was lowered below the current depth.\",\n          \"minimum\": 0,\n          \"type\": \"number\"\n        }\n      },\n      \"required\": [\n        \"count\",\n        \"bytes\"\n      ],\n      \"title\": \"QueueDepth\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a messaging/stats/show request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/stats/show/0.1#response.\",\n      \"properties\": {\n        \"connections\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"websocketActive\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"websocketMax\": {\n              \"description\": \"Configured ceiling; absent when unlimited.\",\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            }\n          },\n          \"required\": [\n            \"websocketActive\"\n          ],\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"forwarding\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"circuitBreaker\": {\n              \"description\": \"State of the store circuit breaker. `open` means the mediator is shedding store operations.\",\n              \"enum\": [\n                \"closed\",\n                \"open\",\n                \"halfOpen\"\n              ],\n              \"type\": \"string\"\n            },\n            \"queueLength\": {\n              \"description\": \"Messages waiting to be forwarded to other mediators.\",\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"queueLimit\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            }\n          },\n          \"required\": [\n            \"queueLength\"\n          ],\n          \"type\": \"object\"\n        },\n        \"queues\": {\n          \"additionalProperties\": false,\n          \"description\": \"Aggregate of the mediator's most recent queue survey. Absent when no survey has completed.\",\n          \"properties\": {\n            \"accounts\": {\n              \"description\": \"Accounts the survey covered.\",\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"receive\": {\n              \"$ref\": \"#/$defs/QueueDepth\",\n              \"description\": \"Totals across every surveyed receive queue; `saturation` is the maximum of any single queue.\"\n            },\n            \"send\": {\n              \"$ref\": \"#/$defs/QueueDepth\",\n              \"description\": \"Totals across every surveyed send queue; `saturation` is the maximum of any single queue.\"\n            },\n            \"surveyedAt\": {\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"truncated\": {\n              \"description\": \"The survey stopped before covering every account.\",\n              \"type\": \"boolean\"\n            }\n          },\n          \"required\": [\n            \"surveyedAt\",\n            \"accounts\"\n          ],\n          \"type\": \"object\"\n        },\n        \"startedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"totals\": {\n          \"additionalProperties\": false,\n          \"description\": \"Lifetime counters since the mediator's store was created. Monotonic; a client derives rates from successive readings.\",\n          \"properties\": {\n            \"deletedBytes\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"deletedCount\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"invitationsClaimed\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"invitationsCreated\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"receivedBytes\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"receivedCount\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"sentBytes\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"sentCount\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"sessionsAuthenticated\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"sessionsCreated\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"websocketClosed\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"websocketOpened\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            }\n          },\n          \"required\": [\n            \"receivedCount\",\n            \"receivedBytes\",\n            \"sentCount\",\n            \"sentBytes\",\n            \"deletedCount\"\n          ],\n          \"type\": \"object\"\n        },\n        \"uptimeSeconds\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"version\": {\n          \"description\": \"The mediator software's version string.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"version\",\n        \"uptimeSeconds\",\n        \"connections\",\n        \"totals\",\n        \"forwarding\"\n      ],\n      \"title\": \"Messaging — Show Mediator Statistics — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"QueueDepth\":{\"additionalProperties\":false,\"description\":\"The depth of one queue and its effective limit.\",\"properties\":{\"bytes\":{\"description\":\"Total stored size of those messages, in bytes.\",\"minimum\":0,\"type\":\"integer\"},\"count\":{\"description\":\"Messages currently in the queue.\",\"minimum\":0,\"type\":\"integer\"},\"deliveredUnacked\":{\"description\":\"Messages in the queue whose state is `delivered` — handed out but not yet deleted by the recipient. Absent when the mediator did not measure it.\",\"minimum\":0,\"type\":\"integer\"},\"limit\":{\"description\":\"The effective message-count limit for this queue after account overrides and mediator defaults are applied; -1 = unlimited.\",\"minimum\":-1,\"type\":\"integer\"},\"oldestAgeSeconds\":{\"description\":\"Age of the oldest message in the queue, in seconds. Absent when the queue is empty or the mediator did not measure it.\",\"minimum\":0,\"type\":\"integer\"},\"saturation\":{\"description\":\"count ÷ limit. Absent when the limit is unlimited. May exceed 1 when a limit was lowered below the current depth.\",\"minimum\":0,\"type\":\"number\"}},\"required\":[\"count\",\"bytes\"],\"title\":\"QueueDepth\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a messaging/stats/show request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/stats/show/0.1#response.\",\"properties\":{\"connections\":{\"additionalProperties\":false,\"properties\":{\"websocketActive\":{\"minimum\":0,\"type\":\"integer\"},\"websocketMax\":{\"description\":\"Configured ceiling; absent when unlimited.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"websocketActive\"],\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"forwarding\":{\"additionalProperties\":false,\"properties\":{\"circuitBreaker\":{\"description\":\"State of the store circuit breaker. `open` means the mediator is shedding store operations.\",\"enum\":[\"closed\",\"open\",\"halfOpen\"],\"type\":\"string\"},\"queueLength\":{\"description\":\"Messages waiting to be forwarded to other mediators.\",\"minimum\":0,\"type\":\"integer\"},\"queueLimit\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"queueLength\"],\"type\":\"object\"},\"queues\":{\"additionalProperties\":false,\"description\":\"Aggregate of the mediator's most recent queue survey. Absent when no survey has completed.\",\"properties\":{\"accounts\":{\"description\":\"Accounts the survey covered.\",\"minimum\":0,\"type\":\"integer\"},\"receive\":{\"$ref\":\"#/$defs/QueueDepth\",\"description\":\"Totals across every surveyed receive queue; `saturation` is the maximum of any single queue.\"},\"send\":{\"$ref\":\"#/$defs/QueueDepth\",\"description\":\"Totals across every surveyed send queue; `saturation` is the maximum of any single queue.\"},\"surveyedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"truncated\":{\"description\":\"The survey stopped before covering every account.\",\"type\":\"boolean\"}},\"required\":[\"surveyedAt\",\"accounts\"],\"type\":\"object\"},\"startedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"totals\":{\"additionalProperties\":false,\"description\":\"Lifetime counters since the mediator's store was created. Monotonic; a client derives rates from successive readings.\",\"properties\":{\"deletedBytes\":{\"minimum\":0,\"type\":\"integer\"},\"deletedCount\":{\"minimum\":0,\"type\":\"integer\"},\"invitationsClaimed\":{\"minimum\":0,\"type\":\"integer\"},\"invitationsCreated\":{\"minimum\":0,\"type\":\"integer\"},\"receivedBytes\":{\"minimum\":0,\"type\":\"integer\"},\"receivedCount\":{\"minimum\":0,\"type\":\"integer\"},\"sentBytes\":{\"minimum\":0,\"type\":\"integer\"},\"sentCount\":{\"minimum\":0,\"type\":\"integer\"},\"sessionsAuthenticated\":{\"minimum\":0,\"type\":\"integer\"},\"sessionsCreated\":{\"minimum\":0,\"type\":\"integer\"},\"websocketClosed\":{\"minimum\":0,\"type\":\"integer\"},\"websocketOpened\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"receivedCount\",\"receivedBytes\",\"sentCount\",\"sentBytes\",\"deletedCount\"],\"type\":\"object\"},\"uptimeSeconds\":{\"minimum\":0,\"type\":\"integer\"},\"version\":{\"description\":\"The mediator software's version string.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"version\",\"uptimeSeconds\",\"connections\",\"totals\",\"forwarding\"],\"title\":\"Messaging — Show Mediator Statistics — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

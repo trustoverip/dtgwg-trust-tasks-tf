@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,29 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/members/registry-consent/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "publishConsent"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "publishConsent": {
-///      "description": "The member's own decision on trust-registry publication: `true` consents to the community publishing their membership in its trust registry, `false` withdraws that consent. Applies to the member who signed the document, and to no one else.",
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -182,56 +135,6 @@ impl Payload {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "changed",
-///    "did",
-///    "effectiveAt",
-///    "publishConsent",
-///    "registrySync"
-///  ],
-///  "properties": {
-///    "changed": {
-///      "description": "Whether this document changed the recorded consent. `false` when the member restated the value already recorded.",
-///      "type": "boolean"
-///    },
-///    "did": {
-///      "description": "The member whose consent this is: the document's signer.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "effectiveAt": {
-///      "description": "When the community recorded the consent now in force — this document's execution when `changed` is `true`, the earlier change otherwise.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "publishConsent": {
-///      "description": "The consent now recorded on the member record.",
-///      "type": "boolean"
-///    },
-///    "registrySync": {
-///      "description": "What the community did about its trust registry. `queued`: a registry sync job carrying the change is queued (publication on a grant, removal on a withdrawal). `notConfigured`: the community publishes to no trust registry at present; the consent is recorded and governs any registry configured later. `unchanged`: nothing to sync, because the consent did not change, or because the community does not publish this member on other grounds (consent permits publication; it does not oblige it).",
-///      "type": "string",
-///      "enum": [
-///        "queued",
-///        "notConfigured",
-///        "unchanged"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -259,16 +162,6 @@ impl Response {
 }
 ///The member whose consent this is: the document's signer.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The member whose consent this is: the document's signer.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseDid(::std::string::String);
@@ -328,20 +221,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseDid {
 }
 ///What the community did about its trust registry. `queued`: a registry sync job carrying the change is queued (publication on a grant, removal on a withdrawal). `notConfigured`: the community publishes to no trust registry at present; the consent is recorded and governs any registry configured later. `unchanged`: nothing to sync, because the consent did not change, or because the community does not publish this member on other grounds (consent permits publication; it does not oblige it).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "What the community did about its trust registry. `queued`: a registry sync job carrying the change is queued (publication on a grant, removal on a withdrawal). `notConfigured`: the community publishes to no trust registry at present; the consent is recorded and governs any registry configured later. `unchanged`: nothing to sync, because the consent did not change, or because the community does not publish this member on other grounds (consent permits publication; it does not oblige it).",
-///  "type": "string",
-///  "enum": [
-///    "queued",
-///    "notConfigured",
-///    "unchanged"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -575,7 +454,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"changed\": {\n          \"description\": \"Whether this document changed the recorded consent. `false` when the member restated the value already recorded.\",\n          \"type\": \"boolean\"\n        },\n        \"did\": {\n          \"description\": \"The member whose consent this is: the document's signer.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"effectiveAt\": {\n          \"description\": \"When the community recorded the consent now in force — this document's execution when `changed` is `true`, the earlier change otherwise.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"publishConsent\": {\n          \"description\": \"The consent now recorded on the member record.\",\n          \"type\": \"boolean\"\n        },\n        \"registrySync\": {\n          \"description\": \"What the community did about its trust registry. `queued`: a registry sync job carrying the change is queued (publication on a grant, removal on a withdrawal). `notConfigured`: the community publishes to no trust registry at present; the consent is recorded and governs any registry configured later. `unchanged`: nothing to sync, because the consent did not change, or because the community does not publish this member on other grounds (consent permits publication; it does not oblige it).\",\n          \"enum\": [\n            \"queued\",\n            \"notConfigured\",\n            \"unchanged\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"publishConsent\",\n        \"changed\",\n        \"registrySync\",\n        \"effectiveAt\"\n      ],\n      \"title\": \"VTC Members Registry Consent — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/members/registry-consent/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"publishConsent\": {\n      \"description\": \"The member's own decision on trust-registry publication: `true` consents to the community publishing their membership in its trust registry, `false` withdraws that consent. Applies to the member who signed the document, and to no one else.\",\n      \"type\": \"boolean\"\n    }\n  },\n  \"required\": [\n    \"publishConsent\"\n  ],\n  \"title\": \"VTC Members Registry Consent — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"changed\":{\"description\":\"Whether this document changed the recorded consent. `false` when the member restated the value already recorded.\",\"type\":\"boolean\"},\"did\":{\"description\":\"The member whose consent this is: the document's signer.\",\"minLength\":1,\"type\":\"string\"},\"effectiveAt\":{\"description\":\"When the community recorded the consent now in force — this document's execution when `changed` is `true`, the earlier change otherwise.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"publishConsent\":{\"description\":\"The consent now recorded on the member record.\",\"type\":\"boolean\"},\"registrySync\":{\"description\":\"What the community did about its trust registry. `queued`: a registry sync job carrying the change is queued (publication on a grant, removal on a withdrawal). `notConfigured`: the community publishes to no trust registry at present; the consent is recorded and governs any registry configured later. `unchanged`: nothing to sync, because the consent did not change, or because the community does not publish this member on other grounds (consent permits publication; it does not oblige it).\",\"enum\":[\"queued\",\"notConfigured\",\"unchanged\"],\"type\":\"string\"}},\"required\":[\"did\",\"publishConsent\",\"changed\",\"registrySync\",\"effectiveAt\"],\"title\":\"VTC Members Registry Consent — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/members/registry-consent/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"publishConsent\":{\"description\":\"The member's own decision on trust-registry publication: `true` consents to the community publishing their membership in its trust registry, `false` withdraws that consent. Applies to the member who signed the document, and to no one else.\",\"type\":\"boolean\"}},\"required\":[\"publishConsent\"],\"title\":\"VTC Members Registry Consent — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -585,7 +464,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"changed\": {\n          \"description\": \"Whether this document changed the recorded consent. `false` when the member restated the value already recorded.\",\n          \"type\": \"boolean\"\n        },\n        \"did\": {\n          \"description\": \"The member whose consent this is: the document's signer.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"effectiveAt\": {\n          \"description\": \"When the community recorded the consent now in force — this document's execution when `changed` is `true`, the earlier change otherwise.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"publishConsent\": {\n          \"description\": \"The consent now recorded on the member record.\",\n          \"type\": \"boolean\"\n        },\n        \"registrySync\": {\n          \"description\": \"What the community did about its trust registry. `queued`: a registry sync job carrying the change is queued (publication on a grant, removal on a withdrawal). `notConfigured`: the community publishes to no trust registry at present; the consent is recorded and governs any registry configured later. `unchanged`: nothing to sync, because the consent did not change, or because the community does not publish this member on other grounds (consent permits publication; it does not oblige it).\",\n          \"enum\": [\n            \"queued\",\n            \"notConfigured\",\n            \"unchanged\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"publishConsent\",\n        \"changed\",\n        \"registrySync\",\n        \"effectiveAt\"\n      ],\n      \"title\": \"VTC Members Registry Consent — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"changed\":{\"description\":\"Whether this document changed the recorded consent. `false` when the member restated the value already recorded.\",\"type\":\"boolean\"},\"did\":{\"description\":\"The member whose consent this is: the document's signer.\",\"minLength\":1,\"type\":\"string\"},\"effectiveAt\":{\"description\":\"When the community recorded the consent now in force — this document's execution when `changed` is `true`, the earlier change otherwise.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"publishConsent\":{\"description\":\"The consent now recorded on the member record.\",\"type\":\"boolean\"},\"registrySync\":{\"description\":\"What the community did about its trust registry. `queued`: a registry sync job carrying the change is queued (publication on a grant, removal on a withdrawal). `notConfigured`: the community publishes to no trust registry at present; the consent is recorded and governs any registry configured later. `unchanged`: nothing to sync, because the consent did not change, or because the community does not publish this member on other grounds (consent permits publication; it does not oblige it).\",\"enum\":[\"queued\",\"notConfigured\",\"unchanged\"],\"type\":\"string\"}},\"required\":[\"did\",\"publishConsent\",\"changed\",\"registrySync\",\"effectiveAt\"],\"title\":\"VTC Members Registry Consent — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,18 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub, Forgejo and GitLab ids are decimal integers written as strings (`"812736451"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ForgeId",
-///  "description": "An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub, Forgejo and GitLab ids are decimal integers written as strings (`\"812736451\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ForgeId(::std::string::String);
@@ -216,116 +180,6 @@ impl<'de> ::serde::Deserialize<'de> for ForgeId {
 }
 ///The bridge reports how a job ended. Exactly one result is sent per job; the VTC updates the repository's state, bootstrap status and forge id from it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/git-ns/bridge/result/0.2",
-///  "title": "Payload",
-///  "description": "The bridge reports how a job ended. Exactly one result is sent per job; the VTC updates the repository's state, bootstrap status and forge id from it.",
-///  "type": "object",
-///  "required": [
-///    "jobId",
-///    "outcome"
-///  ],
-///  "properties": {
-///    "error": {
-///      "description": "Why the job failed or stopped partway. Present when `outcome` is not `succeeded`.",
-///      "type": "object",
-///      "required": [
-///        "code"
-///      ],
-///      "properties": {
-///        "code": {
-///          "description": "Forge-neutral: `nameTaken`, `notFound`, `forbidden` (the bridge's forge credentials lack a permission), `notCapable` (this forge or namespace cannot do it), `rateLimited`, `expired` (a begin* job's person never completed it), `forgeError`. A bridge MAY use others.",
-///          "type": "string",
-///          "maxLength": 64,
-///          "minLength": 1,
-///          "pattern": "^[a-z][A-Za-z0-9]*$"
-///        },
-///        "message": {
-///          "type": "string",
-///          "maxLength": 1024
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "jobId": {
-///      "description": "The job, as git-ns/bridge/job named it.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "outcome": {
-///      "description": "`succeeded` — every step was applied. `failed` — nothing was applied. `partial` — some steps were applied and at least one failed; `steps` says which. Every step is check-then-apply, so the VTC may send the job again.",
-///      "type": "string",
-///      "enum": [
-///        "succeeded",
-///        "failed",
-///        "partial"
-///      ]
-///    },
-///    "repo": {
-///      "description": "The repository the job touched, as the forge now reports it. Present whenever the job reached a repository.",
-///      "type": "object",
-///      "required": [
-///        "forgeId",
-///        "resource"
-///      ],
-///      "properties": {
-///        "forgeId": {
-///          "$ref": "#/definitions/ForgeId"
-///        },
-///        "resource": {
-///          "$ref": "#/definitions/RepoResource"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "steps": {
-///      "description": "Per-step outcomes, in the order they ran.",
-///      "type": "array",
-///      "items": {
-///        "type": "object",
-///        "required": [
-///          "outcome",
-///          "step"
-///        ],
-///        "properties": {
-///          "detail": {
-///            "description": "Human-readable detail, typically for a failure.",
-///            "type": "string",
-///            "maxLength": 1024
-///          },
-///          "outcome": {
-///            "description": "`applied` — changed the forge. `unchanged` — already as required. `failed` — could not be applied. `skipped` — not attempted because an earlier step failed.",
-///            "type": "string",
-///            "enum": [
-///              "applied",
-///              "unchanged",
-///              "failed",
-///              "skipped"
-///            ]
-///          },
-///          "step": {
-///            "description": "The step name, from the adapter's plan.",
-///            "type": "string",
-///            "maxLength": 64,
-///            "minLength": 1,
-///            "pattern": "^[a-z][A-Za-z0-9]*$"
-///          }
-///        },
-///        "additionalProperties": false
-///      }
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -352,32 +206,6 @@ impl Payload {
 }
 ///Why the job failed or stopped partway. Present when `outcome` is not `succeeded`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Why the job failed or stopped partway. Present when `outcome` is not `succeeded`.",
-///  "type": "object",
-///  "required": [
-///    "code"
-///  ],
-///  "properties": {
-///    "code": {
-///      "description": "Forge-neutral: `nameTaken`, `notFound`, `forbidden` (the bridge's forge credentials lack a permission), `notCapable` (this forge or namespace cannot do it), `rateLimited`, `expired` (a begin* job's person never completed it), `forgeError`. A bridge MAY use others.",
-///      "type": "string",
-///      "maxLength": 64,
-///      "minLength": 1,
-///      "pattern": "^[a-z][A-Za-z0-9]*$"
-///    },
-///    "message": {
-///      "type": "string",
-///      "maxLength": 1024
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -394,18 +222,6 @@ impl PayloadError {
 }
 ///Forge-neutral: `nameTaken`, `notFound`, `forbidden` (the bridge's forge credentials lack a permission), `notCapable` (this forge or namespace cannot do it), `rateLimited`, `expired` (a begin* job's person never completed it), `forgeError`. A bridge MAY use others.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Forge-neutral: `nameTaken`, `notFound`, `forbidden` (the bridge's forge credentials lack a permission), `notCapable` (this forge or namespace cannot do it), `rateLimited`, `expired` (a begin* job's person never completed it), `forgeError`. A bridge MAY use others.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1,
-///  "pattern": "^[a-z][A-Za-z0-9]*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadErrorCode(::std::string::String);
@@ -473,15 +289,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadErrorCode {
 }
 ///`PayloadErrorMessage`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadErrorMessage(::std::string::String);
@@ -541,17 +348,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadErrorMessage {
 }
 ///The job, as git-ns/bridge/job named it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The job, as git-ns/bridge/job named it.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadJobId(::std::string::String);
@@ -614,20 +410,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadJobId {
 }
 ///`succeeded` — every step was applied. `failed` — nothing was applied. `partial` — some steps were applied and at least one failed; `steps` says which. Every step is check-then-apply, so the VTC may send the job again.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`succeeded` — every step was applied. `failed` — nothing was applied. `partial` — some steps were applied and at least one failed; `steps` says which. Every step is check-then-apply, so the VTC may send the job again.",
-///  "type": "string",
-///  "enum": [
-///    "succeeded",
-///    "failed",
-///    "partial"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -693,28 +475,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadOutcome {
 }
 ///The repository the job touched, as the forge now reports it. Present whenever the job reached a repository.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The repository the job touched, as the forge now reports it. Present whenever the job reached a repository.",
-///  "type": "object",
-///  "required": [
-///    "forgeId",
-///    "resource"
-///  ],
-///  "properties": {
-///    "forgeId": {
-///      "$ref": "#/definitions/ForgeId"
-///    },
-///    "resource": {
-///      "$ref": "#/definitions/RepoResource"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -730,43 +490,6 @@ impl PayloadRepo {
 }
 ///`PayloadStepsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "outcome",
-///    "step"
-///  ],
-///  "properties": {
-///    "detail": {
-///      "description": "Human-readable detail, typically for a failure.",
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "outcome": {
-///      "description": "`applied` — changed the forge. `unchanged` — already as required. `failed` — could not be applied. `skipped` — not attempted because an earlier step failed.",
-///      "type": "string",
-///      "enum": [
-///        "applied",
-///        "unchanged",
-///        "failed",
-///        "skipped"
-///      ]
-///    },
-///    "step": {
-///      "description": "The step name, from the adapter's plan.",
-///      "type": "string",
-///      "maxLength": 64,
-///      "minLength": 1,
-///      "pattern": "^[a-z][A-Za-z0-9]*$"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -786,16 +509,6 @@ impl PayloadStepsItem {
 }
 ///Human-readable detail, typically for a failure.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Human-readable detail, typically for a failure.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadStepsItemDetail(::std::string::String);
@@ -855,21 +568,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadStepsItemDetail {
 }
 ///`applied` — changed the forge. `unchanged` — already as required. `failed` — could not be applied. `skipped` — not attempted because an earlier step failed.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`applied` — changed the forge. `unchanged` — already as required. `failed` — could not be applied. `skipped` — not attempted because an earlier step failed.",
-///  "type": "string",
-///  "enum": [
-///    "applied",
-///    "unchanged",
-///    "failed",
-///    "skipped"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -939,18 +637,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadStepsItemOutcome 
 }
 ///The step name, from the adapter's plan.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The step name, from the adapter's plan.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1,
-///  "pattern": "^[a-z][A-Za-z0-9]*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadStepsItemStep(::std::string::String);
@@ -1018,18 +704,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadStepsItemStep {
 }
 ///A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo-path>`, lowercase, where the repository path has 1 to 21 segments (see `Resource`).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RepoResource",
-///  "description": "A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo-path>`, lowercase, where the repository path has 1 to 21 segments (see `Resource`).",
-///  "type": "string",
-///  "maxLength": 5885,
-///  "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,254}(?:/[a-z0-9_-][a-z0-9._-]{0,254}){1,21}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RepoResource(::std::string::String);
@@ -1103,31 +777,6 @@ impl<'de> ::serde::Deserialize<'de> for RepoResource {
 }
 ///The VTC has recorded the result.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The VTC has recorded the result.",
-///  "type": "object",
-///  "required": [
-///    "jobId"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "jobId": {
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1144,16 +793,6 @@ impl Response {
 }
 ///`ResponseJobId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseJobId(::std::string::String);
@@ -1570,7 +1209,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ForgeId\": {\n      \"description\": \"An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub, Forgejo and GitLab ids are decimal integers written as strings (`\\\"812736451\\\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"title\": \"ForgeId\",\n      \"type\": \"string\"\n    },\n    \"RepoResource\": {\n      \"description\": \"A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo-path>`, lowercase, where the repository path has 1 to 21 segments (see `Resource`).\",\n      \"maxLength\": 5885,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,254}(?:/[a-z0-9_-][a-z0-9._-]{0,254}){1,21}$\",\n      \"title\": \"RepoResource\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The VTC has recorded the result.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"jobId\": {\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"jobId\"\n      ],\n      \"title\": \"Git Namespaces — Bridge Job Result — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/git-ns/bridge/result/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"The bridge reports how a job ended. Exactly one result is sent per job; the VTC updates the repository's state, bootstrap status and forge id from it.\",\n  \"properties\": {\n    \"error\": {\n      \"additionalProperties\": false,\n      \"description\": \"Why the job failed or stopped partway. Present when `outcome` is not `succeeded`.\",\n      \"properties\": {\n        \"code\": {\n          \"description\": \"Forge-neutral: `nameTaken`, `notFound`, `forbidden` (the bridge's forge credentials lack a permission), `notCapable` (this forge or namespace cannot do it), `rateLimited`, `expired` (a begin* job's person never completed it), `forgeError`. A bridge MAY use others.\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"pattern\": \"^[a-z][A-Za-z0-9]*$\",\n          \"type\": \"string\"\n        },\n        \"message\": {\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"code\"\n      ],\n      \"type\": \"object\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"jobId\": {\n      \"description\": \"The job, as git-ns/bridge/job named it.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"outcome\": {\n      \"description\": \"`succeeded` — every step was applied. `failed` — nothing was applied. `partial` — some steps were applied and at least one failed; `steps` says which. Every step is check-then-apply, so the VTC may send the job again.\",\n      \"enum\": [\n        \"succeeded\",\n        \"failed\",\n        \"partial\"\n      ],\n      \"type\": \"string\"\n    },\n    \"repo\": {\n      \"additionalProperties\": false,\n      \"description\": \"The repository the job touched, as the forge now reports it. Present whenever the job reached a repository.\",\n      \"properties\": {\n        \"forgeId\": {\n          \"$ref\": \"#/$defs/ForgeId\"\n        },\n        \"resource\": {\n          \"$ref\": \"#/$defs/RepoResource\"\n        }\n      },\n      \"required\": [\n        \"resource\",\n        \"forgeId\"\n      ],\n      \"type\": \"object\"\n    },\n    \"steps\": {\n      \"description\": \"Per-step outcomes, in the order they ran.\",\n      \"items\": {\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"detail\": {\n            \"description\": \"Human-readable detail, typically for a failure.\",\n            \"maxLength\": 1024,\n            \"type\": \"string\"\n          },\n          \"outcome\": {\n            \"description\": \"`applied` — changed the forge. `unchanged` — already as required. `failed` — could not be applied. `skipped` — not attempted because an earlier step failed.\",\n            \"enum\": [\n              \"applied\",\n              \"unchanged\",\n              \"failed\",\n              \"skipped\"\n            ],\n            \"type\": \"string\"\n          },\n          \"step\": {\n            \"description\": \"The step name, from the adapter's plan.\",\n            \"maxLength\": 64,\n            \"minLength\": 1,\n            \"pattern\": \"^[a-z][A-Za-z0-9]*$\",\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"step\",\n          \"outcome\"\n        ],\n        \"type\": \"object\"\n      },\n      \"type\": \"array\"\n    }\n  },\n  \"required\": [\n    \"jobId\",\n    \"outcome\"\n  ],\n  \"title\": \"Git Namespaces — Bridge Job Result — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ForgeId\":{\"description\":\"An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub, Forgejo and GitLab ids are decimal integers written as strings (`\\\"812736451\\\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.\",\"maxLength\":64,\"minLength\":1,\"title\":\"ForgeId\",\"type\":\"string\"},\"RepoResource\":{\"description\":\"A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo-path>`, lowercase, where the repository path has 1 to 21 segments (see `Resource`).\",\"maxLength\":5885,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,254}(?:/[a-z0-9_-][a-z0-9._-]{0,254}){1,21}$\",\"title\":\"RepoResource\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The VTC has recorded the result.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"jobId\":{\"maxLength\":128,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"jobId\"],\"title\":\"Git Namespaces — Bridge Job Result — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/git-ns/bridge/result/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The bridge reports how a job ended. Exactly one result is sent per job; the VTC updates the repository's state, bootstrap status and forge id from it.\",\"properties\":{\"error\":{\"additionalProperties\":false,\"description\":\"Why the job failed or stopped partway. Present when `outcome` is not `succeeded`.\",\"properties\":{\"code\":{\"description\":\"Forge-neutral: `nameTaken`, `notFound`, `forbidden` (the bridge's forge credentials lack a permission), `notCapable` (this forge or namespace cannot do it), `rateLimited`, `expired` (a begin* job's person never completed it), `forgeError`. A bridge MAY use others.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z][A-Za-z0-9]*$\",\"type\":\"string\"},\"message\":{\"maxLength\":1024,\"type\":\"string\"}},\"required\":[\"code\"],\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"jobId\":{\"description\":\"The job, as git-ns/bridge/job named it.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"outcome\":{\"description\":\"`succeeded` — every step was applied. `failed` — nothing was applied. `partial` — some steps were applied and at least one failed; `steps` says which. Every step is check-then-apply, so the VTC may send the job again.\",\"enum\":[\"succeeded\",\"failed\",\"partial\"],\"type\":\"string\"},\"repo\":{\"additionalProperties\":false,\"description\":\"The repository the job touched, as the forge now reports it. Present whenever the job reached a repository.\",\"properties\":{\"forgeId\":{\"$ref\":\"#/$defs/ForgeId\"},\"resource\":{\"$ref\":\"#/$defs/RepoResource\"}},\"required\":[\"resource\",\"forgeId\"],\"type\":\"object\"},\"steps\":{\"description\":\"Per-step outcomes, in the order they ran.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"detail\":{\"description\":\"Human-readable detail, typically for a failure.\",\"maxLength\":1024,\"type\":\"string\"},\"outcome\":{\"description\":\"`applied` — changed the forge. `unchanged` — already as required. `failed` — could not be applied. `skipped` — not attempted because an earlier step failed.\",\"enum\":[\"applied\",\"unchanged\",\"failed\",\"skipped\"],\"type\":\"string\"},\"step\":{\"description\":\"The step name, from the adapter's plan.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z][A-Za-z0-9]*$\",\"type\":\"string\"}},\"required\":[\"step\",\"outcome\"],\"type\":\"object\"},\"type\":\"array\"}},\"required\":[\"jobId\",\"outcome\"],\"title\":\"Git Namespaces — Bridge Job Result — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1579,7 +1218,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ForgeId\": {\n      \"description\": \"An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub, Forgejo and GitLab ids are decimal integers written as strings (`\\\"812736451\\\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"title\": \"ForgeId\",\n      \"type\": \"string\"\n    },\n    \"RepoResource\": {\n      \"description\": \"A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo-path>`, lowercase, where the repository path has 1 to 21 segments (see `Resource`).\",\n      \"maxLength\": 5885,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,254}(?:/[a-z0-9_-][a-z0-9._-]{0,254}){1,21}$\",\n      \"title\": \"RepoResource\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The VTC has recorded the result.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"jobId\": {\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"jobId\"\n      ],\n      \"title\": \"Git Namespaces — Bridge Job Result — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ForgeId\":{\"description\":\"An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub, Forgejo and GitLab ids are decimal integers written as strings (`\\\"812736451\\\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.\",\"maxLength\":64,\"minLength\":1,\"title\":\"ForgeId\",\"type\":\"string\"},\"RepoResource\":{\"description\":\"A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo-path>`, lowercase, where the repository path has 1 to 21 segments (see `Resource`).\",\"maxLength\":5885,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,254}(?:/[a-z0-9_-][a-z0-9._-]{0,254}){1,21}$\",\"title\":\"RepoResource\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The VTC has recorded the result.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"jobId\":{\"maxLength\":128,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"jobId\"],\"title\":\"Git Namespaces — Bridge Job Result — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

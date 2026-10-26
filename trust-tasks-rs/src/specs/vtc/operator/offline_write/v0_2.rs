@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,64 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A RECORD TYPE, not a request. It describes one change to a Verifiable Trust Community's access control made by an operator with access to the community's host, through an offline command run against the community's store (`vtc admin emergency-bootstrap` and its siblings) rather than through any Trust Task. No party sends a document of this type to another and no consumer executes one: its Type URI exists so that an `acknowledge` action (vtc/admin/actions/_shared/0.3) can name what happened in `typeUri`, and so that the community's audit trail can reference it. When an action names it, the action's `payload` is this record. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/operator/offline-write/0.2",
-///  "title": "Payload",
-///  "description": "A RECORD TYPE, not a request. It describes one change to a Verifiable Trust Community's access control made by an operator with access to the community's host, through an offline command run against the community's store (`vtc admin emergency-bootstrap` and its siblings) rather than through any Trust Task. No party sends a document of this type to another and no consumer executes one: its Type URI exists so that an `acknowledge` action (vtc/admin/actions/_shared/0.3) can name what happened in `typeUri`, and so that the community's audit trail can reference it. When an action names it, the action's `payload` is this record. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "command",
-///    "dids",
-///    "host",
-///    "writtenAt"
-///  ],
-///  "properties": {
-///    "command": {
-///      "description": "Which offline command made the change. `aclAdd` — an access control entry was written. `aclRemove` — an access control entry was removed. `adminInvite` — an administrator invitation was minted. `createDidKeyAdmin` — a new `did:key` was minted on the host and made an administrator. `enrolApprover` — an approver was enrolled for a subject. `emergencyBootstrap` — the break-glass recovery that installs an administrator when none can act. A closed set: a new offline command is a new version, so that a renderer never shows an administrator a change it cannot name.",
-///      "type": "string",
-///      "enum": [
-///        "aclAdd",
-///        "aclRemove",
-///        "adminInvite",
-///        "createDidKeyAdmin",
-///        "enrolApprover",
-///        "emergencyBootstrap"
-///      ]
-///    },
-///    "dids": {
-///      "description": "The DIDs whose access the command changed — the subject of an entry added or removed, the administrator installed or invited, the subject an approver was enrolled for and the approver — in the order the command reports them. Never empty: an offline write that changed nobody's access is not one administrators need to acknowledge.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 2048,
-///        "minLength": 1
-///      },
-///      "maxItems": 64,
-///      "minItems": 1,
-///      "uniqueItems": true
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "host": {
-///      "description": "The host the command ran on, as the community knows it (its hostname, or the deployment's name for the instance). Identifies where an operator held access, not who the operator was; attribution to a person, where the community has one, is the action's `requester`.",
-///      "type": "string",
-///      "maxLength": 253,
-///      "minLength": 1
-///    },
-///    "writtenAt": {
-///      "description": "When the command wrote the change to the community's store, as recorded on the host. Not when the community noticed it, which is the action's `createdAt`.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -223,23 +141,6 @@ impl Payload {
 }
 ///Which offline command made the change. `aclAdd` — an access control entry was written. `aclRemove` — an access control entry was removed. `adminInvite` — an administrator invitation was minted. `createDidKeyAdmin` — a new `did:key` was minted on the host and made an administrator. `enrolApprover` — an approver was enrolled for a subject. `emergencyBootstrap` — the break-glass recovery that installs an administrator when none can act. A closed set: a new offline command is a new version, so that a renderer never shows an administrator a change it cannot name.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Which offline command made the change. `aclAdd` — an access control entry was written. `aclRemove` — an access control entry was removed. `adminInvite` — an administrator invitation was minted. `createDidKeyAdmin` — a new `did:key` was minted on the host and made an administrator. `enrolApprover` — an approver was enrolled for a subject. `emergencyBootstrap` — the break-glass recovery that installs an administrator when none can act. A closed set: a new offline command is a new version, so that a renderer never shows an administrator a change it cannot name.",
-///  "type": "string",
-///  "enum": [
-///    "aclAdd",
-///    "aclRemove",
-///    "adminInvite",
-///    "createDidKeyAdmin",
-///    "enrolApprover",
-///    "emergencyBootstrap"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -317,16 +218,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadCommand {
 }
 ///`PayloadDidsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadDidsItem(::std::string::String);
@@ -389,17 +280,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDidsItem {
 }
 ///The host the command ran on, as the community knows it (its hostname, or the deployment's name for the instance). Identifies where an operator held access, not who the operator was; attribution to a person, where the community has one, is the action's `requester`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The host the command ran on, as the community knows it (its hostname, or the deployment's name for the instance). Identifies where an operator held access, not who the operator was; attribution to a person, where the community has one, is the action's `requester`.",
-///  "type": "string",
-///  "maxLength": 253,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadHost(::std::string::String);
@@ -561,7 +441,7 @@ pub mod builder {
 impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/operator/offline-write/0.2";
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/operator/offline-write/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A RECORD TYPE, not a request. It describes one change to a Verifiable Trust Community's access control made by an operator with access to the community's host, through an offline command run against the community's store (`vtc admin emergency-bootstrap` and its siblings) rather than through any Trust Task. No party sends a document of this type to another and no consumer executes one: its Type URI exists so that an `acknowledge` action (vtc/admin/actions/_shared/0.3) can name what happened in `typeUri`, and so that the community's audit trail can reference it. When an action names it, the action's `payload` is this record. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"command\": {\n      \"description\": \"Which offline command made the change. `aclAdd` — an access control entry was written. `aclRemove` — an access control entry was removed. `adminInvite` — an administrator invitation was minted. `createDidKeyAdmin` — a new `did:key` was minted on the host and made an administrator. `enrolApprover` — an approver was enrolled for a subject. `emergencyBootstrap` — the break-glass recovery that installs an administrator when none can act. A closed set: a new offline command is a new version, so that a renderer never shows an administrator a change it cannot name.\",\n      \"enum\": [\n        \"aclAdd\",\n        \"aclRemove\",\n        \"adminInvite\",\n        \"createDidKeyAdmin\",\n        \"enrolApprover\",\n        \"emergencyBootstrap\"\n      ],\n      \"type\": \"string\"\n    },\n    \"dids\": {\n      \"description\": \"The DIDs whose access the command changed — the subject of an entry added or removed, the administrator installed or invited, the subject an approver was enrolled for and the approver — in the order the command reports them. Never empty: an offline write that changed nobody's access is not one administrators need to acknowledge.\",\n      \"items\": {\n        \"maxLength\": 2048,\n        \"minLength\": 1,\n        \"type\": \"string\"\n      },\n      \"maxItems\": 64,\n      \"minItems\": 1,\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"host\": {\n      \"description\": \"The host the command ran on, as the community knows it (its hostname, or the deployment's name for the instance). Identifies where an operator held access, not who the operator was; attribution to a person, where the community has one, is the action's `requester`.\",\n      \"maxLength\": 253,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"writtenAt\": {\n      \"description\": \"When the command wrote the change to the community's store, as recorded on the host. Not when the community noticed it, which is the action's `createdAt`.\",\n      \"format\": \"date-time\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"command\",\n    \"dids\",\n    \"host\",\n    \"writtenAt\"\n  ],\n  \"title\": \"VTC Operator Offline Write — record\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/operator/offline-write/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A RECORD TYPE, not a request. It describes one change to a Verifiable Trust Community's access control made by an operator with access to the community's host, through an offline command run against the community's store (`vtc admin emergency-bootstrap` and its siblings) rather than through any Trust Task. No party sends a document of this type to another and no consumer executes one: its Type URI exists so that an `acknowledge` action (vtc/admin/actions/_shared/0.3) can name what happened in `typeUri`, and so that the community's audit trail can reference it. When an action names it, the action's `payload` is this record. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"command\":{\"description\":\"Which offline command made the change. `aclAdd` — an access control entry was written. `aclRemove` — an access control entry was removed. `adminInvite` — an administrator invitation was minted. `createDidKeyAdmin` — a new `did:key` was minted on the host and made an administrator. `enrolApprover` — an approver was enrolled for a subject. `emergencyBootstrap` — the break-glass recovery that installs an administrator when none can act. A closed set: a new offline command is a new version, so that a renderer never shows an administrator a change it cannot name.\",\"enum\":[\"aclAdd\",\"aclRemove\",\"adminInvite\",\"createDidKeyAdmin\",\"enrolApprover\",\"emergencyBootstrap\"],\"type\":\"string\"},\"dids\":{\"description\":\"The DIDs whose access the command changed — the subject of an entry added or removed, the administrator installed or invited, the subject an approver was enrolled for and the approver — in the order the command reports them. Never empty: an offline write that changed nobody's access is not one administrators need to acknowledge.\",\"items\":{\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"host\":{\"description\":\"The host the command ran on, as the community knows it (its hostname, or the deployment's name for the instance). Identifies where an operator held access, not who the operator was; attribution to a person, where the community has one, is the action's `requester`.\",\"maxLength\":253,\"minLength\":1,\"type\":\"string\"},\"writtenAt\":{\"description\":\"When the command wrote the change to the community's store, as recorded on the host. Not when the community noticed it, which is the action's `createdAt`.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"command\",\"dids\",\"host\",\"writtenAt\"],\"title\":\"VTC Operator Offline Write — record\",\"type\":\"object\"}\n",
     );
 }
 /// The earlier `MAJOR.MINOR` of this slug that this version declares it

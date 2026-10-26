@@ -35,70 +35,6 @@ pub mod error {
 }
 ///The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "AuthenticatorAssertionResponse (login)",
-///  "description": "The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.",
-///  "type": "object",
-///  "required": [
-///    "id",
-///    "rawId",
-///    "response",
-///    "type"
-///  ],
-///  "properties": {
-///    "authenticatorAttachment": {
-///      "enum": [
-///        "platform",
-///        "cross-platform"
-///      ]
-///    },
-///    "clientExtensionResults": {
-///      "type": "object"
-///    },
-///    "id": {
-///      "type": "string"
-///    },
-///    "rawId": {
-///      "type": "string"
-///    },
-///    "response": {
-///      "type": "object",
-///      "required": [
-///        "authenticatorData",
-///        "clientDataJSON",
-///        "signature"
-///      ],
-///      "properties": {
-///        "authenticatorData": {
-///          "type": "string"
-///        },
-///        "clientDataJSON": {
-///          "type": "string"
-///        },
-///        "signature": {
-///          "type": "string"
-///        },
-///        "userHandle": {
-///          "type": [
-///            "string",
-///            "null"
-///          ]
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "type": {
-///      "const": "public-key"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "assertionResponse"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -129,17 +65,6 @@ impl AssertionResponse {
 }
 ///`AssertionResponseAuthenticatorAttachment`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "enum": [
-///    "platform",
-///    "cross-platform"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -201,37 +126,6 @@ impl ::std::convert::TryFrom<::std::string::String> for AssertionResponseAuthent
 }
 ///`AssertionResponseResponse`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "authenticatorData",
-///    "clientDataJSON",
-///    "signature"
-///  ],
-///  "properties": {
-///    "authenticatorData": {
-///      "type": "string"
-///    },
-///    "clientDataJSON": {
-///      "type": "string"
-///    },
-///    "signature": {
-///      "type": "string"
-///    },
-///    "userHandle": {
-///      "type": [
-///        "string",
-///        "null"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -255,21 +149,6 @@ impl AssertionResponseResponse {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -291,15 +170,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -363,37 +233,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Submit the user-verification assertion that completes a passkey revocation. On success the auth service unbinds the credential named at start. The payload carries no target — the revocationId is bound to it server-side.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/auth/passkey/revoke/finish/0.1",
-///  "title": "Payload",
-///  "description": "Submit the user-verification assertion that completes a passkey revocation. On success the auth service unbinds the credential named at start. The payload carries no target — the revocationId is bound to it server-side.",
-///  "type": "object",
-///  "required": [
-///    "revocationId",
-///    "uvCredential"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "revocationId": {
-///      "description": "The revocationId issued by the matching auth/passkey/revoke/start response. Echoed verbatim.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "uvCredential": {
-///      "description": "AuthenticatorAssertionResponse as returned by navigator.credentials.get over the uvOptions from start. Binary fields base64url-encoded.",
-///      "$ref": "#/definitions/AssertionResponse"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -416,16 +255,6 @@ impl Payload {
 }
 ///The revocationId issued by the matching auth/passkey/revoke/start response. Echoed verbatim.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The revocationId issued by the matching auth/passkey/revoke/start response. Echoed verbatim.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadRevocationId(::std::string::String);
@@ -485,44 +314,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRevocationId {
 }
 ///Acknowledgement of the removed credential. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/revoke/finish/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Acknowledgement of the removed credential. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/revoke/finish/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "credentialId",
-///    "remaining",
-///    "revokedAt"
-///  ],
-///  "properties": {
-///    "credentialId": {
-///      "description": "The credential that was removed. Echoed from the server-side binding rather than from the request, so the producer can confirm the ceremony destroyed what they intended.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "remaining": {
-///      "description": "How many passkeys the subject still has. Never zero — the last-credential refusal at start guarantees it. Present so a subject who has just pruned an estate knows what they have left without a second round-trip.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "revokedAt": {
-///      "description": "When the credential was unbound.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -547,16 +338,6 @@ impl Response {
 }
 ///The credential that was removed. Echoed from the server-side binding rather than from the request, so the producer can confirm the ceremony destroyed what they intended.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The credential that was removed. Echoed from the server-side binding rather than from the request, so the producer can confirm the ceremony destroyed what they intended.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseCredentialId(::std::string::String);
@@ -975,7 +756,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AssertionResponse\": {\n      \"$anchor\": \"assertionResponse\",\n      \"additionalProperties\": false,\n      \"description\": \"The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.\",\n      \"properties\": {\n        \"authenticatorAttachment\": {\n          \"enum\": [\n            \"platform\",\n            \"cross-platform\"\n          ]\n        },\n        \"clientExtensionResults\": {\n          \"type\": \"object\"\n        },\n        \"id\": {\n          \"type\": \"string\"\n        },\n        \"rawId\": {\n          \"type\": \"string\"\n        },\n        \"response\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"authenticatorData\": {\n              \"type\": \"string\"\n            },\n            \"clientDataJSON\": {\n              \"type\": \"string\"\n            },\n            \"signature\": {\n              \"type\": \"string\"\n            },\n            \"userHandle\": {\n              \"type\": [\n                \"string\",\n                \"null\"\n              ]\n            }\n          },\n          \"required\": [\n            \"clientDataJSON\",\n            \"authenticatorData\",\n            \"signature\"\n          ],\n          \"type\": \"object\"\n        },\n        \"type\": {\n          \"const\": \"public-key\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"rawId\",\n        \"type\",\n        \"response\"\n      ],\n      \"title\": \"AuthenticatorAssertionResponse (login)\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Acknowledgement of the removed credential. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/revoke/finish/0.1#response.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"description\": \"The credential that was removed. Echoed from the server-side binding rather than from the request, so the producer can confirm the ceremony destroyed what they intended.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"remaining\": {\n          \"description\": \"How many passkeys the subject still has. Never zero — the last-credential refusal at start guarantees it. Present so a subject who has just pruned an estate knows what they have left without a second round-trip.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the credential was unbound.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"revokedAt\",\n        \"remaining\"\n      ],\n      \"title\": \"Auth Passkey Revoke Finish — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/passkey/revoke/finish/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Submit the user-verification assertion that completes a passkey revocation. On success the auth service unbinds the credential named at start. The payload carries no target — the revocationId is bound to it server-side.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"revocationId\": {\n      \"description\": \"The revocationId issued by the matching auth/passkey/revoke/start response. Echoed verbatim.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"uvCredential\": {\n      \"$ref\": \"#/$defs/AssertionResponse\",\n      \"description\": \"AuthenticatorAssertionResponse as returned by navigator.credentials.get over the uvOptions from start. Binary fields base64url-encoded.\"\n    }\n  },\n  \"required\": [\n    \"revocationId\",\n    \"uvCredential\"\n  ],\n  \"title\": \"Auth — Passkey Revoke (finish)\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"AssertionResponse\":{\"$anchor\":\"assertionResponse\",\"additionalProperties\":false,\"description\":\"The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.\",\"properties\":{\"authenticatorAttachment\":{\"enum\":[\"platform\",\"cross-platform\"]},\"clientExtensionResults\":{\"type\":\"object\"},\"id\":{\"type\":\"string\"},\"rawId\":{\"type\":\"string\"},\"response\":{\"additionalProperties\":false,\"properties\":{\"authenticatorData\":{\"type\":\"string\"},\"clientDataJSON\":{\"type\":\"string\"},\"signature\":{\"type\":\"string\"},\"userHandle\":{\"type\":[\"string\",\"null\"]}},\"required\":[\"clientDataJSON\",\"authenticatorData\",\"signature\"],\"type\":\"object\"},\"type\":{\"const\":\"public-key\"}},\"required\":[\"id\",\"rawId\",\"type\",\"response\"],\"title\":\"AuthenticatorAssertionResponse (login)\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Acknowledgement of the removed credential. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/revoke/finish/0.1#response.\",\"properties\":{\"credentialId\":{\"description\":\"The credential that was removed. Echoed from the server-side binding rather than from the request, so the producer can confirm the ceremony destroyed what they intended.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"remaining\":{\"description\":\"How many passkeys the subject still has. Never zero — the last-credential refusal at start guarantees it. Present so a subject who has just pruned an estate knows what they have left without a second round-trip.\",\"minimum\":1,\"type\":\"integer\"},\"revokedAt\":{\"description\":\"When the credential was unbound.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"credentialId\",\"revokedAt\",\"remaining\"],\"title\":\"Auth Passkey Revoke Finish — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/auth/passkey/revoke/finish/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Submit the user-verification assertion that completes a passkey revocation. On success the auth service unbinds the credential named at start. The payload carries no target — the revocationId is bound to it server-side.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"revocationId\":{\"description\":\"The revocationId issued by the matching auth/passkey/revoke/start response. Echoed verbatim.\",\"minLength\":1,\"type\":\"string\"},\"uvCredential\":{\"$ref\":\"#/$defs/AssertionResponse\",\"description\":\"AuthenticatorAssertionResponse as returned by navigator.credentials.get over the uvOptions from start. Binary fields base64url-encoded.\"}},\"required\":[\"revocationId\",\"uvCredential\"],\"title\":\"Auth — Passkey Revoke (finish)\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -985,7 +766,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AssertionResponse\": {\n      \"$anchor\": \"assertionResponse\",\n      \"additionalProperties\": false,\n      \"description\": \"The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.\",\n      \"properties\": {\n        \"authenticatorAttachment\": {\n          \"enum\": [\n            \"platform\",\n            \"cross-platform\"\n          ]\n        },\n        \"clientExtensionResults\": {\n          \"type\": \"object\"\n        },\n        \"id\": {\n          \"type\": \"string\"\n        },\n        \"rawId\": {\n          \"type\": \"string\"\n        },\n        \"response\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"authenticatorData\": {\n              \"type\": \"string\"\n            },\n            \"clientDataJSON\": {\n              \"type\": \"string\"\n            },\n            \"signature\": {\n              \"type\": \"string\"\n            },\n            \"userHandle\": {\n              \"type\": [\n                \"string\",\n                \"null\"\n              ]\n            }\n          },\n          \"required\": [\n            \"clientDataJSON\",\n            \"authenticatorData\",\n            \"signature\"\n          ],\n          \"type\": \"object\"\n        },\n        \"type\": {\n          \"const\": \"public-key\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"rawId\",\n        \"type\",\n        \"response\"\n      ],\n      \"title\": \"AuthenticatorAssertionResponse (login)\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Acknowledgement of the removed credential. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/revoke/finish/0.1#response.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"description\": \"The credential that was removed. Echoed from the server-side binding rather than from the request, so the producer can confirm the ceremony destroyed what they intended.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"remaining\": {\n          \"description\": \"How many passkeys the subject still has. Never zero — the last-credential refusal at start guarantees it. Present so a subject who has just pruned an estate knows what they have left without a second round-trip.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the credential was unbound.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"revokedAt\",\n        \"remaining\"\n      ],\n      \"title\": \"Auth Passkey Revoke Finish — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"AssertionResponse\":{\"$anchor\":\"assertionResponse\",\"additionalProperties\":false,\"description\":\"The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.\",\"properties\":{\"authenticatorAttachment\":{\"enum\":[\"platform\",\"cross-platform\"]},\"clientExtensionResults\":{\"type\":\"object\"},\"id\":{\"type\":\"string\"},\"rawId\":{\"type\":\"string\"},\"response\":{\"additionalProperties\":false,\"properties\":{\"authenticatorData\":{\"type\":\"string\"},\"clientDataJSON\":{\"type\":\"string\"},\"signature\":{\"type\":\"string\"},\"userHandle\":{\"type\":[\"string\",\"null\"]}},\"required\":[\"clientDataJSON\",\"authenticatorData\",\"signature\"],\"type\":\"object\"},\"type\":{\"const\":\"public-key\"}},\"required\":[\"id\",\"rawId\",\"type\",\"response\"],\"title\":\"AuthenticatorAssertionResponse (login)\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Acknowledgement of the removed credential. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/revoke/finish/0.1#response.\",\"properties\":{\"credentialId\":{\"description\":\"The credential that was removed. Echoed from the server-side binding rather than from the request, so the producer can confirm the ceremony destroyed what they intended.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"remaining\":{\"description\":\"How many passkeys the subject still has. Never zero — the last-credential refusal at start guarantees it. Present so a subject who has just pruned an estate knows what they have left without a second round-trip.\",\"minimum\":1,\"type\":\"integer\"},\"revokedAt\":{\"description\":\"When the credential was unbound.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"credentialId\",\"revokedAt\",\"remaining\"],\"title\":\"Auth Passkey Revoke Finish — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

@@ -35,21 +35,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -71,15 +56,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -143,41 +119,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///An administrator asks a trust registry to delete the trust record identified by the four TRQP identifiers.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/registry/record/delete/0.1",
-///  "title": "Payload",
-///  "description": "An administrator asks a trust registry to delete the trust record identified by the four TRQP identifiers.",
-///  "type": "object",
-///  "required": [
-///    "action",
-///    "authority_id",
-///    "entity_id",
-///    "resource"
-///  ],
-///  "properties": {
-///    "action": {
-///      "type": "string"
-///    },
-///    "authority_id": {
-///      "type": "string"
-///    },
-///    "entity_id": {
-///      "type": "string"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "resource": {
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -197,34 +138,6 @@ impl Payload {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "ok"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "message": {
-///      "description": "Optional human-readable detail.",
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "ok": {
-///      "description": "Whether the record was deleted.",
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -245,16 +158,6 @@ impl Response {
 }
 ///Optional human-readable detail.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Optional human-readable detail.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseMessage(::std::string::String);
@@ -484,7 +387,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"message\": {\n          \"description\": \"Optional human-readable detail.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"ok\": {\n          \"description\": \"Whether the record was deleted.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"ok\"\n      ],\n      \"title\": \"Registry Record Delete — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/registry/record/delete/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An administrator asks a trust registry to delete the trust record identified by the four TRQP identifiers.\",\n  \"properties\": {\n    \"action\": {\n      \"type\": \"string\"\n    },\n    \"authority_id\": {\n      \"type\": \"string\"\n    },\n    \"entity_id\": {\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"resource\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"entity_id\",\n    \"authority_id\",\n    \"action\",\n    \"resource\"\n  ],\n  \"title\": \"Registry Record Delete — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"message\":{\"description\":\"Optional human-readable detail.\",\"maxLength\":1024,\"type\":\"string\"},\"ok\":{\"description\":\"Whether the record was deleted.\",\"type\":\"boolean\"}},\"required\":[\"ok\"],\"title\":\"Registry Record Delete — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/registry/record/delete/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"An administrator asks a trust registry to delete the trust record identified by the four TRQP identifiers.\",\"properties\":{\"action\":{\"type\":\"string\"},\"authority_id\":{\"type\":\"string\"},\"entity_id\":{\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"resource\":{\"type\":\"string\"}},\"required\":[\"entity_id\",\"authority_id\",\"action\",\"resource\"],\"title\":\"Registry Record Delete — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -494,7 +397,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"message\": {\n          \"description\": \"Optional human-readable detail.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"ok\": {\n          \"description\": \"Whether the record was deleted.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"ok\"\n      ],\n      \"title\": \"Registry Record Delete — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"message\":{\"description\":\"Optional human-readable detail.\",\"maxLength\":1024,\"type\":\"string\"},\"ok\":{\"description\":\"Whether the record was deleted.\",\"type\":\"boolean\"}},\"required\":[\"ok\"],\"title\":\"Registry Record Delete — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

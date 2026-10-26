@@ -34,40 +34,6 @@ pub mod error {
 }
 ///A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "BoardHead",
-///  "description": "A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.",
-///  "type": "object",
-///  "required": [
-///    "electionId",
-///    "issuedAt",
-///    "rootHash",
-///    "treeSize"
-///  ],
-///  "properties": {
-///    "electionId": {
-///      "$ref": "#/definitions/ElectionId"
-///    },
-///    "issuedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "rootHash": {
-///      "description": "The RFC 9162 Merkle tree hash (SHA-256) of the first `treeSize` entries, as a multihash.",
-///      "$ref": "#/definitions/DigestMultibase"
-///    },
-///    "treeSize": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -89,49 +55,6 @@ impl BoardHead {
 }
 ///What a partial decryption decrypts: the sealed cast at a board leaf, or the total of one option of one question.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DecryptionTarget",
-///  "description": "What a partial decryption decrypts: the sealed cast at a board leaf, or the total of one option of one question.",
-///  "type": "object",
-///  "oneOf": [
-///    {
-///      "required": [
-///        "leafIndex"
-///      ]
-///    },
-///    {
-///      "required": [
-///        "option",
-///        "question"
-///      ]
-///    }
-///  ],
-///  "required": [
-///    "ciphertext"
-///  ],
-///  "properties": {
-///    "ciphertext": {
-///      "$ref": "#/definitions/ElGamalCiphertext"
-///    },
-///    "leafIndex": {
-///      "description": "A sealed cast's board leaf.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "option": {
-///      "$ref": "#/definitions/Key"
-///    },
-///    "question": {
-///      "$ref": "#/definitions/Key"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged, deny_unknown_fields)]
 #[non_exhaustive]
@@ -157,21 +80,6 @@ This definition constrains the *encoding only*. What the digest is computed over
 
 Restricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that "interoperability is not guaranteed between implementations using such values", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DigestMultibase",
-///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-///  "examples": [
-///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-///  ],
-///  "type": "string",
-///  "minLength": 16,
-///  "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DigestMultibase(::std::string::String);
@@ -240,29 +148,6 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
 }
 ///`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ElGamalCiphertext",
-///  "description": "`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).",
-///  "type": "object",
-///  "required": [
-///    "a",
-///    "b"
-///  ],
-///  "properties": {
-///    "a": {
-///      "$ref": "#/definitions/GroupElement"
-///    },
-///    "b": {
-///      "$ref": "#/definitions/GroupElement"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -277,17 +162,6 @@ impl ElGamalCiphertext {
 }
 ///An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ElectionId",
-///  "description": "An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.",
-///  "type": "string",
-///  "pattern": "^[A-Za-z0-9._-]{1,128}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ElectionId(::std::string::String);
@@ -351,23 +225,6 @@ impl<'de> ::serde::Deserialize<'de> for ElectionId {
 }
 ///`ElectionState`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ElectionState",
-///  "type": "string",
-///  "enum": [
-///    "registered",
-///    "registration",
-///    "voting",
-///    "closed",
-///    "tallied",
-///    "cancelled"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -445,49 +302,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ElectionState {
 }
 ///A ballot box's view of one election.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ElectionSummary",
-///  "description": "A ballot box's view of one election.",
-///  "type": "object",
-///  "required": [
-///    "ballotsAdmitted",
-///    "community",
-///    "electionId",
-///    "head",
-///    "manifestDigest",
-///    "state"
-///  ],
-///  "properties": {
-///    "ballotsAdmitted": {
-///      "description": "Distinct tags with a counted ballot.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "community": {
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1
-///    },
-///    "electionId": {
-///      "$ref": "#/definitions/ElectionId"
-///    },
-///    "head": {
-///      "$ref": "#/definitions/BoardHead"
-///    },
-///    "manifestDigest": {
-///      "$ref": "#/definitions/DigestMultibase"
-///    },
-///    "state": {
-///      "$ref": "#/definitions/ElectionState"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -510,16 +324,6 @@ impl ElectionSummary {
 }
 ///`ElectionSummaryCommunity`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ElectionSummaryCommunity(::std::string::String);
@@ -582,21 +386,6 @@ impl<'de> ::serde::Deserialize<'de> for ElectionSummaryCommunity {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -618,15 +407,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -690,19 +470,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "GroupElement",
-///  "description": "A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 2,
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct GroupElement(::std::string::String);
@@ -772,19 +539,6 @@ impl<'de> ::serde::Deserialize<'de> for GroupElement {
 }
 ///A scalar mod the Ristretto group order: 32 canonical little-endian bytes, multibase base58btc (CONVENTIONS §9.1).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "GroupScalar",
-///  "description": "A scalar mod the Ristretto group order: 32 canonical little-endian bytes, multibase base58btc (CONVENTIONS §9.1).",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 2,
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct GroupScalar(::std::string::String);
@@ -854,17 +608,6 @@ impl<'de> ::serde::Deserialize<'de> for GroupScalar {
 }
 ///A question or option key, unique within its manifest or question.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Key",
-///  "description": "A question or option key, unique within its manifest or question.",
-///  "type": "string",
-///  "pattern": "^[A-Za-z0-9._-]{1,64}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Key(::std::string::String);
@@ -926,33 +669,6 @@ impl<'de> ::serde::Deserialize<'de> for Key {
 }
 ///Trustee `trustee`'s share of one decryption, `d = x_j·a`, with a Chaum–Pedersen proof against its verification key (CONVENTIONS §9.7).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "PartialDecryption",
-///  "description": "Trustee `trustee`'s share of one decryption, `d = x_j·a`, with a Chaum–Pedersen proof against its verification key (CONVENTIONS §9.7).",
-///  "type": "object",
-///  "required": [
-///    "d",
-///    "proof",
-///    "target"
-///  ],
-///  "properties": {
-///    "d": {
-///      "$ref": "#/definitions/GroupElement"
-///    },
-///    "proof": {
-///      "$ref": "#/definitions/SigmaProof"
-///    },
-///    "target": {
-///      "$ref": "#/definitions/DecryptionTarget"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -968,49 +684,6 @@ impl PartialDecryption {
 }
 ///After voting closes, a trustee publishes its partial decryption of every target, each with a proof it used its share of the election key.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/voting/trustees/decrypt/0.1",
-///  "title": "Payload",
-///  "description": "After voting closes, a trustee publishes its partial decryption of every target, each with a proof it used its share of the election key.",
-///  "type": "object",
-///  "required": [
-///    "community",
-///    "electionId",
-///    "partials",
-///    "trustee"
-///  ],
-///  "properties": {
-///    "community": {
-///      "description": "The community's DID: the registrar that registered the election.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1
-///    },
-///    "electionId": {
-///      "$ref": "#/definitions/ElectionId"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "partials": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/PartialDecryption"
-///      },
-///      "maxItems": 100000,
-///      "minItems": 1
-///    },
-///    "trustee": {
-///      "$ref": "#/definitions/TrusteeIndex"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1031,17 +704,6 @@ impl Payload {
 }
 ///The community's DID: the registrar that registered the election.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The community's DID: the registrar that registered the election.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCommunity(::std::string::String);
@@ -1104,32 +766,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCommunity {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "election",
-///    "phase"
-///  ],
-///  "properties": {
-///    "election": {
-///      "$ref": "#/definitions/ElectionSummary"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "phase": {
-///      "$ref": "#/definitions/TrusteePhase"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1146,29 +782,6 @@ impl Response {
 }
 ///A non-interactive sigma proof as its challenge and response `(c, z)` (Schnorr or Chaum–Pedersen; CONVENTIONS §9.3).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "SigmaProof",
-///  "description": "A non-interactive sigma proof as its challenge and response `(c, z)` (Schnorr or Chaum–Pedersen; CONVENTIONS §9.3).",
-///  "type": "object",
-///  "required": [
-///    "c",
-///    "z"
-///  ],
-///  "properties": {
-///    "c": {
-///      "$ref": "#/definitions/GroupScalar"
-///    },
-///    "z": {
-///      "$ref": "#/definitions/GroupScalar"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1183,18 +796,6 @@ impl SigmaProof {
 }
 ///A trustee's index: its position in the manifest's `trustees.dids`, counting from 1.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "TrusteeIndex",
-///  "description": "A trustee's index: its position in the manifest's `trustees.dids`, counting from 1.",
-///  "type": "integer",
-///  "maximum": 64.0,
-///  "minimum": 1.0
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct TrusteeIndex(pub ::std::num::NonZeroU64);
@@ -1239,25 +840,6 @@ impl ::std::fmt::Display for TrusteeIndex {
 }
 ///`enrolling`: transport keys are being published. `dealing`: dealings are. `confirming`: each trustee confirms or complains. `keyed`: the election key is formed. `decrypting`: voting has closed and partial decryptions are being published. `done`: every target is decrypted. `failed`: the key could not be formed in time.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "TrusteePhase",
-///  "description": "`enrolling`: transport keys are being published. `dealing`: dealings are. `confirming`: each trustee confirms or complains. `keyed`: the election key is formed. `decrypting`: voting has closed and partial decryptions are being published. `done`: every target is decrypted. `failed`: the key could not be formed in time.",
-///  "type": "string",
-///  "enum": [
-///    "enrolling",
-///    "dealing",
-///    "confirming",
-///    "keyed",
-///    "decrypting",
-///    "done",
-///    "failed"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1876,7 +1458,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"BoardHead\": {\n      \"additionalProperties\": false,\n      \"description\": \"A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.\",\n      \"properties\": {\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"issuedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"rootHash\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"The RFC 9162 Merkle tree hash (SHA-256) of the first `treeSize` entries, as a multihash.\"\n        },\n        \"treeSize\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"treeSize\",\n        \"rootHash\",\n        \"issuedAt\"\n      ],\n      \"title\": \"BoardHead\",\n      \"type\": \"object\"\n    },\n    \"DecryptionTarget\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a partial decryption decrypts: the sealed cast at a board leaf, or the total of one option of one question.\",\n      \"oneOf\": [\n        {\n          \"required\": [\n            \"leafIndex\"\n          ]\n        },\n        {\n          \"required\": [\n            \"question\",\n            \"option\"\n          ]\n        }\n      ],\n      \"properties\": {\n        \"ciphertext\": {\n          \"$ref\": \"#/$defs/ElGamalCiphertext\"\n        },\n        \"leafIndex\": {\n          \"description\": \"A sealed cast's board leaf.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"option\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"question\": {\n          \"$ref\": \"#/$defs/Key\"\n        }\n      },\n      \"required\": [\n        \"ciphertext\"\n      ],\n      \"title\": \"DecryptionTarget\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"ElGamalCiphertext\": {\n      \"additionalProperties\": false,\n      \"description\": \"`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).\",\n      \"properties\": {\n        \"a\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        },\n        \"b\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        }\n      },\n      \"required\": [\n        \"a\",\n        \"b\"\n      ],\n      \"title\": \"ElGamalCiphertext\",\n      \"type\": \"object\"\n    },\n    \"ElectionId\": {\n      \"description\": \"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,128}$\",\n      \"title\": \"ElectionId\",\n      \"type\": \"string\"\n    },\n    \"ElectionState\": {\n      \"enum\": [\n        \"registered\",\n        \"registration\",\n        \"voting\",\n        \"closed\",\n        \"tallied\",\n        \"cancelled\"\n      ],\n      \"title\": \"ElectionState\",\n      \"type\": \"string\"\n    },\n    \"ElectionSummary\": {\n      \"additionalProperties\": false,\n      \"description\": \"A ballot box's view of one election.\",\n      \"properties\": {\n        \"ballotsAdmitted\": {\n          \"description\": \"Distinct tags with a counted ballot.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"community\": {\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"head\": {\n          \"$ref\": \"#/$defs/BoardHead\"\n        },\n        \"manifestDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\"\n        },\n        \"state\": {\n          \"$ref\": \"#/$defs/ElectionState\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"community\",\n        \"manifestDigest\",\n        \"state\",\n        \"ballotsAdmitted\",\n        \"head\"\n      ],\n      \"title\": \"ElectionSummary\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"GroupElement\": {\n      \"description\": \"A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).\",\n      \"maxLength\": 64,\n      \"minLength\": 2,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"GroupElement\",\n      \"type\": \"string\"\n    },\n    \"GroupScalar\": {\n      \"description\": \"A scalar mod the Ristretto group order: 32 canonical little-endian bytes, multibase base58btc (CONVENTIONS §9.1).\",\n      \"maxLength\": 64,\n      \"minLength\": 2,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"GroupScalar\",\n      \"type\": \"string\"\n    },\n    \"Key\": {\n      \"description\": \"A question or option key, unique within its manifest or question.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,64}$\",\n      \"title\": \"Key\",\n      \"type\": \"string\"\n    },\n    \"PartialDecryption\": {\n      \"additionalProperties\": false,\n      \"description\": \"Trustee `trustee`'s share of one decryption, `d = x_j·a`, with a Chaum–Pedersen proof against its verification key (CONVENTIONS §9.7).\",\n      \"properties\": {\n        \"d\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        },\n        \"proof\": {\n          \"$ref\": \"#/$defs/SigmaProof\"\n        },\n        \"target\": {\n          \"$ref\": \"#/$defs/DecryptionTarget\"\n        }\n      },\n      \"required\": [\n        \"target\",\n        \"d\",\n        \"proof\"\n      ],\n      \"title\": \"PartialDecryption\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"election\": {\n          \"$ref\": \"#/$defs/ElectionSummary\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"phase\": {\n          \"$ref\": \"#/$defs/TrusteePhase\"\n        }\n      },\n      \"required\": [\n        \"election\",\n        \"phase\"\n      ],\n      \"title\": \"Voting — Trustees — Decrypt — response payload\",\n      \"type\": \"object\"\n    },\n    \"SigmaProof\": {\n      \"additionalProperties\": false,\n      \"description\": \"A non-interactive sigma proof as its challenge and response `(c, z)` (Schnorr or Chaum–Pedersen; CONVENTIONS §9.3).\",\n      \"properties\": {\n        \"c\": {\n          \"$ref\": \"#/$defs/GroupScalar\"\n        },\n        \"z\": {\n          \"$ref\": \"#/$defs/GroupScalar\"\n        }\n      },\n      \"required\": [\n        \"c\",\n        \"z\"\n      ],\n      \"title\": \"SigmaProof\",\n      \"type\": \"object\"\n    },\n    \"TrusteeIndex\": {\n      \"description\": \"A trustee's index: its position in the manifest's `trustees.dids`, counting from 1.\",\n      \"maximum\": 64,\n      \"minimum\": 1,\n      \"title\": \"TrusteeIndex\",\n      \"type\": \"integer\"\n    },\n    \"TrusteePhase\": {\n      \"description\": \"`enrolling`: transport keys are being published. `dealing`: dealings are. `confirming`: each trustee confirms or complains. `keyed`: the election key is formed. `decrypting`: voting has closed and partial decryptions are being published. `done`: every target is decrypted. `failed`: the key could not be formed in time.\",\n      \"enum\": [\n        \"enrolling\",\n        \"dealing\",\n        \"confirming\",\n        \"keyed\",\n        \"decrypting\",\n        \"done\",\n        \"failed\"\n      ],\n      \"title\": \"TrusteePhase\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/voting/trustees/decrypt/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"After voting closes, a trustee publishes its partial decryption of every target, each with a proof it used its share of the election key.\",\n  \"properties\": {\n    \"community\": {\n      \"description\": \"The community's DID: the registrar that registered the election.\",\n      \"maxLength\": 2048,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"electionId\": {\n      \"$ref\": \"#/$defs/ElectionId\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"partials\": {\n      \"items\": {\n        \"$ref\": \"#/$defs/PartialDecryption\"\n      },\n      \"maxItems\": 100000,\n      \"minItems\": 1,\n      \"type\": \"array\"\n    },\n    \"trustee\": {\n      \"$ref\": \"#/$defs/TrusteeIndex\"\n    }\n  },\n  \"required\": [\n    \"community\",\n    \"electionId\",\n    \"trustee\",\n    \"partials\"\n  ],\n  \"title\": \"Voting — Trustees — Decrypt — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"BoardHead\":{\"additionalProperties\":false,\"description\":\"A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.\",\"properties\":{\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"rootHash\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The RFC 9162 Merkle tree hash (SHA-256) of the first `treeSize` entries, as a multihash.\"},\"treeSize\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"electionId\",\"treeSize\",\"rootHash\",\"issuedAt\"],\"title\":\"BoardHead\",\"type\":\"object\"},\"DecryptionTarget\":{\"additionalProperties\":false,\"description\":\"What a partial decryption decrypts: the sealed cast at a board leaf, or the total of one option of one question.\",\"oneOf\":[{\"required\":[\"leafIndex\"]},{\"required\":[\"question\",\"option\"]}],\"properties\":{\"ciphertext\":{\"$ref\":\"#/$defs/ElGamalCiphertext\"},\"leafIndex\":{\"description\":\"A sealed cast's board leaf.\",\"minimum\":0,\"type\":\"integer\"},\"option\":{\"$ref\":\"#/$defs/Key\"},\"question\":{\"$ref\":\"#/$defs/Key\"}},\"required\":[\"ciphertext\"],\"title\":\"DecryptionTarget\",\"type\":\"object\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"ElGamalCiphertext\":{\"additionalProperties\":false,\"description\":\"`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).\",\"properties\":{\"a\":{\"$ref\":\"#/$defs/GroupElement\"},\"b\":{\"$ref\":\"#/$defs/GroupElement\"}},\"required\":[\"a\",\"b\"],\"title\":\"ElGamalCiphertext\",\"type\":\"object\"},\"ElectionId\":{\"description\":\"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\"pattern\":\"^[A-Za-z0-9._-]{1,128}$\",\"title\":\"ElectionId\",\"type\":\"string\"},\"ElectionState\":{\"enum\":[\"registered\",\"registration\",\"voting\",\"closed\",\"tallied\",\"cancelled\"],\"title\":\"ElectionState\",\"type\":\"string\"},\"ElectionSummary\":{\"additionalProperties\":false,\"description\":\"A ballot box's view of one election.\",\"properties\":{\"ballotsAdmitted\":{\"description\":\"Distinct tags with a counted ballot.\",\"minimum\":0,\"type\":\"integer\"},\"community\":{\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"head\":{\"$ref\":\"#/$defs/BoardHead\"},\"manifestDigest\":{\"$ref\":\"#/$defs/DigestMultibase\"},\"state\":{\"$ref\":\"#/$defs/ElectionState\"}},\"required\":[\"electionId\",\"community\",\"manifestDigest\",\"state\",\"ballotsAdmitted\",\"head\"],\"title\":\"ElectionSummary\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"GroupElement\":{\"description\":\"A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).\",\"maxLength\":64,\"minLength\":2,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"GroupElement\",\"type\":\"string\"},\"GroupScalar\":{\"description\":\"A scalar mod the Ristretto group order: 32 canonical little-endian bytes, multibase base58btc (CONVENTIONS §9.1).\",\"maxLength\":64,\"minLength\":2,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"GroupScalar\",\"type\":\"string\"},\"Key\":{\"description\":\"A question or option key, unique within its manifest or question.\",\"pattern\":\"^[A-Za-z0-9._-]{1,64}$\",\"title\":\"Key\",\"type\":\"string\"},\"PartialDecryption\":{\"additionalProperties\":false,\"description\":\"Trustee `trustee`'s share of one decryption, `d = x_j·a`, with a Chaum–Pedersen proof against its verification key (CONVENTIONS §9.7).\",\"properties\":{\"d\":{\"$ref\":\"#/$defs/GroupElement\"},\"proof\":{\"$ref\":\"#/$defs/SigmaProof\"},\"target\":{\"$ref\":\"#/$defs/DecryptionTarget\"}},\"required\":[\"target\",\"d\",\"proof\"],\"title\":\"PartialDecryption\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"election\":{\"$ref\":\"#/$defs/ElectionSummary\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"phase\":{\"$ref\":\"#/$defs/TrusteePhase\"}},\"required\":[\"election\",\"phase\"],\"title\":\"Voting — Trustees — Decrypt — response payload\",\"type\":\"object\"},\"SigmaProof\":{\"additionalProperties\":false,\"description\":\"A non-interactive sigma proof as its challenge and response `(c, z)` (Schnorr or Chaum–Pedersen; CONVENTIONS §9.3).\",\"properties\":{\"c\":{\"$ref\":\"#/$defs/GroupScalar\"},\"z\":{\"$ref\":\"#/$defs/GroupScalar\"}},\"required\":[\"c\",\"z\"],\"title\":\"SigmaProof\",\"type\":\"object\"},\"TrusteeIndex\":{\"description\":\"A trustee's index: its position in the manifest's `trustees.dids`, counting from 1.\",\"maximum\":64,\"minimum\":1,\"title\":\"TrusteeIndex\",\"type\":\"integer\"},\"TrusteePhase\":{\"description\":\"`enrolling`: transport keys are being published. `dealing`: dealings are. `confirming`: each trustee confirms or complains. `keyed`: the election key is formed. `decrypting`: voting has closed and partial decryptions are being published. `done`: every target is decrypted. `failed`: the key could not be formed in time.\",\"enum\":[\"enrolling\",\"dealing\",\"confirming\",\"keyed\",\"decrypting\",\"done\",\"failed\"],\"title\":\"TrusteePhase\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/voting/trustees/decrypt/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"After voting closes, a trustee publishes its partial decryption of every target, each with a proof it used its share of the election key.\",\"properties\":{\"community\":{\"description\":\"The community's DID: the registrar that registered the election.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"partials\":{\"items\":{\"$ref\":\"#/$defs/PartialDecryption\"},\"maxItems\":100000,\"minItems\":1,\"type\":\"array\"},\"trustee\":{\"$ref\":\"#/$defs/TrusteeIndex\"}},\"required\":[\"community\",\"electionId\",\"trustee\",\"partials\"],\"title\":\"Voting — Trustees — Decrypt — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1886,7 +1468,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"BoardHead\": {\n      \"additionalProperties\": false,\n      \"description\": \"A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.\",\n      \"properties\": {\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"issuedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"rootHash\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"The RFC 9162 Merkle tree hash (SHA-256) of the first `treeSize` entries, as a multihash.\"\n        },\n        \"treeSize\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"treeSize\",\n        \"rootHash\",\n        \"issuedAt\"\n      ],\n      \"title\": \"BoardHead\",\n      \"type\": \"object\"\n    },\n    \"DecryptionTarget\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a partial decryption decrypts: the sealed cast at a board leaf, or the total of one option of one question.\",\n      \"oneOf\": [\n        {\n          \"required\": [\n            \"leafIndex\"\n          ]\n        },\n        {\n          \"required\": [\n            \"question\",\n            \"option\"\n          ]\n        }\n      ],\n      \"properties\": {\n        \"ciphertext\": {\n          \"$ref\": \"#/$defs/ElGamalCiphertext\"\n        },\n        \"leafIndex\": {\n          \"description\": \"A sealed cast's board leaf.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"option\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"question\": {\n          \"$ref\": \"#/$defs/Key\"\n        }\n      },\n      \"required\": [\n        \"ciphertext\"\n      ],\n      \"title\": \"DecryptionTarget\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"ElGamalCiphertext\": {\n      \"additionalProperties\": false,\n      \"description\": \"`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).\",\n      \"properties\": {\n        \"a\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        },\n        \"b\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        }\n      },\n      \"required\": [\n        \"a\",\n        \"b\"\n      ],\n      \"title\": \"ElGamalCiphertext\",\n      \"type\": \"object\"\n    },\n    \"ElectionId\": {\n      \"description\": \"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,128}$\",\n      \"title\": \"ElectionId\",\n      \"type\": \"string\"\n    },\n    \"ElectionState\": {\n      \"enum\": [\n        \"registered\",\n        \"registration\",\n        \"voting\",\n        \"closed\",\n        \"tallied\",\n        \"cancelled\"\n      ],\n      \"title\": \"ElectionState\",\n      \"type\": \"string\"\n    },\n    \"ElectionSummary\": {\n      \"additionalProperties\": false,\n      \"description\": \"A ballot box's view of one election.\",\n      \"properties\": {\n        \"ballotsAdmitted\": {\n          \"description\": \"Distinct tags with a counted ballot.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"community\": {\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"head\": {\n          \"$ref\": \"#/$defs/BoardHead\"\n        },\n        \"manifestDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\"\n        },\n        \"state\": {\n          \"$ref\": \"#/$defs/ElectionState\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"community\",\n        \"manifestDigest\",\n        \"state\",\n        \"ballotsAdmitted\",\n        \"head\"\n      ],\n      \"title\": \"ElectionSummary\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"GroupElement\": {\n      \"description\": \"A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).\",\n      \"maxLength\": 64,\n      \"minLength\": 2,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"GroupElement\",\n      \"type\": \"string\"\n    },\n    \"GroupScalar\": {\n      \"description\": \"A scalar mod the Ristretto group order: 32 canonical little-endian bytes, multibase base58btc (CONVENTIONS §9.1).\",\n      \"maxLength\": 64,\n      \"minLength\": 2,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"GroupScalar\",\n      \"type\": \"string\"\n    },\n    \"Key\": {\n      \"description\": \"A question or option key, unique within its manifest or question.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,64}$\",\n      \"title\": \"Key\",\n      \"type\": \"string\"\n    },\n    \"PartialDecryption\": {\n      \"additionalProperties\": false,\n      \"description\": \"Trustee `trustee`'s share of one decryption, `d = x_j·a`, with a Chaum–Pedersen proof against its verification key (CONVENTIONS §9.7).\",\n      \"properties\": {\n        \"d\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        },\n        \"proof\": {\n          \"$ref\": \"#/$defs/SigmaProof\"\n        },\n        \"target\": {\n          \"$ref\": \"#/$defs/DecryptionTarget\"\n        }\n      },\n      \"required\": [\n        \"target\",\n        \"d\",\n        \"proof\"\n      ],\n      \"title\": \"PartialDecryption\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"election\": {\n          \"$ref\": \"#/$defs/ElectionSummary\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"phase\": {\n          \"$ref\": \"#/$defs/TrusteePhase\"\n        }\n      },\n      \"required\": [\n        \"election\",\n        \"phase\"\n      ],\n      \"title\": \"Voting — Trustees — Decrypt — response payload\",\n      \"type\": \"object\"\n    },\n    \"SigmaProof\": {\n      \"additionalProperties\": false,\n      \"description\": \"A non-interactive sigma proof as its challenge and response `(c, z)` (Schnorr or Chaum–Pedersen; CONVENTIONS §9.3).\",\n      \"properties\": {\n        \"c\": {\n          \"$ref\": \"#/$defs/GroupScalar\"\n        },\n        \"z\": {\n          \"$ref\": \"#/$defs/GroupScalar\"\n        }\n      },\n      \"required\": [\n        \"c\",\n        \"z\"\n      ],\n      \"title\": \"SigmaProof\",\n      \"type\": \"object\"\n    },\n    \"TrusteeIndex\": {\n      \"description\": \"A trustee's index: its position in the manifest's `trustees.dids`, counting from 1.\",\n      \"maximum\": 64,\n      \"minimum\": 1,\n      \"title\": \"TrusteeIndex\",\n      \"type\": \"integer\"\n    },\n    \"TrusteePhase\": {\n      \"description\": \"`enrolling`: transport keys are being published. `dealing`: dealings are. `confirming`: each trustee confirms or complains. `keyed`: the election key is formed. `decrypting`: voting has closed and partial decryptions are being published. `done`: every target is decrypted. `failed`: the key could not be formed in time.\",\n      \"enum\": [\n        \"enrolling\",\n        \"dealing\",\n        \"confirming\",\n        \"keyed\",\n        \"decrypting\",\n        \"done\",\n        \"failed\"\n      ],\n      \"title\": \"TrusteePhase\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"BoardHead\":{\"additionalProperties\":false,\"description\":\"A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.\",\"properties\":{\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"rootHash\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The RFC 9162 Merkle tree hash (SHA-256) of the first `treeSize` entries, as a multihash.\"},\"treeSize\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"electionId\",\"treeSize\",\"rootHash\",\"issuedAt\"],\"title\":\"BoardHead\",\"type\":\"object\"},\"DecryptionTarget\":{\"additionalProperties\":false,\"description\":\"What a partial decryption decrypts: the sealed cast at a board leaf, or the total of one option of one question.\",\"oneOf\":[{\"required\":[\"leafIndex\"]},{\"required\":[\"question\",\"option\"]}],\"properties\":{\"ciphertext\":{\"$ref\":\"#/$defs/ElGamalCiphertext\"},\"leafIndex\":{\"description\":\"A sealed cast's board leaf.\",\"minimum\":0,\"type\":\"integer\"},\"option\":{\"$ref\":\"#/$defs/Key\"},\"question\":{\"$ref\":\"#/$defs/Key\"}},\"required\":[\"ciphertext\"],\"title\":\"DecryptionTarget\",\"type\":\"object\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"ElGamalCiphertext\":{\"additionalProperties\":false,\"description\":\"`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).\",\"properties\":{\"a\":{\"$ref\":\"#/$defs/GroupElement\"},\"b\":{\"$ref\":\"#/$defs/GroupElement\"}},\"required\":[\"a\",\"b\"],\"title\":\"ElGamalCiphertext\",\"type\":\"object\"},\"ElectionId\":{\"description\":\"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\"pattern\":\"^[A-Za-z0-9._-]{1,128}$\",\"title\":\"ElectionId\",\"type\":\"string\"},\"ElectionState\":{\"enum\":[\"registered\",\"registration\",\"voting\",\"closed\",\"tallied\",\"cancelled\"],\"title\":\"ElectionState\",\"type\":\"string\"},\"ElectionSummary\":{\"additionalProperties\":false,\"description\":\"A ballot box's view of one election.\",\"properties\":{\"ballotsAdmitted\":{\"description\":\"Distinct tags with a counted ballot.\",\"minimum\":0,\"type\":\"integer\"},\"community\":{\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"head\":{\"$ref\":\"#/$defs/BoardHead\"},\"manifestDigest\":{\"$ref\":\"#/$defs/DigestMultibase\"},\"state\":{\"$ref\":\"#/$defs/ElectionState\"}},\"required\":[\"electionId\",\"community\",\"manifestDigest\",\"state\",\"ballotsAdmitted\",\"head\"],\"title\":\"ElectionSummary\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"GroupElement\":{\"description\":\"A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).\",\"maxLength\":64,\"minLength\":2,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"GroupElement\",\"type\":\"string\"},\"GroupScalar\":{\"description\":\"A scalar mod the Ristretto group order: 32 canonical little-endian bytes, multibase base58btc (CONVENTIONS §9.1).\",\"maxLength\":64,\"minLength\":2,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"GroupScalar\",\"type\":\"string\"},\"Key\":{\"description\":\"A question or option key, unique within its manifest or question.\",\"pattern\":\"^[A-Za-z0-9._-]{1,64}$\",\"title\":\"Key\",\"type\":\"string\"},\"PartialDecryption\":{\"additionalProperties\":false,\"description\":\"Trustee `trustee`'s share of one decryption, `d = x_j·a`, with a Chaum–Pedersen proof against its verification key (CONVENTIONS §9.7).\",\"properties\":{\"d\":{\"$ref\":\"#/$defs/GroupElement\"},\"proof\":{\"$ref\":\"#/$defs/SigmaProof\"},\"target\":{\"$ref\":\"#/$defs/DecryptionTarget\"}},\"required\":[\"target\",\"d\",\"proof\"],\"title\":\"PartialDecryption\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"election\":{\"$ref\":\"#/$defs/ElectionSummary\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"phase\":{\"$ref\":\"#/$defs/TrusteePhase\"}},\"required\":[\"election\",\"phase\"],\"title\":\"Voting — Trustees — Decrypt — response payload\",\"type\":\"object\"},\"SigmaProof\":{\"additionalProperties\":false,\"description\":\"A non-interactive sigma proof as its challenge and response `(c, z)` (Schnorr or Chaum–Pedersen; CONVENTIONS §9.3).\",\"properties\":{\"c\":{\"$ref\":\"#/$defs/GroupScalar\"},\"z\":{\"$ref\":\"#/$defs/GroupScalar\"}},\"required\":[\"c\",\"z\"],\"title\":\"SigmaProof\",\"type\":\"object\"},\"TrusteeIndex\":{\"description\":\"A trustee's index: its position in the manifest's `trustees.dids`, counting from 1.\",\"maximum\":64,\"minimum\":1,\"title\":\"TrusteeIndex\",\"type\":\"integer\"},\"TrusteePhase\":{\"description\":\"`enrolling`: transport keys are being published. `dealing`: dealings are. `confirming`: each trustee confirms or complains. `keyed`: the election key is formed. `decrypting`: voting has closed and partial decryptions are being published. `done`: every target is decrypted. `failed`: the key could not be formed in time.\",\"enum\":[\"enrolling\",\"dealing\",\"confirming\",\"keyed\",\"decrypting\",\"done\",\"failed\"],\"title\":\"TrusteePhase\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

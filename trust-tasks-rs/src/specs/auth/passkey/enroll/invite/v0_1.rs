@@ -35,21 +35,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -71,15 +56,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -143,53 +119,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///An administrator issues a single-use invite link an unenrolled subject can redeem to bind their first passkey, without first holding an authenticated session.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/auth/passkey/enroll/invite/0.1",
-///  "title": "Payload",
-///  "description": "An administrator issues a single-use invite link an unenrolled subject can redeem to bind their first passkey, without first holding an authenticated session.",
-///  "type": "object",
-///  "required": [
-///    "subject"
-///  ],
-///  "properties": {
-///    "deviceLabel": {
-///      "description": "Suggested label for the credential. Used as a default; the invitee MAY override during redemption.",
-///      "type": "string",
-///      "maxLength": 256
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "role": {
-///      "description": "Role the invitee receives on successful enrollment. Consumer-defined vocabulary; if absent the consumer applies its default role.",
-///      "type": "string"
-///    },
-///    "scopes": {
-///      "description": "Optional scopes to attach on enrollment.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "minLength": 1
-///      }
-///    },
-///    "subject": {
-///      "description": "The VID the invitee will enroll. The admin asserts this binding; the redemption ceremony verifies the invitee actually controls a passkey but does NOT independently verify the subject — trust flows from the admin.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ttl": {
-///      "description": "Seconds the invite remains valid. Consumers SHOULD pick 1 h – 7 d; longer windows widen the attack surface.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -223,16 +152,6 @@ impl Payload {
 }
 ///Suggested label for the credential. Used as a default; the invitee MAY override during redemption.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Suggested label for the credential. Used as a default; the invitee MAY override during redemption.",
-///  "type": "string",
-///  "maxLength": 256
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadDeviceLabel(::std::string::String);
@@ -292,15 +211,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDeviceLabel {
 }
 ///`PayloadScopesItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadScopesItem(::std::string::String);
@@ -360,16 +270,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadScopesItem {
 }
 ///The VID the invitee will enroll. The admin asserts this binding; the redemption ceremony verifies the invitee actually controls a passkey but does NOT independently verify the subject — trust flows from the admin.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The VID the invitee will enroll. The admin asserts this binding; the redemption ceremony verifies the invitee actually controls a passkey but does NOT independently verify the subject — trust flows from the admin.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadSubject(::std::string::String);
@@ -429,56 +329,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubject {
 }
 ///The issued invite. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/invite/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The issued invite. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/invite/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "expiresAt",
-///    "invite",
-///    "subject"
-///  ],
-///  "properties": {
-///    "expiresAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "invite": {
-///      "type": "object",
-///      "required": [
-///        "token",
-///        "url"
-///      ],
-///      "properties": {
-///        "token": {
-///          "description": "Opaque single-use invite token. The invitee presents it to the consumer during enrollment. ≥128 bits entropy.",
-///          "type": "string",
-///          "minLength": 16
-///        },
-///        "url": {
-///          "description": "Operator-shareable URL that, when opened in a WebAuthn-capable browser, drives the enrollment ceremony. Contains the token as a query parameter.",
-///          "type": "string",
-///          "format": "uri"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "subject": {
-///      "description": "Echo of the invitee's VID.",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -499,31 +349,6 @@ impl Response {
 }
 ///`ResponseInvite`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "token",
-///    "url"
-///  ],
-///  "properties": {
-///    "token": {
-///      "description": "Opaque single-use invite token. The invitee presents it to the consumer during enrollment. ≥128 bits entropy.",
-///      "type": "string",
-///      "minLength": 16
-///    },
-///    "url": {
-///      "description": "Operator-shareable URL that, when opened in a WebAuthn-capable browser, drives the enrollment ceremony. Contains the token as a query parameter.",
-///      "type": "string",
-///      "format": "uri"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -540,16 +365,6 @@ impl ResponseInvite {
 }
 ///Opaque single-use invite token. The invitee presents it to the consumer during enrollment. ≥128 bits entropy.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Opaque single-use invite token. The invitee presents it to the consumer during enrollment. ≥128 bits entropy.",
-///  "type": "string",
-///  "minLength": 16
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseInviteToken(::std::string::String);
@@ -869,7 +684,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The issued invite. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/invite/0.1#response.\",\n      \"properties\": {\n        \"expiresAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"invite\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"token\": {\n              \"description\": \"Opaque single-use invite token. The invitee presents it to the consumer during enrollment. ≥128 bits entropy.\",\n              \"minLength\": 16,\n              \"type\": \"string\"\n            },\n            \"url\": {\n              \"description\": \"Operator-shareable URL that, when opened in a WebAuthn-capable browser, drives the enrollment ceremony. Contains the token as a query parameter.\",\n              \"format\": \"uri\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"token\",\n            \"url\"\n          ],\n          \"type\": \"object\"\n        },\n        \"subject\": {\n          \"description\": \"Echo of the invitee's VID.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"invite\",\n        \"subject\",\n        \"expiresAt\"\n      ],\n      \"title\": \"Auth Passkey Enroll Invite — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/passkey/enroll/invite/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An administrator issues a single-use invite link an unenrolled subject can redeem to bind their first passkey, without first holding an authenticated session.\",\n  \"properties\": {\n    \"deviceLabel\": {\n      \"description\": \"Suggested label for the credential. Used as a default; the invitee MAY override during redemption.\",\n      \"maxLength\": 256,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"role\": {\n      \"description\": \"Role the invitee receives on successful enrollment. Consumer-defined vocabulary; if absent the consumer applies its default role.\",\n      \"type\": \"string\"\n    },\n    \"scopes\": {\n      \"description\": \"Optional scopes to attach on enrollment.\",\n      \"items\": {\n        \"minLength\": 1,\n        \"type\": \"string\"\n      },\n      \"type\": \"array\"\n    },\n    \"subject\": {\n      \"description\": \"The VID the invitee will enroll. The admin asserts this binding; the redemption ceremony verifies the invitee actually controls a passkey but does NOT independently verify the subject — trust flows from the admin.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ttl\": {\n      \"description\": \"Seconds the invite remains valid. Consumers SHOULD pick 1 h – 7 d; longer windows widen the attack surface.\",\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"subject\"\n  ],\n  \"title\": \"Auth — Passkey Enroll (invite)\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The issued invite. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/invite/0.1#response.\",\"properties\":{\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"invite\":{\"additionalProperties\":false,\"properties\":{\"token\":{\"description\":\"Opaque single-use invite token. The invitee presents it to the consumer during enrollment. ≥128 bits entropy.\",\"minLength\":16,\"type\":\"string\"},\"url\":{\"description\":\"Operator-shareable URL that, when opened in a WebAuthn-capable browser, drives the enrollment ceremony. Contains the token as a query parameter.\",\"format\":\"uri\",\"type\":\"string\"}},\"required\":[\"token\",\"url\"],\"type\":\"object\"},\"subject\":{\"description\":\"Echo of the invitee's VID.\",\"type\":\"string\"}},\"required\":[\"invite\",\"subject\",\"expiresAt\"],\"title\":\"Auth Passkey Enroll Invite — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/auth/passkey/enroll/invite/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"An administrator issues a single-use invite link an unenrolled subject can redeem to bind their first passkey, without first holding an authenticated session.\",\"properties\":{\"deviceLabel\":{\"description\":\"Suggested label for the credential. Used as a default; the invitee MAY override during redemption.\",\"maxLength\":256,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"role\":{\"description\":\"Role the invitee receives on successful enrollment. Consumer-defined vocabulary; if absent the consumer applies its default role.\",\"type\":\"string\"},\"scopes\":{\"description\":\"Optional scopes to attach on enrollment.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"},\"subject\":{\"description\":\"The VID the invitee will enroll. The admin asserts this binding; the redemption ceremony verifies the invitee actually controls a passkey but does NOT independently verify the subject — trust flows from the admin.\",\"minLength\":1,\"type\":\"string\"},\"ttl\":{\"description\":\"Seconds the invite remains valid. Consumers SHOULD pick 1 h – 7 d; longer windows widen the attack surface.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"subject\"],\"title\":\"Auth — Passkey Enroll (invite)\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -879,7 +694,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The issued invite. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/invite/0.1#response.\",\n      \"properties\": {\n        \"expiresAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"invite\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"token\": {\n              \"description\": \"Opaque single-use invite token. The invitee presents it to the consumer during enrollment. ≥128 bits entropy.\",\n              \"minLength\": 16,\n              \"type\": \"string\"\n            },\n            \"url\": {\n              \"description\": \"Operator-shareable URL that, when opened in a WebAuthn-capable browser, drives the enrollment ceremony. Contains the token as a query parameter.\",\n              \"format\": \"uri\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"token\",\n            \"url\"\n          ],\n          \"type\": \"object\"\n        },\n        \"subject\": {\n          \"description\": \"Echo of the invitee's VID.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"invite\",\n        \"subject\",\n        \"expiresAt\"\n      ],\n      \"title\": \"Auth Passkey Enroll Invite — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The issued invite. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/invite/0.1#response.\",\"properties\":{\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"invite\":{\"additionalProperties\":false,\"properties\":{\"token\":{\"description\":\"Opaque single-use invite token. The invitee presents it to the consumer during enrollment. ≥128 bits entropy.\",\"minLength\":16,\"type\":\"string\"},\"url\":{\"description\":\"Operator-shareable URL that, when opened in a WebAuthn-capable browser, drives the enrollment ceremony. Contains the token as a query parameter.\",\"format\":\"uri\",\"type\":\"string\"}},\"required\":[\"token\",\"url\"],\"type\":\"object\"},\"subject\":{\"description\":\"Echo of the invitee's VID.\",\"type\":\"string\"}},\"required\":[\"invite\",\"subject\",\"expiresAt\"],\"title\":\"Auth Passkey Enroll Invite — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,38 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Remove a passkey verificationMethod from a VTA-managed DID document via a WebVH log entry. Admin-gated. The VM is identified by its URL fragment (everything after `#` in the verificationMethod id). The success response is an empty object — modelled as an object so future additive fields do not bump the version.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/passkey-vms/revoke/0.1",
-///  "title": "Payload",
-///  "description": "Remove a passkey verificationMethod from a VTA-managed DID document via a WebVH log entry. Admin-gated. The VM is identified by its URL fragment (everything after `#` in the verificationMethod id). The success response is an empty object — modelled as an object so future additive fields do not bump the version.",
-///  "type": "object",
-///  "required": [
-///    "did",
-///    "fragment"
-///  ],
-///  "properties": {
-///    "did": {
-///      "description": "The DID the verificationMethod lives on. The producer MUST hold the admin role on this DID's context.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "fragment": {
-///      "description": "The verificationMethod URL fragment — everything after `#` in the VM id (e.g. `passkey-3q2r1s0tUvWxYz`). MUST NOT include the leading `#`.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -193,16 +137,6 @@ impl Payload {
 }
 ///The DID the verificationMethod lives on. The producer MUST hold the admin role on this DID's context.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The DID the verificationMethod lives on. The producer MUST hold the admin role on this DID's context.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadDid(::std::string::String);
@@ -262,16 +196,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDid {
 }
 ///The verificationMethod URL fragment — everything after `#` in the VM id (e.g. `passkey-3q2r1s0tUvWxYz`). MUST NOT include the leading `#`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The verificationMethod URL fragment — everything after `#` in the VM id (e.g. `passkey-3q2r1s0tUvWxYz`). MUST NOT include the leading `#`.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadFragment(::std::string::String);
@@ -331,24 +255,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadFragment {
 }
 ///Empty success body. The verificationMethod has been removed via a WebVH log entry. Modelled as an object so future additive fields (e.g. the resulting WebVH version) do not require a version bump.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Empty success body. The verificationMethod has been removed via a WebVH log entry. Modelled as an object so future additive fields (e.g. the resulting WebVH version) do not require a version bump.",
-///  "type": "object",
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -478,7 +384,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Empty success body. The verificationMethod has been removed via a WebVH log entry. Modelled as an object so future additive fields (e.g. the resulting WebVH version) do not require a version bump.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        }\n      },\n      \"title\": \"VTA Passkey-VM Revoke — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/passkey-vms/revoke/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Remove a passkey verificationMethod from a VTA-managed DID document via a WebVH log entry. Admin-gated. The VM is identified by its URL fragment (everything after `#` in the verificationMethod id). The success response is an empty object — modelled as an object so future additive fields do not bump the version.\",\n  \"properties\": {\n    \"did\": {\n      \"description\": \"The DID the verificationMethod lives on. The producer MUST hold the admin role on this DID's context.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"fragment\": {\n      \"description\": \"The verificationMethod URL fragment — everything after `#` in the VM id (e.g. `passkey-3q2r1s0tUvWxYz`). MUST NOT include the leading `#`.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"did\",\n    \"fragment\"\n  ],\n  \"title\": \"VTA Passkey-VM Revoke — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Empty success body. The verificationMethod has been removed via a WebVH log entry. Modelled as an object so future additive fields (e.g. the resulting WebVH version) do not require a version bump.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"title\":\"VTA Passkey-VM Revoke — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/passkey-vms/revoke/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Remove a passkey verificationMethod from a VTA-managed DID document via a WebVH log entry. Admin-gated. The VM is identified by its URL fragment (everything after `#` in the verificationMethod id). The success response is an empty object — modelled as an object so future additive fields do not bump the version.\",\"properties\":{\"did\":{\"description\":\"The DID the verificationMethod lives on. The producer MUST hold the admin role on this DID's context.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"fragment\":{\"description\":\"The verificationMethod URL fragment — everything after `#` in the VM id (e.g. `passkey-3q2r1s0tUvWxYz`). MUST NOT include the leading `#`.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"did\",\"fragment\"],\"title\":\"VTA Passkey-VM Revoke — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -488,7 +394,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Empty success body. The verificationMethod has been removed via a WebVH log entry. Modelled as an object so future additive fields (e.g. the resulting WebVH version) do not require a version bump.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        }\n      },\n      \"title\": \"VTA Passkey-VM Revoke — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Empty success body. The verificationMethod has been removed via a WebVH log entry. Modelled as an object so future additive fields (e.g. the resulting WebVH version) do not require a version bump.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"title\":\"VTA Passkey-VM Revoke — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

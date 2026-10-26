@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,19 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "FieldKey",
-///  "description": "Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1,
-///  "pattern": "^([a-z][a-z0-9-]*\\.)*[a-z][a-zA-Z0-9]{0,63}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct FieldKey(::std::string::String);
@@ -226,55 +189,6 @@ impl<'de> ::serde::Deserialize<'de> for FieldKey {
 }
 ///A member presents a credential so the community can fill credential-sourced directory fields with the disclosed claims, badged with their issuer; the community keeps the claims, never the presentation. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/directory/card/present/0.1",
-///  "title": "Payload",
-///  "description": "A member presents a credential so the community can fill credential-sourced directory fields with the disclosed claims, badged with their issuer; the community keeps the claims, never the presentation. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "fields",
-///    "presentation"
-///  ],
-///  "properties": {
-///    "clear": {
-///      "description": "Optional: also clear any named field the presentation does not answer. Absent: false.",
-///      "type": "boolean"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "fields": {
-///      "description": "The `credential`-sourced fields this presentation answers.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/FieldKey"
-///      },
-///      "maxItems": 16,
-///      "minItems": 1,
-///      "uniqueItems": true
-///    },
-///    "presentation": {
-///      "anyOf": [
-///        {
-///          "description": "A W3C Verifiable Presentation whose `nonce` is this document's `id` and whose `domain` is the community's DID, both signed by its holder's Data Integrity proof.",
-///          "type": "object"
-///        },
-///        {
-///          "description": "A compact presentation (an SD-JWT with a key-binding JWT whose `nonce` is this document's `id` and `aud` the community's DID).",
-///          "type": "string",
-///          "maxLength": 65536,
-///          "minLength": 1
-///        }
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -295,25 +209,6 @@ impl Payload {
 }
 ///`PayloadPresentation`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "anyOf": [
-///    {
-///      "description": "A W3C Verifiable Presentation whose `nonce` is this document's `id` and whose `domain` is the community's DID, both signed by its holder's Data Integrity proof.",
-///      "type": "object"
-///    },
-///    {
-///      "description": "A compact presentation (an SD-JWT with a key-binding JWT whose `nonce` is this document's `id` and `aud` the community's DID).",
-///      "type": "string",
-///      "maxLength": 65536,
-///      "minLength": 1
-///    }
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged)]
 #[non_exhaustive]
@@ -335,17 +230,6 @@ impl ::std::convert::From<PayloadPresentationString> for PayloadPresentation {
 }
 ///A compact presentation (an SD-JWT with a key-binding JWT whose `nonce` is this document's `id` and `aud` the community's DID).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "A compact presentation (an SD-JWT with a key-binding JWT whose `nonce` is this document's `id` and `aud` the community's DID).",
-///  "type": "string",
-///  "maxLength": 65536,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadPresentationString(::std::string::String);
@@ -408,42 +292,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPresentationString {
 }
 ///The success response to a vtc/directory/card/present/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/card/present/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The success response to a vtc/directory/card/present/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/card/present/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "revision",
-///    "verified"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "revision": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "verified": {
-///      "description": "The values now on the card, keyed by field.",
-///      "type": "object",
-///      "maxProperties": 16,
-///      "additionalProperties": {
-///        "$ref": "#/definitions/VerifiedValue"
-///      },
-///      "propertyNames": {
-///        "$ref": "#/definitions/FieldKey"
-///      }
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -461,61 +309,6 @@ impl Response {
 }
 ///The value of a `credential`-sourced field: a claim the member disclosed from a credential they presented, with the issuer that attests it. A verified value always names its issuer, and a self-asserted value is never shaped as one. The community keeps only the disclosed claim and these facts about it — never the presentation.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "VerifiedValue",
-///  "description": "The value of a `credential`-sourced field: a claim the member disclosed from a credential they presented, with the issuer that attests it. A verified value always names its issuer, and a self-asserted value is never shaped as one. The community keeps only the disclosed claim and these facts about it — never the presentation.",
-///  "type": "object",
-///  "required": [
-///    "issuer",
-///    "value",
-///    "verifiedAt"
-///  ],
-///  "properties": {
-///    "credentialType": {
-///      "description": "The most specific `type` of the credential the claim came from.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "issuer": {
-///      "description": "DID of the credential's issuer, shown as the field's verification badge.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    },
-///    "validUntil": {
-///      "description": "When the credential expires, where it does. The community withdraws the value once it passes.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "value": {
-///      "description": "The disclosed claim value.",
-///      "anyOf": [
-///        {
-///          "type": "string",
-///          "maxLength": 2000
-///        },
-///        {
-///          "type": "boolean"
-///        },
-///        {
-///          "type": "number"
-///        }
-///      ]
-///    },
-///    "verifiedAt": {
-///      "description": "When the community verified the presentation.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -549,17 +342,6 @@ impl VerifiedValue {
 }
 ///The most specific `type` of the credential the claim came from.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The most specific `type` of the credential the claim came from.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct VerifiedValueCredentialType(::std::string::String);
@@ -622,17 +404,6 @@ impl<'de> ::serde::Deserialize<'de> for VerifiedValueCredentialType {
 }
 ///DID of the credential's issuer, shown as the field's verification badge.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "DID of the credential's issuer, shown as the field's verification badge.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct VerifiedValueIssuer(::std::string::String);
@@ -697,26 +468,6 @@ impl<'de> ::serde::Deserialize<'de> for VerifiedValueIssuer {
 }
 ///The disclosed claim value.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The disclosed claim value.",
-///  "anyOf": [
-///    {
-///      "type": "string",
-///      "maxLength": 2000
-///    },
-///    {
-///      "type": "boolean"
-///    },
-///    {
-///      "type": "number"
-///    }
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged)]
 #[non_exhaustive]
@@ -787,15 +538,6 @@ impl ::std::convert::From<f64> for VerifiedValueValue {
 }
 ///`VerifiedValueValueString`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 2000
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct VerifiedValueValueString(::std::string::String);
@@ -1119,7 +861,7 @@ impl crate::Payload for Payload {
     const MAX_DOCUMENT_BYTES: Option<usize> = Some(98304usize);
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"FieldKey\": {\n      \"description\": \"Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^([a-z][a-z0-9-]*\\\\.)*[a-z][a-zA-Z0-9]{0,63}$\",\n      \"title\": \"FieldKey\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a vtc/directory/card/present/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/card/present/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"revision\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"verified\": {\n          \"additionalProperties\": {\n            \"$ref\": \"#/$defs/VerifiedValue\"\n          },\n          \"description\": \"The values now on the card, keyed by field.\",\n          \"maxProperties\": 16,\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/FieldKey\"\n          },\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"verified\",\n        \"revision\"\n      ],\n      \"title\": \"VTC Directory — Card — Present — response payload\",\n      \"type\": \"object\"\n    },\n    \"VerifiedValue\": {\n      \"additionalProperties\": false,\n      \"description\": \"The value of a `credential`-sourced field: a claim the member disclosed from a credential they presented, with the issuer that attests it. A verified value always names its issuer, and a self-asserted value is never shaped as one. The community keeps only the disclosed claim and these facts about it — never the presentation.\",\n      \"properties\": {\n        \"credentialType\": {\n          \"description\": \"The most specific `type` of the credential the claim came from.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issuer\": {\n          \"description\": \"DID of the credential's issuer, shown as the field's verification badge.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"validUntil\": {\n          \"description\": \"When the credential expires, where it does. The community withdraws the value once it passes.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"value\": {\n          \"anyOf\": [\n            {\n              \"maxLength\": 2000,\n              \"type\": \"string\"\n            },\n            {\n              \"type\": \"boolean\"\n            },\n            {\n              \"type\": \"number\"\n            }\n          ],\n          \"description\": \"The disclosed claim value.\"\n        },\n        \"verifiedAt\": {\n          \"description\": \"When the community verified the presentation.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"value\",\n        \"issuer\",\n        \"verifiedAt\"\n      ],\n      \"title\": \"VerifiedValue\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/directory/card/present/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A member presents a credential so the community can fill credential-sourced directory fields with the disclosed claims, badged with their issuer; the community keeps the claims, never the presentation. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"clear\": {\n      \"description\": \"Optional: also clear any named field the presentation does not answer. Absent: false.\",\n      \"type\": \"boolean\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"fields\": {\n      \"description\": \"The `credential`-sourced fields this presentation answers.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/FieldKey\"\n      },\n      \"maxItems\": 16,\n      \"minItems\": 1,\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    },\n    \"presentation\": {\n      \"anyOf\": [\n        {\n          \"description\": \"A W3C Verifiable Presentation whose `nonce` is this document's `id` and whose `domain` is the community's DID, both signed by its holder's Data Integrity proof.\",\n          \"type\": \"object\"\n        },\n        {\n          \"description\": \"A compact presentation (an SD-JWT with a key-binding JWT whose `nonce` is this document's `id` and `aud` the community's DID).\",\n          \"maxLength\": 65536,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      ]\n    }\n  },\n  \"required\": [\n    \"fields\",\n    \"presentation\"\n  ],\n  \"title\": \"VTC Directory — Card — Present — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"FieldKey\":{\"description\":\"Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^([a-z][a-z0-9-]*\\\\.)*[a-z][a-zA-Z0-9]{0,63}$\",\"title\":\"FieldKey\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/directory/card/present/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/card/present/0.1#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"revision\":{\"minimum\":0,\"type\":\"integer\"},\"verified\":{\"additionalProperties\":{\"$ref\":\"#/$defs/VerifiedValue\"},\"description\":\"The values now on the card, keyed by field.\",\"maxProperties\":16,\"propertyNames\":{\"$ref\":\"#/$defs/FieldKey\"},\"type\":\"object\"}},\"required\":[\"verified\",\"revision\"],\"title\":\"VTC Directory — Card — Present — response payload\",\"type\":\"object\"},\"VerifiedValue\":{\"additionalProperties\":false,\"description\":\"The value of a `credential`-sourced field: a claim the member disclosed from a credential they presented, with the issuer that attests it. A verified value always names its issuer, and a self-asserted value is never shaped as one. The community keeps only the disclosed claim and these facts about it — never the presentation.\",\"properties\":{\"credentialType\":{\"description\":\"The most specific `type` of the credential the claim came from.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"issuer\":{\"description\":\"DID of the credential's issuer, shown as the field's verification badge.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"validUntil\":{\"description\":\"When the credential expires, where it does. The community withdraws the value once it passes.\",\"format\":\"date-time\",\"type\":\"string\"},\"value\":{\"anyOf\":[{\"maxLength\":2000,\"type\":\"string\"},{\"type\":\"boolean\"},{\"type\":\"number\"}],\"description\":\"The disclosed claim value.\"},\"verifiedAt\":{\"description\":\"When the community verified the presentation.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"value\",\"issuer\",\"verifiedAt\"],\"title\":\"VerifiedValue\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/directory/card/present/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A member presents a credential so the community can fill credential-sourced directory fields with the disclosed claims, badged with their issuer; the community keeps the claims, never the presentation. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"clear\":{\"description\":\"Optional: also clear any named field the presentation does not answer. Absent: false.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"fields\":{\"description\":\"The `credential`-sourced fields this presentation answers.\",\"items\":{\"$ref\":\"#/$defs/FieldKey\"},\"maxItems\":16,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"presentation\":{\"anyOf\":[{\"description\":\"A W3C Verifiable Presentation whose `nonce` is this document's `id` and whose `domain` is the community's DID, both signed by its holder's Data Integrity proof.\",\"type\":\"object\"},{\"description\":\"A compact presentation (an SD-JWT with a key-binding JWT whose `nonce` is this document's `id` and `aud` the community's DID).\",\"maxLength\":65536,\"minLength\":1,\"type\":\"string\"}]}},\"required\":[\"fields\",\"presentation\"],\"title\":\"VTC Directory — Card — Present — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1129,7 +871,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"FieldKey\": {\n      \"description\": \"Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^([a-z][a-z0-9-]*\\\\.)*[a-z][a-zA-Z0-9]{0,63}$\",\n      \"title\": \"FieldKey\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a vtc/directory/card/present/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/card/present/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"revision\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"verified\": {\n          \"additionalProperties\": {\n            \"$ref\": \"#/$defs/VerifiedValue\"\n          },\n          \"description\": \"The values now on the card, keyed by field.\",\n          \"maxProperties\": 16,\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/FieldKey\"\n          },\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"verified\",\n        \"revision\"\n      ],\n      \"title\": \"VTC Directory — Card — Present — response payload\",\n      \"type\": \"object\"\n    },\n    \"VerifiedValue\": {\n      \"additionalProperties\": false,\n      \"description\": \"The value of a `credential`-sourced field: a claim the member disclosed from a credential they presented, with the issuer that attests it. A verified value always names its issuer, and a self-asserted value is never shaped as one. The community keeps only the disclosed claim and these facts about it — never the presentation.\",\n      \"properties\": {\n        \"credentialType\": {\n          \"description\": \"The most specific `type` of the credential the claim came from.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issuer\": {\n          \"description\": \"DID of the credential's issuer, shown as the field's verification badge.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"validUntil\": {\n          \"description\": \"When the credential expires, where it does. The community withdraws the value once it passes.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"value\": {\n          \"anyOf\": [\n            {\n              \"maxLength\": 2000,\n              \"type\": \"string\"\n            },\n            {\n              \"type\": \"boolean\"\n            },\n            {\n              \"type\": \"number\"\n            }\n          ],\n          \"description\": \"The disclosed claim value.\"\n        },\n        \"verifiedAt\": {\n          \"description\": \"When the community verified the presentation.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"value\",\n        \"issuer\",\n        \"verifiedAt\"\n      ],\n      \"title\": \"VerifiedValue\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"FieldKey\":{\"description\":\"Identifier of a directory field. A key with no `.` is a BASE field, the same in every community: `displayName`, `nickname`, `avatar`, `pronouns`, `bio`, `links` (written by the member) and `role`, `joinedAt`, `did`, `personhood` (derived from the community's own records, never stored on a card). A community-defined field MUST use a reverse-DNS key (`org.example.employer`), so a base key never collides with one, and a key is never reused with a different meaning once defined.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^([a-z][a-z0-9-]*\\\\.)*[a-z][a-zA-Z0-9]{0,63}$\",\"title\":\"FieldKey\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/directory/card/present/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/card/present/0.1#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"revision\":{\"minimum\":0,\"type\":\"integer\"},\"verified\":{\"additionalProperties\":{\"$ref\":\"#/$defs/VerifiedValue\"},\"description\":\"The values now on the card, keyed by field.\",\"maxProperties\":16,\"propertyNames\":{\"$ref\":\"#/$defs/FieldKey\"},\"type\":\"object\"}},\"required\":[\"verified\",\"revision\"],\"title\":\"VTC Directory — Card — Present — response payload\",\"type\":\"object\"},\"VerifiedValue\":{\"additionalProperties\":false,\"description\":\"The value of a `credential`-sourced field: a claim the member disclosed from a credential they presented, with the issuer that attests it. A verified value always names its issuer, and a self-asserted value is never shaped as one. The community keeps only the disclosed claim and these facts about it — never the presentation.\",\"properties\":{\"credentialType\":{\"description\":\"The most specific `type` of the credential the claim came from.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"issuer\":{\"description\":\"DID of the credential's issuer, shown as the field's verification badge.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"validUntil\":{\"description\":\"When the credential expires, where it does. The community withdraws the value once it passes.\",\"format\":\"date-time\",\"type\":\"string\"},\"value\":{\"anyOf\":[{\"maxLength\":2000,\"type\":\"string\"},{\"type\":\"boolean\"},{\"type\":\"number\"}],\"description\":\"The disclosed claim value.\"},\"verifiedAt\":{\"description\":\"When the community verified the presentation.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"value\",\"issuer\",\"verifiedAt\"],\"title\":\"VerifiedValue\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

@@ -35,17 +35,6 @@ pub mod error {
 }
 ///Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ExpectedVersion",
-///  "description": "Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.",
-///  "type": "integer",
-///  "minimum": 0.0
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct ExpectedVersion(pub u64);
@@ -90,21 +79,6 @@ impl ::std::fmt::Display for ExpectedVersion {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -126,15 +100,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -198,33 +163,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Delete one facet. The faces and attributes that belonged to it are untouched — a facet is a way of arranging what the holder keeps, never a container for it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/persona/facet/delete/1.0",
-///  "title": "Payload",
-///  "description": "Delete one facet. The faces and attributes that belonged to it are untouched — a facet is a way of arranging what the holder keeps, never a container for it.",
-///  "type": "object",
-///  "required": [
-///    "facetId"
-///  ],
-///  "properties": {
-///    "expectedVersion": {
-///      "description": "Optional precondition. Supply the version a prior read returned to refuse a delete against a facet that has changed since it was looked at.",
-///      "$ref": "#/definitions/ExpectedVersion"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "facetId": {
-///      "$ref": "#/definitions/Ulid"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -249,35 +187,6 @@ impl Payload {
 }
 ///Success response to persona/facet/delete. Type https://trusttasks.org/spec/persona/facet/delete/1.0#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to persona/facet/delete. Type https://trusttasks.org/spec/persona/facet/delete/1.0#response.",
-///  "type": "object",
-///  "required": [
-///    "existed"
-///  ],
-///  "properties": {
-///    "existed": {
-///      "description": "False when there was nothing to delete. A successful no-op rather than an error: a producer retrying after a lost response must be able to reach the state it wanted without having to tell a second delete apart from a first.",
-///      "type": "boolean"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "releasedFaces": {
-///      "description": "How many profiles no longer belong to any facet as a result. Nothing was deleted and nothing changed about them — this is the count a consumer needs to say what the screen will look like afterwards, which is the honest end of a sentence that would otherwise read only 'deleted'.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -302,17 +211,6 @@ impl Response {
 }
 ///A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ulid",
-///  "description": "A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.",
-///  "type": "string",
-///  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Ulid(::std::string::String);
@@ -518,7 +416,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ExpectedVersion\": {\n      \"description\": \"Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.\",\n      \"minimum\": 0,\n      \"title\": \"ExpectedVersion\",\n      \"type\": \"integer\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/facet/delete. Type https://trusttasks.org/spec/persona/facet/delete/1.0#response.\",\n      \"properties\": {\n        \"existed\": {\n          \"description\": \"False when there was nothing to delete. A successful no-op rather than an error: a producer retrying after a lost response must be able to reach the state it wanted without having to tell a second delete apart from a first.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"releasedFaces\": {\n          \"description\": \"How many profiles no longer belong to any facet as a result. Nothing was deleted and nothing changed about them — this is the count a consumer needs to say what the screen will look like afterwards, which is the honest end of a sentence that would otherwise read only 'deleted'.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"existed\"\n      ],\n      \"title\": \"Persona Facet Delete — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/persona/facet/delete/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Delete one facet. The faces and attributes that belonged to it are untouched — a facet is a way of arranging what the holder keeps, never a container for it.\",\n  \"properties\": {\n    \"expectedVersion\": {\n      \"$ref\": \"#/$defs/ExpectedVersion\",\n      \"description\": \"Optional precondition. Supply the version a prior read returned to refuse a delete against a facet that has changed since it was looked at.\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"facetId\": {\n      \"$ref\": \"#/$defs/Ulid\"\n    }\n  },\n  \"required\": [\n    \"facetId\"\n  ],\n  \"title\": \"Persona — Facet Delete — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"ExpectedVersion\":{\"description\":\"Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.\",\"minimum\":0,\"title\":\"ExpectedVersion\",\"type\":\"integer\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to persona/facet/delete. Type https://trusttasks.org/spec/persona/facet/delete/1.0#response.\",\"properties\":{\"existed\":{\"description\":\"False when there was nothing to delete. A successful no-op rather than an error: a producer retrying after a lost response must be able to reach the state it wanted without having to tell a second delete apart from a first.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"releasedFaces\":{\"description\":\"How many profiles no longer belong to any facet as a result. Nothing was deleted and nothing changed about them — this is the count a consumer needs to say what the screen will look like afterwards, which is the honest end of a sentence that would otherwise read only 'deleted'.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"existed\"],\"title\":\"Persona Facet Delete — response payload\",\"type\":\"object\"},\"Ulid\":{\"description\":\"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\"pattern\":\"^[0-9A-HJKMNP-TV-Z]{26}$\",\"title\":\"Ulid\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/persona/facet/delete/1.0\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Delete one facet. The faces and attributes that belonged to it are untouched — a facet is a way of arranging what the holder keeps, never a container for it.\",\"properties\":{\"expectedVersion\":{\"$ref\":\"#/$defs/ExpectedVersion\",\"description\":\"Optional precondition. Supply the version a prior read returned to refuse a delete against a facet that has changed since it was looked at.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"facetId\":{\"$ref\":\"#/$defs/Ulid\"}},\"required\":[\"facetId\"],\"title\":\"Persona — Facet Delete — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -527,7 +425,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ExpectedVersion\": {\n      \"description\": \"Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.\",\n      \"minimum\": 0,\n      \"title\": \"ExpectedVersion\",\n      \"type\": \"integer\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/facet/delete. Type https://trusttasks.org/spec/persona/facet/delete/1.0#response.\",\n      \"properties\": {\n        \"existed\": {\n          \"description\": \"False when there was nothing to delete. A successful no-op rather than an error: a producer retrying after a lost response must be able to reach the state it wanted without having to tell a second delete apart from a first.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"releasedFaces\": {\n          \"description\": \"How many profiles no longer belong to any facet as a result. Nothing was deleted and nothing changed about them — this is the count a consumer needs to say what the screen will look like afterwards, which is the honest end of a sentence that would otherwise read only 'deleted'.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"existed\"\n      ],\n      \"title\": \"Persona Facet Delete — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"ExpectedVersion\":{\"description\":\"Optimistic-concurrency precondition. A positive value requires the record's current `version` to equal it exactly; zero means create-only and applies only when no live record exists at the address.\",\"minimum\":0,\"title\":\"ExpectedVersion\",\"type\":\"integer\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to persona/facet/delete. Type https://trusttasks.org/spec/persona/facet/delete/1.0#response.\",\"properties\":{\"existed\":{\"description\":\"False when there was nothing to delete. A successful no-op rather than an error: a producer retrying after a lost response must be able to reach the state it wanted without having to tell a second delete apart from a first.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"releasedFaces\":{\"description\":\"How many profiles no longer belong to any facet as a result. Nothing was deleted and nothing changed about them — this is the count a consumer needs to say what the screen will look like afterwards, which is the honest end of a sentence that would otherwise read only 'deleted'.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"existed\"],\"title\":\"Persona Facet Delete — response payload\",\"type\":\"object\"},\"Ulid\":{\"description\":\"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\"pattern\":\"^[0-9A-HJKMNP-TV-Z]{26}$\",\"title\":\"Ulid\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

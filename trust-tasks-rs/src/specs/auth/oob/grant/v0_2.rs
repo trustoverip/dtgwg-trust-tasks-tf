@@ -42,21 +42,6 @@ This definition constrains the *encoding only*. What the digest is computed over
 
 Restricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that "interoperability is not guaranteed between implementations using such values", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DigestMultibase",
-///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-///  "examples": [
-///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-///  ],
-///  "type": "string",
-///  "minLength": 16,
-///  "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DigestMultibase(::std::string::String);
@@ -125,19 +110,6 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
 }
 ///A starter key (`K_b`) or an approver lock key (`K_a`), as an Ed25519 `did:key` (`z6Mk…`) generated for this one request and used nowhere else. Ed25519 only: a service refuses any other key type with `auth/oob:keyUnsupported` before parsing beyond the multicodec prefix.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "OobKey",
-///  "description": "A starter key (`K_b`) or an approver lock key (`K_a`), as an Ed25519 `did:key` (`z6Mk…`) generated for this one request and used nowhere else. Ed25519 only: a service refuses any other key type with `auth/oob:keyUnsupported` before parsing beyond the multicodec prefix.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 48,
-///  "pattern": "^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct OobKey(::std::string::String);
@@ -207,19 +179,6 @@ impl<'de> ::serde::Deserialize<'de> for OobKey {
 }
 ///A web origin (`https://host[:port]`, no path, no trailing slash) — for `login`, the origin of the portal where the starter runs, which is the origin of the `serviceEndpoint` of the service's `SignInPortal` service in its DID document.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Origin",
-///  "description": "A web origin (`https://host[:port]`, no path, no trailing slash) — for `login`, the origin of the portal where the starter runs, which is the origin of the `serviceEndpoint` of the service's `SignInPortal` service in its DID document.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 9,
-///  "pattern": "^https://[^/?#\\s]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Origin(::std::string::String);
@@ -287,65 +246,6 @@ impl<'de> ::serde::Deserialize<'de> for Origin {
 }
 ///The member's decision on one out-of-band request, as an attestation: "let this starter key act as me at this origin until notAfter, having seen this context" — and, where the grant carries `signingScope`, "and sign documents of these task families as me, for that session" — or a decline. Issued by the DID that proved membership and signed by its VTA for `assertionMethod`, only after user verification. Never sent on its own, only carried inside auth/oob/respond/0.2. Closed: additionalProperties false and no `ext`. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/auth/oob/grant/0.2",
-///  "title": "Payload",
-///  "description": "The member's decision on one out-of-band request, as an attestation: \"let this starter key act as me at this origin until notAfter, having seen this context\" — and, where the grant carries `signingScope`, \"and sign documents of these task families as me, for that session\" — or a decline. Issued by the DID that proved membership and signed by its VTA for `assertionMethod`, only after user verification. Never sent on its own, only carried inside auth/oob/respond/0.2. Closed: additionalProperties false and no `ext`. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "approverKey",
-///    "contextDigest",
-///    "decision",
-///    "notAfter",
-///    "origin",
-///    "requestId",
-///    "sessionKey"
-///  ],
-///  "properties": {
-///    "approverKey": {
-///      "description": "The lock key `K_a`. MUST equal the issuer of the respond that carries this document.",
-///      "$ref": "#/definitions/OobKey"
-///    },
-///    "contextDigest": {
-///      "description": "SHA-256 multihash over the RFC 8785 (JCS) canonical form of the signed step 2 response document (the auth/oob/prove response), proof included, written as multibase. Producers emit base58btc (`z…`). Binds the decision to exactly what the member was shown.",
-///      "$ref": "#/definitions/DigestMultibase"
-///    },
-///    "decision": {
-///      "description": "The member's decision. A decline still names the context it declines, and needs no user verification.",
-///      "type": "string",
-///      "enum": [
-///        "approve",
-///        "decline"
-///      ]
-///    },
-///    "notAfter": {
-///      "description": "The latest instant the session key may act as the issuer, as integer UTC epoch seconds. The service ends the session at the earlier of this and its own session limit.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "origin": {
-///      "description": "The portal origin from step 2, at which the session key may act.",
-///      "$ref": "#/definitions/Origin"
-///    },
-///    "requestId": {
-///      "$ref": "#/definitions/RequestId"
-///    },
-///    "sessionKey": {
-///      "description": "The starter key `K_b`, from step 2. On approve, the only key the grant lets act as the issuer.",
-///      "$ref": "#/definitions/OobKey"
-///    },
-///    "signingScope": {
-///      "description": "The task families the starter key may sign documents for as the issuer, for the session this grant arms — step 2's `signingScope`, copied unchanged. Absent: the grant delegates no signing. Whatever it names, a service never accepts the key for the exclusions auth/oob/grant/0.2 states (Conformance, consumer item 6), and never beyond the member's own standing.",
-///      "$ref": "#/definitions/SigningScope"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -384,19 +284,6 @@ impl Payload {
 }
 ///The member's decision. A decline still names the context it declines, and needs no user verification.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The member's decision. A decline still names the context it declines, and needs no user verification.",
-///  "type": "string",
-///  "enum": [
-///    "approve",
-///    "decline"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -458,19 +345,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadDecision {
 }
 ///The service-generated handle of one request: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is RECOMMENDED). It is also the nonce of the exchange, so the family needs no separate challenge, and it is the `_id` of the trigger link (VTI-LNK-033). Compared as a string. It confers no authority on its holder.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RequestId",
-///  "description": "The service-generated handle of one request: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is RECOMMENDED). It is also the nonce of the exchange, so the family needs no separate challenge, and it is the `_id` of the trigger link (VTI-LNK-033). Compared as a string. It confers no authority on its holder.",
-///  "type": "string",
-///  "maxLength": 43,
-///  "minLength": 22,
-///  "pattern": "^[A-Za-z0-9_-]{22,43}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RequestId(::std::string::String);
@@ -538,22 +412,6 @@ impl<'de> ::serde::Deserialize<'de> for RequestId {
 }
 ///The task families a `login` grant lets the starter key sign documents for, as the approving DID, for the session the grant arms (auth/oob/grant/0.2). Offered by the service in step 2, copied unchanged into the grant, and bounded further by the exclusions auth/oob/grant/0.2 states. Absent means the starter key signs nothing beyond the family's own tasks.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "SigningScope",
-///  "description": "The task families a `login` grant lets the starter key sign documents for, as the approving DID, for the session the grant arms (auth/oob/grant/0.2). Offered by the service in step 2, copied unchanged into the grant, and bounded further by the exclusions auth/oob/grant/0.2 states. Absent means the starter key signs nothing beyond the family's own tasks.",
-///  "type": "array",
-///  "items": {
-///    "$ref": "#/definitions/TaskFamily"
-///  },
-///  "maxItems": 8,
-///  "minItems": 1,
-///  "uniqueItems": true
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct SigningScope(pub Vec<TaskFamily>);
@@ -575,19 +433,6 @@ impl ::std::convert::From<Vec<TaskFamily>> for SigningScope {
 }
 ///A family of Trust Tasks, named by a slug prefix of whole segments (SPEC §6.1 grammar): `vtc/directory` names every task whose slug is `vtc/directory` or begins `vtc/directory/`, at any version. A prefix matches on segment boundaries only, so `vtc/dir` names nothing under `vtc/directory`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "TaskFamily",
-///  "description": "A family of Trust Tasks, named by a slug prefix of whole segments (SPEC §6.1 grammar): `vtc/directory` names every task whose slug is `vtc/directory` or begins `vtc/directory/`, at any version. A prefix matches on segment boundaries only, so `vtc/dir` names nothing under `vtc/directory`.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1,
-///  "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct TaskFamily(::std::string::String);
@@ -809,7 +654,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"OobKey\": {\n      \"description\": \"A starter key (`K_b`) or an approver lock key (`K_a`), as an Ed25519 `did:key` (`z6Mk…`) generated for this one request and used nowhere else. Ed25519 only: a service refuses any other key type with `auth/oob:keyUnsupported` before parsing beyond the multicodec prefix.\",\n      \"maxLength\": 64,\n      \"minLength\": 48,\n      \"pattern\": \"^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"OobKey\",\n      \"type\": \"string\"\n    },\n    \"Origin\": {\n      \"description\": \"A web origin (`https://host[:port]`, no path, no trailing slash) — for `login`, the origin of the portal where the starter runs, which is the origin of the `serviceEndpoint` of the service's `SignInPortal` service in its DID document.\",\n      \"maxLength\": 2048,\n      \"minLength\": 9,\n      \"pattern\": \"^https://[^/?#\\\\s]+$\",\n      \"title\": \"Origin\",\n      \"type\": \"string\"\n    },\n    \"RequestId\": {\n      \"description\": \"The service-generated handle of one request: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is RECOMMENDED). It is also the nonce of the exchange, so the family needs no separate challenge, and it is the `_id` of the trigger link (VTI-LNK-033). Compared as a string. It confers no authority on its holder.\",\n      \"maxLength\": 43,\n      \"minLength\": 22,\n      \"pattern\": \"^[A-Za-z0-9_-]{22,43}$\",\n      \"title\": \"RequestId\",\n      \"type\": \"string\"\n    },\n    \"SigningScope\": {\n      \"description\": \"The task families a `login` grant lets the starter key sign documents for, as the approving DID, for the session the grant arms (auth/oob/grant/0.2). Offered by the service in step 2, copied unchanged into the grant, and bounded further by the exclusions auth/oob/grant/0.2 states. Absent means the starter key signs nothing beyond the family's own tasks.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/TaskFamily\"\n      },\n      \"maxItems\": 8,\n      \"minItems\": 1,\n      \"title\": \"SigningScope\",\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    },\n    \"TaskFamily\": {\n      \"description\": \"A family of Trust Tasks, named by a slug prefix of whole segments (SPEC §6.1 grammar): `vtc/directory` names every task whose slug is `vtc/directory` or begins `vtc/directory/`, at any version. A prefix matches on segment boundaries only, so `vtc/dir` names nothing under `vtc/directory`.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*$\",\n      \"title\": \"TaskFamily\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/oob/grant/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"The member's decision on one out-of-band request, as an attestation: \\\"let this starter key act as me at this origin until notAfter, having seen this context\\\" — and, where the grant carries `signingScope`, \\\"and sign documents of these task families as me, for that session\\\" — or a decline. Issued by the DID that proved membership and signed by its VTA for `assertionMethod`, only after user verification. Never sent on its own, only carried inside auth/oob/respond/0.2. Closed: additionalProperties false and no `ext`. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"approverKey\": {\n      \"$ref\": \"#/$defs/OobKey\",\n      \"description\": \"The lock key `K_a`. MUST equal the issuer of the respond that carries this document.\"\n    },\n    \"contextDigest\": {\n      \"$ref\": \"#/$defs/DigestMultibase\",\n      \"description\": \"SHA-256 multihash over the RFC 8785 (JCS) canonical form of the signed step 2 response document (the auth/oob/prove response), proof included, written as multibase. Producers emit base58btc (`z…`). Binds the decision to exactly what the member was shown.\"\n    },\n    \"decision\": {\n      \"description\": \"The member's decision. A decline still names the context it declines, and needs no user verification.\",\n      \"enum\": [\n        \"approve\",\n        \"decline\"\n      ],\n      \"type\": \"string\"\n    },\n    \"notAfter\": {\n      \"description\": \"The latest instant the session key may act as the issuer, as integer UTC epoch seconds. The service ends the session at the earlier of this and its own session limit.\",\n      \"minimum\": 0,\n      \"type\": \"integer\"\n    },\n    \"origin\": {\n      \"$ref\": \"#/$defs/Origin\",\n      \"description\": \"The portal origin from step 2, at which the session key may act.\"\n    },\n    \"requestId\": {\n      \"$ref\": \"#/$defs/RequestId\"\n    },\n    \"sessionKey\": {\n      \"$ref\": \"#/$defs/OobKey\",\n      \"description\": \"The starter key `K_b`, from step 2. On approve, the only key the grant lets act as the issuer.\"\n    },\n    \"signingScope\": {\n      \"$ref\": \"#/$defs/SigningScope\",\n      \"description\": \"The task families the starter key may sign documents for as the issuer, for the session this grant arms — step 2's `signingScope`, copied unchanged. Absent: the grant delegates no signing. Whatever it names, a service never accepts the key for the exclusions auth/oob/grant/0.2 states (Conformance, consumer item 6), and never beyond the member's own standing.\"\n    }\n  },\n  \"required\": [\n    \"requestId\",\n    \"decision\",\n    \"sessionKey\",\n    \"approverKey\",\n    \"origin\",\n    \"contextDigest\",\n    \"notAfter\"\n  ],\n  \"title\": \"Auth — OOB Grant — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"OobKey\":{\"description\":\"A starter key (`K_b`) or an approver lock key (`K_a`), as an Ed25519 `did:key` (`z6Mk…`) generated for this one request and used nowhere else. Ed25519 only: a service refuses any other key type with `auth/oob:keyUnsupported` before parsing beyond the multicodec prefix.\",\"maxLength\":64,\"minLength\":48,\"pattern\":\"^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"OobKey\",\"type\":\"string\"},\"Origin\":{\"description\":\"A web origin (`https://host[:port]`, no path, no trailing slash) — for `login`, the origin of the portal where the starter runs, which is the origin of the `serviceEndpoint` of the service's `SignInPortal` service in its DID document.\",\"maxLength\":2048,\"minLength\":9,\"pattern\":\"^https://[^/?#\\\\s]+$\",\"title\":\"Origin\",\"type\":\"string\"},\"RequestId\":{\"description\":\"The service-generated handle of one request: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is RECOMMENDED). It is also the nonce of the exchange, so the family needs no separate challenge, and it is the `_id` of the trigger link (VTI-LNK-033). Compared as a string. It confers no authority on its holder.\",\"maxLength\":43,\"minLength\":22,\"pattern\":\"^[A-Za-z0-9_-]{22,43}$\",\"title\":\"RequestId\",\"type\":\"string\"},\"SigningScope\":{\"description\":\"The task families a `login` grant lets the starter key sign documents for, as the approving DID, for the session the grant arms (auth/oob/grant/0.2). Offered by the service in step 2, copied unchanged into the grant, and bounded further by the exclusions auth/oob/grant/0.2 states. Absent means the starter key signs nothing beyond the family's own tasks.\",\"items\":{\"$ref\":\"#/$defs/TaskFamily\"},\"maxItems\":8,\"minItems\":1,\"title\":\"SigningScope\",\"type\":\"array\",\"uniqueItems\":true},\"TaskFamily\":{\"description\":\"A family of Trust Tasks, named by a slug prefix of whole segments (SPEC §6.1 grammar): `vtc/directory` names every task whose slug is `vtc/directory` or begins `vtc/directory/`, at any version. A prefix matches on segment boundaries only, so `vtc/dir` names nothing under `vtc/directory`.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*$\",\"title\":\"TaskFamily\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/auth/oob/grant/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The member's decision on one out-of-band request, as an attestation: \\\"let this starter key act as me at this origin until notAfter, having seen this context\\\" — and, where the grant carries `signingScope`, \\\"and sign documents of these task families as me, for that session\\\" — or a decline. Issued by the DID that proved membership and signed by its VTA for `assertionMethod`, only after user verification. Never sent on its own, only carried inside auth/oob/respond/0.2. Closed: additionalProperties false and no `ext`. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"approverKey\":{\"$ref\":\"#/$defs/OobKey\",\"description\":\"The lock key `K_a`. MUST equal the issuer of the respond that carries this document.\"},\"contextDigest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"SHA-256 multihash over the RFC 8785 (JCS) canonical form of the signed step 2 response document (the auth/oob/prove response), proof included, written as multibase. Producers emit base58btc (`z…`). Binds the decision to exactly what the member was shown.\"},\"decision\":{\"description\":\"The member's decision. A decline still names the context it declines, and needs no user verification.\",\"enum\":[\"approve\",\"decline\"],\"type\":\"string\"},\"notAfter\":{\"description\":\"The latest instant the session key may act as the issuer, as integer UTC epoch seconds. The service ends the session at the earlier of this and its own session limit.\",\"minimum\":0,\"type\":\"integer\"},\"origin\":{\"$ref\":\"#/$defs/Origin\",\"description\":\"The portal origin from step 2, at which the session key may act.\"},\"requestId\":{\"$ref\":\"#/$defs/RequestId\"},\"sessionKey\":{\"$ref\":\"#/$defs/OobKey\",\"description\":\"The starter key `K_b`, from step 2. On approve, the only key the grant lets act as the issuer.\"},\"signingScope\":{\"$ref\":\"#/$defs/SigningScope\",\"description\":\"The task families the starter key may sign documents for as the issuer, for the session this grant arms — step 2's `signingScope`, copied unchanged. Absent: the grant delegates no signing. Whatever it names, a service never accepts the key for the exclusions auth/oob/grant/0.2 states (Conformance, consumer item 6), and never beyond the member's own standing.\"}},\"required\":[\"requestId\",\"decision\",\"sessionKey\",\"approverKey\",\"origin\",\"contextDigest\",\"notAfter\"],\"title\":\"Auth — OOB Grant — payload\",\"type\":\"object\"}\n",
     );
 }
 /// The earlier `MAJOR.MINOR` of this slug that this version declares it

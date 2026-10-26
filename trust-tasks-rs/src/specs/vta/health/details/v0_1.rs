@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,24 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Asks a Verifiable Trust Agent for its public health flags: messaging configuration, seal and storage-encryption state, trusted-execution status and transport advertisement. Deliberately carries neither the software version nor the restore record — see vta/restore/status. The payload carries nothing. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/health/details/0.1",
-///  "title": "Payload",
-///  "description": "Asks a Verifiable Trust Agent for its public health flags: messaging configuration, seal and storage-encryption state, trusted-execution status and transport advertisement. Deliberately carries neither the software version nor the restore record — see vta/restore/status. The payload carries nothing. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -182,65 +140,6 @@ impl Payload {
 }
 ///The agent's public report on its own deployment, carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/health/details/0.1#response. Fixed for every asker. It MUST NOT carry the software version or the restore record, and additionalProperties: false means it cannot: those are served only by vta/restore/status. Failures use trust-task-error, not this shape.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The agent's public report on its own deployment, carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/health/details/0.1#response. Fixed for every asker. It MUST NOT carry the software version or the restore record, and additionalProperties: false means it cannot: those are served only by vta/restore/status. Failures use trust-task-error, not this shape.",
-///  "type": "object",
-///  "required": [
-///    "sealed",
-///    "status",
-///    "storageEncrypted",
-///    "tspEnabled"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "mediatorDid": {
-///      "description": "The DID of that mediator — the one DIDComm and TSP share. Absent when the agent has no messaging configured.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    },
-///    "mediatorUrl": {
-///      "description": "The endpoint of the mediator the agent's messaging routes through. Absent when the agent has no messaging configured.",
-///      "type": "string",
-///      "format": "uri",
-///      "maxLength": 2048
-///    },
-///    "sealed": {
-///      "description": "Whether the agent is sealed: offline, host-side commands that would change its access control, keys or configuration, or export secrets, are refused, so it is managed only through authenticated tasks.",
-///      "type": "boolean"
-///    },
-///    "status": {
-///      "description": "The agent's overall health. `ok` is the only value this version defines: an agent able to answer is serving.",
-///      "type": "string",
-///      "enum": [
-///        "ok"
-///      ]
-///    },
-///    "storageEncrypted": {
-///      "description": "Whether the agent's key store is encrypted at rest.",
-///      "type": "boolean"
-///    },
-///    "teeStatus": {
-///      "description": "The trusted execution environment the agent detected at boot. Absent when the agent has no attestation provider.",
-///      "$ref": "#/definitions/TeeStatus"
-///    },
-///    "tspEnabled": {
-///      "description": "Whether the agent advertises the Trust Spanning Protocol as a transport. TSP routes through the same mediator as DIDComm (mediatorDid), so no separate endpoint is reported.",
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -287,17 +186,6 @@ impl Response {
 }
 ///The DID of that mediator — the one DIDComm and TSP share. Absent when the agent has no messaging configured.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The DID of that mediator — the one DIDComm and TSP share. Absent when the agent has no messaging configured.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseMediatorDid(::std::string::String);
@@ -362,18 +250,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseMediatorDid {
 }
 ///The agent's overall health. `ok` is the only value this version defines: an agent able to answer is serving.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The agent's overall health. `ok` is the only value this version defines: an agent able to answer is serving.",
-///  "type": "string",
-///  "enum": [
-///    "ok"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -431,42 +307,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseStatus {
 }
 ///The trusted execution environment the agent detected at boot. Mirrors the response of vta/attestation/status/0.1 member for member, so a verifier reading either sees the same claim. A claim, not evidence: only vta/attestation/report proves what code runs.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "TeeStatus",
-///  "description": "The trusted execution environment the agent detected at boot. Mirrors the response of vta/attestation/status/0.1 member for member, so a verifier reading either sees the same claim. A claim, not evidence: only vta/attestation/report proves what code runs.",
-///  "type": "object",
-///  "required": [
-///    "detected",
-///    "teeType"
-///  ],
-///  "properties": {
-///    "detected": {
-///      "description": "Whether the agent found the platform at boot. False means it was configured for one it did not find.",
-///      "type": "boolean"
-///    },
-///    "platformVersion": {
-///      "description": "The platform's own version string, when it reports one. Informational.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "teeType": {
-///      "description": "nitro (AWS Nitro Enclaves), sev-snp (AMD SEV-SNP), or simulated (a development build whose evidence no verifier should accept).",
-///      "type": "string",
-///      "enum": [
-///        "nitro",
-///        "sev-snp",
-///        "simulated"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -491,17 +331,6 @@ impl TeeStatus {
 }
 ///The platform's own version string, when it reports one. Informational.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The platform's own version string, when it reports one. Informational.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct TeeStatusPlatformVersion(::std::string::String);
@@ -564,20 +393,6 @@ impl<'de> ::serde::Deserialize<'de> for TeeStatusPlatformVersion {
 }
 ///nitro (AWS Nitro Enclaves), sev-snp (AMD SEV-SNP), or simulated (a development build whose evidence no verifier should accept).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "nitro (AWS Nitro Enclaves), sev-snp (AMD SEV-SNP), or simulated (a development build whose evidence no verifier should accept).",
-///  "type": "string",
-///  "enum": [
-///    "nitro",
-///    "sev-snp",
-///    "simulated"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -896,7 +711,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/health/details/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The agent's public report on its own deployment, carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/health/details/0.1#response. Fixed for every asker. It MUST NOT carry the software version or the restore record, and additionalProperties: false means it cannot: those are served only by vta/restore/status. Failures use trust-task-error, not this shape.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"mediatorDid\": {\n          \"description\": \"The DID of that mediator — the one DIDComm and TSP share. Absent when the agent has no messaging configured.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"mediatorUrl\": {\n          \"description\": \"The endpoint of the mediator the agent's messaging routes through. Absent when the agent has no messaging configured.\",\n          \"format\": \"uri\",\n          \"maxLength\": 2048,\n          \"type\": \"string\"\n        },\n        \"sealed\": {\n          \"description\": \"Whether the agent is sealed: offline, host-side commands that would change its access control, keys or configuration, or export secrets, are refused, so it is managed only through authenticated tasks.\",\n          \"type\": \"boolean\"\n        },\n        \"status\": {\n          \"description\": \"The agent's overall health. `ok` is the only value this version defines: an agent able to answer is serving.\",\n          \"enum\": [\n            \"ok\"\n          ],\n          \"type\": \"string\"\n        },\n        \"storageEncrypted\": {\n          \"description\": \"Whether the agent's key store is encrypted at rest.\",\n          \"type\": \"boolean\"\n        },\n        \"teeStatus\": {\n          \"$ref\": \"#/$defs/TeeStatus\",\n          \"description\": \"The trusted execution environment the agent detected at boot. Absent when the agent has no attestation provider.\"\n        },\n        \"tspEnabled\": {\n          \"description\": \"Whether the agent advertises the Trust Spanning Protocol as a transport. TSP routes through the same mediator as DIDComm (mediatorDid), so no separate endpoint is reported.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"status\",\n        \"sealed\",\n        \"storageEncrypted\",\n        \"tspEnabled\"\n      ],\n      \"title\": \"VTA Health Details — response payload\",\n      \"type\": \"object\"\n    },\n    \"TeeStatus\": {\n      \"additionalProperties\": false,\n      \"description\": \"The trusted execution environment the agent detected at boot. Mirrors the response of vta/attestation/status/0.1 member for member, so a verifier reading either sees the same claim. A claim, not evidence: only vta/attestation/report proves what code runs.\",\n      \"properties\": {\n        \"detected\": {\n          \"description\": \"Whether the agent found the platform at boot. False means it was configured for one it did not find.\",\n          \"type\": \"boolean\"\n        },\n        \"platformVersion\": {\n          \"description\": \"The platform's own version string, when it reports one. Informational.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"teeType\": {\n          \"description\": \"nitro (AWS Nitro Enclaves), sev-snp (AMD SEV-SNP), or simulated (a development build whose evidence no verifier should accept).\",\n          \"enum\": [\n            \"nitro\",\n            \"sev-snp\",\n            \"simulated\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"teeType\",\n        \"detected\"\n      ],\n      \"title\": \"TeeStatus\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/health/details/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Asks a Verifiable Trust Agent for its public health flags: messaging configuration, seal and storage-encryption state, trusted-execution status and transport advertisement. Deliberately carries neither the software version nor the restore record — see vta/restore/status. The payload carries nothing. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    }\n  },\n  \"title\": \"VTA Health — Details — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The agent's public report on its own deployment, carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/health/details/0.1#response. Fixed for every asker. It MUST NOT carry the software version or the restore record, and additionalProperties: false means it cannot: those are served only by vta/restore/status. Failures use trust-task-error, not this shape.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"mediatorDid\":{\"description\":\"The DID of that mediator — the one DIDComm and TSP share. Absent when the agent has no messaging configured.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"mediatorUrl\":{\"description\":\"The endpoint of the mediator the agent's messaging routes through. Absent when the agent has no messaging configured.\",\"format\":\"uri\",\"maxLength\":2048,\"type\":\"string\"},\"sealed\":{\"description\":\"Whether the agent is sealed: offline, host-side commands that would change its access control, keys or configuration, or export secrets, are refused, so it is managed only through authenticated tasks.\",\"type\":\"boolean\"},\"status\":{\"description\":\"The agent's overall health. `ok` is the only value this version defines: an agent able to answer is serving.\",\"enum\":[\"ok\"],\"type\":\"string\"},\"storageEncrypted\":{\"description\":\"Whether the agent's key store is encrypted at rest.\",\"type\":\"boolean\"},\"teeStatus\":{\"$ref\":\"#/$defs/TeeStatus\",\"description\":\"The trusted execution environment the agent detected at boot. Absent when the agent has no attestation provider.\"},\"tspEnabled\":{\"description\":\"Whether the agent advertises the Trust Spanning Protocol as a transport. TSP routes through the same mediator as DIDComm (mediatorDid), so no separate endpoint is reported.\",\"type\":\"boolean\"}},\"required\":[\"status\",\"sealed\",\"storageEncrypted\",\"tspEnabled\"],\"title\":\"VTA Health Details — response payload\",\"type\":\"object\"},\"TeeStatus\":{\"additionalProperties\":false,\"description\":\"The trusted execution environment the agent detected at boot. Mirrors the response of vta/attestation/status/0.1 member for member, so a verifier reading either sees the same claim. A claim, not evidence: only vta/attestation/report proves what code runs.\",\"properties\":{\"detected\":{\"description\":\"Whether the agent found the platform at boot. False means it was configured for one it did not find.\",\"type\":\"boolean\"},\"platformVersion\":{\"description\":\"The platform's own version string, when it reports one. Informational.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"teeType\":{\"description\":\"nitro (AWS Nitro Enclaves), sev-snp (AMD SEV-SNP), or simulated (a development build whose evidence no verifier should accept).\",\"enum\":[\"nitro\",\"sev-snp\",\"simulated\"],\"type\":\"string\"}},\"required\":[\"teeType\",\"detected\"],\"title\":\"TeeStatus\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/health/details/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Asks a Verifiable Trust Agent for its public health flags: messaging configuration, seal and storage-encryption state, trusted-execution status and transport advertisement. Deliberately carries neither the software version nor the restore record — see vta/restore/status. The payload carries nothing. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"title\":\"VTA Health — Details — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -904,7 +719,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The agent's public report on its own deployment, carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/health/details/0.1#response. Fixed for every asker. It MUST NOT carry the software version or the restore record, and additionalProperties: false means it cannot: those are served only by vta/restore/status. Failures use trust-task-error, not this shape.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"mediatorDid\": {\n          \"description\": \"The DID of that mediator — the one DIDComm and TSP share. Absent when the agent has no messaging configured.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"mediatorUrl\": {\n          \"description\": \"The endpoint of the mediator the agent's messaging routes through. Absent when the agent has no messaging configured.\",\n          \"format\": \"uri\",\n          \"maxLength\": 2048,\n          \"type\": \"string\"\n        },\n        \"sealed\": {\n          \"description\": \"Whether the agent is sealed: offline, host-side commands that would change its access control, keys or configuration, or export secrets, are refused, so it is managed only through authenticated tasks.\",\n          \"type\": \"boolean\"\n        },\n        \"status\": {\n          \"description\": \"The agent's overall health. `ok` is the only value this version defines: an agent able to answer is serving.\",\n          \"enum\": [\n            \"ok\"\n          ],\n          \"type\": \"string\"\n        },\n        \"storageEncrypted\": {\n          \"description\": \"Whether the agent's key store is encrypted at rest.\",\n          \"type\": \"boolean\"\n        },\n        \"teeStatus\": {\n          \"$ref\": \"#/$defs/TeeStatus\",\n          \"description\": \"The trusted execution environment the agent detected at boot. Absent when the agent has no attestation provider.\"\n        },\n        \"tspEnabled\": {\n          \"description\": \"Whether the agent advertises the Trust Spanning Protocol as a transport. TSP routes through the same mediator as DIDComm (mediatorDid), so no separate endpoint is reported.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"status\",\n        \"sealed\",\n        \"storageEncrypted\",\n        \"tspEnabled\"\n      ],\n      \"title\": \"VTA Health Details — response payload\",\n      \"type\": \"object\"\n    },\n    \"TeeStatus\": {\n      \"additionalProperties\": false,\n      \"description\": \"The trusted execution environment the agent detected at boot. Mirrors the response of vta/attestation/status/0.1 member for member, so a verifier reading either sees the same claim. A claim, not evidence: only vta/attestation/report proves what code runs.\",\n      \"properties\": {\n        \"detected\": {\n          \"description\": \"Whether the agent found the platform at boot. False means it was configured for one it did not find.\",\n          \"type\": \"boolean\"\n        },\n        \"platformVersion\": {\n          \"description\": \"The platform's own version string, when it reports one. Informational.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"teeType\": {\n          \"description\": \"nitro (AWS Nitro Enclaves), sev-snp (AMD SEV-SNP), or simulated (a development build whose evidence no verifier should accept).\",\n          \"enum\": [\n            \"nitro\",\n            \"sev-snp\",\n            \"simulated\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"teeType\",\n        \"detected\"\n      ],\n      \"title\": \"TeeStatus\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The agent's public report on its own deployment, carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/health/details/0.1#response. Fixed for every asker. It MUST NOT carry the software version or the restore record, and additionalProperties: false means it cannot: those are served only by vta/restore/status. Failures use trust-task-error, not this shape.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"mediatorDid\":{\"description\":\"The DID of that mediator — the one DIDComm and TSP share. Absent when the agent has no messaging configured.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"mediatorUrl\":{\"description\":\"The endpoint of the mediator the agent's messaging routes through. Absent when the agent has no messaging configured.\",\"format\":\"uri\",\"maxLength\":2048,\"type\":\"string\"},\"sealed\":{\"description\":\"Whether the agent is sealed: offline, host-side commands that would change its access control, keys or configuration, or export secrets, are refused, so it is managed only through authenticated tasks.\",\"type\":\"boolean\"},\"status\":{\"description\":\"The agent's overall health. `ok` is the only value this version defines: an agent able to answer is serving.\",\"enum\":[\"ok\"],\"type\":\"string\"},\"storageEncrypted\":{\"description\":\"Whether the agent's key store is encrypted at rest.\",\"type\":\"boolean\"},\"teeStatus\":{\"$ref\":\"#/$defs/TeeStatus\",\"description\":\"The trusted execution environment the agent detected at boot. Absent when the agent has no attestation provider.\"},\"tspEnabled\":{\"description\":\"Whether the agent advertises the Trust Spanning Protocol as a transport. TSP routes through the same mediator as DIDComm (mediatorDid), so no separate endpoint is reported.\",\"type\":\"boolean\"}},\"required\":[\"status\",\"sealed\",\"storageEncrypted\",\"tspEnabled\"],\"title\":\"VTA Health Details — response payload\",\"type\":\"object\"},\"TeeStatus\":{\"additionalProperties\":false,\"description\":\"The trusted execution environment the agent detected at boot. Mirrors the response of vta/attestation/status/0.1 member for member, so a verifier reading either sees the same claim. A claim, not evidence: only vta/attestation/report proves what code runs.\",\"properties\":{\"detected\":{\"description\":\"Whether the agent found the platform at boot. False means it was configured for one it did not find.\",\"type\":\"boolean\"},\"platformVersion\":{\"description\":\"The platform's own version string, when it reports one. Informational.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"teeType\":{\"description\":\"nitro (AWS Nitro Enclaves), sev-snp (AMD SEV-SNP), or simulated (a development build whose evidence no verifier should accept).\",\"enum\":[\"nitro\",\"sev-snp\",\"simulated\"],\"type\":\"string\"}},\"required\":[\"teeType\",\"detected\"],\"title\":\"TeeStatus\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

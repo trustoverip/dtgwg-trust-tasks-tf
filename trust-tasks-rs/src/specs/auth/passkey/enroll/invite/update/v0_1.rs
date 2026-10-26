@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,62 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`InviteSummary`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "InviteSummary",
-///  "type": "object",
-///  "required": [
-///    "createdAt",
-///    "expired",
-///    "expiresAt",
-///    "inviteId",
-///    "purpose",
-///    "subject"
-///  ],
-///  "properties": {
-///    "createdAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "expired": {
-///      "description": "True when expiresAt has passed. An expired invite can no longer be redeemed; it is listed until the consumer's cleanup removes it.",
-///      "type": "boolean"
-///    },
-///    "expiresAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "inviteId": {
-///      "description": "Consumer-chosen opaque handle for the invite. It is NOT the invite token and MUST NOT be derivable into it; knowing it lets an administrator manage the invite, never redeem it.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "purpose": {
-///      "description": "What the redeemed credential may authenticate, as in auth/passkey/enroll/invite.",
-///      "type": "string",
-///      "enum": [
-///        "session",
-///        "stepUp"
-///      ]
-///    },
-///    "role": {
-///      "description": "The role the invitee receives on redemption. Absent when the consumer applies its default role, and always absent for purpose stepUp.",
-///      "type": "string"
-///    },
-///    "subject": {
-///      "description": "The VID the invite binds a passkey to.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "inviteSummary"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -226,17 +146,6 @@ impl InviteSummary {
 }
 ///Consumer-chosen opaque handle for the invite. It is NOT the invite token and MUST NOT be derivable into it; knowing it lets an administrator manage the invite, never redeem it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Consumer-chosen opaque handle for the invite. It is NOT the invite token and MUST NOT be derivable into it; knowing it lets an administrator manage the invite, never redeem it.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct InviteSummaryInviteId(::std::string::String);
@@ -299,19 +208,6 @@ impl<'de> ::serde::Deserialize<'de> for InviteSummaryInviteId {
 }
 ///What the redeemed credential may authenticate, as in auth/passkey/enroll/invite.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "What the redeemed credential may authenticate, as in auth/passkey/enroll/invite.",
-///  "type": "string",
-///  "enum": [
-///    "session",
-///    "stepUp"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -373,16 +269,6 @@ impl ::std::convert::TryFrom<::std::string::String> for InviteSummaryPurpose {
 }
 ///The VID the invite binds a passkey to.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The VID the invite binds a passkey to.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct InviteSummarySubject(::std::string::String);
@@ -442,45 +328,6 @@ impl<'de> ::serde::Deserialize<'de> for InviteSummarySubject {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/auth/passkey/enroll/invite/update/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "inviteId"
-///  ],
-///  "properties": {
-///    "expiresAt": {
-///      "description": "The new absolute expiry. Absent leaves the expiry unchanged unless extendBy is given. Mutually exclusive with extendBy.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "extendBy": {
-///      "description": "Seconds to add to the time of processing to form the new expiry. Absent leaves the expiry unchanged unless expiresAt is given. Mutually exclusive with expiresAt.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "inviteId": {
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "role": {
-///      "description": "The role the invitee will receive. Absent leaves the role unchanged.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -514,16 +361,6 @@ impl Payload {
 }
 ///`PayloadInviteId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadInviteId(::std::string::String);
@@ -586,16 +423,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadInviteId {
 }
 ///The role the invitee will receive. Absent leaves the role unchanged.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The role the invitee will receive. Absent leaves the role unchanged.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadRole(::std::string::String);
@@ -655,28 +482,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRole {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "invite"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "invite": {
-///      "$ref": "#/definitions/InviteSummary"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -984,7 +789,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"InviteSummary\": {\n      \"$anchor\": \"inviteSummary\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"expired\": {\n          \"description\": \"True when expiresAt has passed. An expired invite can no longer be redeemed; it is listed until the consumer's cleanup removes it.\",\n          \"type\": \"boolean\"\n        },\n        \"expiresAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"inviteId\": {\n          \"description\": \"Consumer-chosen opaque handle for the invite. It is NOT the invite token and MUST NOT be derivable into it; knowing it lets an administrator manage the invite, never redeem it.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"purpose\": {\n          \"description\": \"What the redeemed credential may authenticate, as in auth/passkey/enroll/invite.\",\n          \"enum\": [\n            \"session\",\n            \"stepUp\"\n          ],\n          \"type\": \"string\"\n        },\n        \"role\": {\n          \"description\": \"The role the invitee receives on redemption. Absent when the consumer applies its default role, and always absent for purpose stepUp.\",\n          \"type\": \"string\"\n        },\n        \"subject\": {\n          \"description\": \"The VID the invite binds a passkey to.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"inviteId\",\n        \"subject\",\n        \"purpose\",\n        \"createdAt\",\n        \"expiresAt\",\n        \"expired\"\n      ],\n      \"title\": \"InviteSummary\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"invite\": {\n          \"$ref\": \"#/$defs/InviteSummary\"\n        }\n      },\n      \"required\": [\n        \"invite\"\n      ],\n      \"title\": \"Auth Passkey Invite Update — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/passkey/enroll/invite/update/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"oneOf\": [\n    {\n      \"not\": {\n        \"anyOf\": [\n          {\n            \"required\": [\n              \"expiresAt\"\n            ]\n          },\n          {\n            \"required\": [\n              \"extendBy\"\n            ]\n          }\n        ]\n      },\n      \"required\": [\n        \"role\"\n      ]\n    },\n    {\n      \"not\": {\n        \"required\": [\n          \"extendBy\"\n        ]\n      },\n      \"required\": [\n        \"expiresAt\"\n      ]\n    },\n    {\n      \"not\": {\n        \"required\": [\n          \"expiresAt\"\n        ]\n      },\n      \"required\": [\n        \"extendBy\"\n      ]\n    }\n  ],\n  \"properties\": {\n    \"expiresAt\": {\n      \"description\": \"The new absolute expiry. Absent leaves the expiry unchanged unless extendBy is given. Mutually exclusive with extendBy.\",\n      \"format\": \"date-time\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"extendBy\": {\n      \"description\": \"Seconds to add to the time of processing to form the new expiry. Absent leaves the expiry unchanged unless expiresAt is given. Mutually exclusive with expiresAt.\",\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"inviteId\": {\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"role\": {\n      \"description\": \"The role the invitee will receive. Absent leaves the role unchanged.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"inviteId\"\n  ],\n  \"title\": \"Auth Passkey Invite Update — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"InviteSummary\":{\"$anchor\":\"inviteSummary\",\"additionalProperties\":false,\"properties\":{\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"expired\":{\"description\":\"True when expiresAt has passed. An expired invite can no longer be redeemed; it is listed until the consumer's cleanup removes it.\",\"type\":\"boolean\"},\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"inviteId\":{\"description\":\"Consumer-chosen opaque handle for the invite. It is NOT the invite token and MUST NOT be derivable into it; knowing it lets an administrator manage the invite, never redeem it.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"purpose\":{\"description\":\"What the redeemed credential may authenticate, as in auth/passkey/enroll/invite.\",\"enum\":[\"session\",\"stepUp\"],\"type\":\"string\"},\"role\":{\"description\":\"The role the invitee receives on redemption. Absent when the consumer applies its default role, and always absent for purpose stepUp.\",\"type\":\"string\"},\"subject\":{\"description\":\"The VID the invite binds a passkey to.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"inviteId\",\"subject\",\"purpose\",\"createdAt\",\"expiresAt\",\"expired\"],\"title\":\"InviteSummary\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"invite\":{\"$ref\":\"#/$defs/InviteSummary\"}},\"required\":[\"invite\"],\"title\":\"Auth Passkey Invite Update — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/auth/passkey/enroll/invite/update/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"oneOf\":[{\"not\":{\"anyOf\":[{\"required\":[\"expiresAt\"]},{\"required\":[\"extendBy\"]}]},\"required\":[\"role\"]},{\"not\":{\"required\":[\"extendBy\"]},\"required\":[\"expiresAt\"]},{\"not\":{\"required\":[\"expiresAt\"]},\"required\":[\"extendBy\"]}],\"properties\":{\"expiresAt\":{\"description\":\"The new absolute expiry. Absent leaves the expiry unchanged unless extendBy is given. Mutually exclusive with extendBy.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"extendBy\":{\"description\":\"Seconds to add to the time of processing to form the new expiry. Absent leaves the expiry unchanged unless expiresAt is given. Mutually exclusive with expiresAt.\",\"minimum\":1,\"type\":\"integer\"},\"inviteId\":{\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"role\":{\"description\":\"The role the invitee will receive. Absent leaves the role unchanged.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"inviteId\"],\"title\":\"Auth Passkey Invite Update — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -994,7 +799,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"InviteSummary\": {\n      \"$anchor\": \"inviteSummary\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"expired\": {\n          \"description\": \"True when expiresAt has passed. An expired invite can no longer be redeemed; it is listed until the consumer's cleanup removes it.\",\n          \"type\": \"boolean\"\n        },\n        \"expiresAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"inviteId\": {\n          \"description\": \"Consumer-chosen opaque handle for the invite. It is NOT the invite token and MUST NOT be derivable into it; knowing it lets an administrator manage the invite, never redeem it.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"purpose\": {\n          \"description\": \"What the redeemed credential may authenticate, as in auth/passkey/enroll/invite.\",\n          \"enum\": [\n            \"session\",\n            \"stepUp\"\n          ],\n          \"type\": \"string\"\n        },\n        \"role\": {\n          \"description\": \"The role the invitee receives on redemption. Absent when the consumer applies its default role, and always absent for purpose stepUp.\",\n          \"type\": \"string\"\n        },\n        \"subject\": {\n          \"description\": \"The VID the invite binds a passkey to.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"inviteId\",\n        \"subject\",\n        \"purpose\",\n        \"createdAt\",\n        \"expiresAt\",\n        \"expired\"\n      ],\n      \"title\": \"InviteSummary\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"invite\": {\n          \"$ref\": \"#/$defs/InviteSummary\"\n        }\n      },\n      \"required\": [\n        \"invite\"\n      ],\n      \"title\": \"Auth Passkey Invite Update — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"InviteSummary\":{\"$anchor\":\"inviteSummary\",\"additionalProperties\":false,\"properties\":{\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"expired\":{\"description\":\"True when expiresAt has passed. An expired invite can no longer be redeemed; it is listed until the consumer's cleanup removes it.\",\"type\":\"boolean\"},\"expiresAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"inviteId\":{\"description\":\"Consumer-chosen opaque handle for the invite. It is NOT the invite token and MUST NOT be derivable into it; knowing it lets an administrator manage the invite, never redeem it.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"purpose\":{\"description\":\"What the redeemed credential may authenticate, as in auth/passkey/enroll/invite.\",\"enum\":[\"session\",\"stepUp\"],\"type\":\"string\"},\"role\":{\"description\":\"The role the invitee receives on redemption. Absent when the consumer applies its default role, and always absent for purpose stepUp.\",\"type\":\"string\"},\"subject\":{\"description\":\"The VID the invite binds a passkey to.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"inviteId\",\"subject\",\"purpose\",\"createdAt\",\"expiresAt\",\"expired\"],\"title\":\"InviteSummary\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"invite\":{\"$ref\":\"#/$defs/InviteSummary\"}},\"required\":[\"invite\"],\"title\":\"Auth Passkey Invite Update — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

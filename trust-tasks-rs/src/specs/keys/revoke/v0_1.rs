@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,20 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Lifecycle state. Only an `active` key may be named in a signing request; a `revoked` key is retained so historic signatures remain attributable, and MUST NOT be reactivated.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "KeyStatus",
-///  "description": "Lifecycle state. Only an `active` key may be named in a signing request; a `revoked` key is retained so historic signatures remain attributable, and MUST NOT be reactivated.",
-///  "type": "string",
-///  "enum": [
-///    "active",
-///    "revoked"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -217,37 +179,6 @@ impl ::std::convert::TryFrom<::std::string::String> for KeyStatus {
 }
 ///Retire a key from further use. The record is retained so historic signatures stay attributable; this is not a delete.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/keys/revoke/0.1",
-///  "title": "Payload",
-///  "description": "Retire a key from further use. The record is retained so historic signatures stay attributable; this is not a delete.",
-///  "type": "object",
-///  "required": [
-///    "keyId"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "keyId": {
-///      "description": "Identifier of the key to retire.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "reason": {
-///      "description": "Optional human-readable rationale, recorded with the revocation.",
-///      "type": "string",
-///      "maxLength": 1024
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -269,16 +200,6 @@ impl Payload {
 }
 ///Identifier of the key to retire.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Identifier of the key to retire.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadKeyId(::std::string::String);
@@ -338,16 +259,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadKeyId {
 }
 ///Optional human-readable rationale, recorded with the revocation.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Optional human-readable rationale, recorded with the revocation.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadReason(::std::string::String);
@@ -407,41 +318,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 }
 ///The success response to a keys/revoke request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/revoke/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The success response to a keys/revoke request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/revoke/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "keyId",
-///    "status",
-///    "updatedAt"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "keyId": {
-///      "description": "The key that was retired.",
-///      "type": "string"
-///    },
-///    "status": {
-///      "description": "The lifecycle state now in effect — `revoked` on success. Returned rather than assumed so a caller reading only the response can see the realized state.",
-///      "$ref": "#/definitions/KeyStatus"
-///    },
-///    "updatedAt": {
-///      "description": "RFC 3339 timestamp of the revocation. The boundary between signatures made while the key was valid and requests refused afterwards.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -621,7 +497,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"KeyStatus\": {\n      \"description\": \"Lifecycle state. Only an `active` key may be named in a signing request; a `revoked` key is retained so historic signatures remain attributable, and MUST NOT be reactivated.\",\n      \"enum\": [\n        \"active\",\n        \"revoked\"\n      ],\n      \"title\": \"KeyStatus\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a keys/revoke request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/revoke/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"keyId\": {\n          \"description\": \"The key that was retired.\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"$ref\": \"#/$defs/KeyStatus\",\n          \"description\": \"The lifecycle state now in effect — `revoked` on success. Returned rather than assumed so a caller reading only the response can see the realized state.\"\n        },\n        \"updatedAt\": {\n          \"description\": \"RFC 3339 timestamp of the revocation. The boundary between signatures made while the key was valid and requests refused afterwards.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"keyId\",\n        \"status\",\n        \"updatedAt\"\n      ],\n      \"title\": \"Keys Revoke — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/keys/revoke/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Retire a key from further use. The record is retained so historic signatures stay attributable; this is not a delete.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"keyId\": {\n      \"description\": \"Identifier of the key to retire.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"reason\": {\n      \"description\": \"Optional human-readable rationale, recorded with the revocation.\",\n      \"maxLength\": 1024,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"keyId\"\n  ],\n  \"title\": \"Keys Revoke — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"KeyStatus\":{\"description\":\"Lifecycle state. Only an `active` key may be named in a signing request; a `revoked` key is retained so historic signatures remain attributable, and MUST NOT be reactivated.\",\"enum\":[\"active\",\"revoked\"],\"title\":\"KeyStatus\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a keys/revoke request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/revoke/0.1#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keyId\":{\"description\":\"The key that was retired.\",\"type\":\"string\"},\"status\":{\"$ref\":\"#/$defs/KeyStatus\",\"description\":\"The lifecycle state now in effect — `revoked` on success. Returned rather than assumed so a caller reading only the response can see the realized state.\"},\"updatedAt\":{\"description\":\"RFC 3339 timestamp of the revocation. The boundary between signatures made while the key was valid and requests refused afterwards.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"keyId\",\"status\",\"updatedAt\"],\"title\":\"Keys Revoke — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/keys/revoke/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Retire a key from further use. The record is retained so historic signatures stay attributable; this is not a delete.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"keyId\":{\"description\":\"Identifier of the key to retire.\",\"minLength\":1,\"type\":\"string\"},\"reason\":{\"description\":\"Optional human-readable rationale, recorded with the revocation.\",\"maxLength\":1024,\"type\":\"string\"}},\"required\":[\"keyId\"],\"title\":\"Keys Revoke — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -630,7 +506,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"KeyStatus\": {\n      \"description\": \"Lifecycle state. Only an `active` key may be named in a signing request; a `revoked` key is retained so historic signatures remain attributable, and MUST NOT be reactivated.\",\n      \"enum\": [\n        \"active\",\n        \"revoked\"\n      ],\n      \"title\": \"KeyStatus\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a keys/revoke request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/revoke/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"keyId\": {\n          \"description\": \"The key that was retired.\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"$ref\": \"#/$defs/KeyStatus\",\n          \"description\": \"The lifecycle state now in effect — `revoked` on success. Returned rather than assumed so a caller reading only the response can see the realized state.\"\n        },\n        \"updatedAt\": {\n          \"description\": \"RFC 3339 timestamp of the revocation. The boundary between signatures made while the key was valid and requests refused afterwards.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"keyId\",\n        \"status\",\n        \"updatedAt\"\n      ],\n      \"title\": \"Keys Revoke — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"KeyStatus\":{\"description\":\"Lifecycle state. Only an `active` key may be named in a signing request; a `revoked` key is retained so historic signatures remain attributable, and MUST NOT be reactivated.\",\"enum\":[\"active\",\"revoked\"],\"title\":\"KeyStatus\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a keys/revoke request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/revoke/0.1#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keyId\":{\"description\":\"The key that was retired.\",\"type\":\"string\"},\"status\":{\"$ref\":\"#/$defs/KeyStatus\",\"description\":\"The lifecycle state now in effect — `revoked` on success. Returned rather than assumed so a caller reading only the response can see the realized state.\"},\"updatedAt\":{\"description\":\"RFC 3339 timestamp of the revocation. The boundary between signatures made while the key was valid and requests refused afterwards.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"keyId\",\"status\",\"updatedAt\"],\"title\":\"Keys Revoke — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

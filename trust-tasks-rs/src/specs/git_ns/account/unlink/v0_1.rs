@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,36 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ForgeAccount",
-///  "description": "A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.",
-///  "type": "object",
-///  "required": [
-///    "forge",
-///    "id",
-///    "login"
-///  ],
-///  "properties": {
-///    "forge": {
-///      "$ref": "#/definitions/ForgeHost"
-///    },
-///    "id": {
-///      "$ref": "#/definitions/ForgeId"
-///    },
-///    "login": {
-///      "description": "The account's current login, as the forge reported it when last seen. Display only.",
-///      "type": "string",
-///      "maxLength": 100,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -188,17 +134,6 @@ impl ForgeAccount {
 }
 ///The account's current login, as the forge reported it when last seen. Display only.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The account's current login, as the forge reported it when last seen. Display only.",
-///  "type": "string",
-///  "maxLength": 100,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ForgeAccountLogin(::std::string::String);
@@ -261,19 +196,6 @@ impl<'de> ::serde::Deserialize<'de> for ForgeAccountLogin {
 }
 ///The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, or a self-hosted Forgejo instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ForgeHost",
-///  "description": "The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, or a self-hosted Forgejo instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.",
-///  "type": "string",
-///  "maxLength": 253,
-///  "minLength": 3,
-///  "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ForgeHost(::std::string::String);
@@ -349,18 +271,6 @@ impl<'de> ::serde::Deserialize<'de> for ForgeHost {
 }
 ///An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub and Forgejo ids are decimal integers written as strings (`"812736451"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ForgeId",
-///  "description": "An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub and Forgejo ids are decimal integers written as strings (`\"812736451\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ForgeId(::std::string::String);
@@ -423,34 +333,6 @@ impl<'de> ::serde::Deserialize<'de> for ForgeId {
 }
 ///A member removes the binding between their DID and their account on one forge, made with git-ns/account/link. The VTC deletes it and re-projects, so the bridge withdraws the forge roles it gave that account.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/git-ns/account/unlink/0.1",
-///  "title": "Payload",
-///  "description": "A member removes the binding between their DID and their account on one forge, made with git-ns/account/link. The VTC deletes it and re-projects, so the bridge withdraws the forge roles it gave that account.",
-///  "type": "object",
-///  "required": [
-///    "forge"
-///  ],
-///  "properties": {
-///    "accountId": {
-///      "description": "The forge id of the account the member means to unlink, as they last read it. When present, the VTC unlinks only if this is the account linked on `forge` now, so a request made before a re-link cannot remove the account linked since.",
-///      "$ref": "#/definitions/ForgeId"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "forge": {
-///      "description": "The forge whose linked account to unlink.",
-///      "$ref": "#/definitions/ForgeHost"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -474,36 +356,6 @@ impl Payload {
 }
 ///The account that was unlinked, and when.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The account that was unlinked, and when.",
-///  "type": "object",
-///  "required": [
-///    "unlinked",
-///    "unlinkedAt"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "unlinked": {
-///      "description": "The account that is no longer linked to the member's DID.",
-///      "$ref": "#/definitions/ForgeAccount"
-///    },
-///    "unlinkedAt": {
-///      "description": "When the binding was deleted.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -732,7 +584,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ForgeAccount\": {\n      \"additionalProperties\": false,\n      \"description\": \"A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.\",\n      \"properties\": {\n        \"forge\": {\n          \"$ref\": \"#/$defs/ForgeHost\"\n        },\n        \"id\": {\n          \"$ref\": \"#/$defs/ForgeId\"\n        },\n        \"login\": {\n          \"description\": \"The account's current login, as the forge reported it when last seen. Display only.\",\n          \"maxLength\": 100,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"forge\",\n        \"id\",\n        \"login\"\n      ],\n      \"title\": \"ForgeAccount\",\n      \"type\": \"object\"\n    },\n    \"ForgeHost\": {\n      \"description\": \"The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, or a self-hosted Forgejo instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.\",\n      \"maxLength\": 253,\n      \"minLength\": 3,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$\",\n      \"title\": \"ForgeHost\",\n      \"type\": \"string\"\n    },\n    \"ForgeId\": {\n      \"description\": \"An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub and Forgejo ids are decimal integers written as strings (`\\\"812736451\\\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"title\": \"ForgeId\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The account that was unlinked, and when.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"unlinked\": {\n          \"$ref\": \"#/$defs/ForgeAccount\",\n          \"description\": \"The account that is no longer linked to the member's DID.\"\n        },\n        \"unlinkedAt\": {\n          \"description\": \"When the binding was deleted.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"unlinked\",\n        \"unlinkedAt\"\n      ],\n      \"title\": \"Git Namespaces — Unlink Forge Account — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/git-ns/account/unlink/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A member removes the binding between their DID and their account on one forge, made with git-ns/account/link. The VTC deletes it and re-projects, so the bridge withdraws the forge roles it gave that account.\",\n  \"properties\": {\n    \"accountId\": {\n      \"$ref\": \"#/$defs/ForgeId\",\n      \"description\": \"The forge id of the account the member means to unlink, as they last read it. When present, the VTC unlinks only if this is the account linked on `forge` now, so a request made before a re-link cannot remove the account linked since.\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"forge\": {\n      \"$ref\": \"#/$defs/ForgeHost\",\n      \"description\": \"The forge whose linked account to unlink.\"\n    }\n  },\n  \"required\": [\n    \"forge\"\n  ],\n  \"title\": \"Git Namespaces — Unlink Forge Account — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ForgeAccount\":{\"additionalProperties\":false,\"description\":\"A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.\",\"properties\":{\"forge\":{\"$ref\":\"#/$defs/ForgeHost\"},\"id\":{\"$ref\":\"#/$defs/ForgeId\"},\"login\":{\"description\":\"The account's current login, as the forge reported it when last seen. Display only.\",\"maxLength\":100,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"forge\",\"id\",\"login\"],\"title\":\"ForgeAccount\",\"type\":\"object\"},\"ForgeHost\":{\"description\":\"The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, or a self-hosted Forgejo instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.\",\"maxLength\":253,\"minLength\":3,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$\",\"title\":\"ForgeHost\",\"type\":\"string\"},\"ForgeId\":{\"description\":\"An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub and Forgejo ids are decimal integers written as strings (`\\\"812736451\\\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.\",\"maxLength\":64,\"minLength\":1,\"title\":\"ForgeId\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The account that was unlinked, and when.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"unlinked\":{\"$ref\":\"#/$defs/ForgeAccount\",\"description\":\"The account that is no longer linked to the member's DID.\"},\"unlinkedAt\":{\"description\":\"When the binding was deleted.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"unlinked\",\"unlinkedAt\"],\"title\":\"Git Namespaces — Unlink Forge Account — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/git-ns/account/unlink/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A member removes the binding between their DID and their account on one forge, made with git-ns/account/link. The VTC deletes it and re-projects, so the bridge withdraws the forge roles it gave that account.\",\"properties\":{\"accountId\":{\"$ref\":\"#/$defs/ForgeId\",\"description\":\"The forge id of the account the member means to unlink, as they last read it. When present, the VTC unlinks only if this is the account linked on `forge` now, so a request made before a re-link cannot remove the account linked since.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"forge\":{\"$ref\":\"#/$defs/ForgeHost\",\"description\":\"The forge whose linked account to unlink.\"}},\"required\":[\"forge\"],\"title\":\"Git Namespaces — Unlink Forge Account — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -741,7 +593,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ForgeAccount\": {\n      \"additionalProperties\": false,\n      \"description\": \"A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.\",\n      \"properties\": {\n        \"forge\": {\n          \"$ref\": \"#/$defs/ForgeHost\"\n        },\n        \"id\": {\n          \"$ref\": \"#/$defs/ForgeId\"\n        },\n        \"login\": {\n          \"description\": \"The account's current login, as the forge reported it when last seen. Display only.\",\n          \"maxLength\": 100,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"forge\",\n        \"id\",\n        \"login\"\n      ],\n      \"title\": \"ForgeAccount\",\n      \"type\": \"object\"\n    },\n    \"ForgeHost\": {\n      \"description\": \"The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, or a self-hosted Forgejo instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.\",\n      \"maxLength\": 253,\n      \"minLength\": 3,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$\",\n      \"title\": \"ForgeHost\",\n      \"type\": \"string\"\n    },\n    \"ForgeId\": {\n      \"description\": \"An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub and Forgejo ids are decimal integers written as strings (`\\\"812736451\\\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"title\": \"ForgeId\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The account that was unlinked, and when.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"unlinked\": {\n          \"$ref\": \"#/$defs/ForgeAccount\",\n          \"description\": \"The account that is no longer linked to the member's DID.\"\n        },\n        \"unlinkedAt\": {\n          \"description\": \"When the binding was deleted.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"unlinked\",\n        \"unlinkedAt\"\n      ],\n      \"title\": \"Git Namespaces — Unlink Forge Account — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ForgeAccount\":{\"additionalProperties\":false,\"description\":\"A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.\",\"properties\":{\"forge\":{\"$ref\":\"#/$defs/ForgeHost\"},\"id\":{\"$ref\":\"#/$defs/ForgeId\"},\"login\":{\"description\":\"The account's current login, as the forge reported it when last seen. Display only.\",\"maxLength\":100,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"forge\",\"id\",\"login\"],\"title\":\"ForgeAccount\",\"type\":\"object\"},\"ForgeHost\":{\"description\":\"The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, or a self-hosted Forgejo instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.\",\"maxLength\":253,\"minLength\":3,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$\",\"title\":\"ForgeHost\",\"type\":\"string\"},\"ForgeId\":{\"description\":\"An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub and Forgejo ids are decimal integers written as strings (`\\\"812736451\\\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.\",\"maxLength\":64,\"minLength\":1,\"title\":\"ForgeId\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The account that was unlinked, and when.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"unlinked\":{\"$ref\":\"#/$defs/ForgeAccount\",\"description\":\"The account that is no longer linked to the member's DID.\"},\"unlinkedAt\":{\"description\":\"When the binding was deleted.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"unlinked\",\"unlinkedAt\"],\"title\":\"Git Namespaces — Unlink Forge Account — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

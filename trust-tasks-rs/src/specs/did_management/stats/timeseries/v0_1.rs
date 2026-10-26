@@ -35,21 +35,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -71,15 +56,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -143,47 +119,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/did-management/stats/timeseries/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "range"
-///  ],
-///  "properties": {
-///    "domain": {
-///      "description": "With `mnemonic`, disambiguates it per the category conventions. Without it, selects the sum over every slot on that domain. Absent with `mnemonic` absent means the server-wide series, which only an administrator may read.",
-///      "type": "string",
-///      "maxLength": 253,
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "mnemonic": {
-///      "description": "One slot's series. Absent means a domain's series when `domain` is present, else the server-wide series.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    },
-///    "range": {
-///      "description": "The window ending now. The consumer chooses the bucket width and reports it as `bucketSeconds`.",
-///      "type": "string",
-///      "enum": [
-///        "lastHour",
-///        "lastDay",
-///        "lastWeek",
-///        "last30Days"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -207,17 +142,6 @@ impl Payload {
 }
 ///With `mnemonic`, disambiguates it per the category conventions. Without it, selects the sum over every slot on that domain. Absent with `mnemonic` absent means the server-wide series, which only an administrator may read.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "With `mnemonic`, disambiguates it per the category conventions. Without it, selects the sum over every slot on that domain. Absent with `mnemonic` absent means the server-wide series, which only an administrator may read.",
-///  "type": "string",
-///  "maxLength": 253,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadDomain(::std::string::String);
@@ -280,17 +204,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDomain {
 }
 ///One slot's series. Absent means a domain's series when `domain` is present, else the server-wide series.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "One slot's series. Absent means a domain's series when `domain` is present, else the server-wide series.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadMnemonic(::std::string::String);
@@ -353,21 +266,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadMnemonic {
 }
 ///The window ending now. The consumer chooses the bucket width and reports it as `bucketSeconds`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The window ending now. The consumer chooses the bucket width and reports it as `bucketSeconds`.",
-///  "type": "string",
-///  "enum": [
-///    "lastHour",
-///    "lastDay",
-///    "lastWeek",
-///    "last30Days"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -437,69 +335,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadRange {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "bucketSeconds",
-///    "points",
-///    "range"
-///  ],
-///  "properties": {
-///    "bucketSeconds": {
-///      "description": "Width of each bucket.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "points": {
-///      "description": "One point per bucket in the window, oldest first, including buckets with no activity.",
-///      "type": "array",
-///      "items": {
-///        "type": "object",
-///        "required": [
-///          "at",
-///          "resolves",
-///          "updates"
-///        ],
-///        "properties": {
-///          "at": {
-///            "description": "Start of the bucket.",
-///            "type": "string",
-///            "format": "date-time"
-///          },
-///          "resolves": {
-///            "type": "integer",
-///            "minimum": 0.0
-///          },
-///          "updates": {
-///            "type": "integer",
-///            "minimum": 0.0
-///          }
-///        },
-///        "additionalProperties": false
-///      }
-///    },
-///    "range": {
-///      "type": "string",
-///      "enum": [
-///        "lastHour",
-///        "lastDay",
-///        "lastWeek",
-///        "last30Days"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -521,35 +356,6 @@ impl Response {
 }
 ///`ResponsePointsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "at",
-///    "resolves",
-///    "updates"
-///  ],
-///  "properties": {
-///    "at": {
-///      "description": "Start of the bucket.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "resolves": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "updates": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -566,20 +372,6 @@ impl ResponsePointsItem {
 }
 ///`ResponseRange`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "enum": [
-///    "lastHour",
-///    "lastDay",
-///    "lastWeek",
-///    "last30Days"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -893,7 +685,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"bucketSeconds\": {\n          \"description\": \"Width of each bucket.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"points\": {\n          \"description\": \"One point per bucket in the window, oldest first, including buckets with no activity.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"at\": {\n                \"description\": \"Start of the bucket.\",\n                \"format\": \"date-time\",\n                \"type\": \"string\"\n              },\n              \"resolves\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"updates\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              }\n            },\n            \"required\": [\n              \"at\",\n              \"resolves\",\n              \"updates\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        },\n        \"range\": {\n          \"enum\": [\n            \"lastHour\",\n            \"lastDay\",\n            \"lastWeek\",\n            \"last30Days\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"range\",\n        \"bucketSeconds\",\n        \"points\"\n      ],\n      \"title\": \"Stats Timeseries — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/did-management/stats/timeseries/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"domain\": {\n      \"description\": \"With `mnemonic`, disambiguates it per the category conventions. Without it, selects the sum over every slot on that domain. Absent with `mnemonic` absent means the server-wide series, which only an administrator may read.\",\n      \"maxLength\": 253,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"mnemonic\": {\n      \"description\": \"One slot's series. Absent means a domain's series when `domain` is present, else the server-wide series.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"range\": {\n      \"description\": \"The window ending now. The consumer chooses the bucket width and reports it as `bucketSeconds`.\",\n      \"enum\": [\n        \"lastHour\",\n        \"lastDay\",\n        \"lastWeek\",\n        \"last30Days\"\n      ],\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"range\"\n  ],\n  \"title\": \"Stats Timeseries — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"bucketSeconds\":{\"description\":\"Width of each bucket.\",\"minimum\":1,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"points\":{\"description\":\"One point per bucket in the window, oldest first, including buckets with no activity.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"at\":{\"description\":\"Start of the bucket.\",\"format\":\"date-time\",\"type\":\"string\"},\"resolves\":{\"minimum\":0,\"type\":\"integer\"},\"updates\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"at\",\"resolves\",\"updates\"],\"type\":\"object\"},\"type\":\"array\"},\"range\":{\"enum\":[\"lastHour\",\"lastDay\",\"lastWeek\",\"last30Days\"],\"type\":\"string\"}},\"required\":[\"range\",\"bucketSeconds\",\"points\"],\"title\":\"Stats Timeseries — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/did-management/stats/timeseries/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"domain\":{\"description\":\"With `mnemonic`, disambiguates it per the category conventions. Without it, selects the sum over every slot on that domain. Absent with `mnemonic` absent means the server-wide series, which only an administrator may read.\",\"maxLength\":253,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"mnemonic\":{\"description\":\"One slot's series. Absent means a domain's series when `domain` is present, else the server-wide series.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"range\":{\"description\":\"The window ending now. The consumer chooses the bucket width and reports it as `bucketSeconds`.\",\"enum\":[\"lastHour\",\"lastDay\",\"lastWeek\",\"last30Days\"],\"type\":\"string\"}},\"required\":[\"range\"],\"title\":\"Stats Timeseries — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -902,7 +694,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"bucketSeconds\": {\n          \"description\": \"Width of each bucket.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"points\": {\n          \"description\": \"One point per bucket in the window, oldest first, including buckets with no activity.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"at\": {\n                \"description\": \"Start of the bucket.\",\n                \"format\": \"date-time\",\n                \"type\": \"string\"\n              },\n              \"resolves\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"updates\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              }\n            },\n            \"required\": [\n              \"at\",\n              \"resolves\",\n              \"updates\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        },\n        \"range\": {\n          \"enum\": [\n            \"lastHour\",\n            \"lastDay\",\n            \"lastWeek\",\n            \"last30Days\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"range\",\n        \"bucketSeconds\",\n        \"points\"\n      ],\n      \"title\": \"Stats Timeseries — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"bucketSeconds\":{\"description\":\"Width of each bucket.\",\"minimum\":1,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"points\":{\"description\":\"One point per bucket in the window, oldest first, including buckets with no activity.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"at\":{\"description\":\"Start of the bucket.\",\"format\":\"date-time\",\"type\":\"string\"},\"resolves\":{\"minimum\":0,\"type\":\"integer\"},\"updates\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"at\",\"resolves\",\"updates\"],\"type\":\"object\"},\"type\":\"array\"},\"range\":{\"enum\":[\"lastHour\",\"lastDay\",\"lastWeek\",\"last30Days\"],\"type\":\"string\"}},\"required\":[\"range\",\"bucketSeconds\",\"points\"],\"title\":\"Stats Timeseries — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

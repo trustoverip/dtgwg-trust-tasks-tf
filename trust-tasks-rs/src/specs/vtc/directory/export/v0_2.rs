@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,17 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///One entry exported as a JSContact `Card` (RFC 9553). Member names inside are JSContact's own and are carried verbatim. `uid` is `urn:vtc-directory:<EntryId>`. Base fields map as their definitions' `jsContactPath` says (`displayName` → `name.full`, `nickname` → `nicknames`, `avatar` → `media` of kind `photo`, `pronouns` → `speakToAs.pronouns`, `bio` → `notes`, `links` → `links`); community fields and derived fields are exported as vendor-specific properties named by their field key. Additional members are permitted because JSContact defines them. Carried as an open object so that no JSContact member is lost in transit: a consumer MUST check that `@type` is `Card`, `version` is `1.0` and `uid` is `urn:vtc-directory:<EntryId>`, which this schema does not constrain.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "JSContactCard",
-///  "description": "One entry exported as a JSContact `Card` (RFC 9553). Member names inside are JSContact's own and are carried verbatim. `uid` is `urn:vtc-directory:<EntryId>`. Base fields map as their definitions' `jsContactPath` says (`displayName` → `name.full`, `nickname` → `nicknames`, `avatar` → `media` of kind `photo`, `pronouns` → `speakToAs.pronouns`, `bio` → `notes`, `links` → `links`); community fields and derived fields are exported as vendor-specific properties named by their field key. Additional members are permitted because JSContact defines them. Carried as an open object so that no JSContact member is lost in transit: a consumer MUST check that `@type` is `Card`, `version` is `1.0` and `uid` is `urn:vtc-directory:<EntryId>`, which this schema does not constrain.",
-///  "type": "object",
-///  "additionalProperties": true
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct JsContactCard(pub ::serde_json::Map<::std::string::String, ::serde_json::Value>);
@@ -178,49 +143,6 @@ impl ::std::convert::From<::serde_json::Map<::std::string::String, ::serde_json:
 }
 ///A directory administrator exports the whole member directory as JSContact cards, a page at a time. Members cannot export. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/directory/export/0.2",
-///  "title": "Payload",
-///  "description": "A directory administrator exports the whole member directory as JSContact cards, a page at a time. Members cannot export. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "reason"
-///  ],
-///  "properties": {
-///    "cursor": {
-///      "description": "An opaque continuation token from a previous response's `nextCursor`, bound to the caller and this export; a responder MUST NOT accept a cursor it did not issue.",
-///      "type": "string",
-///      "maxLength": 1024,
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "format": {
-///      "description": "The export format. Only JSContact (RFC 9553) in this version.",
-///      "type": "string",
-///      "const": "jscontact"
-///    },
-///    "limit": {
-///      "description": "The most items to return, at most 500; the responder chooses a default (200) and MAY return fewer.",
-///      "type": "integer",
-///      "maximum": 500.0,
-///      "minimum": 1.0
-///    },
-///    "reason": {
-///      "description": "Why, recorded with the change and shown to anyone who must approve it.",
-///      "type": "string",
-///      "maxLength": 1024,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -246,17 +168,6 @@ impl Payload {
 }
 ///An opaque continuation token from a previous response's `nextCursor`, bound to the caller and this export; a responder MUST NOT accept a cursor it did not issue.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "An opaque continuation token from a previous response's `nextCursor`, bound to the caller and this export; a responder MUST NOT accept a cursor it did not issue.",
-///  "type": "string",
-///  "maxLength": 1024,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCursor(::std::string::String);
@@ -319,17 +230,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCursor {
 }
 ///Why, recorded with the change and shown to anyone who must approve it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Why, recorded with the change and shown to anyone who must approve it.",
-///  "type": "string",
-///  "maxLength": 1024,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadReason(::std::string::String);
@@ -392,43 +292,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 }
 ///The success response to a vtc/directory/export/0.2 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/export/0.2#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The success response to a vtc/directory/export/0.2 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/export/0.2#response.",
-///  "type": "object",
-///  "required": [
-///    "exportedAt",
-///    "items"
-///  ],
-///  "properties": {
-///    "exportedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "items": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/JSContactCard"
-///      },
-///      "maxItems": 500
-///    },
-///    "nextCursor": {
-///      "description": "Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`.",
-///      "type": "string",
-///      "maxLength": 1024
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -453,16 +316,6 @@ impl Response {
 }
 ///Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseNextCursor(::std::string::String);
@@ -716,7 +569,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"JSContactCard\": {\n      \"additionalProperties\": true,\n      \"description\": \"One entry exported as a JSContact `Card` (RFC 9553). Member names inside are JSContact's own and are carried verbatim. `uid` is `urn:vtc-directory:<EntryId>`. Base fields map as their definitions' `jsContactPath` says (`displayName` → `name.full`, `nickname` → `nicknames`, `avatar` → `media` of kind `photo`, `pronouns` → `speakToAs.pronouns`, `bio` → `notes`, `links` → `links`); community fields and derived fields are exported as vendor-specific properties named by their field key. Additional members are permitted because JSContact defines them. Carried as an open object so that no JSContact member is lost in transit: a consumer MUST check that `@type` is `Card`, `version` is `1.0` and `uid` is `urn:vtc-directory:<EntryId>`, which this schema does not constrain.\",\n      \"title\": \"JSContactCard\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a vtc/directory/export/0.2 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/export/0.2#response.\",\n      \"properties\": {\n        \"exportedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"items\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/JSContactCard\"\n          },\n          \"maxItems\": 500,\n          \"type\": \"array\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"items\",\n        \"exportedAt\"\n      ],\n      \"title\": \"VTC Directory — Export — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/directory/export/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A directory administrator exports the whole member directory as JSContact cards, a page at a time. Members cannot export. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"cursor\": {\n      \"description\": \"An opaque continuation token from a previous response's `nextCursor`, bound to the caller and this export; a responder MUST NOT accept a cursor it did not issue.\",\n      \"maxLength\": 1024,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"format\": {\n      \"const\": \"jscontact\",\n      \"description\": \"The export format. Only JSContact (RFC 9553) in this version.\",\n      \"type\": \"string\"\n    },\n    \"limit\": {\n      \"description\": \"The most items to return, at most 500; the responder chooses a default (200) and MAY return fewer.\",\n      \"maximum\": 500,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"reason\": {\n      \"description\": \"Why, recorded with the change and shown to anyone who must approve it.\",\n      \"maxLength\": 1024,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"reason\"\n  ],\n  \"title\": \"VTC Directory — Export — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"JSContactCard\":{\"additionalProperties\":true,\"description\":\"One entry exported as a JSContact `Card` (RFC 9553). Member names inside are JSContact's own and are carried verbatim. `uid` is `urn:vtc-directory:<EntryId>`. Base fields map as their definitions' `jsContactPath` says (`displayName` → `name.full`, `nickname` → `nicknames`, `avatar` → `media` of kind `photo`, `pronouns` → `speakToAs.pronouns`, `bio` → `notes`, `links` → `links`); community fields and derived fields are exported as vendor-specific properties named by their field key. Additional members are permitted because JSContact defines them. Carried as an open object so that no JSContact member is lost in transit: a consumer MUST check that `@type` is `Card`, `version` is `1.0` and `uid` is `urn:vtc-directory:<EntryId>`, which this schema does not constrain.\",\"title\":\"JSContactCard\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/directory/export/0.2 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/export/0.2#response.\",\"properties\":{\"exportedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"items\":{\"items\":{\"$ref\":\"#/$defs/JSContactCard\"},\"maxItems\":500,\"type\":\"array\"},\"nextCursor\":{\"description\":\"Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`.\",\"maxLength\":1024,\"type\":\"string\"}},\"required\":[\"items\",\"exportedAt\"],\"title\":\"VTC Directory — Export — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/directory/export/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A directory administrator exports the whole member directory as JSContact cards, a page at a time. Members cannot export. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"cursor\":{\"description\":\"An opaque continuation token from a previous response's `nextCursor`, bound to the caller and this export; a responder MUST NOT accept a cursor it did not issue.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"format\":{\"const\":\"jscontact\",\"description\":\"The export format. Only JSContact (RFC 9553) in this version.\",\"type\":\"string\"},\"limit\":{\"description\":\"The most items to return, at most 500; the responder chooses a default (200) and MAY return fewer.\",\"maximum\":500,\"minimum\":1,\"type\":\"integer\"},\"reason\":{\"description\":\"Why, recorded with the change and shown to anyone who must approve it.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"reason\"],\"title\":\"VTC Directory — Export — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -726,7 +579,7 @@ impl crate::Payload for Response {
     const MAX_DOCUMENT_BYTES: Option<usize> = Some(8388608usize);
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"JSContactCard\": {\n      \"additionalProperties\": true,\n      \"description\": \"One entry exported as a JSContact `Card` (RFC 9553). Member names inside are JSContact's own and are carried verbatim. `uid` is `urn:vtc-directory:<EntryId>`. Base fields map as their definitions' `jsContactPath` says (`displayName` → `name.full`, `nickname` → `nicknames`, `avatar` → `media` of kind `photo`, `pronouns` → `speakToAs.pronouns`, `bio` → `notes`, `links` → `links`); community fields and derived fields are exported as vendor-specific properties named by their field key. Additional members are permitted because JSContact defines them. Carried as an open object so that no JSContact member is lost in transit: a consumer MUST check that `@type` is `Card`, `version` is `1.0` and `uid` is `urn:vtc-directory:<EntryId>`, which this schema does not constrain.\",\n      \"title\": \"JSContactCard\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a vtc/directory/export/0.2 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/export/0.2#response.\",\n      \"properties\": {\n        \"exportedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"items\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/JSContactCard\"\n          },\n          \"maxItems\": 500,\n          \"type\": \"array\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"items\",\n        \"exportedAt\"\n      ],\n      \"title\": \"VTC Directory — Export — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"JSContactCard\":{\"additionalProperties\":true,\"description\":\"One entry exported as a JSContact `Card` (RFC 9553). Member names inside are JSContact's own and are carried verbatim. `uid` is `urn:vtc-directory:<EntryId>`. Base fields map as their definitions' `jsContactPath` says (`displayName` → `name.full`, `nickname` → `nicknames`, `avatar` → `media` of kind `photo`, `pronouns` → `speakToAs.pronouns`, `bio` → `notes`, `links` → `links`); community fields and derived fields are exported as vendor-specific properties named by their field key. Additional members are permitted because JSContact defines them. Carried as an open object so that no JSContact member is lost in transit: a consumer MUST check that `@type` is `Card`, `version` is `1.0` and `uid` is `urn:vtc-directory:<EntryId>`, which this schema does not constrain.\",\"title\":\"JSContactCard\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/directory/export/0.2 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/directory/export/0.2#response.\",\"properties\":{\"exportedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"items\":{\"items\":{\"$ref\":\"#/$defs/JSContactCard\"},\"maxItems\":500,\"type\":\"array\"},\"nextCursor\":{\"description\":\"Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`.\",\"maxLength\":1024,\"type\":\"string\"}},\"required\":[\"items\",\"exportedAt\"],\"title\":\"VTC Directory — Export — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

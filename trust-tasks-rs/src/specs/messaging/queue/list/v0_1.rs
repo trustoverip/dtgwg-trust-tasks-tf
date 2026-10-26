@@ -34,22 +34,6 @@ pub mod error {
 }
 ///The account's role at the mediator. `standard` is an ordinary served account; `admin`/`rootAdmin` may administer other accounts; `mediator` is the mediator's own account. Only a rootAdmin may assign or modify the rootAdmin role.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "AccountType",
-///  "description": "The account's role at the mediator. `standard` is an ordinary served account; `admin`/`rootAdmin` may administer other accounts; `mediator` is the mediator's own account. Only a rootAdmin may assign or modify the rootAdmin role.",
-///  "type": "string",
-///  "enum": [
-///    "standard",
-///    "admin",
-///    "rootAdmin",
-///    "mediator"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -119,21 +103,6 @@ impl ::std::convert::TryFrom<::std::string::String> for AccountType {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -155,15 +124,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -227,53 +187,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/messaging/queue/list/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "properties": {
-///    "cursor": {
-///      "description": "Opaque continuation token from a prior page's nextCursor. Echoed verbatim; treated as unstructured by the requester.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "limit": {
-///      "description": "Maximum accounts per page. The mediator chooses a default when omitted.",
-///      "type": "integer",
-///      "maximum": 500.0,
-///      "minimum": 1.0
-///    },
-///    "minCount": {
-///      "description": "Omit accounts whose ranked queue holds fewer messages than this. Default 1 (skip empty queues).",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "queue": {
-///      "description": "Which queue to rank by. Default `receive`.",
-///      "$ref": "#/definitions/Queue"
-///    },
-///    "sort": {
-///      "description": "Ranking key, descending. Default `count`.",
-///      "type": "string",
-///      "enum": [
-///        "count",
-///        "bytes",
-///        "oldest",
-///        "saturation"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -320,16 +233,6 @@ impl Payload {
 }
 ///Opaque continuation token from a prior page's nextCursor. Echoed verbatim; treated as unstructured by the requester.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Opaque continuation token from a prior page's nextCursor. Echoed verbatim; treated as unstructured by the requester.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCursor(::std::string::String);
@@ -389,21 +292,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCursor {
 }
 ///Ranking key, descending. Default `count`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Ranking key, descending. Default `count`.",
-///  "type": "string",
-///  "enum": [
-///    "count",
-///    "bytes",
-///    "oldest",
-///    "saturation"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -473,20 +361,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadSort {
 }
 ///Which of an account's two queues. `receive` holds messages addressed to the account awaiting its pickup. `send` holds messages the account sent that are still held against it until their recipient deletes them — so a stalled recipient fills its senders' send queues.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Queue",
-///  "description": "Which of an account's two queues. `receive` holds messages addressed to the account awaiting its pickup. `send` holds messages the account sent that are still held against it until their recipient deletes them — so a stalled recipient fills its senders' send queues.",
-///  "type": "string",
-///  "enum": [
-///    "receive",
-///    "send"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -548,53 +422,6 @@ impl ::std::convert::TryFrom<::std::string::String> for Queue {
 }
 ///The depth of one queue and its effective limit.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "QueueDepth",
-///  "description": "The depth of one queue and its effective limit.",
-///  "type": "object",
-///  "required": [
-///    "bytes",
-///    "count"
-///  ],
-///  "properties": {
-///    "bytes": {
-///      "description": "Total stored size of those messages, in bytes.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "count": {
-///      "description": "Messages currently in the queue.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "deliveredUnacked": {
-///      "description": "Messages in the queue whose state is `delivered` — handed out but not yet deleted by the recipient. Absent when the mediator did not measure it.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "limit": {
-///      "description": "The effective message-count limit for this queue after account overrides and mediator defaults are applied; -1 = unlimited.",
-///      "type": "integer",
-///      "minimum": -1.0
-///    },
-///    "oldestAgeSeconds": {
-///      "description": "Age of the oldest message in the queue, in seconds. Absent when the queue is empty or the mediator did not measure it.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "saturation": {
-///      "description": "count ÷ limit. Absent when the limit is unlimited. May exceed 1 when a limit was lowered below the current depth.",
-///      "type": "number",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -631,36 +458,6 @@ impl QueueDepth {
 }
 ///Both queues of one account.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "QueueSummary",
-///  "description": "Both queues of one account.",
-///  "type": "object",
-///  "required": [
-///    "did",
-///    "receive",
-///    "send"
-///  ],
-///  "properties": {
-///    "accountType": {
-///      "$ref": "#/definitions/AccountType"
-///    },
-///    "did": {
-///      "$ref": "#/definitions/Vid"
-///    },
-///    "receive": {
-///      "$ref": "#/definitions/QueueDepth"
-///    },
-///    "send": {
-///      "$ref": "#/definitions/QueueDepth"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -682,48 +479,6 @@ impl QueueSummary {
 }
 ///The success response to a messaging/queue/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/queue/list/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The success response to a messaging/queue/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/queue/list/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "queues",
-///    "snapshotAt"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "nextCursor": {
-///      "description": "Opaque continuation token. Present only when further items remain beyond this page; omitted on the final page.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "queues": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/QueueSummary"
-///      }
-///    },
-///    "snapshotAt": {
-///      "description": "When the ranking was computed. A mediator MAY serve the ranking from a periodic survey rather than a live scan.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "truncated": {
-///      "description": "The ranking did not cover every account.",
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -753,16 +508,6 @@ impl Response {
 }
 ///Opaque continuation token. Present only when further items remain beyond this page; omitted on the final page.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Opaque continuation token. Present only when further items remain beyond this page; omitted on the final page.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseNextCursor(::std::string::String);
@@ -822,17 +567,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseNextCursor {
 }
 ///A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Vid",
-///  "description": "A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Vid(::std::string::String);
@@ -1306,7 +1040,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AccountType\": {\n      \"description\": \"The account's role at the mediator. `standard` is an ordinary served account; `admin`/`rootAdmin` may administer other accounts; `mediator` is the mediator's own account. Only a rootAdmin may assign or modify the rootAdmin role.\",\n      \"enum\": [\n        \"standard\",\n        \"admin\",\n        \"rootAdmin\",\n        \"mediator\"\n      ],\n      \"title\": \"AccountType\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Queue\": {\n      \"description\": \"Which of an account's two queues. `receive` holds messages addressed to the account awaiting its pickup. `send` holds messages the account sent that are still held against it until their recipient deletes them — so a stalled recipient fills its senders' send queues.\",\n      \"enum\": [\n        \"receive\",\n        \"send\"\n      ],\n      \"title\": \"Queue\",\n      \"type\": \"string\"\n    },\n    \"QueueDepth\": {\n      \"additionalProperties\": false,\n      \"description\": \"The depth of one queue and its effective limit.\",\n      \"properties\": {\n        \"bytes\": {\n          \"description\": \"Total stored size of those messages, in bytes.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"count\": {\n          \"description\": \"Messages currently in the queue.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"deliveredUnacked\": {\n          \"description\": \"Messages in the queue whose state is `delivered` — handed out but not yet deleted by the recipient. Absent when the mediator did not measure it.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"limit\": {\n          \"description\": \"The effective message-count limit for this queue after account overrides and mediator defaults are applied; -1 = unlimited.\",\n          \"minimum\": -1,\n          \"type\": \"integer\"\n        },\n        \"oldestAgeSeconds\": {\n          \"description\": \"Age of the oldest message in the queue, in seconds. Absent when the queue is empty or the mediator did not measure it.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"saturation\": {\n          \"description\": \"count ÷ limit. Absent when the limit is unlimited. May exceed 1 when a limit was lowered below the current depth.\",\n          \"minimum\": 0,\n          \"type\": \"number\"\n        }\n      },\n      \"required\": [\n        \"count\",\n        \"bytes\"\n      ],\n      \"title\": \"QueueDepth\",\n      \"type\": \"object\"\n    },\n    \"QueueSummary\": {\n      \"additionalProperties\": false,\n      \"description\": \"Both queues of one account.\",\n      \"properties\": {\n        \"accountType\": {\n          \"$ref\": \"#/$defs/AccountType\"\n        },\n        \"did\": {\n          \"$ref\": \"#/$defs/Vid\"\n        },\n        \"receive\": {\n          \"$ref\": \"#/$defs/QueueDepth\"\n        },\n        \"send\": {\n          \"$ref\": \"#/$defs/QueueDepth\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"receive\",\n        \"send\"\n      ],\n      \"title\": \"QueueSummary\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a messaging/queue/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/queue/list/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Opaque continuation token. Present only when further items remain beyond this page; omitted on the final page.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"queues\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/QueueSummary\"\n          },\n          \"type\": \"array\"\n        },\n        \"snapshotAt\": {\n          \"description\": \"When the ranking was computed. A mediator MAY serve the ranking from a periodic survey rather than a live scan.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"truncated\": {\n          \"description\": \"The ranking did not cover every account.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"queues\",\n        \"snapshotAt\"\n      ],\n      \"title\": \"Messaging — List Queues — response payload\",\n      \"type\": \"object\"\n    },\n    \"Vid\": {\n      \"description\": \"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\n      \"minLength\": 1,\n      \"title\": \"Vid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/messaging/queue/list/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"cursor\": {\n      \"description\": \"Opaque continuation token from a prior page's nextCursor. Echoed verbatim; treated as unstructured by the requester.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"limit\": {\n      \"description\": \"Maximum accounts per page. The mediator chooses a default when omitted.\",\n      \"maximum\": 500,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"minCount\": {\n      \"description\": \"Omit accounts whose ranked queue holds fewer messages than this. Default 1 (skip empty queues).\",\n      \"minimum\": 0,\n      \"type\": \"integer\"\n    },\n    \"queue\": {\n      \"$ref\": \"#/$defs/Queue\",\n      \"description\": \"Which queue to rank by. Default `receive`.\"\n    },\n    \"sort\": {\n      \"description\": \"Ranking key, descending. Default `count`.\",\n      \"enum\": [\n        \"count\",\n        \"bytes\",\n        \"oldest\",\n        \"saturation\"\n      ],\n      \"type\": \"string\"\n    }\n  },\n  \"title\": \"Messaging — List Queues — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"AccountType\":{\"description\":\"The account's role at the mediator. `standard` is an ordinary served account; `admin`/`rootAdmin` may administer other accounts; `mediator` is the mediator's own account. Only a rootAdmin may assign or modify the rootAdmin role.\",\"enum\":[\"standard\",\"admin\",\"rootAdmin\",\"mediator\"],\"title\":\"AccountType\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Queue\":{\"description\":\"Which of an account's two queues. `receive` holds messages addressed to the account awaiting its pickup. `send` holds messages the account sent that are still held against it until their recipient deletes them — so a stalled recipient fills its senders' send queues.\",\"enum\":[\"receive\",\"send\"],\"title\":\"Queue\",\"type\":\"string\"},\"QueueDepth\":{\"additionalProperties\":false,\"description\":\"The depth of one queue and its effective limit.\",\"properties\":{\"bytes\":{\"description\":\"Total stored size of those messages, in bytes.\",\"minimum\":0,\"type\":\"integer\"},\"count\":{\"description\":\"Messages currently in the queue.\",\"minimum\":0,\"type\":\"integer\"},\"deliveredUnacked\":{\"description\":\"Messages in the queue whose state is `delivered` — handed out but not yet deleted by the recipient. Absent when the mediator did not measure it.\",\"minimum\":0,\"type\":\"integer\"},\"limit\":{\"description\":\"The effective message-count limit for this queue after account overrides and mediator defaults are applied; -1 = unlimited.\",\"minimum\":-1,\"type\":\"integer\"},\"oldestAgeSeconds\":{\"description\":\"Age of the oldest message in the queue, in seconds. Absent when the queue is empty or the mediator did not measure it.\",\"minimum\":0,\"type\":\"integer\"},\"saturation\":{\"description\":\"count ÷ limit. Absent when the limit is unlimited. May exceed 1 when a limit was lowered below the current depth.\",\"minimum\":0,\"type\":\"number\"}},\"required\":[\"count\",\"bytes\"],\"title\":\"QueueDepth\",\"type\":\"object\"},\"QueueSummary\":{\"additionalProperties\":false,\"description\":\"Both queues of one account.\",\"properties\":{\"accountType\":{\"$ref\":\"#/$defs/AccountType\"},\"did\":{\"$ref\":\"#/$defs/Vid\"},\"receive\":{\"$ref\":\"#/$defs/QueueDepth\"},\"send\":{\"$ref\":\"#/$defs/QueueDepth\"}},\"required\":[\"did\",\"receive\",\"send\"],\"title\":\"QueueSummary\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a messaging/queue/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/queue/list/0.1#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"nextCursor\":{\"description\":\"Opaque continuation token. Present only when further items remain beyond this page; omitted on the final page.\",\"minLength\":1,\"type\":\"string\"},\"queues\":{\"items\":{\"$ref\":\"#/$defs/QueueSummary\"},\"type\":\"array\"},\"snapshotAt\":{\"description\":\"When the ranking was computed. A mediator MAY serve the ranking from a periodic survey rather than a live scan.\",\"format\":\"date-time\",\"type\":\"string\"},\"truncated\":{\"description\":\"The ranking did not cover every account.\",\"type\":\"boolean\"}},\"required\":[\"queues\",\"snapshotAt\"],\"title\":\"Messaging — List Queues — response payload\",\"type\":\"object\"},\"Vid\":{\"description\":\"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\"minLength\":1,\"title\":\"Vid\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/messaging/queue/list/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"cursor\":{\"description\":\"Opaque continuation token from a prior page's nextCursor. Echoed verbatim; treated as unstructured by the requester.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"limit\":{\"description\":\"Maximum accounts per page. The mediator chooses a default when omitted.\",\"maximum\":500,\"minimum\":1,\"type\":\"integer\"},\"minCount\":{\"description\":\"Omit accounts whose ranked queue holds fewer messages than this. Default 1 (skip empty queues).\",\"minimum\":0,\"type\":\"integer\"},\"queue\":{\"$ref\":\"#/$defs/Queue\",\"description\":\"Which queue to rank by. Default `receive`.\"},\"sort\":{\"description\":\"Ranking key, descending. Default `count`.\",\"enum\":[\"count\",\"bytes\",\"oldest\",\"saturation\"],\"type\":\"string\"}},\"title\":\"Messaging — List Queues — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1314,7 +1048,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AccountType\": {\n      \"description\": \"The account's role at the mediator. `standard` is an ordinary served account; `admin`/`rootAdmin` may administer other accounts; `mediator` is the mediator's own account. Only a rootAdmin may assign or modify the rootAdmin role.\",\n      \"enum\": [\n        \"standard\",\n        \"admin\",\n        \"rootAdmin\",\n        \"mediator\"\n      ],\n      \"title\": \"AccountType\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Queue\": {\n      \"description\": \"Which of an account's two queues. `receive` holds messages addressed to the account awaiting its pickup. `send` holds messages the account sent that are still held against it until their recipient deletes them — so a stalled recipient fills its senders' send queues.\",\n      \"enum\": [\n        \"receive\",\n        \"send\"\n      ],\n      \"title\": \"Queue\",\n      \"type\": \"string\"\n    },\n    \"QueueDepth\": {\n      \"additionalProperties\": false,\n      \"description\": \"The depth of one queue and its effective limit.\",\n      \"properties\": {\n        \"bytes\": {\n          \"description\": \"Total stored size of those messages, in bytes.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"count\": {\n          \"description\": \"Messages currently in the queue.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"deliveredUnacked\": {\n          \"description\": \"Messages in the queue whose state is `delivered` — handed out but not yet deleted by the recipient. Absent when the mediator did not measure it.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"limit\": {\n          \"description\": \"The effective message-count limit for this queue after account overrides and mediator defaults are applied; -1 = unlimited.\",\n          \"minimum\": -1,\n          \"type\": \"integer\"\n        },\n        \"oldestAgeSeconds\": {\n          \"description\": \"Age of the oldest message in the queue, in seconds. Absent when the queue is empty or the mediator did not measure it.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"saturation\": {\n          \"description\": \"count ÷ limit. Absent when the limit is unlimited. May exceed 1 when a limit was lowered below the current depth.\",\n          \"minimum\": 0,\n          \"type\": \"number\"\n        }\n      },\n      \"required\": [\n        \"count\",\n        \"bytes\"\n      ],\n      \"title\": \"QueueDepth\",\n      \"type\": \"object\"\n    },\n    \"QueueSummary\": {\n      \"additionalProperties\": false,\n      \"description\": \"Both queues of one account.\",\n      \"properties\": {\n        \"accountType\": {\n          \"$ref\": \"#/$defs/AccountType\"\n        },\n        \"did\": {\n          \"$ref\": \"#/$defs/Vid\"\n        },\n        \"receive\": {\n          \"$ref\": \"#/$defs/QueueDepth\"\n        },\n        \"send\": {\n          \"$ref\": \"#/$defs/QueueDepth\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"receive\",\n        \"send\"\n      ],\n      \"title\": \"QueueSummary\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a messaging/queue/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/queue/list/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Opaque continuation token. Present only when further items remain beyond this page; omitted on the final page.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"queues\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/QueueSummary\"\n          },\n          \"type\": \"array\"\n        },\n        \"snapshotAt\": {\n          \"description\": \"When the ranking was computed. A mediator MAY serve the ranking from a periodic survey rather than a live scan.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"truncated\": {\n          \"description\": \"The ranking did not cover every account.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"queues\",\n        \"snapshotAt\"\n      ],\n      \"title\": \"Messaging — List Queues — response payload\",\n      \"type\": \"object\"\n    },\n    \"Vid\": {\n      \"description\": \"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\n      \"minLength\": 1,\n      \"title\": \"Vid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"AccountType\":{\"description\":\"The account's role at the mediator. `standard` is an ordinary served account; `admin`/`rootAdmin` may administer other accounts; `mediator` is the mediator's own account. Only a rootAdmin may assign or modify the rootAdmin role.\",\"enum\":[\"standard\",\"admin\",\"rootAdmin\",\"mediator\"],\"title\":\"AccountType\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Queue\":{\"description\":\"Which of an account's two queues. `receive` holds messages addressed to the account awaiting its pickup. `send` holds messages the account sent that are still held against it until their recipient deletes them — so a stalled recipient fills its senders' send queues.\",\"enum\":[\"receive\",\"send\"],\"title\":\"Queue\",\"type\":\"string\"},\"QueueDepth\":{\"additionalProperties\":false,\"description\":\"The depth of one queue and its effective limit.\",\"properties\":{\"bytes\":{\"description\":\"Total stored size of those messages, in bytes.\",\"minimum\":0,\"type\":\"integer\"},\"count\":{\"description\":\"Messages currently in the queue.\",\"minimum\":0,\"type\":\"integer\"},\"deliveredUnacked\":{\"description\":\"Messages in the queue whose state is `delivered` — handed out but not yet deleted by the recipient. Absent when the mediator did not measure it.\",\"minimum\":0,\"type\":\"integer\"},\"limit\":{\"description\":\"The effective message-count limit for this queue after account overrides and mediator defaults are applied; -1 = unlimited.\",\"minimum\":-1,\"type\":\"integer\"},\"oldestAgeSeconds\":{\"description\":\"Age of the oldest message in the queue, in seconds. Absent when the queue is empty or the mediator did not measure it.\",\"minimum\":0,\"type\":\"integer\"},\"saturation\":{\"description\":\"count ÷ limit. Absent when the limit is unlimited. May exceed 1 when a limit was lowered below the current depth.\",\"minimum\":0,\"type\":\"number\"}},\"required\":[\"count\",\"bytes\"],\"title\":\"QueueDepth\",\"type\":\"object\"},\"QueueSummary\":{\"additionalProperties\":false,\"description\":\"Both queues of one account.\",\"properties\":{\"accountType\":{\"$ref\":\"#/$defs/AccountType\"},\"did\":{\"$ref\":\"#/$defs/Vid\"},\"receive\":{\"$ref\":\"#/$defs/QueueDepth\"},\"send\":{\"$ref\":\"#/$defs/QueueDepth\"}},\"required\":[\"did\",\"receive\",\"send\"],\"title\":\"QueueSummary\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a messaging/queue/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/queue/list/0.1#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"nextCursor\":{\"description\":\"Opaque continuation token. Present only when further items remain beyond this page; omitted on the final page.\",\"minLength\":1,\"type\":\"string\"},\"queues\":{\"items\":{\"$ref\":\"#/$defs/QueueSummary\"},\"type\":\"array\"},\"snapshotAt\":{\"description\":\"When the ranking was computed. A mediator MAY serve the ranking from a periodic survey rather than a live scan.\",\"format\":\"date-time\",\"type\":\"string\"},\"truncated\":{\"description\":\"The ranking did not cover every account.\",\"type\":\"boolean\"}},\"required\":[\"queues\",\"snapshotAt\"],\"title\":\"Messaging — List Queues — response payload\",\"type\":\"object\"},\"Vid\":{\"description\":\"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\"minLength\":1,\"title\":\"Vid\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

@@ -41,21 +41,6 @@ This definition constrains the *encoding only*. What the digest is computed over
 
 Restricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that "interoperability is not guaranteed between implementations using such values", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DigestMultibase",
-///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-///  "examples": [
-///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-///  ],
-///  "type": "string",
-///  "minLength": 16,
-///  "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DigestMultibase(::std::string::String);
@@ -124,21 +109,6 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -160,15 +130,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -232,38 +193,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///An administrator pages through the vetting-statement withdrawal notices the community has recorded, each with the admissions it touches. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/vetting/revocations/list/0.1",
-///  "title": "Payload",
-///  "description": "An administrator pages through the vetting-statement withdrawal notices the community has recorded, each with the admissions it touches. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "properties": {
-///    "cursor": {
-///      "description": "Opaque continuation token from a previous page's `nextCursor`.",
-///      "type": "string",
-///      "maxLength": 1024,
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "limit": {
-///      "description": "Page size. The community chooses when absent (50 in the reference implementation).",
-///      "type": "integer",
-///      "maximum": 100.0,
-///      "minimum": 1.0
-///    },
-///    "reviewState": {
-///      "$ref": "#/definitions/ReviewState"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -300,17 +229,6 @@ impl Payload {
 }
 ///Opaque continuation token from a previous page's `nextCursor`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Opaque continuation token from a previous page's `nextCursor`.",
-///  "type": "string",
-///  "maxLength": 1024,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCursor(::std::string::String);
@@ -373,38 +291,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCursor {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "items"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "items": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/RevocationNotice"
-///      },
-///      "maxItems": 100
-///    },
-///    "nextCursor": {
-///      "description": "Present when more remain; pass it as `cursor`.",
-///      "type": "string",
-///      "maxLength": 1024,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -427,17 +313,6 @@ impl Response {
 }
 ///Present when more remain; pass it as `cursor`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Present when more remain; pass it as `cursor`.",
-///  "type": "string",
-///  "maxLength": 1024,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseNextCursor(::std::string::String);
@@ -500,20 +375,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseNextCursor {
 }
 ///Whether a withdrawn statement touches a standing membership. `noAdmission`: no current member was admitted with the statement counted. `needsReview`: a current member was — their admission rested on evidence its vetter has taken back. A signal for an administrator, not a workflow: nothing records that one looked.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ReviewState",
-///  "description": "Whether a withdrawn statement touches a standing membership. `noAdmission`: no current member was admitted with the statement counted. `needsReview`: a current member was — their admission rested on evidence its vetter has taken back. A signal for an administrator, not a workflow: nothing records that one looked.",
-///  "type": "string",
-///  "enum": [
-///    "noAdmission",
-///    "needsReview"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -575,80 +436,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ReviewState {
 }
 ///One withdrawal notice, as vtc/vetting/revoke-statement recorded it, and the admissions it touches.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RevocationNotice",
-///  "description": "One withdrawal notice, as vtc/vetting/revoke-statement recorded it, and the admissions it touches.",
-///  "type": "object",
-///  "required": [
-///    "affectedJoinRequests",
-///    "affectedMembers",
-///    "issuer",
-///    "recordedAt",
-///    "reviewState",
-///    "statementDigestMultibase",
-///    "statementId"
-///  ],
-///  "properties": {
-///    "affectedJoinRequests": {
-///      "description": "Approved join requests whose recorded vetting facts counted the statement.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-///      },
-///      "maxItems": 64
-///    },
-///    "affectedMembers": {
-///      "description": "Of those requests' applicants, the ones who are current members.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 2048,
-///        "pattern": "^did:"
-///      },
-///      "maxItems": 64
-///    },
-///    "issuer": {
-///      "description": "The vetter who withdrew the statement.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    },
-///    "reason": {
-///      "description": "The vetter's reason, when given, as vtc/vetting/revoke-statement defines it.",
-///      "type": "string",
-///      "enum": [
-///        "mistake",
-///        "newInformation",
-///        "keyCompromise",
-///        "other"
-///      ]
-///    },
-///    "recordedAt": {
-///      "description": "When the community recorded the notice.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "reviewState": {
-///      "$ref": "#/definitions/ReviewState"
-///    },
-///    "statementDigestMultibase": {
-///      "$ref": "#/definitions/DigestMultibase"
-///    },
-///    "statementId": {
-///      "description": "The withdrawn statement's `id`.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -682,15 +469,6 @@ impl RevocationNotice {
 }
 ///`RevocationNoticeAffectedJoinRequestsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RevocationNoticeAffectedJoinRequestsItem(::std::string::String);
@@ -760,16 +538,6 @@ impl<'de> ::serde::Deserialize<'de> for RevocationNoticeAffectedJoinRequestsItem
 }
 ///`RevocationNoticeAffectedMembersItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RevocationNoticeAffectedMembersItem(::std::string::String);
@@ -834,17 +602,6 @@ impl<'de> ::serde::Deserialize<'de> for RevocationNoticeAffectedMembersItem {
 }
 ///The vetter who withdrew the statement.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The vetter who withdrew the statement.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RevocationNoticeIssuer(::std::string::String);
@@ -909,21 +666,6 @@ impl<'de> ::serde::Deserialize<'de> for RevocationNoticeIssuer {
 }
 ///The vetter's reason, when given, as vtc/vetting/revoke-statement defines it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The vetter's reason, when given, as vtc/vetting/revoke-statement defines it.",
-///  "type": "string",
-///  "enum": [
-///    "mistake",
-///    "newInformation",
-///    "keyCompromise",
-///    "other"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -993,17 +735,6 @@ impl ::std::convert::TryFrom<::std::string::String> for RevocationNoticeReason {
 }
 ///The withdrawn statement's `id`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The withdrawn statement's `id`.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RevocationNoticeStatementId(::std::string::String);
@@ -1384,7 +1115,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/vetting/revocations/list/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"items\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/RevocationNotice\"\n          },\n          \"maxItems\": 100,\n          \"type\": \"array\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Present when more remain; pass it as `cursor`.\",\n          \"maxLength\": 1024,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"items\"\n      ],\n      \"title\": \"VTC Vetting — Revocations — List — response payload\",\n      \"type\": \"object\"\n    },\n    \"ReviewState\": {\n      \"description\": \"Whether a withdrawn statement touches a standing membership. `noAdmission`: no current member was admitted with the statement counted. `needsReview`: a current member was — their admission rested on evidence its vetter has taken back. A signal for an administrator, not a workflow: nothing records that one looked.\",\n      \"enum\": [\n        \"noAdmission\",\n        \"needsReview\"\n      ],\n      \"title\": \"ReviewState\",\n      \"type\": \"string\"\n    },\n    \"RevocationNotice\": {\n      \"additionalProperties\": false,\n      \"description\": \"One withdrawal notice, as vtc/vetting/revoke-statement recorded it, and the admissions it touches.\",\n      \"properties\": {\n        \"affectedJoinRequests\": {\n          \"description\": \"Approved join requests whose recorded vetting facts counted the statement.\",\n          \"items\": {\n            \"pattern\": \"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 64,\n          \"type\": \"array\"\n        },\n        \"affectedMembers\": {\n          \"description\": \"Of those requests' applicants, the ones who are current members.\",\n          \"items\": {\n            \"maxLength\": 2048,\n            \"pattern\": \"^did:\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 64,\n          \"type\": \"array\"\n        },\n        \"issuer\": {\n          \"description\": \"The vetter who withdrew the statement.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"reason\": {\n          \"description\": \"The vetter's reason, when given, as vtc/vetting/revoke-statement defines it.\",\n          \"enum\": [\n            \"mistake\",\n            \"newInformation\",\n            \"keyCompromise\",\n            \"other\"\n          ],\n          \"type\": \"string\"\n        },\n        \"recordedAt\": {\n          \"description\": \"When the community recorded the notice.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"reviewState\": {\n          \"$ref\": \"#/$defs/ReviewState\"\n        },\n        \"statementDigestMultibase\": {\n          \"$ref\": \"#/$defs/DigestMultibase\"\n        },\n        \"statementId\": {\n          \"description\": \"The withdrawn statement's `id`.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"issuer\",\n        \"statementId\",\n        \"statementDigestMultibase\",\n        \"recordedAt\",\n        \"reviewState\",\n        \"affectedJoinRequests\",\n        \"affectedMembers\"\n      ],\n      \"title\": \"RevocationNotice\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/vetting/revocations/list/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An administrator pages through the vetting-statement withdrawal notices the community has recorded, each with the admissions it touches. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"cursor\": {\n      \"description\": \"Opaque continuation token from a previous page's `nextCursor`.\",\n      \"maxLength\": 1024,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"limit\": {\n      \"description\": \"Page size. The community chooses when absent (50 in the reference implementation).\",\n      \"maximum\": 100,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"reviewState\": {\n      \"$ref\": \"#/$defs/ReviewState\"\n    }\n  },\n  \"title\": \"VTC Vetting — Revocations — List — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"items\":{\"items\":{\"$ref\":\"#/$defs/RevocationNotice\"},\"maxItems\":100,\"type\":\"array\"},\"nextCursor\":{\"description\":\"Present when more remain; pass it as `cursor`.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"items\"],\"title\":\"VTC Vetting — Revocations — List — response payload\",\"type\":\"object\"},\"ReviewState\":{\"description\":\"Whether a withdrawn statement touches a standing membership. `noAdmission`: no current member was admitted with the statement counted. `needsReview`: a current member was — their admission rested on evidence its vetter has taken back. A signal for an administrator, not a workflow: nothing records that one looked.\",\"enum\":[\"noAdmission\",\"needsReview\"],\"title\":\"ReviewState\",\"type\":\"string\"},\"RevocationNotice\":{\"additionalProperties\":false,\"description\":\"One withdrawal notice, as vtc/vetting/revoke-statement recorded it, and the admissions it touches.\",\"properties\":{\"affectedJoinRequests\":{\"description\":\"Approved join requests whose recorded vetting facts counted the statement.\",\"items\":{\"pattern\":\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":\"string\"},\"maxItems\":64,\"type\":\"array\"},\"affectedMembers\":{\"description\":\"Of those requests' applicants, the ones who are current members.\",\"items\":{\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"maxItems\":64,\"type\":\"array\"},\"issuer\":{\"description\":\"The vetter who withdrew the statement.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"reason\":{\"description\":\"The vetter's reason, when given, as vtc/vetting/revoke-statement defines it.\",\"enum\":[\"mistake\",\"newInformation\",\"keyCompromise\",\"other\"],\"type\":\"string\"},\"recordedAt\":{\"description\":\"When the community recorded the notice.\",\"format\":\"date-time\",\"type\":\"string\"},\"reviewState\":{\"$ref\":\"#/$defs/ReviewState\"},\"statementDigestMultibase\":{\"$ref\":\"#/$defs/DigestMultibase\"},\"statementId\":{\"description\":\"The withdrawn statement's `id`.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"issuer\",\"statementId\",\"statementDigestMultibase\",\"recordedAt\",\"reviewState\",\"affectedJoinRequests\",\"affectedMembers\"],\"title\":\"RevocationNotice\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/vetting/revocations/list/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"An administrator pages through the vetting-statement withdrawal notices the community has recorded, each with the admissions it touches. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"cursor\":{\"description\":\"Opaque continuation token from a previous page's `nextCursor`.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"limit\":{\"description\":\"Page size. The community chooses when absent (50 in the reference implementation).\",\"maximum\":100,\"minimum\":1,\"type\":\"integer\"},\"reviewState\":{\"$ref\":\"#/$defs/ReviewState\"}},\"title\":\"VTC Vetting — Revocations — List — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1392,7 +1123,7 @@ impl crate::Payload for Response {
         "https://trusttasks.org/spec/vtc/vetting/revocations/list/0.1#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"items\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/RevocationNotice\"\n          },\n          \"maxItems\": 100,\n          \"type\": \"array\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Present when more remain; pass it as `cursor`.\",\n          \"maxLength\": 1024,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"items\"\n      ],\n      \"title\": \"VTC Vetting — Revocations — List — response payload\",\n      \"type\": \"object\"\n    },\n    \"ReviewState\": {\n      \"description\": \"Whether a withdrawn statement touches a standing membership. `noAdmission`: no current member was admitted with the statement counted. `needsReview`: a current member was — their admission rested on evidence its vetter has taken back. A signal for an administrator, not a workflow: nothing records that one looked.\",\n      \"enum\": [\n        \"noAdmission\",\n        \"needsReview\"\n      ],\n      \"title\": \"ReviewState\",\n      \"type\": \"string\"\n    },\n    \"RevocationNotice\": {\n      \"additionalProperties\": false,\n      \"description\": \"One withdrawal notice, as vtc/vetting/revoke-statement recorded it, and the admissions it touches.\",\n      \"properties\": {\n        \"affectedJoinRequests\": {\n          \"description\": \"Approved join requests whose recorded vetting facts counted the statement.\",\n          \"items\": {\n            \"pattern\": \"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 64,\n          \"type\": \"array\"\n        },\n        \"affectedMembers\": {\n          \"description\": \"Of those requests' applicants, the ones who are current members.\",\n          \"items\": {\n            \"maxLength\": 2048,\n            \"pattern\": \"^did:\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 64,\n          \"type\": \"array\"\n        },\n        \"issuer\": {\n          \"description\": \"The vetter who withdrew the statement.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"reason\": {\n          \"description\": \"The vetter's reason, when given, as vtc/vetting/revoke-statement defines it.\",\n          \"enum\": [\n            \"mistake\",\n            \"newInformation\",\n            \"keyCompromise\",\n            \"other\"\n          ],\n          \"type\": \"string\"\n        },\n        \"recordedAt\": {\n          \"description\": \"When the community recorded the notice.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"reviewState\": {\n          \"$ref\": \"#/$defs/ReviewState\"\n        },\n        \"statementDigestMultibase\": {\n          \"$ref\": \"#/$defs/DigestMultibase\"\n        },\n        \"statementId\": {\n          \"description\": \"The withdrawn statement's `id`.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"issuer\",\n        \"statementId\",\n        \"statementDigestMultibase\",\n        \"recordedAt\",\n        \"reviewState\",\n        \"affectedJoinRequests\",\n        \"affectedMembers\"\n      ],\n      \"title\": \"RevocationNotice\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"items\":{\"items\":{\"$ref\":\"#/$defs/RevocationNotice\"},\"maxItems\":100,\"type\":\"array\"},\"nextCursor\":{\"description\":\"Present when more remain; pass it as `cursor`.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"items\"],\"title\":\"VTC Vetting — Revocations — List — response payload\",\"type\":\"object\"},\"ReviewState\":{\"description\":\"Whether a withdrawn statement touches a standing membership. `noAdmission`: no current member was admitted with the statement counted. `needsReview`: a current member was — their admission rested on evidence its vetter has taken back. A signal for an administrator, not a workflow: nothing records that one looked.\",\"enum\":[\"noAdmission\",\"needsReview\"],\"title\":\"ReviewState\",\"type\":\"string\"},\"RevocationNotice\":{\"additionalProperties\":false,\"description\":\"One withdrawal notice, as vtc/vetting/revoke-statement recorded it, and the admissions it touches.\",\"properties\":{\"affectedJoinRequests\":{\"description\":\"Approved join requests whose recorded vetting facts counted the statement.\",\"items\":{\"pattern\":\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":\"string\"},\"maxItems\":64,\"type\":\"array\"},\"affectedMembers\":{\"description\":\"Of those requests' applicants, the ones who are current members.\",\"items\":{\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"maxItems\":64,\"type\":\"array\"},\"issuer\":{\"description\":\"The vetter who withdrew the statement.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"reason\":{\"description\":\"The vetter's reason, when given, as vtc/vetting/revoke-statement defines it.\",\"enum\":[\"mistake\",\"newInformation\",\"keyCompromise\",\"other\"],\"type\":\"string\"},\"recordedAt\":{\"description\":\"When the community recorded the notice.\",\"format\":\"date-time\",\"type\":\"string\"},\"reviewState\":{\"$ref\":\"#/$defs/ReviewState\"},\"statementDigestMultibase\":{\"$ref\":\"#/$defs/DigestMultibase\"},\"statementId\":{\"description\":\"The withdrawn statement's `id`.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"issuer\",\"statementId\",\"statementDigestMultibase\",\"recordedAt\",\"reviewState\",\"affectedJoinRequests\",\"affectedMembers\"],\"title\":\"RevocationNotice\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

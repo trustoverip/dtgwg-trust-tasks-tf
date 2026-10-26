@@ -35,21 +35,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -71,15 +56,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -143,48 +119,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///TRQP v2.0 recognition query: ask a trust registry whether an entity is recognised by an authority for a given action+resource. Field names are verbatim from the TRQP recognition request/response schemas so the same payload serves the plain HTTP TRQP binding and the Trust Task binding.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/registry/recognition/0.1",
-///  "title": "Payload",
-///  "description": "TRQP v2.0 recognition query: ask a trust registry whether an entity is recognised by an authority for a given action+resource. Field names are verbatim from the TRQP recognition request/response schemas so the same payload serves the plain HTTP TRQP binding and the Trust Task binding.",
-///  "type": "object",
-///  "required": [
-///    "action",
-///    "authority_id",
-///    "entity_id",
-///    "resource"
-///  ],
-///  "properties": {
-///    "action": {
-///      "description": "The action the query is checking recognition for.",
-///      "type": "string"
-///    },
-///    "authority_id": {
-///      "description": "Identifier of the authority being queried to recognise the entity.",
-///      "type": "string"
-///    },
-///    "context": {
-///      "$ref": "#/definitions/QueryContext"
-///    },
-///    "entity_id": {
-///      "description": "Identifier of the entity being tested for recognition.",
-///      "type": "string"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "resource": {
-///      "description": "The resource the query is checking recognition for.",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -210,30 +144,6 @@ impl Payload {
 }
 ///Optional TRQP query context. `time` requests evaluation as of a given instant; `locator` is an authority-defined hint for locating records.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "QueryContext",
-///  "description": "Optional TRQP query context. `time` requests evaluation as of a given instant; `locator` is an authority-defined hint for locating records.",
-///  "type": "object",
-///  "properties": {
-///    "locator": {
-///      "description": "Optional hint for systems that need extra information to locate the records in question (authorization queries).",
-///      "type": "string"
-///    },
-///    "time": {
-///      "description": "Evaluate the query as of this RFC3339 (Z offset) instant. Blank/absent uses current server time.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": {
-///    "type": "string"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
 pub struct QueryContext {
@@ -253,64 +163,6 @@ impl QueryContext {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "action",
-///    "authority_id",
-///    "entity_id",
-///    "recognized",
-///    "resource",
-///    "time_evaluated"
-///  ],
-///  "properties": {
-///    "action": {
-///      "type": "string"
-///    },
-///    "authority_id": {
-///      "type": "string"
-///    },
-///    "context": {
-///      "$ref": "#/definitions/QueryContext"
-///    },
-///    "entity_id": {
-///      "type": "string"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "message": {
-///      "description": "Additional human-readable detail about the recognition response.",
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "recognized": {
-///      "description": "True if the action+resource has been recognised, false otherwise.",
-///      "type": "boolean"
-///    },
-///    "resource": {
-///      "type": "string"
-///    },
-///    "time_evaluated": {
-///      "description": "Server time the query was evaluated at, per the endpoint clock.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "time_requested": {
-///      "description": "The requested server time, echoed from the request `context.time` when supplied.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -342,16 +194,6 @@ impl Response {
 }
 ///Additional human-readable detail about the recognition response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Additional human-readable detail about the recognition response.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseMessage(::std::string::String);
@@ -784,14 +626,14 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/registry/recognition/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"QueryContext\": {\n      \"additionalProperties\": {\n        \"type\": \"string\"\n      },\n      \"description\": \"Optional TRQP query context. `time` requests evaluation as of a given instant; `locator` is an authority-defined hint for locating records.\",\n      \"properties\": {\n        \"locator\": {\n          \"description\": \"Optional hint for systems that need extra information to locate the records in question (authorization queries).\",\n          \"type\": \"string\"\n        },\n        \"time\": {\n          \"description\": \"Evaluate the query as of this RFC3339 (Z offset) instant. Blank/absent uses current server time.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"title\": \"QueryContext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"action\": {\n          \"type\": \"string\"\n        },\n        \"authority_id\": {\n          \"type\": \"string\"\n        },\n        \"context\": {\n          \"$ref\": \"#/$defs/QueryContext\"\n        },\n        \"entity_id\": {\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"message\": {\n          \"description\": \"Additional human-readable detail about the recognition response.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"recognized\": {\n          \"description\": \"True if the action+resource has been recognised, false otherwise.\",\n          \"type\": \"boolean\"\n        },\n        \"resource\": {\n          \"type\": \"string\"\n        },\n        \"time_evaluated\": {\n          \"description\": \"Server time the query was evaluated at, per the endpoint clock.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"time_requested\": {\n          \"description\": \"The requested server time, echoed from the request `context.time` when supplied.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"entity_id\",\n        \"authority_id\",\n        \"action\",\n        \"resource\",\n        \"recognized\",\n        \"time_evaluated\"\n      ],\n      \"title\": \"Registry Recognition — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/registry/recognition/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"TRQP v2.0 recognition query: ask a trust registry whether an entity is recognised by an authority for a given action+resource. Field names are verbatim from the TRQP recognition request/response schemas so the same payload serves the plain HTTP TRQP binding and the Trust Task binding.\",\n  \"properties\": {\n    \"action\": {\n      \"description\": \"The action the query is checking recognition for.\",\n      \"type\": \"string\"\n    },\n    \"authority_id\": {\n      \"description\": \"Identifier of the authority being queried to recognise the entity.\",\n      \"type\": \"string\"\n    },\n    \"context\": {\n      \"$ref\": \"#/$defs/QueryContext\"\n    },\n    \"entity_id\": {\n      \"description\": \"Identifier of the entity being tested for recognition.\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"resource\": {\n      \"description\": \"The resource the query is checking recognition for.\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"entity_id\",\n    \"authority_id\",\n    \"action\",\n    \"resource\"\n  ],\n  \"title\": \"Registry Recognition — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"QueryContext\":{\"additionalProperties\":{\"type\":\"string\"},\"description\":\"Optional TRQP query context. `time` requests evaluation as of a given instant; `locator` is an authority-defined hint for locating records.\",\"properties\":{\"locator\":{\"description\":\"Optional hint for systems that need extra information to locate the records in question (authorization queries).\",\"type\":\"string\"},\"time\":{\"description\":\"Evaluate the query as of this RFC3339 (Z offset) instant. Blank/absent uses current server time.\",\"format\":\"date-time\",\"type\":\"string\"}},\"title\":\"QueryContext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"action\":{\"type\":\"string\"},\"authority_id\":{\"type\":\"string\"},\"context\":{\"$ref\":\"#/$defs/QueryContext\"},\"entity_id\":{\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"message\":{\"description\":\"Additional human-readable detail about the recognition response.\",\"maxLength\":1024,\"type\":\"string\"},\"recognized\":{\"description\":\"True if the action+resource has been recognised, false otherwise.\",\"type\":\"boolean\"},\"resource\":{\"type\":\"string\"},\"time_evaluated\":{\"description\":\"Server time the query was evaluated at, per the endpoint clock.\",\"format\":\"date-time\",\"type\":\"string\"},\"time_requested\":{\"description\":\"The requested server time, echoed from the request `context.time` when supplied.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"entity_id\",\"authority_id\",\"action\",\"resource\",\"recognized\",\"time_evaluated\"],\"title\":\"Registry Recognition — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/registry/recognition/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"TRQP v2.0 recognition query: ask a trust registry whether an entity is recognised by an authority for a given action+resource. Field names are verbatim from the TRQP recognition request/response schemas so the same payload serves the plain HTTP TRQP binding and the Trust Task binding.\",\"properties\":{\"action\":{\"description\":\"The action the query is checking recognition for.\",\"type\":\"string\"},\"authority_id\":{\"description\":\"Identifier of the authority being queried to recognise the entity.\",\"type\":\"string\"},\"context\":{\"$ref\":\"#/$defs/QueryContext\"},\"entity_id\":{\"description\":\"Identifier of the entity being tested for recognition.\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"resource\":{\"description\":\"The resource the query is checking recognition for.\",\"type\":\"string\"}},\"required\":[\"entity_id\",\"authority_id\",\"action\",\"resource\"],\"title\":\"Registry Recognition — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/registry/recognition/0.1#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"QueryContext\": {\n      \"additionalProperties\": {\n        \"type\": \"string\"\n      },\n      \"description\": \"Optional TRQP query context. `time` requests evaluation as of a given instant; `locator` is an authority-defined hint for locating records.\",\n      \"properties\": {\n        \"locator\": {\n          \"description\": \"Optional hint for systems that need extra information to locate the records in question (authorization queries).\",\n          \"type\": \"string\"\n        },\n        \"time\": {\n          \"description\": \"Evaluate the query as of this RFC3339 (Z offset) instant. Blank/absent uses current server time.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"title\": \"QueryContext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"action\": {\n          \"type\": \"string\"\n        },\n        \"authority_id\": {\n          \"type\": \"string\"\n        },\n        \"context\": {\n          \"$ref\": \"#/$defs/QueryContext\"\n        },\n        \"entity_id\": {\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"message\": {\n          \"description\": \"Additional human-readable detail about the recognition response.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"recognized\": {\n          \"description\": \"True if the action+resource has been recognised, false otherwise.\",\n          \"type\": \"boolean\"\n        },\n        \"resource\": {\n          \"type\": \"string\"\n        },\n        \"time_evaluated\": {\n          \"description\": \"Server time the query was evaluated at, per the endpoint clock.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"time_requested\": {\n          \"description\": \"The requested server time, echoed from the request `context.time` when supplied.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"entity_id\",\n        \"authority_id\",\n        \"action\",\n        \"resource\",\n        \"recognized\",\n        \"time_evaluated\"\n      ],\n      \"title\": \"Registry Recognition — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"QueryContext\":{\"additionalProperties\":{\"type\":\"string\"},\"description\":\"Optional TRQP query context. `time` requests evaluation as of a given instant; `locator` is an authority-defined hint for locating records.\",\"properties\":{\"locator\":{\"description\":\"Optional hint for systems that need extra information to locate the records in question (authorization queries).\",\"type\":\"string\"},\"time\":{\"description\":\"Evaluate the query as of this RFC3339 (Z offset) instant. Blank/absent uses current server time.\",\"format\":\"date-time\",\"type\":\"string\"}},\"title\":\"QueryContext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"action\":{\"type\":\"string\"},\"authority_id\":{\"type\":\"string\"},\"context\":{\"$ref\":\"#/$defs/QueryContext\"},\"entity_id\":{\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"message\":{\"description\":\"Additional human-readable detail about the recognition response.\",\"maxLength\":1024,\"type\":\"string\"},\"recognized\":{\"description\":\"True if the action+resource has been recognised, false otherwise.\",\"type\":\"boolean\"},\"resource\":{\"type\":\"string\"},\"time_evaluated\":{\"description\":\"Server time the query was evaluated at, per the endpoint clock.\",\"format\":\"date-time\",\"type\":\"string\"},\"time_requested\":{\"description\":\"The requested server time, echoed from the request `context.time` when supplied.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"entity_id\",\"authority_id\",\"action\",\"resource\",\"recognized\",\"time_evaluated\"],\"title\":\"Registry Recognition — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

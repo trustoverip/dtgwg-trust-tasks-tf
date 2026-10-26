@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,65 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A vetter draws its tick of attestation tokens. The draw is unconditional and on a schedule — a vetter asks whether or not it has vetted anyone — because a fetch that tracked activity would report activity.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/vetting/vetters/pcs-tokens/0.1",
-///  "title": "Payload",
-///  "description": "A vetter draws its tick of attestation tokens. The draw is unconditional and on a schedule — a vetter asks whether or not it has vetted anyone — because a fetch that tracked activity would report activity.",
-///  "type": "object",
-///  "required": [
-///    "label",
-///    "requests",
-///    "tick"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "label": {
-///      "description": "The token label to draw under: the community's current monthly label, or an event label it has approved for this vetter.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "requests": {
-///      "description": "One blinded serial per token asked for. More than the community's published `dripPerTick` is refused outright — the cap is the community's, not the asker's restraint.",
-///      "type": "array",
-///      "items": {
-///        "type": "object",
-///        "required": [
-///          "commitment",
-///          "openingProof"
-///        ],
-///        "properties": {
-///          "commitment": {
-///            "description": "A commitment to a serial only the vetter knows.",
-///            "type": "string",
-///            "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///          },
-///          "openingProof": {
-///            "description": "Proof that the commitment opens to a serial the vetter holds, bound to this label, member and tick.",
-///            "type": "string",
-///            "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///          }
-///        },
-///        "additionalProperties": false
-///      },
-///      "maxItems": 64,
-///      "minItems": 1
-///    },
-///    "tick": {
-///      "description": "Which tick of this label is being drawn: tick `t` is the window starting `t` tick lengths after the label's start instant (see the specification's Definitions). The community refuses a tick that has not begun (`tickNotYet`) and one already served (`alreadyServed`), so the total drawn under a label is bounded by the drip rate times the ticks elapsed.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -221,17 +138,6 @@ impl Payload {
 }
 ///The token label to draw under: the community's current monthly label, or an event label it has approved for this vetter.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The token label to draw under: the community's current monthly label, or an event label it has approved for this vetter.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadLabel(::std::string::String);
@@ -294,31 +200,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadLabel {
 }
 ///`PayloadRequestsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "commitment",
-///    "openingProof"
-///  ],
-///  "properties": {
-///    "commitment": {
-///      "description": "A commitment to a serial only the vetter knows.",
-///      "type": "string",
-///      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///    },
-///    "openingProof": {
-///      "description": "Proof that the commitment opens to a serial the vetter holds, bound to this label, member and tick.",
-///      "type": "string",
-///      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -336,16 +217,6 @@ impl PayloadRequestsItem {
 }
 ///A commitment to a serial only the vetter knows.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "A commitment to a serial only the vetter knows.",
-///  "type": "string",
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadRequestsItemCommitment(::std::string::String);
@@ -409,16 +280,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRequestsItemCommitment {
 }
 ///Proof that the commitment opens to a serial the vetter holds, bound to this label, member and tick.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Proof that the commitment opens to a serial the vetter holds, bound to this label, member and tick.",
-///  "type": "string",
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadRequestsItemOpeningProof(::std::string::String);
@@ -482,49 +343,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRequestsItemOpeningProof {
 }
 ///One blind signature per request, in the order asked.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "One blind signature per request, in the order asked.",
-///  "type": "object",
-///  "required": [
-///    "label",
-///    "preCredentials",
-///    "tick"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "label": {
-///      "description": "The label served.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "preCredentials": {
-///      "description": "The blind signatures, positionally matching `requests`.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///      },
-///      "maxItems": 64,
-///      "minItems": 1
-///    },
-///    "tick": {
-///      "description": "The tick served.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -546,17 +364,6 @@ impl Response {
 }
 ///The label served.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The label served.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseLabel(::std::string::String);
@@ -619,15 +426,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseLabel {
 }
 ///`ResponsePreCredentialsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponsePreCredentialsItem(::std::string::String);
@@ -920,7 +718,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"One blind signature per request, in the order asked.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"label\": {\n          \"description\": \"The label served.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"preCredentials\": {\n          \"description\": \"The blind signatures, positionally matching `requests`.\",\n          \"items\": {\n            \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"tick\": {\n          \"description\": \"The tick served.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"label\",\n        \"tick\",\n        \"preCredentials\"\n      ],\n      \"title\": \"VTC Vetting PCS Tokens — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/vetting/vetters/pcs-tokens/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A vetter draws its tick of attestation tokens. The draw is unconditional and on a schedule — a vetter asks whether or not it has vetted anyone — because a fetch that tracked activity would report activity.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"label\": {\n      \"description\": \"The token label to draw under: the community's current monthly label, or an event label it has approved for this vetter.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"requests\": {\n      \"description\": \"One blinded serial per token asked for. More than the community's published `dripPerTick` is refused outright — the cap is the community's, not the asker's restraint.\",\n      \"items\": {\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"commitment\": {\n            \"description\": \"A commitment to a serial only the vetter knows.\",\n            \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n            \"type\": \"string\"\n          },\n          \"openingProof\": {\n            \"description\": \"Proof that the commitment opens to a serial the vetter holds, bound to this label, member and tick.\",\n            \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"commitment\",\n          \"openingProof\"\n        ],\n        \"type\": \"object\"\n      },\n      \"maxItems\": 64,\n      \"minItems\": 1,\n      \"type\": \"array\"\n    },\n    \"tick\": {\n      \"description\": \"Which tick of this label is being drawn: tick `t` is the window starting `t` tick lengths after the label's start instant (see the specification's Definitions). The community refuses a tick that has not begun (`tickNotYet`) and one already served (`alreadyServed`), so the total drawn under a label is bounded by the drip rate times the ticks elapsed.\",\n      \"minimum\": 0,\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"label\",\n    \"tick\",\n    \"requests\"\n  ],\n  \"title\": \"VTC — Vetting PCS Tokens — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"One blind signature per request, in the order asked.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"label\":{\"description\":\"The label served.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"preCredentials\":{\"description\":\"The blind signatures, positionally matching `requests`.\",\"items\":{\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\"},\"tick\":{\"description\":\"The tick served.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"label\",\"tick\",\"preCredentials\"],\"title\":\"VTC Vetting PCS Tokens — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/vetting/vetters/pcs-tokens/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A vetter draws its tick of attestation tokens. The draw is unconditional and on a schedule — a vetter asks whether or not it has vetted anyone — because a fetch that tracked activity would report activity.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"label\":{\"description\":\"The token label to draw under: the community's current monthly label, or an event label it has approved for this vetter.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"requests\":{\"description\":\"One blinded serial per token asked for. More than the community's published `dripPerTick` is refused outright — the cap is the community's, not the asker's restraint.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"commitment\":{\"description\":\"A commitment to a serial only the vetter knows.\",\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"openingProof\":{\"description\":\"Proof that the commitment opens to a serial the vetter holds, bound to this label, member and tick.\",\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"}},\"required\":[\"commitment\",\"openingProof\"],\"type\":\"object\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\"},\"tick\":{\"description\":\"Which tick of this label is being drawn: tick `t` is the window starting `t` tick lengths after the label's start instant (see the specification's Definitions). The community refuses a tick that has not begun (`tickNotYet`) and one already served (`alreadyServed`), so the total drawn under a label is bounded by the drip rate times the ticks elapsed.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"label\",\"tick\",\"requests\"],\"title\":\"VTC — Vetting PCS Tokens — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -930,7 +728,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"One blind signature per request, in the order asked.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"label\": {\n          \"description\": \"The label served.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"preCredentials\": {\n          \"description\": \"The blind signatures, positionally matching `requests`.\",\n          \"items\": {\n            \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"tick\": {\n          \"description\": \"The tick served.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"label\",\n        \"tick\",\n        \"preCredentials\"\n      ],\n      \"title\": \"VTC Vetting PCS Tokens — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"One blind signature per request, in the order asked.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"label\":{\"description\":\"The label served.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"preCredentials\":{\"description\":\"The blind signatures, positionally matching `requests`.\",\"items\":{\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\"},\"tick\":{\"description\":\"The tick served.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"label\",\"tick\",\"preCredentials\"],\"title\":\"VTC Vetting PCS Tokens — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

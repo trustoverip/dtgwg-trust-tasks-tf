@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,39 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///The invited subject, signing as their own DID, presents an auth/step-up/approver/invite token and its claim code, and the relying party opens an enrolment ceremony with a challenge for the approver to sign. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/auth/step-up/approver/redeem/start/0.1",
-///  "title": "Payload",
-///  "description": "The invited subject, signing as their own DID, presents an auth/step-up/approver/invite token and its claim code, and the relying party opens an enrolment ceremony with a challenge for the approver to sign. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "claimCode",
-///    "token"
-///  ],
-///  "properties": {
-///    "claimCode": {
-///      "description": "The claim code the administrator delivered separately. Never logged; compared with its stored hash.",
-///      "type": "string",
-///      "maxLength": 64,
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "token": {
-///      "description": "The invite token, as carried in the invite URL.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 16
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -194,17 +137,6 @@ impl Payload {
 }
 ///The claim code the administrator delivered separately. Never logged; compared with its stored hash.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The claim code the administrator delivered separately. Never logged; compared with its stored hash.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadClaimCode(::std::string::String);
@@ -267,17 +199,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadClaimCode {
 }
 ///The invite token, as carried in the invite URL.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The invite token, as carried in the invite URL.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 16
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadToken(::std::string::String);
@@ -340,53 +261,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadToken {
 }
 ///The enrolment ceremony the invite authorises: what the approver's enrolment statement is to be made over.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The enrolment ceremony the invite authorises: what the approver's enrolment statement is to be made over.",
-///  "type": "object",
-///  "required": [
-///    "audience",
-///    "challenge",
-///    "enrollmentId",
-///    "expiresAt"
-///  ],
-///  "properties": {
-///    "audience": {
-///      "description": "The relying party's DID, which the statement names as its `audience` and `recipient`.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 5,
-///      "pattern": "^did:"
-///    },
-///    "challenge": {
-///      "description": "A fresh challenge (≥128 bits) the approver signs over in its auth/step-up/approver/attest/0.1 statement with `purpose: enrol`.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 16
-///    },
-///    "enrollmentId": {
-///      "description": "Opaque, single-use handle for this ceremony. Echoed in redeem/finish, and the `boundTo` of the approver's enrolment statement.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "expiresAt": {
-///      "description": "When this ceremony lapses (not the invite). No later than the invite's own expiry.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -411,18 +285,6 @@ impl Response {
 }
 ///The relying party's DID, which the statement names as its `audience` and `recipient`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The relying party's DID, which the statement names as its `audience` and `recipient`.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 5,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseAudience(::std::string::String);
@@ -490,17 +352,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseAudience {
 }
 ///A fresh challenge (≥128 bits) the approver signs over in its auth/step-up/approver/attest/0.1 statement with `purpose: enrol`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "A fresh challenge (≥128 bits) the approver signs over in its auth/step-up/approver/attest/0.1 statement with `purpose: enrol`.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 16
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseChallenge(::std::string::String);
@@ -563,17 +414,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseChallenge {
 }
 ///Opaque, single-use handle for this ceremony. Echoed in redeem/finish, and the `boundTo` of the approver's enrolment statement.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Opaque, single-use handle for this ceremony. Echoed in redeem/finish, and the `boundTo` of the approver's enrolment statement.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseEnrollmentId(::std::string::String);
@@ -805,7 +645,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The enrolment ceremony the invite authorises: what the approver's enrolment statement is to be made over.\",\n      \"properties\": {\n        \"audience\": {\n          \"description\": \"The relying party's DID, which the statement names as its `audience` and `recipient`.\",\n          \"maxLength\": 2048,\n          \"minLength\": 5,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"challenge\": {\n          \"description\": \"A fresh challenge (≥128 bits) the approver signs over in its auth/step-up/approver/attest/0.1 statement with `purpose: enrol`.\",\n          \"maxLength\": 512,\n          \"minLength\": 16,\n          \"type\": \"string\"\n        },\n        \"enrollmentId\": {\n          \"description\": \"Opaque, single-use handle for this ceremony. Echoed in redeem/finish, and the `boundTo` of the approver's enrolment statement.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When this ceremony lapses (not the invite). No later than the invite's own expiry.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"enrollmentId\",\n        \"challenge\",\n        \"audience\",\n        \"expiresAt\"\n      ],\n      \"title\": \"Auth — Step-up Approver Redeem (start) — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/step-up/approver/redeem/start/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"The invited subject, signing as their own DID, presents an auth/step-up/approver/invite token and its claim code, and the relying party opens an enrolment ceremony with a challenge for the approver to sign. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"claimCode\": {\n      \"description\": \"The claim code the administrator delivered separately. Never logged; compared with its stored hash.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"token\": {\n      \"description\": \"The invite token, as carried in the invite URL.\",\n      \"maxLength\": 512,\n      \"minLength\": 16,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"token\",\n    \"claimCode\"\n  ],\n  \"title\": \"Auth — Step-up Approver Redeem (start) — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The enrolment ceremony the invite authorises: what the approver's enrolment statement is to be made over.\",\"properties\":{\"audience\":{\"description\":\"The relying party's DID, which the statement names as its `audience` and `recipient`.\",\"maxLength\":2048,\"minLength\":5,\"pattern\":\"^did:\",\"type\":\"string\"},\"challenge\":{\"description\":\"A fresh challenge (≥128 bits) the approver signs over in its auth/step-up/approver/attest/0.1 statement with `purpose: enrol`.\",\"maxLength\":512,\"minLength\":16,\"type\":\"string\"},\"enrollmentId\":{\"description\":\"Opaque, single-use handle for this ceremony. Echoed in redeem/finish, and the `boundTo` of the approver's enrolment statement.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"expiresAt\":{\"description\":\"When this ceremony lapses (not the invite). No later than the invite's own expiry.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"enrollmentId\",\"challenge\",\"audience\",\"expiresAt\"],\"title\":\"Auth — Step-up Approver Redeem (start) — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/auth/step-up/approver/redeem/start/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The invited subject, signing as their own DID, presents an auth/step-up/approver/invite token and its claim code, and the relying party opens an enrolment ceremony with a challenge for the approver to sign. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"claimCode\":{\"description\":\"The claim code the administrator delivered separately. Never logged; compared with its stored hash.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"token\":{\"description\":\"The invite token, as carried in the invite URL.\",\"maxLength\":512,\"minLength\":16,\"type\":\"string\"}},\"required\":[\"token\",\"claimCode\"],\"title\":\"Auth — Step-up Approver Redeem (start) — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -814,7 +654,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The enrolment ceremony the invite authorises: what the approver's enrolment statement is to be made over.\",\n      \"properties\": {\n        \"audience\": {\n          \"description\": \"The relying party's DID, which the statement names as its `audience` and `recipient`.\",\n          \"maxLength\": 2048,\n          \"minLength\": 5,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"challenge\": {\n          \"description\": \"A fresh challenge (≥128 bits) the approver signs over in its auth/step-up/approver/attest/0.1 statement with `purpose: enrol`.\",\n          \"maxLength\": 512,\n          \"minLength\": 16,\n          \"type\": \"string\"\n        },\n        \"enrollmentId\": {\n          \"description\": \"Opaque, single-use handle for this ceremony. Echoed in redeem/finish, and the `boundTo` of the approver's enrolment statement.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When this ceremony lapses (not the invite). No later than the invite's own expiry.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"enrollmentId\",\n        \"challenge\",\n        \"audience\",\n        \"expiresAt\"\n      ],\n      \"title\": \"Auth — Step-up Approver Redeem (start) — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The enrolment ceremony the invite authorises: what the approver's enrolment statement is to be made over.\",\"properties\":{\"audience\":{\"description\":\"The relying party's DID, which the statement names as its `audience` and `recipient`.\",\"maxLength\":2048,\"minLength\":5,\"pattern\":\"^did:\",\"type\":\"string\"},\"challenge\":{\"description\":\"A fresh challenge (≥128 bits) the approver signs over in its auth/step-up/approver/attest/0.1 statement with `purpose: enrol`.\",\"maxLength\":512,\"minLength\":16,\"type\":\"string\"},\"enrollmentId\":{\"description\":\"Opaque, single-use handle for this ceremony. Echoed in redeem/finish, and the `boundTo` of the approver's enrolment statement.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"expiresAt\":{\"description\":\"When this ceremony lapses (not the invite). No later than the invite's own expiry.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"enrollmentId\",\"challenge\",\"audience\",\"expiresAt\"],\"title\":\"Auth — Step-up Approver Redeem (start) — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

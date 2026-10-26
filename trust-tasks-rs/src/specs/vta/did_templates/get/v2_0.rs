@@ -35,89 +35,6 @@ pub mod error {
 }
 ///A persisted template. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/create/update and carried per-item by list.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DidTemplateRecord",
-///  "description": "A persisted template. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/create/update and carried per-item by list.",
-///  "type": "object",
-///  "required": [
-///    "createdAt",
-///    "createdBy",
-///    "document",
-///    "kind",
-///    "name",
-///    "schemaVersion",
-///    "scope",
-///    "updatedAt"
-///  ],
-///  "properties": {
-///    "createdAt": {
-///      "description": "UTC unix-epoch seconds the template was first stored.",
-///      "type": "integer"
-///    },
-///    "createdBy": {
-///      "description": "DID of the admin who last wrote the template.",
-///      "type": "string"
-///    },
-///    "defaults": {
-///      "type": "object",
-///      "additionalProperties": true
-///    },
-///    "description": {
-///      "type": [
-///        "string",
-///        "null"
-///      ],
-///      "maxLength": 1024
-///    },
-///    "document": {
-///      "type": "object"
-///    },
-///    "kind": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "methods": {
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      }
-///    },
-///    "name": {
-///      "type": "string",
-///      "maxLength": 64,
-///      "minLength": 1,
-///      "pattern": "^[a-z0-9-]+$"
-///    },
-///    "optionalVars": {
-///      "type": "object",
-///      "additionalProperties": true
-///    },
-///    "requiredVars": {
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      }
-///    },
-///    "schemaVersion": {
-///      "type": "integer",
-///      "const": 1
-///    },
-///    "scope": {
-///      "description": "Resolved scope of the stored template.",
-///      "$ref": "#/definitions/Scope"
-///    },
-///    "updatedAt": {
-///      "description": "UTC unix-epoch seconds of the last write.",
-///      "type": "integer"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -164,15 +81,6 @@ impl DidTemplateRecord {
 }
 ///`DidTemplateRecordDescription`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DidTemplateRecordDescription(::std::string::String);
@@ -232,15 +140,6 @@ impl<'de> ::serde::Deserialize<'de> for DidTemplateRecordDescription {
 }
 ///`DidTemplateRecordKind`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DidTemplateRecordKind(::std::string::String);
@@ -300,17 +199,6 @@ impl<'de> ::serde::Deserialize<'de> for DidTemplateRecordKind {
 }
 ///`DidTemplateRecordName`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1,
-///  "pattern": "^[a-z0-9-]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DidTemplateRecordName(::std::string::String);
@@ -378,21 +266,6 @@ impl<'de> ::serde::Deserialize<'de> for DidTemplateRecordName {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -414,15 +287,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -486,37 +350,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Fetch one DID template on a VTA by name. Omit `contextId` to read from the global scope (any authenticated caller); set it to read a template scoped to that context (requires access to the context). The success response is the persisted DidTemplateRecord.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/did-templates/get/2.0",
-///  "title": "Payload",
-///  "description": "Fetch one DID template on a VTA by name. Omit `contextId` to read from the global scope (any authenticated caller); set it to read a template scoped to that context (requires access to the context). The success response is the persisted DidTemplateRecord.",
-///  "type": "object",
-///  "required": [
-///    "name"
-///  ],
-///  "properties": {
-///    "contextId": {
-///      "description": "Scope selector. Absent: the global scope. Present: the context the template is scoped to; the caller MUST have access to that context.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "name": {
-///      "description": "Template name to fetch within the selected scope.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -542,16 +375,6 @@ impl Payload {
 }
 ///Scope selector. Absent: the global scope. Present: the context the template is scoped to; the caller MUST have access to that context.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Scope selector. Absent: the global scope. Present: the context the template is scoped to; the caller MUST have access to that context.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadContextId(::std::string::String);
@@ -611,16 +434,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 }
 ///Template name to fetch within the selected scope.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Template name to fetch within the selected scope.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadName(::std::string::String);
@@ -680,17 +493,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadName {
 }
 ///The persisted DidTemplateRecord. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by create/update.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The persisted DidTemplateRecord. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by create/update.",
-///  "$ref": "#/definitions/DidTemplateRecord",
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 #[deprecated(note = "superseded by vta/did-templates/get/3.1")]
@@ -713,62 +515,6 @@ impl ::std::convert::From<DidTemplateRecord> for Response {
 }
 ///Where a stored template lives. Tagged by `type`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Scope",
-///  "description": "Where a stored template lives. Tagged by `type`.",
-///  "type": "object",
-///  "oneOf": [
-///    {
-///      "title": "Builtin",
-///      "type": "object",
-///      "required": [
-///        "type"
-///      ],
-///      "properties": {
-///        "type": {
-///          "const": "builtin"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "Global",
-///      "type": "object",
-///      "required": [
-///        "type"
-///      ],
-///      "properties": {
-///        "type": {
-///          "const": "global"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "Context",
-///      "type": "object",
-///      "required": [
-///        "contextId",
-///        "type"
-///      ],
-///      "properties": {
-///        "contextId": {
-///          "type": "string",
-///          "minLength": 1
-///        },
-///        "type": {
-///          "const": "context"
-///        }
-///      },
-///      "additionalProperties": false
-///    }
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(tag = "type", content = "contextId")]
 #[non_exhaustive]
@@ -788,15 +534,6 @@ impl ::std::convert::From<ScopeContextId> for Scope {
 }
 ///`ScopeContextId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ScopeContextId(::std::string::String);
@@ -1158,14 +895,14 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/did-templates/get/2.0";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DidTemplateRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"A persisted template. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/create/update and carried per-item by list.\",\n      \"properties\": {\n        \"createdAt\": {\n          \"description\": \"UTC unix-epoch seconds the template was first stored.\",\n          \"type\": \"integer\"\n        },\n        \"createdBy\": {\n          \"description\": \"DID of the admin who last wrote the template.\",\n          \"type\": \"string\"\n        },\n        \"defaults\": {\n          \"additionalProperties\": true,\n          \"type\": \"object\"\n        },\n        \"description\": {\n          \"maxLength\": 1024,\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"document\": {\n          \"type\": \"object\"\n        },\n        \"kind\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"methods\": {\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"name\": {\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"pattern\": \"^[a-z0-9-]+$\",\n          \"type\": \"string\"\n        },\n        \"optionalVars\": {\n          \"additionalProperties\": true,\n          \"type\": \"object\"\n        },\n        \"requiredVars\": {\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"schemaVersion\": {\n          \"const\": 1,\n          \"type\": \"integer\"\n        },\n        \"scope\": {\n          \"$ref\": \"#/$defs/Scope\",\n          \"description\": \"Resolved scope of the stored template.\"\n        },\n        \"updatedAt\": {\n          \"description\": \"UTC unix-epoch seconds of the last write.\",\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"schemaVersion\",\n        \"name\",\n        \"kind\",\n        \"document\",\n        \"scope\",\n        \"createdAt\",\n        \"updatedAt\",\n        \"createdBy\"\n      ],\n      \"title\": \"DidTemplateRecord\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"$ref\": \"#/$defs/DidTemplateRecord\",\n      \"description\": \"The persisted DidTemplateRecord. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by create/update.\",\n      \"title\": \"VTA DID-Template Get — response payload\"\n    },\n    \"Scope\": {\n      \"description\": \"Where a stored template lives. Tagged by `type`.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"type\": {\n              \"const\": \"builtin\"\n            }\n          },\n          \"required\": [\n            \"type\"\n          ],\n          \"title\": \"Builtin\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"type\": {\n              \"const\": \"global\"\n            }\n          },\n          \"required\": [\n            \"type\"\n          ],\n          \"title\": \"Global\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"contextId\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"type\": {\n              \"const\": \"context\"\n            }\n          },\n          \"required\": [\n            \"type\",\n            \"contextId\"\n          ],\n          \"title\": \"Context\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"Scope\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/did-templates/get/2.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Fetch one DID template on a VTA by name. Omit `contextId` to read from the global scope (any authenticated caller); set it to read a template scoped to that context (requires access to the context). The success response is the persisted DidTemplateRecord.\",\n  \"properties\": {\n    \"contextId\": {\n      \"description\": \"Scope selector. Absent: the global scope. Present: the context the template is scoped to; the caller MUST have access to that context.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"name\": {\n      \"description\": \"Template name to fetch within the selected scope.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"name\"\n  ],\n  \"title\": \"VTA DID-Template Get — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"DidTemplateRecord\":{\"additionalProperties\":false,\"description\":\"A persisted template. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/create/update and carried per-item by list.\",\"properties\":{\"createdAt\":{\"description\":\"UTC unix-epoch seconds the template was first stored.\",\"type\":\"integer\"},\"createdBy\":{\"description\":\"DID of the admin who last wrote the template.\",\"type\":\"string\"},\"defaults\":{\"additionalProperties\":true,\"type\":\"object\"},\"description\":{\"maxLength\":1024,\"type\":[\"string\",\"null\"]},\"document\":{\"type\":\"object\"},\"kind\":{\"minLength\":1,\"type\":\"string\"},\"methods\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"name\":{\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9-]+$\",\"type\":\"string\"},\"optionalVars\":{\"additionalProperties\":true,\"type\":\"object\"},\"requiredVars\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"schemaVersion\":{\"const\":1,\"type\":\"integer\"},\"scope\":{\"$ref\":\"#/$defs/Scope\",\"description\":\"Resolved scope of the stored template.\"},\"updatedAt\":{\"description\":\"UTC unix-epoch seconds of the last write.\",\"type\":\"integer\"}},\"required\":[\"schemaVersion\",\"name\",\"kind\",\"document\",\"scope\",\"createdAt\",\"updatedAt\",\"createdBy\"],\"title\":\"DidTemplateRecord\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"$ref\":\"#/$defs/DidTemplateRecord\",\"description\":\"The persisted DidTemplateRecord. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by create/update.\",\"title\":\"VTA DID-Template Get — response payload\"},\"Scope\":{\"description\":\"Where a stored template lives. Tagged by `type`.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"type\":{\"const\":\"builtin\"}},\"required\":[\"type\"],\"title\":\"Builtin\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"type\":{\"const\":\"global\"}},\"required\":[\"type\"],\"title\":\"Global\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"contextId\":{\"minLength\":1,\"type\":\"string\"},\"type\":{\"const\":\"context\"}},\"required\":[\"type\",\"contextId\"],\"title\":\"Context\",\"type\":\"object\"}],\"title\":\"Scope\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/did-templates/get/2.0\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Fetch one DID template on a VTA by name. Omit `contextId` to read from the global scope (any authenticated caller); set it to read a template scoped to that context (requires access to the context). The success response is the persisted DidTemplateRecord.\",\"properties\":{\"contextId\":{\"description\":\"Scope selector. Absent: the global scope. Present: the context the template is scoped to; the caller MUST have access to that context.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"name\":{\"description\":\"Template name to fetch within the selected scope.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"name\"],\"title\":\"VTA DID-Template Get — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/did-templates/get/2.0#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DidTemplateRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"A persisted template. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/create/update and carried per-item by list.\",\n      \"properties\": {\n        \"createdAt\": {\n          \"description\": \"UTC unix-epoch seconds the template was first stored.\",\n          \"type\": \"integer\"\n        },\n        \"createdBy\": {\n          \"description\": \"DID of the admin who last wrote the template.\",\n          \"type\": \"string\"\n        },\n        \"defaults\": {\n          \"additionalProperties\": true,\n          \"type\": \"object\"\n        },\n        \"description\": {\n          \"maxLength\": 1024,\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"document\": {\n          \"type\": \"object\"\n        },\n        \"kind\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"methods\": {\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"name\": {\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"pattern\": \"^[a-z0-9-]+$\",\n          \"type\": \"string\"\n        },\n        \"optionalVars\": {\n          \"additionalProperties\": true,\n          \"type\": \"object\"\n        },\n        \"requiredVars\": {\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"schemaVersion\": {\n          \"const\": 1,\n          \"type\": \"integer\"\n        },\n        \"scope\": {\n          \"$ref\": \"#/$defs/Scope\",\n          \"description\": \"Resolved scope of the stored template.\"\n        },\n        \"updatedAt\": {\n          \"description\": \"UTC unix-epoch seconds of the last write.\",\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"schemaVersion\",\n        \"name\",\n        \"kind\",\n        \"document\",\n        \"scope\",\n        \"createdAt\",\n        \"updatedAt\",\n        \"createdBy\"\n      ],\n      \"title\": \"DidTemplateRecord\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"$ref\": \"#/$defs/DidTemplateRecord\",\n      \"description\": \"The persisted DidTemplateRecord. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by create/update.\",\n      \"title\": \"VTA DID-Template Get — response payload\"\n    },\n    \"Scope\": {\n      \"description\": \"Where a stored template lives. Tagged by `type`.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"type\": {\n              \"const\": \"builtin\"\n            }\n          },\n          \"required\": [\n            \"type\"\n          ],\n          \"title\": \"Builtin\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"type\": {\n              \"const\": \"global\"\n            }\n          },\n          \"required\": [\n            \"type\"\n          ],\n          \"title\": \"Global\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"contextId\": {\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"type\": {\n              \"const\": \"context\"\n            }\n          },\n          \"required\": [\n            \"type\",\n            \"contextId\"\n          ],\n          \"title\": \"Context\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"Scope\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"DidTemplateRecord\":{\"additionalProperties\":false,\"description\":\"A persisted template. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by get/create/update and carried per-item by list.\",\"properties\":{\"createdAt\":{\"description\":\"UTC unix-epoch seconds the template was first stored.\",\"type\":\"integer\"},\"createdBy\":{\"description\":\"DID of the admin who last wrote the template.\",\"type\":\"string\"},\"defaults\":{\"additionalProperties\":true,\"type\":\"object\"},\"description\":{\"maxLength\":1024,\"type\":[\"string\",\"null\"]},\"document\":{\"type\":\"object\"},\"kind\":{\"minLength\":1,\"type\":\"string\"},\"methods\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"name\":{\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9-]+$\",\"type\":\"string\"},\"optionalVars\":{\"additionalProperties\":true,\"type\":\"object\"},\"requiredVars\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"schemaVersion\":{\"const\":1,\"type\":\"integer\"},\"scope\":{\"$ref\":\"#/$defs/Scope\",\"description\":\"Resolved scope of the stored template.\"},\"updatedAt\":{\"description\":\"UTC unix-epoch seconds of the last write.\",\"type\":\"integer\"}},\"required\":[\"schemaVersion\",\"name\",\"kind\",\"document\",\"scope\",\"createdAt\",\"updatedAt\",\"createdBy\"],\"title\":\"DidTemplateRecord\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"$ref\":\"#/$defs/DidTemplateRecord\",\"description\":\"The persisted DidTemplateRecord. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by create/update.\",\"title\":\"VTA DID-Template Get — response payload\"},\"Scope\":{\"description\":\"Where a stored template lives. Tagged by `type`.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"type\":{\"const\":\"builtin\"}},\"required\":[\"type\"],\"title\":\"Builtin\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"type\":{\"const\":\"global\"}},\"required\":[\"type\"],\"title\":\"Global\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"contextId\":{\"minLength\":1,\"type\":\"string\"},\"type\":{\"const\":\"context\"}},\"required\":[\"type\",\"contextId\"],\"title\":\"Context\",\"type\":\"object\"}],\"title\":\"Scope\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,87 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/did-management/server/stats-sync/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "instanceId",
-///    "perMnemonic"
-///  ],
-///  "properties": {
-///    "buckets": {
-///      "type": "array",
-///      "items": {
-///        "type": "object",
-///        "required": [
-///          "epoch",
-///          "mnemonic",
-///          "r",
-///          "u"
-///        ],
-///        "properties": {
-///          "epoch": {
-///            "type": "integer",
-///            "minimum": 0.0
-///          },
-///          "mnemonic": {
-///            "type": "string",
-///            "minLength": 1
-///          },
-///          "r": {
-///            "type": "integer",
-///            "minimum": 0.0
-///          },
-///          "u": {
-///            "type": "integer",
-///            "minimum": 0.0
-///          }
-///        },
-///        "additionalProperties": false
-///      }
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "instanceId": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "perMnemonic": {
-///      "type": "array",
-///      "items": {
-///        "type": "object",
-///        "required": [
-///          "mnemonic",
-///          "resolves",
-///          "updates"
-///        ],
-///        "properties": {
-///          "mnemonic": {
-///            "type": "string",
-///            "minLength": 1
-///          },
-///          "resolves": {
-///            "type": "integer",
-///            "minimum": 0.0
-///          },
-///          "updates": {
-///            "type": "integer",
-///            "minimum": 0.0
-///          }
-///        },
-///        "additionalProperties": false
-///      }
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -243,39 +138,6 @@ impl Payload {
 }
 ///`PayloadBucketsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "epoch",
-///    "mnemonic",
-///    "r",
-///    "u"
-///  ],
-///  "properties": {
-///    "epoch": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "mnemonic": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "r": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "u": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -292,15 +154,6 @@ impl PayloadBucketsItem {
 }
 ///`PayloadBucketsItemMnemonic`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadBucketsItemMnemonic(::std::string::String);
@@ -360,15 +213,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadBucketsItemMnemonic {
 }
 ///`PayloadInstanceId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadInstanceId(::std::string::String);
@@ -428,34 +272,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadInstanceId {
 }
 ///`PayloadPerMnemonicItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "mnemonic",
-///    "resolves",
-///    "updates"
-///  ],
-///  "properties": {
-///    "mnemonic": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "resolves": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "updates": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -471,15 +287,6 @@ impl PayloadPerMnemonicItem {
 }
 ///`PayloadPerMnemonicItemMnemonic`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadPerMnemonicItemMnemonic(::std::string::String);
@@ -539,33 +346,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPerMnemonicItemMnemonic {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "accepted",
-///    "instanceId"
-///  ],
-///  "properties": {
-///    "accepted": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "instanceId": {
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -892,7 +672,7 @@ impl crate::Payload for Payload {
         "https://trusttasks.org/spec/did-management/server/stats-sync/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"accepted\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"instanceId\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"instanceId\",\n        \"accepted\"\n      ],\n      \"title\": \"Server Stats Sync — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/did-management/server/stats-sync/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"buckets\": {\n      \"items\": {\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"epoch\": {\n            \"minimum\": 0,\n            \"type\": \"integer\"\n          },\n          \"mnemonic\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"r\": {\n            \"minimum\": 0,\n            \"type\": \"integer\"\n          },\n          \"u\": {\n            \"minimum\": 0,\n            \"type\": \"integer\"\n          }\n        },\n        \"required\": [\n          \"mnemonic\",\n          \"epoch\",\n          \"r\",\n          \"u\"\n        ],\n        \"type\": \"object\"\n      },\n      \"type\": \"array\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"instanceId\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"perMnemonic\": {\n      \"items\": {\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"mnemonic\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"resolves\": {\n            \"minimum\": 0,\n            \"type\": \"integer\"\n          },\n          \"updates\": {\n            \"minimum\": 0,\n            \"type\": \"integer\"\n          }\n        },\n        \"required\": [\n          \"mnemonic\",\n          \"resolves\",\n          \"updates\"\n        ],\n        \"type\": \"object\"\n      },\n      \"type\": \"array\"\n    }\n  },\n  \"required\": [\n    \"instanceId\",\n    \"perMnemonic\"\n  ],\n  \"title\": \"Server Stats Sync — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"accepted\":{\"minimum\":0,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"instanceId\":{\"type\":\"string\"}},\"required\":[\"instanceId\",\"accepted\"],\"title\":\"Server Stats Sync — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/did-management/server/stats-sync/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"buckets\":{\"items\":{\"additionalProperties\":false,\"properties\":{\"epoch\":{\"minimum\":0,\"type\":\"integer\"},\"mnemonic\":{\"minLength\":1,\"type\":\"string\"},\"r\":{\"minimum\":0,\"type\":\"integer\"},\"u\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"mnemonic\",\"epoch\",\"r\",\"u\"],\"type\":\"object\"},\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"instanceId\":{\"minLength\":1,\"type\":\"string\"},\"perMnemonic\":{\"items\":{\"additionalProperties\":false,\"properties\":{\"mnemonic\":{\"minLength\":1,\"type\":\"string\"},\"resolves\":{\"minimum\":0,\"type\":\"integer\"},\"updates\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"mnemonic\",\"resolves\",\"updates\"],\"type\":\"object\"},\"type\":\"array\"}},\"required\":[\"instanceId\",\"perMnemonic\"],\"title\":\"Server Stats Sync — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -900,7 +680,7 @@ impl crate::Payload for Response {
         "https://trusttasks.org/spec/did-management/server/stats-sync/0.1#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"accepted\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"instanceId\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"instanceId\",\n        \"accepted\"\n      ],\n      \"title\": \"Server Stats Sync — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"accepted\":{\"minimum\":0,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"instanceId\":{\"type\":\"string\"}},\"required\":[\"instanceId\",\"accepted\"],\"title\":\"Server Stats Sync — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

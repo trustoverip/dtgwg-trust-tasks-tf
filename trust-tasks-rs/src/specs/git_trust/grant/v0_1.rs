@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,37 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A community operator grants a member's DID the authority to sign git commits for a resource (an org or org/repo). The host records the grant as a TRQP authorization tuple {entity: subject, authority: the community's authority DID, action: git.commit.sign, resource} in the community's trust registry, where CI verifiers (e.g. did-git-sign verify-trust) query it anonymously.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/git-trust/grant/0.1",
-///  "title": "Payload",
-///  "description": "A community operator grants a member's DID the authority to sign git commits for a resource (an org or org/repo). The host records the grant as a TRQP authorization tuple {entity: subject, authority: the community's authority DID, action: git.commit.sign, resource} in the community's trust registry, where CI verifiers (e.g. did-git-sign verify-trust) query it anonymously.",
-///  "type": "object",
-///  "required": [
-///    "resource",
-///    "subject"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "resource": {
-///      "description": "The resource the grant covers: an org (`<org>`) for an org-wide grant or a repository slug (`<org>/<repo>`).",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "subject": {
-///      "description": "DID of the member being granted commit-signing trust.",
-///      "type": "string",
-///      "pattern": "^did:"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -191,16 +136,6 @@ impl Payload {
 }
 ///The resource the grant covers: an org (`<org>`) for an org-wide grant or a repository slug (`<org>/<repo>`).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The resource the grant covers: an org (`<org>`) for an org-wide grant or a repository slug (`<org>/<repo>`).",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadResource(::std::string::String);
@@ -260,16 +195,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadResource {
 }
 ///DID of the member being granted commit-signing trust.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "DID of the member being granted commit-signing trust.",
-///  "type": "string",
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadSubject(::std::string::String);
@@ -331,42 +256,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubject {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "granted",
-///    "resource",
-///    "subject"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "granted": {
-///      "description": "True once the grant tuple is durably recorded.",
-///      "type": "boolean"
-///    },
-///    "message": {
-///      "description": "Additional human-readable detail.",
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "resource": {
-///      "type": "string"
-///    },
-///    "subject": {
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -388,16 +277,6 @@ impl Response {
 }
 ///Additional human-readable detail.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Additional human-readable detail.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseMessage(::std::string::String);
@@ -627,7 +506,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"granted\": {\n          \"description\": \"True once the grant tuple is durably recorded.\",\n          \"type\": \"boolean\"\n        },\n        \"message\": {\n          \"description\": \"Additional human-readable detail.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"resource\": {\n          \"type\": \"string\"\n        },\n        \"subject\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"subject\",\n        \"resource\",\n        \"granted\"\n      ],\n      \"title\": \"Git Trust Grant — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/git-trust/grant/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A community operator grants a member's DID the authority to sign git commits for a resource (an org or org/repo). The host records the grant as a TRQP authorization tuple {entity: subject, authority: the community's authority DID, action: git.commit.sign, resource} in the community's trust registry, where CI verifiers (e.g. did-git-sign verify-trust) query it anonymously.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"resource\": {\n      \"description\": \"The resource the grant covers: an org (`<org>`) for an org-wide grant or a repository slug (`<org>/<repo>`).\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"subject\": {\n      \"description\": \"DID of the member being granted commit-signing trust.\",\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"subject\",\n    \"resource\"\n  ],\n  \"title\": \"Git Trust Grant — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"granted\":{\"description\":\"True once the grant tuple is durably recorded.\",\"type\":\"boolean\"},\"message\":{\"description\":\"Additional human-readable detail.\",\"maxLength\":1024,\"type\":\"string\"},\"resource\":{\"type\":\"string\"},\"subject\":{\"type\":\"string\"}},\"required\":[\"subject\",\"resource\",\"granted\"],\"title\":\"Git Trust Grant — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/git-trust/grant/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A community operator grants a member's DID the authority to sign git commits for a resource (an org or org/repo). The host records the grant as a TRQP authorization tuple {entity: subject, authority: the community's authority DID, action: git.commit.sign, resource} in the community's trust registry, where CI verifiers (e.g. did-git-sign verify-trust) query it anonymously.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"resource\":{\"description\":\"The resource the grant covers: an org (`<org>`) for an org-wide grant or a repository slug (`<org>/<repo>`).\",\"minLength\":1,\"type\":\"string\"},\"subject\":{\"description\":\"DID of the member being granted commit-signing trust.\",\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"subject\",\"resource\"],\"title\":\"Git Trust Grant — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -636,7 +515,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"granted\": {\n          \"description\": \"True once the grant tuple is durably recorded.\",\n          \"type\": \"boolean\"\n        },\n        \"message\": {\n          \"description\": \"Additional human-readable detail.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"resource\": {\n          \"type\": \"string\"\n        },\n        \"subject\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"subject\",\n        \"resource\",\n        \"granted\"\n      ],\n      \"title\": \"Git Trust Grant — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"granted\":{\"description\":\"True once the grant tuple is durably recorded.\",\"type\":\"boolean\"},\"message\":{\"description\":\"Additional human-readable detail.\",\"maxLength\":1024,\"type\":\"string\"},\"resource\":{\"type\":\"string\"},\"subject\":{\"type\":\"string\"}},\"required\":[\"subject\",\"resource\",\"granted\"],\"title\":\"Git Trust Grant — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {
