@@ -73,6 +73,61 @@ defaults (`trust-tasks-https`'s `server`, `trust-tasks-didcomm-v1`'s
 `legacy-basic-message`), depend on those crates directly.** That is the
 supported answer, not a workaround — you have outgrown the front door.
 
+### Generate only the tasks you use (Rust)
+
+The crates above ship every version of every specification, ~90 MB of
+generated Rust: a cold build of the default features takes minutes and over
+16 GB of memory. An application can instead pin the tasks it speaks and
+generate only those at build time. Three tasks build in about 8 seconds and
+0.4 GB.
+
+```sh
+cargo install trust-tasks-cli
+trust-tasks add acl/grant/0.2 keys/list vault/get/0.3   # writes trust-tasks.toml, trust-tasks.lock, trust-tasks/
+```
+
+Commit all three. `trust-tasks check` verifies them offline, so run it in CI.
+
+```toml
+[dependencies]
+trust-tasks-rs = { version = "0.35", default-features = false }  # the runtime, no prebuilt modules
+
+[build-dependencies]
+trust-tasks-build = "0.1"
+```
+
+```rust
+// build.rs
+fn main() -> Result<(), trust_tasks_build::Error> {
+    trust_tasks_build::Config::new().compile()?; // checks each bundle's digest, then generates
+    Ok(())
+}
+```
+
+```rust
+// main.rs
+mod tasks {
+    include!(concat!(env!("OUT_DIR"), "/trust_tasks_generated.rs"));
+}
+use tasks::vault::get::v0_3 as vault_get; // the path `trust_tasks_rs::specs` would give it
+```
+
+Call `tasks::declare_extends()` once at start-up, so the dispatchers route a
+newer version that `extends` one you pinned. The generated types, builders and
+policy constants are the ones the prebuilt modules carry, so code moves over by
+changing its `use` lines.
+
+To keep the facade, depend on `trust-tasks = { version = "0.35",
+default-features = false, features = [...] }` instead and add
+`.runtime_path("::trust_tasks")` before `.compile()`.
+
+`trust-tasks update` moves pins and says whether a move needs code changes. An
+ecosystem's own tasks, published outside trusttasks.org, are pinned with
+`[sources.<name>]` in `trust-tasks.toml` (`trust-tasks-cli` 0.1.1 and later). See
+[`trust-tasks-cli`](./trust-tasks-cli/README.md),
+[`trust-tasks-build`](./trust-tasks-build/README.md) and
+[consumer-side generation](./docs/design/consumer-side-generation.md).
+
 ---
 
 ## 2. A signed `acl/grant` round trip, in Rust

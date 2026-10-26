@@ -249,6 +249,16 @@ codegen can't produce.
 | one per family | `acl`, `audit`, `auth`, `chat`, `config`, `confirm`, `consent`, `credential-exchange`, `device`, `did-management`, `git-trust`, `governance`, `keys`, `messaging`, `policy`, `provision`, `push`, `registry`, `sync`, `task-consent`, `vault`, `vrc`, `vta`, `vtc`, `webvh`, `witness` — the `specs::<family>` module tree and nothing else |
 | `validate` | Runtime JSON Schema validation. Pulls in [`jsonschema`](https://crates.io/crates/jsonschema) and exposes a `validate` module + `ValidatedPayload` impls for every generated request payload. Belt-and-suspenders over serde's structural decoding — catches `pattern`, `minItems`, and `additionalProperties` constraints that the typed structs can't always encode. |
 
+### Generating only the tasks you use
+
+An application can skip the prebuilt modules entirely: pin the specification
+versions it speaks with the [`trust-tasks`](https://crates.io/crates/trust-tasks-cli)
+command and generate them at build time with
+[`trust-tasks-build`](https://crates.io/crates/trust-tasks-build), depending on
+this crate with `default-features = false` for the runtime alone. Three tasks
+build in about 8 s and 0.4 GB, against minutes and over 16 GB for the default
+features. See the `trust-tasks-build` README.
+
 ### Compiling only the families you use
 
 `specs/` is 941 generated modules and ~66 MB of source, across 34 feature-gated families. Depending on the crate
