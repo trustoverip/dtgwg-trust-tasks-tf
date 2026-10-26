@@ -29,8 +29,14 @@
 import { EXTENDS_BY_TYPE_URI } from "../_extends.js";
 import { canonicalJson } from "./canonical.js";
 import type { RejectReason, SpecPolicy, TrustTaskDocument } from "./document.js";
+import {
+  formatTypeUri,
+  sameSpecification,
+  tryParseTypeUri,
+  typeUriWithVersion,
+  type TypeUri,
+} from "./type-uri.js";
 
-const PREFIX = "https://trusttasks.org/spec/";
 const VERSION_RE = /^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$/;
 
 /**
@@ -45,27 +51,18 @@ export type ExtendsLookup =
   | Readonly<Record<string, string>>
   | ((bareTypeUri: string) => string | null | undefined);
 
-interface ParsedTypeUri {
-  slug: string;
-  version: string;
-  major: number;
-  minor: number;
-  /** `""`, or the fragment including its `#`. */
-  fragment: string;
-}
+/** `M.N` of a parsed Type URI. */
+const versionOf = (u: TypeUri): string => `${u.major}.${u.minor}`;
 
-function parseTypeUri(typeUri: string): ParsedTypeUri | null {
-  if (typeof typeUri !== "string" || !typeUri.startsWith(PREFIX)) return null;
-  const hash = typeUri.indexOf("#");
-  const bare = hash < 0 ? typeUri : typeUri.slice(0, hash);
-  const fragment = hash < 0 ? "" : typeUri.slice(hash);
-  const rest = bare.slice(PREFIX.length);
-  const cut = rest.lastIndexOf("/");
-  if (cut <= 0) return null;
-  const version = rest.slice(cut + 1);
-  const m = VERSION_RE.exec(version);
-  if (!m) return null;
-  return { slug: rest.slice(0, cut), version, major: Number(m[1]), minor: Number(m[2]), fragment };
+/**
+ * The key an {@link ExtendsLookup} is consulted with: the bare (fragment-free)
+ * request Type URI of `u` at `version`, under `u`'s own authority and form.
+ * Building it from `u` rather than from the slug is what keeps a chain inside
+ * one authority: a third-party `x/0.3` is never looked up as the registry's
+ * `x/0.3`.
+ */
+function bareKey(u: TypeUri): string {
+  return formatTypeUri({ ...u, variant: null });
 }
 
 /**
@@ -115,31 +112,39 @@ function lookup(index: ExtendsLookup, bare: string): string | null {
  * specification's, covering both variants.
  */
 export function extendsOf(typeUri: string, index: ExtendsLookup = defaultLookup): string | null {
-  const p = parseTypeUri(typeUri);
+  const p = tryParseTypeUri(typeUri);
   if (p === null) return null;
-  return lookup(index, `${PREFIX}${p.slug}/${p.version}`);
+  return lookup(index, bareKey(p));
 }
 
 /**
  * Every version `typeUri` extends, transitively, nearest first: for 0.3
  * extends 0.2 extends 0.1, `["0.2", "0.1"]`.
  *
+ * `typeUri` may be in any SPEC §6.1 form. Each link is looked up under the
+ * same authority, form and slug as `typeUri` — only the version changes — so a
+ * chain never crosses authorities: a third-party specification's chain is read
+ * from its own declarations, never from a registry specification that happens
+ * to share its slug.
+ *
  * Defensive against a malformed index: the walk stops at a declaration that is
  * not strictly earlier within the same MAJOR (the build refuses those), and at
  * a cycle.
  */
 export function extendsChain(typeUri: string, index: ExtendsLookup = defaultLookup): string[] {
-  const start = parseTypeUri(typeUri);
+  const start = tryParseTypeUri(typeUri);
   if (start === null) return [];
   const chain: string[] = [];
   let current = start;
   for (;;) {
-    const next = lookup(index, `${PREFIX}${current.slug}/${current.version}`);
+    const next = lookup(index, bareKey(current));
     if (next === null) break;
-    const p = parseTypeUri(`${PREFIX}${current.slug}/${next}`)!;
-    if (p.major !== current.major || p.minor >= current.minor) break;
+    const m = VERSION_RE.exec(next)!;
+    const major = Number(m[1]);
+    const minor = Number(m[2]);
+    if (major !== current.major || minor >= current.minor) break;
     chain.push(next);
-    current = p;
+    current = typeUriWithVersion(current, major, minor);
   }
   return chain;
 }
@@ -191,13 +196,16 @@ export function receivedDocumentOf<P>(doc: TrustTaskDocument<P>): TrustTaskDocum
  * implements (`spec`, a generated `SPEC` or `RESPONSE_SPEC`).
  *
  * - Same Type URI as `spec.typeUri` — accepted unchanged.
- * - Same slug and variant, later version whose `extends` chain reaches
- *   `spec`'s version — accepted, payload pruned against `spec.payloadSchema`
- *   with {@link prunePayload}, `type` kept as received.
- * - Same slug and variant, any other version — refused `unsupportedVersion`.
- *   (Without a declaration a later MINOR SHOULD NOT be accepted: a draft may
- *   break in one.)
- * - A different specification or variant — refused `unsupportedType`.
+ * - Same specification (authority, form and slug) and variant, later version
+ *   whose `extends` chain reaches `spec`'s version — accepted, payload pruned
+ *   against `spec.payloadSchema` with {@link prunePayload}, `type` kept as
+ *   received.
+ * - Same specification and variant, any other version — refused
+ *   `unsupportedVersion`. (Without a declaration a later MINOR SHOULD NOT be
+ *   accepted: a draft may break in one.)
+ * - A different specification or variant — refused `unsupportedType`. The
+ *   same slug under another authority is another specification (SPEC §6.1),
+ *   so a third-party `x/0.3` never routes to a registry `x/0.1`, or back.
  * - Not a Trust Task document at all — refused `malformedRequest`.
  *
  * Proofs are not this function's business, and it neither reads nor alters
@@ -218,15 +226,17 @@ export function readForSpec<P>(
     return { kind: "accepted", doc: doc as TrustTaskDocument<P>, received: doc, extended: false };
   }
 
-  const got = parseTypeUri(doc.type);
-  const want = parseTypeUri(spec.typeUri);
-  if (got === null || want === null || got.slug !== want.slug || got.fragment !== want.fragment) {
+  const got = tryParseTypeUri(doc.type);
+  const want = tryParseTypeUri(spec.typeUri);
+  if (got === null || want === null || !sameSpecification(got, want) || got.variant !== want.variant) {
     return refused("unsupportedType", `unsupported Trust Task type ${JSON.stringify(doc.type)}`);
   }
-  if (got.version === want.version || !extendsChain(doc.type, index).includes(want.version)) {
+  const gotVersion = versionOf(got);
+  const wantVersion = versionOf(want);
+  if (gotVersion === wantVersion || !extendsChain(doc.type, index).includes(wantVersion)) {
     return refused(
       "unsupportedVersion",
-      `version ${got.version} of ${got.slug} is not supported; this consumer implements ${want.version}`,
+      `version ${gotVersion} of ${got.slug} is not supported; this consumer implements ${wantVersion}`,
     );
   }
 

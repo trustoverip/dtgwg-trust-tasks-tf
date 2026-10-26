@@ -7,6 +7,8 @@
  * 0.1 peer.
  */
 
+import { parseTypeUri } from "./type-uri.js";
+
 /** The framework-defined standard error codes (SPEC.md §8.3). */
 export const STANDARD_CODES = [
   "malformedRequest",
@@ -115,13 +117,6 @@ export function isStandardCode(code: string): code is StandardCode {
  */
 const LOCAL_RE = /^[a-z][A-Za-z0-9_]*$/;
 
-/** One path segment of a slug: lowercase, hyphen-separated (§6.1). */
-const SEGMENT_RE = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
-
-function validNamespace(namespace: string): boolean {
-  return namespace.length > 0 && namespace.split("/").every((s) => SEGMENT_RE.test(s));
-}
-
 /**
  * Build an extended error code under a specification's own slug (SPEC §8.5).
  *
@@ -130,7 +125,13 @@ function validNamespace(namespace: string): boolean {
  * `Payload::extended_code` gives in Rust. The `#response` fragment is stripped:
  * an error raised while handling a response still belongs to the bare slug.
  *
- * @throws if the derived slug or `local` is malformed.
+ * Any SPEC §6.1 form is accepted, so a third-party specification (§6.5) —
+ * `did:web:acme.example/spec/payments/settle/1.0` or
+ * `urn:example:acme:spec:payments:settle:1.0` — gets `payments/settle:<local>`.
+ * The code carries the slug and not the authority, as Rust's
+ * `TrustTaskCode::Extended` does.
+ *
+ * @throws if `typeUri` is not a Type URI or `local` is malformed.
  */
 export function extendedCode(typeUri: string, local: string): string {
   const slug = slugFromTypeUri(typeUri);
@@ -176,18 +177,17 @@ export function familyCode(typeUri: string, namespace: string, local: string): s
   return `${namespace}:${local}`;
 }
 
-/** The slug of a Type URI, with any `#request` / `#response` fragment removed. */
+/**
+ * The slug of a Type URI, with any `#request` / `#response` fragment removed.
+ *
+ * Accepts every SPEC §6.1 form — the public registry's, the path form under
+ * any other authority (an `https` URL, a DID URL, …) and the URN form, whose
+ * `:`-separated slug segments come back `/`-separated. The authority is not
+ * part of the result: a slug names a specification only within its authority,
+ * so use {@link parseTypeUri} where the authority matters.
+ *
+ * @throws {TypeUriError} if `typeUri` is not a Type URI in any §6.1 form.
+ */
 export function slugFromTypeUri(typeUri: string): string {
-  const PREFIX = "https://trusttasks.org/spec/";
-  if (!typeUri.startsWith(PREFIX)) {
-    throw new Error(`not a Trust Task Type URI: ${JSON.stringify(typeUri)}`);
-  }
-  const rest = typeUri.slice(PREFIX.length).split("#")[0]!;
-  // Trailing segment is the MAJOR.MINOR version; everything before it is the slug.
-  const parts = rest.split("/");
-  const slug = parts.slice(0, -1).join("/");
-  if (!validNamespace(slug)) {
-    throw new Error(`Type URI ${JSON.stringify(typeUri)} yielded an invalid slug`);
-  }
-  return slug;
+  return parseTypeUri(typeUri).slug;
 }
