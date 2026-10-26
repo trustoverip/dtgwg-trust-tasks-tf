@@ -6,6 +6,7 @@
 import type { Ext, Vid } from "../../../../_shared/components.js";
 
 
+/** @deprecated retired; use messaging/account/update/0.2 */
 export interface MessagingAddAdminsPayload {
   /**
    * The accounts to grant admin rights to.
@@ -20,6 +21,8 @@ export interface MessagingAddAdminsPayload {
 }
 /**
  * The success response to a messaging/admin/add request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/admin/add/0.1#response.
+ *
+ * @deprecated retired; use messaging/account/update/0.2
  */
 export interface MessagingAddAdminsResponsePayload {
   /**
@@ -46,13 +49,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/messaging/admin/add/0.1" as
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "retired; use messaging/account/update/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated retired; use messaging/account/update/0.2
+ */
 export type Payload = MessagingAddAdminsPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/messaging/admin/add/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated retired; use messaging/account/update/0.2
+ */
 export type Response = MessagingAddAdminsResponsePayload;
 
 /**

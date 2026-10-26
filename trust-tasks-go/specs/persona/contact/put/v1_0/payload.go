@@ -10,6 +10,8 @@ import (
 
 // Response Success response to persona/contact/put. Type
 // https://trusttasks.org/spec/persona/contact/put/1.0#response.
+//
+// Deprecated: superseded by persona/contact/put/1.2
 type Response struct {
 	ContactID Ulid  `json:"contactId"`
 	Rev       int64 `json:"rev"`
@@ -142,6 +144,8 @@ const (
 
 // Payload File what a peer disclosed. Appends a revision; never overwrites, so a changed
 // value is visible as a change rather than arriving silently.
+//
+// Deprecated: superseded by persona/contact/put/1.2
 type Payload struct {
 	ContextID string `json:"contextId"`
 
@@ -177,6 +181,12 @@ const TypeURI = "https://trusttasks.org/spec/persona/contact/put/1.0"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by persona/contact/put/1.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/persona/contact/put/1.0#response"

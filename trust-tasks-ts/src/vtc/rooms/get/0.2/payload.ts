@@ -8,6 +8,8 @@ import type { EffectiveLimits, Ext, HostedRoom_VtcV0_1 as HostedRoom, LimitSourc
 
 /**
  * A room-hosting administrator reads one hosted room's host record, storage placement, limits and usage. The outer document members are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by vtc/rooms/get/0.3
  */
 export interface VTCRoomsGetPayload {
   /**
@@ -16,6 +18,7 @@ export interface VTCRoomsGetPayload {
   roomId: string;
   ext?: Ext;
 }
+/** @deprecated superseded by vtc/rooms/get/0.3 */
 export interface VTCRoomsGetResponsePayload {
   room: HostedRoom;
   /**
@@ -399,13 +402,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/vtc/rooms/get/0.2" as const
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vtc/rooms/get/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/rooms/get/0.3
+ */
 export type Payload = VTCRoomsGetPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/rooms/get/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/rooms/get/0.3
+ */
 export type Response = VTCRoomsGetResponsePayload;
 
 /**

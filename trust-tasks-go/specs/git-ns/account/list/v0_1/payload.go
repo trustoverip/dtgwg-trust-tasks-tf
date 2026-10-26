@@ -28,6 +28,8 @@ type AccountRow struct {
 }
 
 // Response The matching links, ordered by member then forge.
+//
+// Deprecated: superseded by git-ns/account/list/0.2
 type Response struct {
 	// Links matching `member` and `forge`, ordered by `member` then `account.forge`. At most
 	// one per member per forge.
@@ -78,6 +80,8 @@ type DID = string
 // Payload A community administrator lists every member's linked forge accounts,
 // community-wide. The outer document members (id, type, issuer, recipient, issuedAt,
 // expiresAt, proof) are owned by the framework — SPEC §6.3.
+//
+// Deprecated: superseded by git-ns/account/list/0.2
 type Payload struct {
 	// Only this member's linked accounts. Absent: every member.
 	Member *DID `json:"member,omitempty"`
@@ -105,6 +109,12 @@ const TypeURI = "https://trusttasks.org/spec/git-ns/account/list/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by git-ns/account/list/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/git-ns/account/list/0.1#response"

@@ -10,6 +10,8 @@ import (
 
 // Response The delegation as stored. From this point a document the key signs is
 // authorized by the identity's standing, read at execution time.
+//
+// Deprecated: superseded by auth/signing-key/enroll/0.2
 type Response struct {
 	SigningKey SigningKey `json:"signingKey"`
 	Ext        *Ext       `json:"ext,omitempty"`
@@ -89,6 +91,8 @@ type SigningKeyDID = string
 // established by the authority evidence the consumer requires, never by the key's own
 // signature. The outer document members (id, type, issuer, recipient, issuedAt,
 // expiresAt, proof) are owned by the framework — SPEC §6.3.
+//
+// Deprecated: superseded by auth/signing-key/enroll/0.2
 type Payload struct {
 	SigningKeyDID SigningKeyDID `json:"signingKeyDid"`
 
@@ -118,6 +122,12 @@ const TypeURI = "https://trusttasks.org/spec/auth/signing-key/enroll/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by auth/signing-key/enroll/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/auth/signing-key/enroll/0.1#response"

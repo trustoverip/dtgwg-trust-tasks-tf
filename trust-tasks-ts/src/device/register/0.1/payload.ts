@@ -8,6 +8,8 @@ import type { AppleAppAttest_DeviceV0_1 as AppleAppAttest, Capability_DeviceV0_1
 
 /**
  * Public discovery surface that wraps the maintainer's existing two-phase enrolment (provision-integration → acl/swap-key). A new Companion or Service hands the maintainer its long-term VTA-derived key, its consumer kind, display name, and an optional device attestation; the maintainer creates the DeviceBinding and returns it. Phase 1 (provision-integration) is assumed to have already happened — this task is the post-bootstrap claim step.
+ *
+ * @deprecated superseded by device/register/0.2
  */
 export interface DeviceRegisterPayload {
   consumerKind: ConsumerKind;
@@ -24,6 +26,7 @@ export interface DeviceRegisterPayload {
   hpkePublicKey?: string;
   ext?: Ext;
 }
+/** @deprecated superseded by device/register/0.2 */
 export interface DeviceRegisterResponsePayload {
   binding: DeviceBinding;
   ext?: Ext;
@@ -43,13 +46,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/device/register/0.1" as con
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by device/register/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by device/register/0.2
+ */
 export type Payload = DeviceRegisterPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/device/register/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by device/register/0.2
+ */
 export type Response = DeviceRegisterResponsePayload;
 
 /**

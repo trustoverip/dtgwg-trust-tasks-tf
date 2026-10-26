@@ -8,6 +8,8 @@ import type { BreakGlass_GitNsV0_4 as BreakGlass, Did_GitNsV0_3 as Did, Elevated
 
 /**
  * The actor records an elevated git right for themselves — one they already have the authority to grant, but which separation of duties forbids them granting to themselves through git-ns/right/grant — with a mandatory justification. The right takes effect at once, never expires on its own, and is flagged as break-glass, and shown to every other administrator, until another administrator ratifies it with git-ns/right/ratify or anyone entitled revokes it.
+ *
+ * @deprecated superseded by git-ns/right/break-glass/0.2
  */
 export interface GitNamespacesBreakGlassPayload {
   /**
@@ -26,6 +28,8 @@ export interface GitNamespacesBreakGlassPayload {
 }
 /**
  * The recorded right, carrying its `breakGlass` flag.
+ *
+ * @deprecated superseded by git-ns/right/break-glass/0.2
  */
 export interface GitNamespacesBreakGlassResponsePayload {
   /**
@@ -49,13 +53,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/git-ns/right/break-glass/0.
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by git-ns/right/break-glass/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by git-ns/right/break-glass/0.2
+ */
 export type Payload = GitNamespacesBreakGlassPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/git-ns/right/break-glass/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by git-ns/right/break-glass/0.2
+ */
 export type Response = GitNamespacesBreakGlassResponsePayload;
 
 /**

@@ -10,6 +10,8 @@ import (
 
 // Response The success response to an acl/list/0.2 request. Carried in a Trust Task
 // document whose type is https://trusttasks.org/spec/acl/list/0.2#response.
+//
+// Deprecated: superseded by acl/list/0.3
 type Response struct {
 	// Matching AclEntry items, in maintainer-defined order. May be empty.
 	Entries []ACLEntry `json:"entries"`
@@ -354,6 +356,8 @@ const (
 // conjunctive filters and paging. A hierarchical filter (`context`, `resource`) MUST
 // state its `direction`; there is no default direction. The outer document members are
 // owned by the framework — SPEC §6.3.
+//
+// Deprecated: superseded by acl/list/0.3
 type Payload struct {
 	// Optional filter — only entries with this role are returned.
 	Role *string `json:"role,omitempty"`
@@ -409,6 +413,12 @@ const TypeURI = "https://trusttasks.org/spec/acl/list/0.2"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by acl/list/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/acl/list/0.2#response"

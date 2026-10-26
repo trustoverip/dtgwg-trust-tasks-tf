@@ -8,6 +8,8 @@ import type { Did_GitNsV0_3 as Did, Ext, ForgeAccount_GitNsV0_1 as ForgeAccount,
 
 /**
  * A community administrator lists every member's linked forge accounts, community-wide. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by git-ns/account/list/0.2
  */
 export interface GitNamespacesListLinkedForgeAccountsPayload {
   /**
@@ -30,6 +32,8 @@ export interface GitNamespacesListLinkedForgeAccountsPayload {
 }
 /**
  * The matching links, ordered by member then forge.
+ *
+ * @deprecated superseded by git-ns/account/list/0.2
  */
 export interface GitNamespacesListLinkedForgeAccountsResponsePayload {
   /**
@@ -78,13 +82,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/git-ns/account/list/0.1" as
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by git-ns/account/list/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by git-ns/account/list/0.2
+ */
 export type Payload = GitNamespacesListLinkedForgeAccountsPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/git-ns/account/list/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by git-ns/account/list/0.2
+ */
 export type Response = GitNamespacesListLinkedForgeAccountsResponsePayload;
 
 /**

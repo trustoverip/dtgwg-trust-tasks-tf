@@ -22,6 +22,8 @@ const (
 // login` the payload includes the new session + tokens; for `purpose: step-up` only the
 // elevated session is included (the producer's existing tokens are unchanged — they now
 // carry a higher acr at the next token introspection).
+//
+// Deprecated: superseded by auth/passkey/login/finish/0.2
 type Response struct {
 	Session Session         `json:"session"`
 	Purpose ResponsePurpose `json:"purpose"`
@@ -120,6 +122,8 @@ type AssertionResponse struct {
 // Payload Submit the WebAuthn assertion that completes a passkey login or step-up
 // ceremony. On success the auth service issues a session (login) or elevates an existing
 // session's acr (step-up).
+//
+// Deprecated: superseded by auth/passkey/login/finish/0.2
 type Payload struct {
 	// The authId issued by the matching login/start response. Echoed verbatim.
 	AuthID string `json:"authId"`
@@ -142,6 +146,12 @@ const TypeURI = "https://trusttasks.org/spec/auth/passkey/login/finish/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by auth/passkey/login/finish/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/auth/passkey/login/finish/0.1#response"

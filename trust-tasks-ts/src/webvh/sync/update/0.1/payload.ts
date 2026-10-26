@@ -6,6 +6,7 @@
 import type { Ext } from "../../../../_shared/components.js";
 
 
+/** @deprecated superseded by webvh/sync/update/0.2 */
 export interface WebVHSyncUpdatePayload {
   mnemonic: string;
   didId: string;
@@ -14,6 +15,7 @@ export interface WebVHSyncUpdatePayload {
   versionCount: number;
   ext?: Ext;
 }
+/** @deprecated superseded by webvh/sync/update/0.2 */
 export interface WebVHSyncUpdateResponsePayload {
   mnemonic: string;
   status: "applied";
@@ -34,13 +36,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/webvh/sync/update/0.1" as c
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by webvh/sync/update/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by webvh/sync/update/0.2
+ */
 export type Payload = WebVHSyncUpdatePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/webvh/sync/update/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by webvh/sync/update/0.2
+ */
 export type Response = WebVHSyncUpdateResponsePayload;
 
 /**

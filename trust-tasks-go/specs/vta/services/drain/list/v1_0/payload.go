@@ -10,6 +10,8 @@ import (
 
 // Response Success response to vta/services/drain/list. Type
 // https://trusttasks.org/spec/vta/services/drain/list/1.0#response.
+//
+// Deprecated: superseded by vta/services/drain/list/1.1
 type Response struct {
 	// Mediators currently draining. An empty array means nothing is draining — which is the
 	// ordinary state, not an error.
@@ -38,6 +40,8 @@ type DrainEntry struct {
 
 // Payload Request payload for vta/services/drain/list. Enumerates DIDComm mediators that
 // are no longer advertised but are still accepting delivery.
+//
+// Deprecated: superseded by vta/services/drain/list/1.1
 type Payload struct {
 	Ext *Ext `json:"ext,omitempty"`
 }
@@ -52,6 +56,12 @@ const TypeURI = "https://trusttasks.org/spec/vta/services/drain/list/1.0"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vta/services/drain/list/1.1"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/services/drain/list/1.0#response"

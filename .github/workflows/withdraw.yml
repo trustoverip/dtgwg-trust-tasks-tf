@@ -1,0 +1,122 @@
+name: Withdraw due spec versions
+# SPEC "Superseded and Withdrawn Versions": a version superseded or retired for
+# at least 90 days may be withdrawn — its schema stays published, but it is no
+# longer generated into the libraries. Removing a generated module is a
+# breaking release of every library, so withdrawals are batched: on the first
+# day of each quarter this job flips every due version to `status: withdrawn`
+# (scripts/withdraw-due.mjs), regenerates the four libraries, and opens ONE pull
+# request. Merging it — and then the Release PR — is the quarter's one breaking
+# release for withdrawals. Run it by hand (workflow_dispatch) to cut a batch
+# early, or with an `as_of` date to preview a later one.
+
+on:
+  schedule:
+    - cron: "0 3 1 1,4,7,10 *"
+  workflow_dispatch:
+    inputs:
+      as_of:
+        description: "Withdraw what is due as of this date (YYYY-MM-DD); empty for today"
+        required: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: withdraw
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+
+jobs:
+  batch:
+    name: open the withdrawal pull request
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # Full history: the script dates each supersession and retirement from git.
+          fetch-depth: 0
+          # The PR must trigger CI, which a GITHUB_TOKEN push does not.
+          token: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+      - run: npm ci --no-audit --no-fund
+      - name: Flip every due version to withdrawn
+        id: flip
+        env:
+          AS_OF: ${{ inputs.as_of }}
+        run: |
+          set -euo pipefail
+          as_of="${AS_OF:-$(date -u +%F)}"
+          echo "as_of=$as_of" >> "$GITHUB_OUTPUT"
+          node scripts/withdraw-due.mjs --as-of "$as_of" | tee "$RUNNER_TEMP/withdrawn.txt"
+          if git diff --quiet -- specs; then
+            echo "due=0" >> "$GITHUB_OUTPUT"
+          else
+            echo "due=$(git diff --name-only -- specs | wc -l | tr -d ' ')" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: dtolnay/rust-toolchain@stable
+        if: steps.flip.outputs.due != '0'
+        with:
+          components: rustfmt
+      - uses: actions/setup-go@v6
+        if: steps.flip.outputs.due != '0'
+        with:
+          go-version: stable
+      - uses: dart-lang/setup-dart@v1
+        if: steps.flip.outputs.due != '0'
+        with:
+          sdk: stable
+      - name: Regenerate the four libraries without them
+        if: steps.flip.outputs.due != '0'
+        run: |
+          set -euo pipefail
+          cargo run -p trust-tasks-codegen
+          cargo fmt --all
+          npm run build-ts-bindings
+          npm run build-go-bindings
+          npm run build-dart-bindings
+          npm run validate
+          npm run check-bindings
+      - name: Open the pull request
+        if: steps.flip.outputs.due != '0'
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN || secrets.GITHUB_TOKEN }}
+          AS_OF: ${{ steps.flip.outputs.as_of }}
+          DUE: ${{ steps.flip.outputs.due }}
+        run: |
+          set -euo pipefail
+          # Author as the token's owner, not the bot: EasyCLA authorises the commit
+          # author and github-actions[bot] has signed no CLA (as release-pr.sh does).
+          if ! author_json=$(gh api user 2>/dev/null); then
+            echo "::error::Could not resolve the token owner via \`gh api user\`; set RELEASE_PLZ_TOKEN to a user token."
+            exit 1
+          fi
+          git config user.name "$(jq -r '.name // .login' <<<"$author_json")"
+          git config user.email "$(jq -r '.id' <<<"$author_json")+$(jq -r '.login' <<<"$author_json")@users.noreply.github.com"
+          branch="withdraw/$AS_OF"
+          git switch -C "$branch"
+          git add -A
+          title="feat(rs, ts, go, dart)!: withdraw $DUE specification versions superseded or retired for 90 days as of $AS_OF"
+          {
+            echo "The quarterly withdrawal batch (SPEC \"Superseded and Withdrawn Versions\")."
+            echo
+            echo "Each version below was superseded or retired at least 90 days before $AS_OF. It is now"
+            echo "\`status: withdrawn\`: its schema and prose stay published, so already-issued documents"
+            echo "remain verifiable, but it is no longer generated into trust-tasks-rs, @openvtc/trust-tasks,"
+            echo "trust-tasks-go or trust_tasks. Code still using one moves to the successor named here; the"
+            echo "libraries have marked each one deprecated, with that successor, since it was superseded."
+            echo
+            echo '```'
+            grep -v '^$' "$RUNNER_TEMP/withdrawn.txt"
+            echo '```'
+          } > "$RUNNER_TEMP/body.md"
+          { echo "$title"; echo; cat "$RUNNER_TEMP/body.md"; } > "$RUNNER_TEMP/message.txt"
+          git commit -s -q -F "$RUNNER_TEMP/message.txt"
+          git push -f origin "$branch"
+          gh pr create --base main --head "$branch" --title "$title" --body-file "$RUNNER_TEMP/body.md"

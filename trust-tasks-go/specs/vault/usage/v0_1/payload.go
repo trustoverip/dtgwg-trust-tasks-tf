@@ -9,6 +9,8 @@ import (
 )
 
 // Response Vault Usage — response payload
+//
+// Deprecated: superseded by vault/usage/0.3
 type Response struct {
 	Uses      []UsageRecord `json:"uses"`
 	Truncated bool          `json:"truncated"`
@@ -79,6 +81,8 @@ const (
 // Payload Consumer queries the maintainer's audit log of recent vault uses (proxy-logins,
 // releases). Drives UIs like "recent activity" and "which AI agent has been using my
 // GitHub credential". Read-only.
+//
+// Deprecated: superseded by vault/usage/0.3
 type Payload struct {
 	// Optional filter — usage for this entry only.
 	EntryID *string `json:"entryId,omitempty"`
@@ -107,6 +111,12 @@ const TypeURI = "https://trusttasks.org/spec/vault/usage/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vault/usage/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vault/usage/0.1#response"

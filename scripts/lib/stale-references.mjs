@@ -12,7 +12,7 @@
  *
  * ── What is checked ─────────────────────────────────────────────────────────
  *
- * The LATEST version of every slug whose status is not `retired`, as the
+ * The LATEST version of every slug whose status is neither `retired` nor `withdrawn`, as the
  * wire-conventions lint does: a superseded version keeps the references it
  * was published with. Every reference in its spec.md, payload schema and
  * invalid examples to another specification at a version older than that
@@ -64,7 +64,7 @@ const compareVersions = (a, b) => {
   return x - u || y - v;
 };
 
-/** `specs`: slug → Map(version → status); `latest`/`latestLive`: slug → its latest (non-retired) version. */
+/** `specs`: slug → Map(version → status); `latest`/`latestLive`: slug → its latest (neither retired nor withdrawn) version. */
 function registry(specsDir) {
   const specs = new Map();
   const extendsOf = new Map(); // `<slug>/<version>` → the version it declares it extends
@@ -86,11 +86,11 @@ function registry(specsDir) {
     }
   })(specsDir);
   const latest = new Map(); // slug → latest version (any status)
-  const latestLive = new Map(); // slug → latest non-retired version
+  const latestLive = new Map(); // slug → latest version neither retired nor withdrawn
   for (const [slug, versions] of specs) {
     const sorted = [...versions.keys()].sort(compareVersions);
     latest.set(slug, sorted.at(-1));
-    const live = sorted.filter((v) => versions.get(v) !== 'retired');
+    const live = sorted.filter((v) => versions.get(v) !== 'retired' && versions.get(v) !== 'withdrawn');
     if (live.length) latestLive.set(slug, live.at(-1));
   }
   // Every version a version's `extends` chain reaches (SPEC §5.2 "Declared extension").
@@ -228,7 +228,7 @@ export function staleReferences(specsDir, allowlist = {}) {
   const out = [];
   for (const [slug, versions] of reg.specs) {
     const version = reg.latest.get(slug);
-    if (versions.get(version) === 'retired') continue;
+    if (versions.get(version) === 'retired' || versions.get(version) === 'withdrawn') continue;
     const dir = path.join(specsDir, slug, version);
     for (const f of referencesIn(slug, dir, specsDir, reg)) {
       const key = `${f.target}/${f.version}`;

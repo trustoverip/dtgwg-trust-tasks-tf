@@ -10,6 +10,8 @@ import (
 
 // Response The success response to a messaging/admin/add request. Carried in a Trust Task
 // document whose type is https://trusttasks.org/spec/messaging/admin/add/0.1#response.
+//
+// Deprecated: retired; use messaging/account/update/0.2
 type Response struct {
 	// The accounts now holding admin rights (the requested set, post-change).
 	Admins []VID `json:"admins"`
@@ -31,6 +33,8 @@ type Ext = map[string]json.RawMessage
 type VID = string
 
 // Payload Messaging Add Admins — payload
+//
+// Deprecated: retired; use messaging/account/update/0.2
 type Payload struct {
 	// The accounts to grant admin rights to.
 	Dids []VID `json:"dids"`
@@ -49,6 +53,12 @@ const TypeURI = "https://trusttasks.org/spec/messaging/admin/add/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "retired; use messaging/account/update/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/messaging/admin/add/0.1#response"

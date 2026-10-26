@@ -48,6 +48,8 @@ type TimelineEvent struct {
 
 // Response Success response to persona/profile/timeline. Type
 // https://trusttasks.org/spec/persona/profile/timeline/1.0#response. Oldest first.
+//
+// Deprecated: superseded by persona/profile/timeline/1.1
 type Response struct {
 	ProfileID Ulid            `json:"profileId"`
 	Events    []TimelineEvent `json:"events"`
@@ -91,6 +93,8 @@ type ClaimType = string
 // Payload What one face has done, in order: composed, worn and taken off, what it told
 // whom, when a value it shows changed, retired and reinstated. Types, versions, contexts
 // and parties — never a value, never one of the holder's private labels.
+//
+// Deprecated: superseded by persona/profile/timeline/1.1
 type Payload struct {
 	ProfileID Ulid `json:"profileId"`
 
@@ -117,6 +121,12 @@ const TypeURI = "https://trusttasks.org/spec/persona/profile/timeline/1.0"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by persona/profile/timeline/1.1"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/persona/profile/timeline/1.0#response"

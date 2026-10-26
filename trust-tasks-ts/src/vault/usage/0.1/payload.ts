@@ -8,6 +8,8 @@ import type { Ext } from "../../../_shared/components.js";
 
 /**
  * Consumer queries the maintainer's audit log of recent vault uses (proxy-logins, releases). Drives UIs like "recent activity" and "which AI agent has been using my GitHub credential". Read-only.
+ *
+ * @deprecated superseded by vault/usage/0.3
  */
 export interface VaultUsagePayload {
   /**
@@ -29,6 +31,7 @@ export interface VaultUsagePayload {
   cursor?: string;
   ext?: Ext;
 }
+/** @deprecated superseded by vault/usage/0.3 */
 export interface VaultUsageResponsePayload {
   uses: UsageRecord[];
   truncated: boolean;
@@ -82,13 +85,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/vault/usage/0.1" as const;
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vault/usage/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vault/usage/0.3
+ */
 export type Payload = VaultUsagePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vault/usage/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vault/usage/0.3
+ */
 export type Response = VaultUsageResponsePayload;
 
 /**

@@ -7,6 +7,10 @@
 //! under the same URI suffixed `#response`, which is what the generated
 //! `Response` type already declares as its own `TYPE_URI`.
 
+// A deprecated specification version is indexed until it is withdrawn, and
+// indexing it means naming its deprecated `Payload` / `Response` types.
+#![allow(deprecated)]
+
 /// The payload schema for `type_uri`, or `None` if this build knows no spec for it.
 ///
 /// Pass a bare Type URI for a request schema, or one suffixed `#response` for

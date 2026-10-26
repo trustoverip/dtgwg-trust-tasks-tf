@@ -256,6 +256,7 @@ impl DiscoveryRegistry {
     /// This answers `trust-task-discovery/0.1`, whose `frameworkVersion` is
     /// `MAJOR.MINOR`: the configured release is written without its PATCH.
     /// Answer a 0.2 query with [`Self::respond_to_v0_2`].
+    #[allow(deprecated)] // answers 0.1 on purpose: a peer may still ask in it until it is withdrawn
     pub fn respond_to(&self, query: &wire::Payload) -> wire::Response {
         // Generated `Payload` wraps each pattern in a `PayloadPatternsItem`
         // newtype; deref to &str for matching.
@@ -285,6 +286,7 @@ impl DiscoveryRegistry {
     /// matching as [`Self::respond_to`], with `frameworkVersion` written as
     /// the full three-part release (SPEC §5.1.1) — a two-part configured
     /// value is written as its `.0`.
+    #[allow(deprecated)] // answers 0.2 on purpose: a peer may still ask in it until it is withdrawn
     pub fn respond_to_v0_2(&self, query: &wire_v0_2::Payload) -> wire_v0_2::Response {
         let patterns: Vec<&str> = query.patterns.iter().map(|p| p.as_str()).collect();
         let supported_types: Vec<wire_v0_2::ResponseSupportedTypesItem> = self
@@ -328,6 +330,7 @@ impl DiscoveryRegistry {
             .map(|namespaces| namespaces.iter())
     }
 
+    #[allow(deprecated)] // builds the 0.1 response entry for `respond_to`
     fn entry_for(&self, uri: &str) -> wire::ResponseSupportedTypesItem {
         match self.required_ext.get(uri) {
             Some(namespaces) if !namespaces.is_empty() => {
@@ -369,6 +372,7 @@ fn parse_slug(uri: &str) -> Option<&str> {
 }
 
 #[cfg(all(test, feature = "acl"))] // its specimens are acl payloads
+#[allow(deprecated)] // the specimens are fixed versions; that they are superseded is beside the point
 mod tests {
     use super::*;
 

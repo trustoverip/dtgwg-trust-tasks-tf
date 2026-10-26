@@ -44,6 +44,8 @@ type UnsignedTrustTaskEnvelope struct {
 }
 
 // Response Vault Sign Trust Task — response payload
+//
+// Deprecated: superseded by vault/sign-trust-task/0.2
 type Response struct {
 	// The supplied `unsignedEnvelope` with a Data Integrity `proof` attached.
 	// `proof.verificationMethod` is `<principalDid>#<signingKeyId>`; `proof.proofPurpose` is
@@ -116,6 +118,8 @@ type ConsumerContext struct {
 // is the per-envelope signing complement to `vault/proxy-login/0.1`'s session-credential
 // minting: proxy-login mints a session at session-start; sign-trust-task signs individual
 // follow-up tasks during the session.
+//
+// Deprecated: superseded by vault/sign-trust-task/0.2
 type Payload struct {
 	// Identifier of the vault entry whose principal will sign. The maintainer rejects with
 	// `notSignable` when `entry.secretKind` is not `did-self-issued` or `didcomm-peer` (other
@@ -146,6 +150,12 @@ const TypeURI = "https://trusttasks.org/spec/vault/sign-trust-task/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vault/sign-trust-task/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vault/sign-trust-task/0.1#response"

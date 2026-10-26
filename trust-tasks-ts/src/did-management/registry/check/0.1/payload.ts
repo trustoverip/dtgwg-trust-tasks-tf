@@ -6,6 +6,7 @@
 import type { Ext, ServiceInstance_DidManagementV0_2 as ServiceInstance, TransportObservation_DidManagementV0_2 as TransportObservation } from "../../../../_shared/components.js";
 
 
+/** @deprecated superseded by did-management/registry/check/0.2 */
 export interface RegistryCheckPayload {
   /**
    * The registry identifier of the instance to re-evaluate.
@@ -13,6 +14,7 @@ export interface RegistryCheckPayload {
   instanceId: string;
   ext?: Ext;
 }
+/** @deprecated superseded by did-management/registry/check/0.2 */
 export interface RegistryCheckResponsePayload {
   /**
    * The entry as it stands after the re-evaluation.
@@ -35,13 +37,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/did-management/registry/che
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by did-management/registry/check/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by did-management/registry/check/0.2
+ */
 export type Payload = RegistryCheckPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/did-management/registry/check/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by did-management/registry/check/0.2
+ */
 export type Response = RegistryCheckResponsePayload;
 
 /**

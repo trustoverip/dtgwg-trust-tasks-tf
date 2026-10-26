@@ -8,6 +8,8 @@ import type { Ext } from "../../../_shared/components.js";
 
 /**
  * Opens one participating party's witness session as its own exchange, nested in a relationship exchange via parentThreadId. A session is bilateral — a witnessed exchange between two parties runs two sessions with the same witness, each naming the same parties pair. The response issues the session challenge; the request document's id is the value that party's VWC later carries as taskContext.
+ *
+ * @deprecated superseded by witness/session/0.2
  */
 export interface WitnessSessionPayload {
   /**
@@ -21,6 +23,8 @@ export interface WitnessSessionPayload {
 }
 /**
  * The session challenge, issued under the REQUIRED proof. The presentation under witness/session/submit binds to {challenge, domain}. It reaches only the party that opened this session — which is why each party opens its own.
+ *
+ * @deprecated superseded by witness/session/0.2
  */
 export interface WitnessSessionResponsePayload {
   /**
@@ -48,13 +52,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/witness/session/0.1" as con
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by witness/session/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by witness/session/0.2
+ */
 export type Payload = WitnessSessionPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/witness/session/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by witness/session/0.2
+ */
 export type Response = WitnessSessionResponsePayload;
 
 /**

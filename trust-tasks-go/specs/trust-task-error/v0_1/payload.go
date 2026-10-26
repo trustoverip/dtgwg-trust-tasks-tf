@@ -9,6 +9,8 @@ import (
 )
 
 // Payload The canonical error-response payload per SPEC.md §8.2.
+//
+// Deprecated: superseded by trust-task-error/0.5
 type Payload struct {
 	// Short identifier for the failure category. MUST be either a framework standard code
 	// (SPEC.md §8.3) or an extended code namespaced by the originating spec's slug (SPEC.md
@@ -42,6 +44,12 @@ const TypeURI = "https://trusttasks.org/spec/trust-task-error/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by trust-task-error/0.5"
 
 // PayloadSchemaJSON is this specification's payload schema, as JSON text.
 //

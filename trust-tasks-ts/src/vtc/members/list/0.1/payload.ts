@@ -6,6 +6,7 @@
 import type { Ext, MemberResponse } from "../../../../_shared/components.js";
 
 
+/** @deprecated superseded by vtc/members/list/0.2 */
 export interface VTCMembersListPayload {
   /**
    * Filter to members with this role (wire form, e.g. `admin`, `custom:editor`).
@@ -21,6 +22,7 @@ export interface VTCMembersListPayload {
   limit?: number;
   ext?: Ext;
 }
+/** @deprecated superseded by vtc/members/list/0.2 */
 export interface VTCMembersListResponsePayload {
   items: MemberResponse[];
   /**
@@ -48,13 +50,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/vtc/members/list/0.1" as co
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vtc/members/list/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/members/list/0.2
+ */
 export type Payload = VTCMembersListPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/members/list/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/members/list/0.2
+ */
 export type Response = VTCMembersListResponsePayload;
 
 /**

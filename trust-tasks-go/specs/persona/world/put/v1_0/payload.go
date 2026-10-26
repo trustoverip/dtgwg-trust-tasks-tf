@@ -11,6 +11,8 @@ import (
 // Response Success response to persona/world/put. Type
 // https://trusttasks.org/spec/persona/world/put/1.0#response. A failed precondition is
 // not a success: it is a trust-task-error carrying persona/world/put:versionConflict.
+//
+// Deprecated: superseded by persona/world/put/1.1
 type Response struct {
 	WorldID Ulid    `json:"worldId"`
 	Version Version `json:"version"`
@@ -72,6 +74,8 @@ const (
 // Payload Create or replace one world: a named part of the holder's life, and the faces
 // and attributes that belong to it. Omit `worldId` to create; supply it to replace.
 // `expectedVersion` makes the write conditional.
+//
+// Deprecated: superseded by persona/world/put/1.1
 type Payload struct {
 	// Omit to create — the maintainer assigns one and returns it. Supply to replace an
 	// existing world, or to make a create idempotent under retry; a supplied id that already
@@ -120,6 +124,12 @@ const TypeURI = "https://trusttasks.org/spec/persona/world/put/1.0"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by persona/world/put/1.1"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/persona/world/put/1.0#response"

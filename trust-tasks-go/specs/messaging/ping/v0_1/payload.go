@@ -21,6 +21,8 @@ const (
 
 // Response The success response to a messaging/ping request. Carried in a Trust Task
 // document whose type is https://trusttasks.org/spec/messaging/ping/0.1#response.
+//
+// Deprecated: superseded by messaging/ping/0.2
 type Response struct {
 	// The mediator's current time (RFC 3339). Advisory; not a trusted time source.
 	ServerTime string `json:"serverTime"`
@@ -47,6 +49,8 @@ type Response struct {
 type Ext = map[string]json.RawMessage
 
 // Payload Messaging Ping — payload
+//
+// Deprecated: superseded by messaging/ping/0.2
 type Payload struct {
 	// Optional opaque value the requester may supply to correlate the response to this probe.
 	// The mediator echoes it verbatim in the response.
@@ -66,6 +70,12 @@ const TypeURI = "https://trusttasks.org/spec/messaging/ping/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by messaging/ping/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/messaging/ping/0.1#response"

@@ -9,6 +9,8 @@ import (
 )
 
 // Response Policy Evaluate — response payload
+//
+// Deprecated: superseded by policy/evaluate/0.3
 type Response struct {
 	Decision PolicyDecision `json:"decision"`
 
@@ -139,6 +141,8 @@ type SiteTarget = json.RawMessage
 // decision plus a trace of which policy modules matched and which rules fired. Used by
 // the policy-editor UI to verify changes before save and by admins to diagnose unexpected
 // deny/allow outcomes.
+//
+// Deprecated: superseded by policy/evaluate/0.3
 type Payload struct {
 	Input PolicyInput `json:"input"`
 
@@ -161,6 +165,12 @@ const TypeURI = "https://trusttasks.org/spec/policy/evaluate/0.2"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by policy/evaluate/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/policy/evaluate/0.2#response"

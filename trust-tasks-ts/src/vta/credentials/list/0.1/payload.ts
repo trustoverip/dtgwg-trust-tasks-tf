@@ -13,6 +13,8 @@ export type IssuedCredentialStatus = "active" | "expired" | "revoked";
 
 /**
  * Enumerate the credentials an agent has issued, as metadata. Every filter is optional and those present are AND-combined.
+ *
+ * @deprecated superseded by vta/credentials/list/0.2
  */
 export interface VTACredentialsList {
   /**
@@ -40,6 +42,7 @@ export interface VTACredentialsList {
    */
   ext?: Ext;
 }
+/** @deprecated superseded by vta/credentials/list/0.2 */
 export interface VTACredentialsListResponsePayload {
   /**
    * One summary per matching credential. Empty when nothing matched — a successful answer, not an error.
@@ -101,13 +104,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/vta/credentials/list/0.1" a
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vta/credentials/list/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vta/credentials/list/0.2
+ */
 export type Payload = VTACredentialsList;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/credentials/list/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vta/credentials/list/0.2
+ */
 export type Response = VTACredentialsListResponsePayload;
 
 /**

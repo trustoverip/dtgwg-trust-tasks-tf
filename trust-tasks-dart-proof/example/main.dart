@@ -7,6 +7,10 @@
 // eddsa-jcs-2022 under a did:key. Verifying it here needs no network: a did:key
 // carries its own public key.
 
+// acl/grant 0.1 is superseded, but the signed document below is a 0.1 one and
+// 0.2 changes the entry's shape, so moving would mean re-signing the fixture.
+// ignore_for_file: deprecated_member_use
+
 import 'dart:convert';
 
 import 'package:trust_tasks/specs/acl/grant/v0_1/payload.dart' as acl_grant;

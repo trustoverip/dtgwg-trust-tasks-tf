@@ -8,6 +8,8 @@ import type { Ext } from "../../../../_shared/components.js";
 
 /**
  * An invited party asks the agent that will hold its room keys to mint an MLS KeyPackage, so the room's owner can add it to the group. The private half stays with the agent; only the KeyPackage travels.
+ *
+ * @deprecated superseded by rooms/keys/key-package/0.2
  */
 export interface RoomsKeysKeyPackagePayload {
   /**
@@ -25,6 +27,8 @@ export interface RoomsKeysKeyPackagePayload {
 }
 /**
  * Success response to rooms/keys/key-package. Type https://trusttasks.org/spec/rooms/keys/key-package/0.1#response.
+ *
+ * @deprecated superseded by rooms/keys/key-package/0.2
  */
 export interface RoomsKeysKeyPackageResponsePayload {
   /**
@@ -52,13 +56,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/rooms/keys/key-package/0.1"
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by rooms/keys/key-package/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by rooms/keys/key-package/0.2
+ */
 export type Payload = RoomsKeysKeyPackagePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/keys/key-package/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by rooms/keys/key-package/0.2
+ */
 export type Response = RoomsKeysKeyPackageResponsePayload;
 
 /**

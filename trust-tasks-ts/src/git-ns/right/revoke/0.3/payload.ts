@@ -8,6 +8,8 @@ import type { BreakGlass_GitNsV0_4 as BreakGlass, Did_GitNsV0_3 as Did, Ext, Res
 
 /**
  * Revokes one recorded git right and withdraws it from the Trust Registry.
+ *
+ * @deprecated superseded by git-ns/right/revoke/0.4
  */
 export interface GitNamespacesRevokeRightPayload {
   /**
@@ -27,6 +29,8 @@ export interface GitNamespacesRevokeRightPayload {
 }
 /**
  * The revoked record.
+ *
+ * @deprecated superseded by git-ns/right/revoke/0.4
  */
 export interface GitNamespacesRevokeRightResponsePayload {
   /**
@@ -50,13 +54,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/git-ns/right/revoke/0.3" as
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by git-ns/right/revoke/0.4";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by git-ns/right/revoke/0.4
+ */
 export type Payload = GitNamespacesRevokeRightPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/git-ns/right/revoke/0.3#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by git-ns/right/revoke/0.4
+ */
 export type Response = GitNamespacesRevokeRightResponsePayload;
 
 /**

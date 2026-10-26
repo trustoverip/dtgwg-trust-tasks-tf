@@ -21,6 +21,8 @@ const (
 
 // Response Counts and a status, never contents. This document is the operator-held record
 // of a replacement the agent's own trail no longer describes.
+//
+// Deprecated: superseded by vta/backup/finalize-import/1.1
 type Response struct {
 	// Echoed so the response stands alone as a record.
 	BundleID string `json:"bundleId"`
@@ -72,6 +74,8 @@ type Ext = map[string]json.RawMessage
 // it and adopt what is inside, or to rehearse that without committing. The outer document
 // members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the
 // framework — SPEC §6.3.
+//
+// Deprecated: superseded by vta/backup/finalize-import/1.1
 type Payload struct {
 	// Handle from the initiate-import descriptor. Opaque: a producer quotes what it was given
 	// and must not derive, guess or enumerate one.
@@ -105,6 +109,12 @@ const TypeURI = "https://trusttasks.org/spec/vta/backup/finalize-import/1.0"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vta/backup/finalize-import/1.1"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/backup/finalize-import/1.0#response"

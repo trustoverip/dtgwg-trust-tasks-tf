@@ -9,6 +9,8 @@ import (
 )
 
 // Response VTA Backup Initiate Import — response payload
+//
+// Deprecated: superseded by vta/backup/initiate-import/1.1
 type Response struct {
 	// Where to write the bytes, on what terms, and until when.
 	Descriptor BundleDescriptor `json:"descriptor"`
@@ -64,6 +66,8 @@ type Ext = map[string]json.RawMessage
 // to upload, pre-committing the digest and size so the transfer is verifiable. The outer
 // document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by
 // the framework — SPEC §6.3.
+//
+// Deprecated: superseded by vta/backup/initiate-import/1.1
 type Payload struct {
 	// Lowercase hex SHA-256 of the bytes about to be uploaded, committed before the upload
 	// begins. The recipient refuses a stream that hashes differently, which is what bounds
@@ -98,6 +102,12 @@ const TypeURI = "https://trusttasks.org/spec/vta/backup/initiate-import/1.0"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vta/backup/initiate-import/1.1"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/backup/initiate-import/1.0#response"

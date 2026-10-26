@@ -10,6 +10,8 @@ import (
 
 // Response Success response to rooms/owner/register. Type
 // https://trusttasks.org/spec/rooms/owner/register/0.1#response.
+//
+// Deprecated: superseded by rooms/owner/register/0.2
 type Response struct {
 	RoomID string `json:"roomId"`
 
@@ -65,6 +67,8 @@ const (
 )
 
 // Payload Rooms Owner Register — payload
+//
+// Deprecated: superseded by rooms/owner/register/0.2
 type Payload struct {
 	// The room being registered. Its identity exists already — this asks a host to store it,
 	// not to name it.
@@ -107,6 +111,12 @@ const TypeURI = "https://trusttasks.org/spec/rooms/owner/register/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by rooms/owner/register/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/rooms/owner/register/0.1#response"

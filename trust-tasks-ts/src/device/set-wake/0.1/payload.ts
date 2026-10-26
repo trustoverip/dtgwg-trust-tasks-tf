@@ -8,6 +8,8 @@ import type { Ext, WakeHandle, WakeTriggerPolicy } from "../../../_shared/compon
 
 /**
  * A device conveys to its VTA the opaque WakeHandle it obtained from a push gateway, so the VTA can own the trigger allowlist and provision the gateway. Carries no platform push token — only the handle. Present `wakeHandle` sets/replaces the wake channel; absent clears it (device becomes non-wakeable). Idempotent; re-issued on token rotation. See the push wake-up binding (https://trusttasks.org/binding/push/0.1).
+ *
+ * @deprecated superseded by device/set-wake/0.2
  */
 export interface DeviceSetWakePayload {
   /**
@@ -24,6 +26,7 @@ export interface DeviceSetWakePayload {
   suggestedTriggers?: string[];
   ext?: Ext;
 }
+/** @deprecated superseded by device/set-wake/0.2 */
 export interface DeviceSetWakeResponsePayload {
   /**
    * The effective allowlist the VTA computed and provisioned to the gateway. Absent when the wake channel was cleared.
@@ -50,13 +53,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/device/set-wake/0.1" as con
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by device/set-wake/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by device/set-wake/0.2
+ */
 export type Payload = DeviceSetWakePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/device/set-wake/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by device/set-wake/0.2
+ */
 export type Response = DeviceSetWakeResponsePayload;
 
 /**

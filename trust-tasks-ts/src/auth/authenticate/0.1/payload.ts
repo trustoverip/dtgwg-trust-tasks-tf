@@ -8,6 +8,8 @@ import type { Ext, Session_AuthV0_1 as Session, TokenBundle } from "../../../_sh
 
 /**
  * The subject presents a previously-issued challenge along with the framework `proof` that binds the document to their VID. The proof IS the authentication.
+ *
+ * @deprecated superseded by auth/authenticate/0.3
  */
 export interface AuthAuthenticate {
   /**
@@ -29,6 +31,8 @@ export interface AuthAuthenticate {
 }
 /**
  * Issued by the auth service after verifying the proof on the authenticate document. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/authenticate/0.1#response.
+ *
+ * @deprecated superseded by auth/authenticate/0.3
  */
 export interface AuthAuthenticateResponsePayload {
   /**
@@ -59,13 +63,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/auth/authenticate/0.1" as c
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by auth/authenticate/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by auth/authenticate/0.3
+ */
 export type Payload = AuthAuthenticate;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/authenticate/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by auth/authenticate/0.3
+ */
 export type Response = AuthAuthenticateResponsePayload;
 
 /**

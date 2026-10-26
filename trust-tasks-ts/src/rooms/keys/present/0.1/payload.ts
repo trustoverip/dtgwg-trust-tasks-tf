@@ -8,6 +8,8 @@ import type { Ext } from "../../../../_shared/components.js";
 
 /**
  * An agent asks the party holding its principal's room credentials to produce a presentation for one room operation. The credentials never cross to the agent; only the presentation does, and it is bound to the operation it was asked for.
+ *
+ * @deprecated retired; use rooms/keys/present/0.2
  */
 export interface RoomsKeysPresentPayload {
   /**
@@ -33,6 +35,8 @@ export interface RoomsKeysPresentPayload {
 }
 /**
  * Success response to rooms/keys/present. Type https://trusttasks.org/spec/rooms/keys/present/0.1#response.
+ *
+ * @deprecated retired; use rooms/keys/present/0.2
  */
 export interface RoomsKeysPresentResponsePayload {
   /**
@@ -62,13 +66,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/rooms/keys/present/0.1" as 
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "retired; use rooms/keys/present/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated retired; use rooms/keys/present/0.2
+ */
 export type Payload = RoomsKeysPresentPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/keys/present/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated retired; use rooms/keys/present/0.2
+ */
 export type Response = RoomsKeysPresentResponsePayload;
 
 /**

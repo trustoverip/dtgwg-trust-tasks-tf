@@ -9,6 +9,8 @@ import (
 )
 
 // Response DID Management Disable — response payload
+//
+// Deprecated: retired; use did-management/did/set-state/0.1
 type Response struct {
 	Record DIDRecord `json:"record"`
 	Ext    *Ext      `json:"ext,omitempty"`
@@ -71,6 +73,8 @@ type DIDRecord struct {
 }
 
 // Payload DID Management Disable — payload
+//
+// Deprecated: retired; use did-management/did/set-state/0.1
 type Payload struct {
 	Mnemonic string  `json:"mnemonic"`
 	Domain   *string `json:"domain,omitempty"`
@@ -87,6 +91,12 @@ const TypeURI = "https://trusttasks.org/spec/did-management/did/disable/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "retired; use did-management/did/set-state/0.1"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/did-management/did/disable/0.1#response"

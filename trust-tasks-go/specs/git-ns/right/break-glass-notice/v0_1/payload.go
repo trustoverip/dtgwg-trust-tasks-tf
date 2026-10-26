@@ -129,6 +129,8 @@ const (
 // Payload The VTC tells an administrator that a member broke the glass on an elevated git
 // right, or that a break-glass record was ratified or revoked. Unsolicited: it answers no
 // request from the recipient.
+//
+// Deprecated: superseded by git-ns/right/break-glass-notice/0.2
 type Payload struct {
 	// `breakGlass` — `record.subject` recorded the right for themselves with
 	// git-ns/right/break-glass. `ratified` — another administrator ratified it with
@@ -168,6 +170,12 @@ const TypeURI = "https://trusttasks.org/spec/git-ns/right/break-glass-notice/0.1
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by git-ns/right/break-glass-notice/0.2"
 
 // PayloadSchemaJSON is this specification's payload schema, as JSON text.
 //

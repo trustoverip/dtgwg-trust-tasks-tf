@@ -31,6 +31,8 @@ const (
 
 // Response The issued invite. Carried in a Trust Task document whose type is
 // https://trusttasks.org/spec/auth/passkey/enroll/invite/0.2#response.
+//
+// Deprecated: superseded by auth/passkey/enroll/invite/0.3
 type Response struct {
 	Invite ResponseInvite `json:"invite"`
 
@@ -69,6 +71,8 @@ const (
 // delivered claim code, that binds a passkey to a subject who cannot yet authorise the
 // binding themselves: their first passkey, or — for `purpose: stepUp` — a step-up-only
 // passkey that never opens a session.
+//
+// Deprecated: superseded by auth/passkey/enroll/invite/0.3
 type Payload struct {
 	// The VID the invitee will enroll. The admin asserts this binding; the redemption
 	// ceremony verifies the invitee controls a passkey and holds the claim code, but does NOT
@@ -110,6 +114,12 @@ const TypeURI = "https://trusttasks.org/spec/auth/passkey/enroll/invite/0.2"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by auth/passkey/enroll/invite/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/auth/passkey/enroll/invite/0.2#response"

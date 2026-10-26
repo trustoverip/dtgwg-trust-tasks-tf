@@ -104,6 +104,10 @@ struct Spec {
     version: String,
     /// Path to `payload.schema.json`.
     schema_path: PathBuf,
+    /// The deprecation note, or `None` for a live version. Set from the
+    /// registry-wide lifecycle once every spec is discovered — see
+    /// [`compute_lifecycles`].
+    deprecation: Option<String>,
 }
 
 impl Spec {
@@ -832,9 +836,33 @@ fn main() -> Result<()> {
     let specs_dir = repo_root.join("specs");
     let out_root = repo_root.join("trust-tasks-rs/src/specs");
 
-    let specs = discover_specs(&specs_dir)?;
-    if specs.is_empty() {
+    let discovered = discover_specs(&specs_dir)?;
+    if discovered.is_empty() {
         return Err(anyhow!("no specs found under {}", specs_dir.display()));
+    }
+
+    // A withdrawn version is generated nowhere — no module, no `mod.rs` entry,
+    // no schema-index arm, no conformance test — so it is dropped here, before
+    // anything downstream sees it. Every other version learns its deprecation.
+    let lifecycles = compute_lifecycles(&specs_dir)?;
+    let mut specs = Vec::with_capacity(discovered.len());
+    let mut withdrawn = 0usize;
+    for mut spec in discovered {
+        match lifecycles.get(&(spec.slug.clone(), spec.version.clone())) {
+            Some(Lifecycle::Withdrawn) => withdrawn += 1,
+            Some(Lifecycle::Deprecated(note)) => {
+                spec.deprecation = Some(note.clone());
+                specs.push(spec);
+            }
+            Some(Lifecycle::Live) => specs.push(spec),
+            None => {
+                return Err(anyhow!(
+                    "{}/{}: has a payload.schema.json but no spec.md to read its status from",
+                    spec.slug,
+                    spec.version
+                ))
+            }
+        }
     }
 
     println!("Discovered {} specs:", specs.len());
@@ -891,9 +919,11 @@ fn main() -> Result<()> {
     write_cargo_features(&gated, &repo_root)?;
 
     println!(
-        "\nGenerated {} payload modules into {}",
+        "\nGenerated {} payload modules into {} ({} deprecated, {} withdrawn and skipped)",
         specs.len(),
-        out_root.display()
+        out_root.display(),
+        specs.iter().filter(|s| s.deprecation.is_some()).count(),
+        withdrawn
     );
     println!(
         "Feature-gated {} spec families ({} framework-reserved families are always compiled)",
@@ -1033,9 +1063,191 @@ fn discover_specs(specs_dir: &Path) -> Result<Vec<Spec>> {
             slug,
             version,
             schema_path: entry.path().to_path_buf(),
+            deprecation: None,
         });
     }
     out.sort_by(|a, b| (a.slug.as_str(), a.version.as_str()).cmp(&(&b.slug, &b.version)));
+    Ok(out)
+}
+
+/// Where one specification version stands in the lifecycle of SPEC
+/// "Superseded and Withdrawn Versions".
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum Lifecycle {
+    /// Supported and current: generated with `DEPRECATION = None`.
+    Live,
+    /// Still generated, but `#[deprecated]`, carrying this note.
+    Deprecated(String),
+    /// `status: withdrawn` — generated nowhere.
+    Withdrawn,
+}
+
+/// One version's front-matter lifecycle inputs.
+#[derive(Debug, Clone)]
+struct VersionStatus {
+    /// The version directory name, verbatim (`"0.1"`), for byte-exact notes.
+    version: String,
+    /// `(MAJOR, MINOR)`, for numeric ordering — `0.10` sorts after `0.9`.
+    order: (u64, u64),
+    status: String,
+    superseded_by: Option<String>,
+}
+
+/// `MAJOR.MINOR` → `(MAJOR, MINOR)`, or `None` for anything else.
+fn parse_version(v: &str) -> Option<(u64, u64)> {
+    let (major, minor) = v.split_once('.')?;
+    let all_digits = |s: &str| !s.is_empty() && s.bytes().all(|b| b.is_ascii_digit());
+    if !all_digits(major) || !all_digits(minor) {
+        return None;
+    }
+    Some((major.parse().ok()?, minor.parse().ok()?))
+}
+
+/// Maturity rank of a non-terminal status: draft < candidate < standard.
+fn maturity_rank(status: &str) -> Option<u8> {
+    match status {
+        "draft" => Some(0),
+        "candidate" => Some(1),
+        "standard" => Some(2),
+        _ => None,
+    }
+}
+
+/// Whether a version still counts as a supported version of its slug.
+fn is_live(status: &str) -> bool {
+    status != "retired" && status != "withdrawn"
+}
+
+/// Read every `specs/<slug>/<MAJOR.MINOR>/spec.md`'s `status` and
+/// `supersededBy`, grouped by slug.
+fn read_version_statuses(specs_dir: &Path) -> Result<BTreeMap<String, Vec<VersionStatus>>> {
+    let mut out: BTreeMap<String, Vec<VersionStatus>> = BTreeMap::new();
+    for entry in WalkDir::new(specs_dir).into_iter().filter_map(|e| e.ok()) {
+        if entry.file_name() != "spec.md" {
+            continue;
+        }
+        let Some(version_dir) = entry.path().parent() else {
+            continue;
+        };
+        let Some(version) = version_dir.file_name().and_then(|s| s.to_str()) else {
+            continue;
+        };
+        let Some(order) = parse_version(version) else {
+            continue;
+        };
+        let Some(slug_dir) = version_dir.parent() else {
+            continue;
+        };
+        let slug = slug_dir
+            .strip_prefix(specs_dir)
+            .with_context(|| format!("slug dir {} is not under specs/", slug_dir.display()))?
+            .to_string_lossy()
+            .replace('\\', "/");
+
+        let text = fs::read_to_string(entry.path())
+            .with_context(|| format!("read {}", entry.path().display()))?;
+        let mut lines = text.lines();
+        if lines.next().unwrap_or("").trim() != "---" {
+            return Err(anyhow!("{} has no front matter", entry.path().display()));
+        }
+        let mut front_matter = String::new();
+        for line in lines {
+            if line.trim() == "---" {
+                break;
+            }
+            front_matter.push_str(line);
+            front_matter.push('\n');
+        }
+        let value: Value = serde_saphyr::from_str(&front_matter)
+            .with_context(|| format!("parse YAML front matter in {}", entry.path().display()))?;
+        let status = value
+            .get("status")
+            .and_then(Value::as_str)
+            .ok_or_else(|| anyhow!("{} declares no `status`", entry.path().display()))?
+            .to_string();
+        if maturity_rank(&status).is_none() && is_live(&status) {
+            return Err(anyhow!(
+                "{}: unknown status {status:?}",
+                entry.path().display()
+            ));
+        }
+        let superseded_by = value
+            .get("supersededBy")
+            .and_then(Value::as_str)
+            .map(str::to_string);
+        out.entry(slug).or_default().push(VersionStatus {
+            version: version.to_string(),
+            order,
+            status,
+            superseded_by,
+        });
+    }
+    Ok(out)
+}
+
+/// The lifecycle of every specification version in the registry, keyed by
+/// `(slug, version)`.
+///
+/// Implements SPEC "Superseded and Withdrawn Versions":
+///
+/// - `status: withdrawn` → [`Lifecycle::Withdrawn`]: removed from the library
+///   entirely. Withdrawal is a scheduled, breaking batch; deprecation is the
+///   non-breaking warning that precedes it.
+/// - The **live** versions of a slug are those neither `retired` nor
+///   `withdrawn`.
+/// - A version is **deprecated** when it is `retired`, or **superseded**: a
+///   later live version of the same slug exists at an equal or higher maturity
+///   (draft < candidate < standard). A later *draft* does not supersede a
+///   `standard`.
+/// - Its **successor** is, for a retired version declaring `supersededBy`,
+///   that target — as written when it names a version, else the named slug's
+///   latest live version — and otherwise the latest live version of its own
+///   slug. Either may be absent.
+/// - The note is `retired; use <S>`, `retired`, or `superseded by <S>`, byte for
+///   byte: `check-bindings` compares it across all four libraries.
+fn compute_lifecycles(specs_dir: &Path) -> Result<BTreeMap<(String, String), Lifecycle>> {
+    let by_slug = read_version_statuses(specs_dir)?;
+    let latest_live = |slug: &str| -> Option<String> {
+        by_slug
+            .get(slug)?
+            .iter()
+            .filter(|v| is_live(&v.status))
+            .max_by_key(|v| v.order)
+            .map(|v| format!("{slug}/{}", v.version))
+    };
+
+    let mut out = BTreeMap::new();
+    for (slug, versions) in &by_slug {
+        for this in versions {
+            let lifecycle = if this.status == "withdrawn" {
+                Lifecycle::Withdrawn
+            } else if this.status == "retired" {
+                let successor = match &this.superseded_by {
+                    Some(target) => match target.rsplit_once('/') {
+                        Some((_, last)) if parse_version(last).is_some() => Some(target.clone()),
+                        _ => latest_live(target),
+                    },
+                    None => latest_live(slug),
+                };
+                Lifecycle::Deprecated(match successor {
+                    Some(s) => format!("retired; use {s}"),
+                    None => "retired".to_string(),
+                })
+            } else {
+                let rank = maturity_rank(&this.status);
+                let superseded = versions.iter().any(|later| {
+                    later.order > this.order
+                        && is_live(&later.status)
+                        && maturity_rank(&later.status) >= rank
+                });
+                match (superseded, latest_live(slug)) {
+                    (true, Some(s)) => Lifecycle::Deprecated(format!("superseded by {s}")),
+                    _ => Lifecycle::Live,
+                }
+            };
+            out.insert((slug.clone(), this.version.clone()), lifecycle);
+        }
+    }
     Ok(out)
 }
 
@@ -1290,6 +1502,9 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<GeneratedSpec> {
         )
     })?;
     apply_non_exhaustive(&mut parsed);
+    if let Some(note) = &spec.deprecation {
+        apply_deprecation(&mut parsed, note);
+    }
     indent_safe_docs(&mut parsed);
     let formatted = prettyplease::unparse(&parsed);
 
@@ -1369,6 +1584,24 @@ fn apply_non_exhaustive(file: &mut syn::File) {
                 s.attrs.push(attr.clone());
             }
             syn::Item::Enum(e) => e.attrs.push(attr.clone()),
+            _ => {}
+        }
+    }
+}
+
+/// Mark a deprecated version's root types — `Payload` and, when the spec has
+/// one, `Response` — `#[deprecated(note = …)]`, so a consumer naming either is
+/// warned and told the successor. Only the roots: they are what a consumer
+/// names to send or receive the task, and every other type in the module is
+/// reached through them.
+fn apply_deprecation(file: &mut syn::File, note: &str) {
+    let attr: syn::Attribute = syn::parse_quote!(#[deprecated(note = #note)]);
+    let is_root = |ident: &syn::Ident| ident == "Payload" || ident == "Response";
+    for item in file.items.iter_mut() {
+        match item {
+            syn::Item::Struct(s) if is_root(&s.ident) => s.attrs.push(attr.clone()),
+            syn::Item::Enum(e) if is_root(&e.ident) => e.attrs.push(attr.clone()),
+            syn::Item::Type(t) if is_root(&t.ident) => t.attrs.push(attr.clone()),
             _ => {}
         }
     }
@@ -1763,10 +1996,33 @@ fn render_module(
         pub const EXTENDS: Option<&str> = #extends_value;
     };
 
+    // SPEC "Superseded and Withdrawn Versions" — see [`compute_lifecycles`].
+    // `DEPRECATION` is on every module so the answer is a value a consumer can
+    // read; the `#[deprecated]` on the root types themselves is added after
+    // parsing, by [`apply_deprecation`]. A deprecated module's own generated
+    // code (derives, builders, the `Payload` impls) names those types, and
+    // rustc warns on same-crate uses too, so the module allows it inside
+    // itself — the warning is for the consumer, not for this file.
+    let (deprecation_const, allow_deprecated) = match &spec.deprecation {
+        Some(note) => (
+            quote! { pub const DEPRECATION: Option<&str> = Some(#note); },
+            quote! { #![allow(deprecated)] },
+        ),
+        None => (
+            quote! { pub const DEPRECATION: Option<&str> = None; },
+            quote! {},
+        ),
+    };
+
     quote! {
         //! Generated by `trust-tasks-codegen` — do not edit by hand.
         //!
         #![doc = #slug_doc]
+        #allow_deprecated
+
+        #[doc = " Why this specification version is deprecated (SPEC \"Superseded and"]
+        #[doc = " Withdrawn Versions\"), or `None` while it is current."]
+        #deprecation_const
 
         #[allow(unused_imports)]
         use serde::{Deserialize, Serialize};
@@ -2200,6 +2456,10 @@ fn write_schema_index(specs: &[Spec], repo_root: &Path) -> Result<()> {
 //! under the same URI suffixed `#response`, which is what the generated
 //! `Response` type already declares as its own `TYPE_URI`.
 
+// A deprecated specification version is indexed until it is withdrawn, and
+// indexing it means naming its deprecated `Payload` / `Response` types.
+#![allow(deprecated)]
+
 /// The payload schema for `type_uri`, or `None` if this build knows no spec for it.
 ///
 /// Pass a bare Type URI for a request schema, or one suffixed `#response` for
@@ -2424,7 +2684,11 @@ fn write_conformance_tree(
          //! The round-trip tests harvested from every specification's examples. One\n\
          //! integration test rather than a `#[cfg(test)]` module per specification, so\n\
          //! they link the ordinary library build instead of a second, unit-test\n\
-         //! compilation of the whole generated tree.\n\n",
+         //! compilation of the whole generated tree.\n\
+         \n\
+         // A deprecated specification version is still tested until it is\n\
+         // withdrawn, and testing it means naming its deprecated types.\n\
+         #![allow(deprecated)]\n\n",
     );
     render(&root, &gates, 0, &mut body);
     fs::write(dir.join("main.rs"), body)?;
@@ -3467,5 +3731,90 @@ mod indent_safe_doc_tests {
             "#,
         );
         assert_eq!(docs, ["\nOne.\n\nTwo."]);
+    }
+}
+
+#[cfg(test)]
+mod lifecycle_tests {
+    use super::*;
+
+    /// A throwaway `specs/` tree: one `spec.md` per `(slug, version, front matter)`.
+    fn lifecycles(entries: &[(&str, &str, &str)]) -> BTreeMap<(String, String), Lifecycle> {
+        let root = std::env::temp_dir().join(format!(
+            "tt-codegen-lifecycle-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        for (slug, version, fm) in entries {
+            let dir = root.join(slug).join(version);
+            fs::create_dir_all(&dir).unwrap();
+            fs::write(dir.join("spec.md"), format!("---\n{fm}\n---\n# x\n")).unwrap();
+        }
+        let out = compute_lifecycles(&root).unwrap();
+        fs::remove_dir_all(&root).unwrap();
+        out
+    }
+
+    fn get<'a>(
+        map: &'a BTreeMap<(String, String), Lifecycle>,
+        slug: &str,
+        version: &str,
+    ) -> &'a Lifecycle {
+        &map[&(slug.to_string(), version.to_string())]
+    }
+
+    fn deprecated(note: &str) -> Lifecycle {
+        Lifecycle::Deprecated(note.to_string())
+    }
+
+    #[test]
+    fn a_later_version_at_equal_maturity_supersedes_and_numeric_order_wins() {
+        let map = lifecycles(&[
+            ("a", "0.9", "status: draft"),
+            ("a", "0.10", "status: \"draft\""),
+        ]);
+        assert_eq!(get(&map, "a", "0.9"), &deprecated("superseded by a/0.10"));
+        assert_eq!(get(&map, "a", "0.10"), &Lifecycle::Live);
+    }
+
+    #[test]
+    fn a_later_draft_does_not_supersede_a_standard() {
+        let map = lifecycles(&[
+            ("a", "1.0", "status: standard"),
+            ("a", "1.1", "status: draft"),
+        ]);
+        assert_eq!(get(&map, "a", "1.0"), &Lifecycle::Live);
+        assert_eq!(get(&map, "a", "1.1"), &Lifecycle::Live);
+    }
+
+    #[test]
+    fn a_retired_or_withdrawn_later_version_supersedes_nothing() {
+        let map = lifecycles(&[
+            ("a", "0.1", "status: draft"),
+            ("a", "0.2", "status: retired"),
+            ("a", "0.3", "status: withdrawn"),
+        ]);
+        assert_eq!(get(&map, "a", "0.1"), &Lifecycle::Live);
+        assert_eq!(get(&map, "a", "0.2"), &deprecated("retired; use a/0.1"));
+        assert_eq!(get(&map, "a", "0.3"), &Lifecycle::Withdrawn);
+    }
+
+    #[test]
+    fn a_retired_version_names_its_successor() {
+        let map = lifecycles(&[
+            ("old", "0.1", "status: retired\nsupersededBy: new/0.1"),
+            ("old", "0.2", "status: retired\nsupersededBy: new"),
+            ("old", "0.3", "status: retired\nsupersededBy: gone"),
+            ("old", "0.4", "status: retired"),
+            ("new", "0.1", "status: draft"),
+            ("new", "0.2", "status: draft"),
+        ]);
+        assert_eq!(get(&map, "old", "0.1"), &deprecated("retired; use new/0.1"));
+        assert_eq!(get(&map, "old", "0.2"), &deprecated("retired; use new/0.2"));
+        assert_eq!(get(&map, "old", "0.3"), &deprecated("retired"));
+        assert_eq!(get(&map, "old", "0.4"), &deprecated("retired"));
     }
 }

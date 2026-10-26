@@ -8,6 +8,8 @@ import type { Ext, Ulid } from "../../../../_shared/components.js";
 
 /**
  * Enumerate contacts in a context, optionally narrowed to those known by one persona. Summaries only; documents are fetched one at a time.
+ *
+ * @deprecated superseded by persona/contact/list/1.1
  */
 export interface PersonaContactListPayload {
   contextId: string;
@@ -25,6 +27,8 @@ export interface PersonaContactListPayload {
 }
 /**
  * Success response to persona/contact/list. Type https://trusttasks.org/spec/persona/contact/list/1.0#response. Summaries carry no claim values: a list is for finding a contact, and finding one does not require disclosing every contact's details.
+ *
+ * @deprecated superseded by persona/contact/list/1.1
  */
 export interface PersonaContactListResponsePayload {
   /**
@@ -64,13 +68,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/persona/contact/list/1.0" a
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by persona/contact/list/1.1";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by persona/contact/list/1.1
+ */
 export type Payload = PersonaContactListPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/persona/contact/list/1.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by persona/contact/list/1.1
+ */
 export type Response = PersonaContactListResponsePayload;
 
 /**

@@ -11,6 +11,8 @@ import (
 // Response The Verifiable Witness Credential and its digest, delivered under the REQUIRED
 // proof. This document is the session's terminal success form and the outcome evidence a
 // VWC presentation must ship.
+//
+// Deprecated: superseded by witness/session/submit/0.2
 type Response struct {
 	// A signed Verifiable Witness Credential: a DTG Verifiable Statement Credential (`type`
 	// including `StatementCredential`) under the predicate
@@ -67,6 +69,8 @@ type DigestMultibase = string
 // Payload A participating party submits its presentation bound to its session challenge;
 // the witness's mandatory response delivers the Verifiable Witness Credential and its
 // digest. The response is the outcome evidence a VWC presentation must ship.
+//
+// Deprecated: superseded by witness/session/submit/0.2
 type Payload struct {
 	// A W3C Verifiable Presentation of the submitting party's own relationship credential
 	// material (opaque here), bound to the session's challenge and domain. A presentation not
@@ -85,6 +89,12 @@ const TypeURI = "https://trusttasks.org/spec/witness/session/submit/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by witness/session/submit/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/witness/session/submit/0.1#response"

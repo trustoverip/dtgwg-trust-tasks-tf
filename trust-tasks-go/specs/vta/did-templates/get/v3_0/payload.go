@@ -11,6 +11,8 @@ import (
 // Response The persisted DidTemplateRecord. The DidTemplate fields are flattened at the
 // top level alongside the resolved scope and provenance metadata. Same shape returned by
 // create/update.
+//
+// Deprecated: superseded by vta/did-templates/get/3.1
 type Response = DIDTemplateRecord
 
 // DIDTemplateRecordKeysValuePurpose What the key is for. Deliberately coarser than DID
@@ -111,6 +113,8 @@ type Ext = map[string]json.RawMessage
 // global scope (any authenticated caller); set it to read a template scoped to that
 // context (requires access to the context). The success response is the persisted
 // DidTemplateRecord.
+//
+// Deprecated: superseded by vta/did-templates/get/3.1
 type Payload struct {
 	// Scope selector. Absent: the global scope. Present: the context the template is scoped
 	// to; the caller MUST have access to that context.
@@ -133,6 +137,12 @@ const TypeURI = "https://trusttasks.org/spec/vta/did-templates/get/3.0"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vta/did-templates/get/3.1"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/did-templates/get/3.0#response"

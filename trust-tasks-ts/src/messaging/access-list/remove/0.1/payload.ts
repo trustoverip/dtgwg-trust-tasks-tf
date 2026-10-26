@@ -6,6 +6,7 @@
 import type { Ext, Vid } from "../../../../_shared/components.js";
 
 
+/** @deprecated retired; use messaging/access-list/update/0.1 */
 export interface MessagingRemoveFromAccessListPayload {
   /**
    * The target account's DID whose access list is being modified.
@@ -24,6 +25,8 @@ export interface MessagingRemoveFromAccessListPayload {
 }
 /**
  * The success response to a messaging/access-list/remove request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/access-list/remove/0.1#response.
+ *
+ * @deprecated retired; use messaging/access-list/update/0.1
  */
 export interface MessagingRemoveFromAccessListResponsePayload {
   /**
@@ -58,13 +61,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/messaging/access-list/remov
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "retired; use messaging/access-list/update/0.1";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated retired; use messaging/access-list/update/0.1
+ */
 export type Payload = MessagingRemoveFromAccessListPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/messaging/access-list/remove/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated retired; use messaging/access-list/update/0.1
+ */
 export type Response = MessagingRemoveFromAccessListResponsePayload;
 
 /**

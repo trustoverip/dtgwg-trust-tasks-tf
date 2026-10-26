@@ -64,6 +64,7 @@ const DART_DIR = path.join(ROOT, "trust-tasks-dart", "lib", "specs");
 
 const problems = [];
 const fail = (where, msg) => problems.push(`${where}: ${msg}`);
+let lifecycleSummary = { withdrawn: 0, deprecated: 0 };
 
 /**
  * Slugs whose Rust support is hand-written in the crate's runtime rather than
@@ -607,6 +608,8 @@ for (const spec of specs) {
     fail(where, "spec.md has no parseable front matter");
     continue;
   }
+  // A withdrawn version is generated nowhere; the lifecycle pass below checks that.
+  if (meta.status === "withdrawn") continue;
   const schema = JSON.parse(fs.readFileSync(path.join(spec.dir, "payload.schema.json"), "utf8"));
   const hasResponse = Boolean(schema?.$defs?.Response);
   const expected = expectedPolicy(meta);
@@ -977,6 +980,90 @@ for (const spec of specs) {
   }
 }
 
+/* ── Lifecycle: withdrawn versions are gone, deprecated ones say so ───────── */
+
+// SPEC "Superseded and Withdrawn Versions". Derived here independently of the
+// four generators, from the front matter, and compared with what each emitted:
+//
+// * WITHDRAWN (`status: withdrawn`) — no module in any language.
+// * DEPRECATED — `status: retired`, or SUPERSEDED: a later version of the slug
+//   is live (neither retired nor withdrawn) at an equal or higher maturity.
+// * Every other generated module carries its deprecation constant set to "none".
+//
+// The note is byte-exact across the four languages: `superseded by <succ>`,
+// `retired; use <succ>`, or `retired`, where <succ> is the retired version's
+// `supersededBy` (a bare slug meaning that slug's latest live version), else
+// the latest live version of its own slug.
+{
+  const RANK = { draft: 0, candidate: 1, standard: 2 };
+  const cmpVersion = (a, b) => {
+    const [x, y] = a.split(".").map(Number);
+    const [u, v] = b.split(".").map(Number);
+    return x - u || y - v;
+  };
+  const lifecycle = new Map(); // slug → [{ version, status, supersededBy }]
+  for (const spec of specs) {
+    const raw = fs.readFileSync(path.join(spec.dir, "spec.md"), "utf8");
+    const end = raw.indexOf("\n---", 3);
+    const meta = raw.startsWith("---") && end > 0 ? YAML.parse(raw.slice(3, end)) : {};
+    if (!lifecycle.has(spec.slug)) lifecycle.set(spec.slug, []);
+    lifecycle.get(spec.slug).push({ version: spec.version, status: meta.status, supersededBy: meta.supersededBy });
+  }
+  for (const list of lifecycle.values()) list.sort((a, b) => cmpVersion(a.version, b.version));
+  const isLive = (v) => v.status !== "retired" && v.status !== "withdrawn";
+  const latestLive = (slug) => (lifecycle.get(slug) || []).filter(isLive).at(-1);
+  const noteFor = (slug, v, i, list) => {
+    let succ;
+    if (v.status === "retired" && v.supersededBy) {
+      if (/\/\d+\.\d+$/.test(v.supersededBy)) succ = v.supersededBy;
+      else if (latestLive(v.supersededBy)) succ = `${v.supersededBy}/${latestLive(v.supersededBy).version}`;
+    } else if (latestLive(slug)) {
+      succ = `${slug}/${latestLive(slug).version}`;
+    }
+    if (v.status === "retired") return succ ? `retired; use ${succ}` : "retired";
+    const superseded = list.slice(i + 1).some((w) => isLive(w) && (RANK[w.status] ?? 0) >= (RANK[v.status] ?? 0));
+    return superseded ? `superseded by ${succ}` : null;
+  };
+  // Each language's spelling of the constant, and of the marker on a deprecated type.
+  const unquote = (lit, q) => (lit === undefined ? null : lit.replace(new RegExp(`\\\\${q}`, "g"), q).replace(/\\\\/g, "\\"));
+  const langs = [
+    ["Rust", rsByUri, (src) => { const m = /pub const DEPRECATION: Option<&(?:'static )?str> =\s*(?:None|Some\(\s*"((?:[^"\\]|\\.)*)",?\s*\));/.exec(src); return m ? unquote(m[1], '"') : undefined; },
+      (src, note) => src.includes(`#[deprecated(note = ${JSON.stringify(note)})]`)],
+    ["TypeScript", tsByUri, (src) => { const m = /export const DEPRECATION: string \| null =\s*(?:null|"((?:[^"\\]|\\.)*)");/.exec(src); return m ? unquote(m[1], '"') : undefined; },
+      (src, note) => src.includes(`@deprecated ${note}`)],
+    ["Go", goByUri, (src) => { const m = /const Deprecation = "((?:[^"\\]|\\.)*)"/.exec(src); return m ? unquote(m[1], '"') || null : undefined; },
+      (src, note) => src.includes(`// Deprecated: ${note}`)],
+    ["Dart", dartByUri, (src) => { const m = /const String\? deprecation =\s*(?:null|'((?:[^'\\]|\\.)*)');/.exec(src); return m ? unquote(m[1], "'") : undefined; },
+      (src, note) => src.includes(`@Deprecated('${note.replace(/'/g, "\\'")}')`)],
+  ];
+  let withdrawn = 0;
+  let deprecated = 0;
+  for (const [slug, list] of lifecycle) {
+    list.forEach((v, i) => {
+      const where = `${slug}/${v.version}`;
+      const uri = `https://trusttasks.org/spec/${slug}/${v.version}`;
+      if (v.status === "withdrawn") {
+        withdrawn++;
+        for (const [lang, byUri] of langs) {
+          if (byUri.has(uri)) fail(where, `is withdrawn, but ${lang} still generates it (${path.relative(ROOT, byUri.get(uri).file)})`);
+        }
+        return;
+      }
+      const note = noteFor(slug, v, i, list);
+      if (note) deprecated++;
+      for (const [lang, byUri, constant, marked] of langs) {
+        const mod = byUri.get(uri);
+        if (!mod) continue; // a missing module is reported by the per-spec checks above
+        const got = constant(mod.src);
+        if (got === undefined) fail(where, `the ${lang} module declares no deprecation constant`);
+        else if (got !== note) fail(where, `${lang} deprecation is ${JSON.stringify(got)}, expected ${JSON.stringify(note)}`);
+        else if (note && !marked(mod.src, note)) fail(where, `${lang} declares the deprecation constant but marks no type deprecated`);
+      }
+    });
+  }
+  lifecycleSummary = { withdrawn, deprecated };
+}
+
 /* ── `extends`: every module names the version it declares it extends ───── */
 
 // SPEC §5.2 "Declared extension". The runtimes route a document of an extending
@@ -1180,5 +1267,6 @@ console.log(
     `${tsByUri.size} TypeScript, ${rsByUri.size} Rust, ${goByUri.size} Go and ` +
     `${dartByUri.size} Dart modules — all agree. ${rustErrorCodesChecked} declared error codes (${rustDetailsSchemasChecked} with a detailsSchema) ` +
     `match Rust ERROR_CODES; ${rustSizeBoundsChecked} declared document size bounds match Rust ` +
-    `MAX_DOCUMENT_BYTES.`,
+    `MAX_DOCUMENT_BYTES. ${lifecycleSummary.deprecated} superseded or retired version(s) carry the same ` +
+    `deprecation note in all four; ${lifecycleSummary.withdrawn} withdrawn version(s) are generated in none.`,
 );

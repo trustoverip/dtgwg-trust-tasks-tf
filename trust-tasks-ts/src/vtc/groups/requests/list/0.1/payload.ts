@@ -8,6 +8,8 @@ import type { CardBlobRef, EntryFields, EntryId, Ext, FieldValue, GroupId, Group
 
 /**
  * A group manager lists requests to join the groups they manage, pending by default. The outer document members are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by vtc/groups/requests/list/0.2
  */
 export interface VTCGroupsRequestsListPayload {
   groupId?: GroupId;
@@ -21,6 +23,8 @@ export interface VTCGroupsRequestsListPayload {
 }
 /**
  * The success response to a vtc/groups/requests/list/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/requests/list/0.1#response.
+ *
+ * @deprecated superseded by vtc/groups/requests/list/0.2
  */
 export interface VTCGroupsRequestsListResponsePayload {
   /**
@@ -51,13 +55,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/vtc/groups/requests/list/0.
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vtc/groups/requests/list/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/groups/requests/list/0.2
+ */
 export type Payload = VTCGroupsRequestsListPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/groups/requests/list/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/groups/requests/list/0.2
+ */
 export type Response = VTCGroupsRequestsListResponsePayload;
 
 /**

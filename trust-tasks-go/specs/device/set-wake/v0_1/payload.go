@@ -9,6 +9,8 @@ import (
 )
 
 // Response Device Set Wake — response payload
+//
+// Deprecated: superseded by device/set-wake/0.2
 type Response struct {
 	// The effective allowlist the VTA computed and provisioned to the gateway. Absent when
 	// the wake channel was cleared.
@@ -75,6 +77,8 @@ const (
 // platform push token — only the handle. Present `wakeHandle` sets/replaces the wake
 // channel; absent clears it (device becomes non-wakeable). Idempotent; re-issued on token
 // rotation. See the push wake-up binding (https://trusttasks.org/binding/push/0.1).
+//
+// Deprecated: superseded by device/set-wake/0.2
 type Payload struct {
 	// OPTIONAL. The opaque gateway-issued handle for this device's push channel. Omit to
 	// clear the wake channel (the VTA empties the gateway allowlist; the device becomes
@@ -101,6 +105,12 @@ const TypeURI = "https://trusttasks.org/spec/device/set-wake/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by device/set-wake/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/device/set-wake/0.1#response"

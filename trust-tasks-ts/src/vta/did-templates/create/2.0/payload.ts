@@ -8,6 +8,8 @@ import type { Builtin_VtaV0_1 as Builtin, Context_VtaV0_1 as Context, DidTemplat
 
 /**
  * Create a new DID template on a VTA. Omit `contextId` to create in the global scope (super-admin gated); set it to create a template scoped to that context (gated on the context's admin, or a super-admin). The template's own `name` is the resource id within the selected scope; the VTA refuses duplicates (use update to replace). The success response is the persisted DidTemplateRecord.
+ *
+ * @deprecated superseded by vta/did-templates/create/3.1
  */
 export interface VTADIDTemplateCreatePayload {
   /**
@@ -38,13 +40,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/vta/did-templates/create/2.
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vta/did-templates/create/3.1";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vta/did-templates/create/3.1
+ */
 export type Payload = VTADIDTemplateCreatePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/did-templates/create/2.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vta/did-templates/create/3.1
+ */
 export type Response = DidTemplateRecord;
 
 /**

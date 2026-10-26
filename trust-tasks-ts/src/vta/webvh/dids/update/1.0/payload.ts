@@ -8,6 +8,8 @@ import type { Ext } from "../../../../../_shared/components.js";
 
 /**
  * Ask a Verifiable Trust Agent to publish a new entry in a did:webvh log it holds the update key for. The agent decides whether to do so; the caller proposes.
+ *
+ * @deprecated superseded by vta/webvh/dids/update/2.1
  */
 export interface WebVHDIDUpdatePayload {
   /**
@@ -48,6 +50,8 @@ export interface WebVHDIDUpdatePayload {
 }
 /**
  * The published entry. camelCase per the framework convention — note the counts are the state AFTER the update, including the rotation the caller did not ask for.
+ *
+ * @deprecated superseded by vta/webvh/dids/update/2.1
  */
 export interface WebVHDIDUpdateResponsePayload {
   did: string;
@@ -89,13 +93,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/vta/webvh/dids/update/1.0" 
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vta/webvh/dids/update/2.1";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vta/webvh/dids/update/2.1
+ */
 export type Payload = WebVHDIDUpdatePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/webvh/dids/update/1.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vta/webvh/dids/update/2.1
+ */
 export type Response = WebVHDIDUpdateResponsePayload;
 
 /**

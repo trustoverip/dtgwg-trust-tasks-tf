@@ -9,6 +9,8 @@ import (
 )
 
 // Response Vault Sync — response payload
+//
+// Deprecated: superseded by vault/sync/0.3
 type Response struct {
 	// Ordered events; consumer applies in order. Each event carries its own `seq` (strictly
 	// monotonic, no gaps within a context). Shape is the same as sync/event/0.1's push form.
@@ -301,6 +303,8 @@ type SiteTarget = json.RawMessage
 // followed by a new seq baseline the consumer SHOULD persist for the next sync. Pairs
 // with sync/event/0.1 server-push notifications: a live consumer subscribes to push
 // events; on reconnect after offline, it calls vault/sync to catch up.
+//
+// Deprecated: superseded by vault/sync/0.3
 type Payload struct {
 	// Optional — narrow the delta to a single context. Omit for all contexts the consumer has
 	// VaultRead on.
@@ -326,6 +330,12 @@ const TypeURI = "https://trusttasks.org/spec/vault/sync/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vault/sync/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vault/sync/0.1#response"

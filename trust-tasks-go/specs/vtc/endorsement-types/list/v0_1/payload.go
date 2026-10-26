@@ -9,6 +9,8 @@ import (
 )
 
 // Response VTC Endorsement-Types List — response payload
+//
+// Deprecated: superseded by vtc/endorsement-types/list/0.2
 type Response struct {
 	Items      []EndorsementType `json:"items"`
 	NextCursor *string           `json:"nextCursor,omitempty"`
@@ -44,6 +46,8 @@ type EndorsementType struct {
 }
 
 // Payload VTC Endorsement-Types List — payload
+//
+// Deprecated: superseded by vtc/endorsement-types/list/0.2
 type Payload struct {
 	Cursor *string `json:"cursor,omitempty"`
 	Limit  *int64  `json:"limit,omitempty"`
@@ -60,6 +64,12 @@ const TypeURI = "https://trusttasks.org/spec/vtc/endorsement-types/list/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vtc/endorsement-types/list/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/endorsement-types/list/0.1#response"

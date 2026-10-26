@@ -19,6 +19,8 @@
 //! ```
 //!
 //! Then point [`client_demo`] at it.
+// Pinned to fixed spec versions on purpose; that they are superseded is beside the point.
+#![allow(deprecated)]
 
 use affinidi_secrets_resolver::secrets::Secret;
 use trust_tasks_https::{BearerAuth, HttpsServer};

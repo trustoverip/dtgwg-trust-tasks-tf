@@ -9,6 +9,8 @@ import (
 )
 
 // Response Confirmation that the named global template was removed.
+//
+// Deprecated: retired; use vta/did-templates/delete/2.0
 type Response struct {
 	// The deleted template's name, echoed for audit pipelines.
 	Name string `json:"name"`
@@ -26,6 +28,8 @@ type Ext = map[string]json.RawMessage
 
 // Payload Remove a global DID template from a VTA by name. Super-admin gated. The success
 // response echoes the deleted name for audit pipelines.
+//
+// Deprecated: retired; use vta/did-templates/delete/2.0
 type Payload struct {
 	// Resource id — the name of the global template to remove.
 	Name string `json:"name"`
@@ -44,6 +48,12 @@ const TypeURI = "https://trusttasks.org/spec/vta/did-templates/delete/1.0"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "retired; use vta/did-templates/delete/2.0"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/did-templates/delete/1.0#response"

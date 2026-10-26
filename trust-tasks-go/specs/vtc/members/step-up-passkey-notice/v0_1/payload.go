@@ -26,6 +26,8 @@ const (
 // Payload The VTC tells a member that a step-up passkey was enrolled for them or revoked
 // from them, naming who acted and when. Unsolicited: the member did not ask, and may be
 // offline.
+//
+// Deprecated: superseded by vtc/members/step-up-passkey-notice/0.2
 type Payload struct {
 	// `enrolled` — a step-up passkey (auth/passkey/enroll/invite or
 	// auth/passkey/enroll/finish, purpose stepUp) is now bound to the member. `revoked` — one
@@ -71,6 +73,12 @@ const TypeURI = "https://trusttasks.org/spec/vtc/members/step-up-passkey-notice/
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vtc/members/step-up-passkey-notice/0.2"
 
 // PayloadSchemaJSON is this specification's payload schema, as JSON text.
 //

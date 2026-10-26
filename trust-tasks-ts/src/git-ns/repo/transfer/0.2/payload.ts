@@ -8,6 +8,8 @@ import type { Bootstrap, Did_GitNsV0_3 as Did, DriftItem_GitNsV0_1 as DriftItem,
 
 /**
  * An owner hands their ownership of a repository to someone else: `to` is recorded as an owner and the caller's own `git.repo.own` record is revoked. Ownership moves between people; the repository stays where it is on the forge.
+ *
+ * @deprecated superseded by git-ns/repo/transfer/0.3
  */
 export interface GitNamespacesTransferRepositoryOwnershipPayload {
   /**
@@ -22,6 +24,8 @@ export interface GitNamespacesTransferRepositoryOwnershipPayload {
 }
 /**
  * The repository after the transfer.
+ *
+ * @deprecated superseded by git-ns/repo/transfer/0.3
  */
 export interface GitNamespacesTransferRepositoryOwnershipResponsePayload {
   /**
@@ -45,13 +49,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/git-ns/repo/transfer/0.2" a
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by git-ns/repo/transfer/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by git-ns/repo/transfer/0.3
+ */
 export type Payload = GitNamespacesTransferRepositoryOwnershipPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/git-ns/repo/transfer/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by git-ns/repo/transfer/0.3
+ */
 export type Response = GitNamespacesTransferRepositoryOwnershipResponsePayload;
 
 /**

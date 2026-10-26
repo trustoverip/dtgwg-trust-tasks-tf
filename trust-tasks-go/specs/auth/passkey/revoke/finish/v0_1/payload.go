@@ -10,6 +10,8 @@ import (
 
 // Response Acknowledgement of the removed credential. Carried in a Trust Task document
 // whose type is https://trusttasks.org/spec/auth/passkey/revoke/finish/0.1#response.
+//
+// Deprecated: superseded by auth/passkey/revoke/finish/0.2
 type Response struct {
 	// The credential that was removed. Echoed from the server-side binding rather than from
 	// the request, so the producer can confirm the ceremony destroyed what they intended.
@@ -53,6 +55,8 @@ type AssertionResponse struct {
 // Payload Submit the user-verification assertion that completes a passkey revocation. On
 // success the auth service unbinds the credential named at start. The payload carries no
 // target — the revocationId is bound to it server-side.
+//
+// Deprecated: superseded by auth/passkey/revoke/finish/0.2
 type Payload struct {
 	// The revocationId issued by the matching auth/passkey/revoke/start response. Echoed
 	// verbatim.
@@ -76,6 +80,12 @@ const TypeURI = "https://trusttasks.org/spec/auth/passkey/revoke/finish/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by auth/passkey/revoke/finish/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/auth/passkey/revoke/finish/0.1#response"

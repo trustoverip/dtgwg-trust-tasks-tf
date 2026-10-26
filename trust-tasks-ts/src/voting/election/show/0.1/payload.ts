@@ -8,6 +8,8 @@ import type { BoardHead, BoardVisibility, ChoiceQuestion, DigestMultibase, Elect
 
 /**
  * Reads one election at its ballot box: its state, manifest digest, admitted count and current head, and the manifest where the caller may read the board.
+ *
+ * @deprecated superseded by voting/election/show/0.2
  */
 export interface VotingElectionShowPayload {
   /**
@@ -17,6 +19,7 @@ export interface VotingElectionShowPayload {
   electionId: ElectionId;
   ext?: Ext;
 }
+/** @deprecated superseded by voting/election/show/0.2 */
 export interface VotingElectionShowResponsePayload {
   election: ElectionSummary;
   /**
@@ -40,13 +43,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/voting/election/show/0.1" a
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by voting/election/show/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by voting/election/show/0.2
+ */
 export type Payload = VotingElectionShowPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/voting/election/show/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by voting/election/show/0.2
+ */
 export type Response = VotingElectionShowResponsePayload;
 
 /**

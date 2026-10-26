@@ -39,6 +39,8 @@ type DIDTemplateRecord struct {
 type Scope = map[string]json.RawMessage
 
 // Response Every stored global template, in an array.
+//
+// Deprecated: retired; use vta/did-templates/list/2.0
 type Response struct {
 	// Every stored global template, sorted by name; empty when none exist.
 	Templates []DIDTemplateRecord `json:"templates"`
@@ -54,6 +56,8 @@ type Ext = map[string]json.RawMessage
 // Payload List all global DID templates on a VTA. Open to any authenticated caller. The
 // request takes no parameters. The success response is the array of persisted
 // DidTemplateRecords.
+//
+// Deprecated: retired; use vta/did-templates/list/2.0
 type Payload struct {
 	// Ecosystem-defined extension members per SPEC.md §4.5.1.
 	Ext *Ext `json:"ext,omitempty"`
@@ -69,6 +73,12 @@ const TypeURI = "https://trusttasks.org/spec/vta/did-templates/list/1.0"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "retired; use vta/did-templates/list/2.0"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/did-templates/list/1.0#response"

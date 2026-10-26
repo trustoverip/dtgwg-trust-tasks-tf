@@ -8,6 +8,8 @@ import type { BreakGlass_GitNsV0_4 as BreakGlass, Did_GitNsV0_3 as Did, Ext, Res
 
 /**
  * Grants one git right on one forge-qualified resource to a DID. The VTC checks the grant against the actor's own rights — scope containment, no escalation, members-only namespace rights — and against community policy, records it, and publishes it to the Trust Registry.
+ *
+ * @deprecated superseded by git-ns/right/grant/0.4
  */
 export interface GitNamespacesGrantRightPayload {
   /**
@@ -31,6 +33,8 @@ export interface GitNamespacesGrantRightPayload {
 }
 /**
  * The recorded right.
+ *
+ * @deprecated superseded by git-ns/right/grant/0.4
  */
 export interface GitNamespacesGrantRightResponsePayload {
   /**
@@ -54,13 +58,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/git-ns/right/grant/0.3" as 
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by git-ns/right/grant/0.4";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by git-ns/right/grant/0.4
+ */
 export type Payload = GitNamespacesGrantRightPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/git-ns/right/grant/0.3#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by git-ns/right/grant/0.4
+ */
 export type Response = GitNamespacesGrantRightResponsePayload;
 
 /**

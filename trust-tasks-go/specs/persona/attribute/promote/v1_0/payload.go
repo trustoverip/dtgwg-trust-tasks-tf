@@ -17,6 +17,8 @@ type ResponsePromotedItem struct {
 
 // Response Success response to persona/attribute/promote. Type
 // https://trusttasks.org/spec/persona/attribute/promote/1.0#response.
+//
+// Deprecated: superseded by persona/attribute/promote/1.1
 type Response struct {
 	// Unchanged: the face keeps its id. It is now read through persona/profile/get.
 	ProfileID Ulid `json:"profileId"`
@@ -56,6 +58,8 @@ type Version = int64
 // becomes a pool attribute, and the face — which can no longer live inside one context
 // once it references the pool — moves above contexts, keeping its id and staying worn
 // wherever it was. One-way.
+//
+// Deprecated: superseded by persona/attribute/promote/1.1
 type Payload struct {
 	// The context the local face lives in.
 	ContextID string `json:"contextId"`
@@ -84,6 +88,12 @@ const TypeURI = "https://trusttasks.org/spec/persona/attribute/promote/1.0"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by persona/attribute/promote/1.1"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/persona/attribute/promote/1.0#response"

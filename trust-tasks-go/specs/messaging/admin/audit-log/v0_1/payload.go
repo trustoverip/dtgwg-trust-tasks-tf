@@ -11,6 +11,8 @@ import (
 // Response The success response to a messaging/admin/audit-log request (newest-first).
 // Carried in a Trust Task document whose type is
 // https://trusttasks.org/spec/messaging/admin/audit-log/0.1#response.
+//
+// Deprecated: retired; use audit/list/0.2
 type Response struct {
 	// The page of audit-log records, newest first.
 	Entries []AuditEntry `json:"entries"`
@@ -71,6 +73,8 @@ const (
 type VID = string
 
 // Payload Messaging Audit Log — payload
+//
+// Deprecated: retired; use audit/list/0.2
 type Payload struct {
 	// Opaque continuation token from a prior page's nextCursor. Echoed verbatim; treated as
 	// unstructured by the requester.
@@ -94,6 +98,12 @@ const TypeURI = "https://trusttasks.org/spec/messaging/admin/audit-log/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "retired; use audit/list/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/messaging/admin/audit-log/0.1#response"

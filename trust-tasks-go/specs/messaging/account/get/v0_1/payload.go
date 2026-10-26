@@ -11,6 +11,8 @@ import (
 // Response The success response to a messaging/account/get request. Carried in a Trust
 // Task document whose type is
 // https://trusttasks.org/spec/messaging/account/get/0.1#response.
+//
+// Deprecated: superseded by messaging/account/get/0.2
 type Response struct {
 	// The full mediator view of the requested account.
 	Account Account `json:"account"`
@@ -199,6 +201,8 @@ const (
 type VID = string
 
 // Payload Messaging Get Account — payload
+//
+// Deprecated: superseded by messaging/account/get/0.2
 type Payload struct {
 	// The DID of the account to fetch.
 	DID VID `json:"did"`
@@ -225,6 +229,12 @@ const TypeURI = "https://trusttasks.org/spec/messaging/account/get/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by messaging/account/get/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/messaging/account/get/0.1#response"

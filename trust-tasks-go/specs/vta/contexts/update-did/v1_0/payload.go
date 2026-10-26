@@ -10,6 +10,8 @@ import (
 
 // Response Success response to vta/contexts/update-did: the context as it now stands.
 // Type https://trusttasks.org/spec/vta/contexts/update-did/1.0#response.
+//
+// Deprecated: superseded by vta/contexts/update-did/1.1
 type Response = ContextRecord
 
 // ContextRecord A context as the VTA holds it.
@@ -52,6 +54,8 @@ type ContextRecord struct {
 type Ext = map[string]json.RawMessage
 
 // Payload VTA Contexts Update-DID — payload
+//
+// Deprecated: superseded by vta/contexts/update-did/1.1
 type Payload struct {
 	// Context whose DID is being set.
 	ID string `json:"id"`
@@ -73,6 +77,12 @@ const TypeURI = "https://trusttasks.org/spec/vta/contexts/update-did/1.0"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vta/contexts/update-did/1.1"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/contexts/update-did/1.0#response"

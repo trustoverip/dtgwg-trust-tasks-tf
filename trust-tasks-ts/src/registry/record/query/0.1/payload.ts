@@ -8,6 +8,8 @@ import type { Ext, RecordType, TrustRecord } from "../../../../_shared/component
 
 /**
  * An administrator queries a trust registry's stored records by an optional four-part key. All four parts supplied: an exact fetch of one record (notFound on a miss). Fewer parts: a filtered, cursor-paginated enumeration — fixing the pagination gap the superseded registry/record/list conceded. Key field names are verbatim TRQP (snake_case), matching the registry/* family.
+ *
+ * @deprecated superseded by registry/record/query/0.2
  */
 export interface RegistryRecordQueryPayload {
   /**
@@ -36,6 +38,7 @@ export interface RegistryRecordQueryPayload {
   limit?: number;
   ext?: Ext;
 }
+/** @deprecated superseded by registry/record/query/0.2 */
 export interface RegistryRecordQueryResponsePayload {
   /**
    * The matching trust records. Exactly one entry on a fully keyed fetch; zero or more per page on an enumeration.
@@ -62,13 +65,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/registry/record/query/0.1" 
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by registry/record/query/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by registry/record/query/0.2
+ */
 export type Payload = RegistryRecordQueryPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/registry/record/query/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by registry/record/query/0.2
+ */
 export type Response = RegistryRecordQueryResponsePayload;
 
 /**

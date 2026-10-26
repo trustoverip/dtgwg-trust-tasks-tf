@@ -8,6 +8,8 @@ import type { CarriedDocument, Ext, SessionId } from "../../../../_shared/compon
 
 /**
  * A client hands its VTA the witness's answer to the session it opened; the VTA verifies that the answer is the witness's own, builds the presentations bound to its challenge and domain, and returns the witness/session/submit document, signed as the relationship DID, for the client to send.
+ *
+ * @deprecated superseded by vta/witness/present/0.2
  */
 export interface VTAWitnessPresentPayload {
   sessionId: SessionId;
@@ -19,6 +21,8 @@ export interface VTAWitnessPresentPayload {
 }
 /**
  * The witness/session/submit document to send.
+ *
+ * @deprecated superseded by vta/witness/present/0.2
  */
 export interface VTAWitnessPresentResponsePayload {
   sessionId: SessionId;
@@ -43,13 +47,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/vta/witness/present/0.1" as
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vta/witness/present/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vta/witness/present/0.2
+ */
 export type Payload = VTAWitnessPresentPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/witness/present/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vta/witness/present/0.2
+ */
 export type Response = VTAWitnessPresentResponsePayload;
 
 /**

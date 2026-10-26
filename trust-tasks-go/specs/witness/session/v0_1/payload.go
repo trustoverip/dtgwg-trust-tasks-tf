@@ -11,6 +11,8 @@ import (
 // Response The session challenge, issued under the REQUIRED proof. The presentation under
 // witness/session/submit binds to {challenge, domain}. It reaches only the party that
 // opened this session — which is why each party opens its own.
+//
+// Deprecated: superseded by witness/session/0.2
 type Response struct {
 	// A fresh, unpredictable, single-use value this session's presentation binds to. A
 	// witness MUST NOT reuse a challenge across sessions — including across the two sessions
@@ -33,6 +35,8 @@ type Ext = map[string]json.RawMessage
 // exchange between two parties runs two sessions with the same witness, each naming the
 // same parties pair. The response issues the session challenge; the request document's id
 // is the value that party's VWC later carries as taskContext.
+//
+// Deprecated: superseded by witness/session/0.2
 type Payload struct {
 	// The relationship DIDs of the exchange to be witnessed — the pairwise values the
 	// relationship proposal exchanged, in either order.
@@ -50,6 +54,12 @@ const TypeURI = "https://trusttasks.org/spec/witness/session/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by witness/session/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/witness/session/0.1#response"

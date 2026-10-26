@@ -11,6 +11,8 @@
  * Every member is optional: an empty payload is the ordinary case, and means exactly 'received and performed'.
  *
  * This specification declares no response anchor. An acknowledgement is not answered.
+ *
+ * @deprecated retired
  */
 export interface TrustTaskOKPayload {
   /**
@@ -49,7 +51,19 @@ export const TYPE_URI = "https://trusttasks.org/spec/trust-task-ok/0.1" as const
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "retired";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated retired
+ */
 export type Payload = TrustTaskOKPayload;
 
 /**

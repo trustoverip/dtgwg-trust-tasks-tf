@@ -10,6 +10,8 @@ import (
 
 // Response Success response to vta/services/list. Type
 // https://trusttasks.org/spec/vta/services/list/1.0#response.
+//
+// Deprecated: superseded by vta/services/list/1.1
 type Response struct {
 	// Every transport the agent knows about, advertised or not. A kind absent from this array
 	// has never been configured — distinct from one present with `enabled: false`.
@@ -59,6 +61,8 @@ const (
 
 // Payload Request payload for vta/services/list. Takes no filters: the answer is the
 // agent's whole advertised surface, which is public in its DID document anyway.
+//
+// Deprecated: superseded by vta/services/list/1.1
 type Payload struct {
 	Ext *Ext `json:"ext,omitempty"`
 }
@@ -73,6 +77,12 @@ const TypeURI = "https://trusttasks.org/spec/vta/services/list/1.0"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vta/services/list/1.1"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/services/list/1.0#response"

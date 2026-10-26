@@ -8,6 +8,8 @@ import type { AndroidApp_VaultV0_2 as AndroidApp, AttachmentRef_VaultV0_3 as Att
 
 /**
  * Query a vault maintainer for the metadata view of stored entries. All filters are AND-combined. Pagination is opaque-cursor based; the maintainer chooses page size within the caller's bound and its own ceiling. Secret material is NEVER returned by this task — even when the requesting consumer has VaultRead capability for the entry, the secret is only released via vault/release/0.1.
+ *
+ * @deprecated superseded by vault/list/0.4
  */
 export interface VaultListPayload {
   /**
@@ -73,6 +75,8 @@ export interface VaultListPayload {
 }
 /**
  * The success response to a vault/list request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vault/list/0.1#response.
+ *
+ * @deprecated superseded by vault/list/0.4
  */
 export interface VaultListResponsePayload {
   /**
@@ -111,13 +115,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/vault/list/0.3" as const;
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vault/list/0.4";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vault/list/0.4
+ */
 export type Payload = VaultListPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vault/list/0.3#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vault/list/0.4
+ */
 export type Response = VaultListResponsePayload;
 
 /**

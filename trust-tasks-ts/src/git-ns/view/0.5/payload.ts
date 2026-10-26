@@ -8,6 +8,8 @@ import type { Bootstrap, BreakGlass_GitNsV0_4 as BreakGlass, Did_GitNsV0_3 as Di
 
 /**
  * A member reads the namespaces, repositories and rights they are entitled to see, optionally narrowed to one resource, together with the forge accounts linked to their own DID. An administrator may instead ask for everything in the namespaces they administer, and either may narrow the rights to break-glass records.
+ *
+ * @deprecated superseded by git-ns/view/0.6
  */
 export interface GitNamespacesViewPayload {
   /**
@@ -26,6 +28,8 @@ export interface GitNamespacesViewPayload {
 }
 /**
  * What the caller may see — or, with `scope: administrator`, everything in the namespaces they administer — and the caller's own linked forge accounts.
+ *
+ * @deprecated superseded by git-ns/view/0.6
  */
 export interface GitNamespacesViewResponsePayload {
   /**
@@ -74,13 +78,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/git-ns/view/0.5" as const;
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by git-ns/view/0.6";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by git-ns/view/0.6
+ */
 export type Payload = GitNamespacesViewPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/git-ns/view/0.5#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by git-ns/view/0.6
+ */
 export type Response = GitNamespacesViewResponsePayload;
 
 /**

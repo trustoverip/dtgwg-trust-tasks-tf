@@ -40,6 +40,8 @@ type Skipped struct {
 }
 
 // Response VTC Registry Sync Jobs Retry — response payload
+//
+// Deprecated: superseded by vtc/registry/sync-jobs/retry/0.2
 type Response struct {
 	// Jobs now scheduled for dispatch. Empty is a valid answer and is not an error.
 	Requeued []Requeued `json:"requeued"`
@@ -56,6 +58,8 @@ type Ext = map[string]json.RawMessage
 
 // Payload Requeue an abandoned trust-registry reconciliation job so the community's
 // reconciler dispatches it again.
+//
+// Deprecated: superseded by vtc/registry/sync-jobs/retry/0.2
 type Payload struct {
 	// The single job to requeue, from `vtc/registry/sync-jobs/list`.
 	JobID *string `json:"jobId,omitempty"`
@@ -77,6 +81,12 @@ const TypeURI = "https://trusttasks.org/spec/vtc/registry/sync-jobs/retry/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vtc/registry/sync-jobs/retry/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/registry/sync-jobs/retry/0.1#response"

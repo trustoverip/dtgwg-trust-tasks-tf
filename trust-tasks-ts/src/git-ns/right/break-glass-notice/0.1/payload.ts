@@ -8,6 +8,8 @@ import type { BreakGlass_GitNsV0_4 as BreakGlass, Did_GitNsV0_3 as Did, Ext, Nam
 
 /**
  * The VTC tells an administrator that a member broke the glass on an elevated git right, or that a break-glass record was ratified or revoked. Unsolicited: it answers no request from the recipient.
+ *
+ * @deprecated superseded by git-ns/right/break-glass-notice/0.2
  */
 export interface GitNamespacesBreakGlassNoticePayload {
   /**
@@ -51,7 +53,19 @@ export const TYPE_URI = "https://trusttasks.org/spec/git-ns/right/break-glass-no
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by git-ns/right/break-glass-notice/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by git-ns/right/break-glass-notice/0.2
+ */
 export type Payload = GitNamespacesBreakGlassNoticePayload;
 
 /**

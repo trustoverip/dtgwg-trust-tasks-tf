@@ -8,6 +8,8 @@ import type { Ext, ServiceKind, ServiceState_VtaV0_1 as ServiceState } from "../
 
 /**
  * Request payload for vta/services/get. Reads one transport's current state.
+ *
+ * @deprecated superseded by vta/services/get/1.1
  */
 export interface VTAServicesGetPayload {
   service: ServiceKind;
@@ -15,6 +17,8 @@ export interface VTAServicesGetPayload {
 }
 /**
  * Success response to vta/services/get. Type https://trusttasks.org/spec/vta/services/get/1.0#response.
+ *
+ * @deprecated superseded by vta/services/get/1.1
  */
 export interface VTAServicesGetResponsePayload {
   state: ServiceState;
@@ -35,13 +39,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/vta/services/get/1.0" as co
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vta/services/get/1.1";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vta/services/get/1.1
+ */
 export type Payload = VTAServicesGetPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/services/get/1.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vta/services/get/1.1
+ */
 export type Response = VTAServicesGetResponsePayload;
 
 /**

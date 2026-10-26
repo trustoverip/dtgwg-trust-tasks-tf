@@ -76,6 +76,8 @@ const (
 // its own, only carried inside auth/oob/respond/0.2. Closed: additionalProperties false
 // and no `ext`. The outer document members (id, type, issuer, recipient, issuedAt,
 // expiresAt, proof) are owned by the framework — SPEC §6.3.
+//
+// Deprecated: superseded by auth/oob/grant/0.3
 type Payload struct {
 	RequestID RequestID `json:"requestId"`
 
@@ -120,6 +122,12 @@ const TypeURI = "https://trusttasks.org/spec/auth/oob/grant/0.2"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by auth/oob/grant/0.3"
 
 // PayloadSchemaJSON is this specification's payload schema, as JSON text.
 //

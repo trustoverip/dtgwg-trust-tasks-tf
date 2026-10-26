@@ -8,6 +8,8 @@ import type { Ext } from "../../../../_shared/components.js";
 
 /**
  * Fetch one stored credential's full body by id.
+ *
+ * @deprecated retired; use vault/credentials/get/0.2
  */
 export interface VaultCredentialsGet {
   /**
@@ -19,6 +21,7 @@ export interface VaultCredentialsGet {
    */
   ext?: Ext;
 }
+/** @deprecated retired; use vault/credentials/get/0.2 */
 export interface VaultCredentialsGetResponsePayload {
   /**
    * The verifiable credential as stored, carried verbatim. Maintainers must not re-serialise it — the bytes carry a proof over themselves.
@@ -44,13 +47,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/vault/credentials/get/0.1" 
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "retired; use vault/credentials/get/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated retired; use vault/credentials/get/0.2
+ */
 export type Payload = VaultCredentialsGet;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vault/credentials/get/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated retired; use vault/credentials/get/0.2
+ */
 export type Response = VaultCredentialsGetResponsePayload;
 
 /**

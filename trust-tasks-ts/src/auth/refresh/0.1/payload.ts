@@ -8,6 +8,8 @@ import type { Ext, Session_AuthV0_1 as Session, TokenBundle } from "../../../_sh
 
 /**
  * Exchange a refresh token for a new access token (and optionally a new refresh token).
+ *
+ * @deprecated superseded by auth/refresh/0.2
  */
 export interface AuthRefresh {
   /**
@@ -25,6 +27,8 @@ export interface AuthRefresh {
 }
 /**
  * Issued by the auth service when the presented refresh token is valid. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/refresh/0.1#response.
+ *
+ * @deprecated superseded by auth/refresh/0.2
  */
 export interface AuthRefreshResponsePayload {
   /**
@@ -55,13 +59,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/auth/refresh/0.1" as const;
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by auth/refresh/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by auth/refresh/0.2
+ */
 export type Payload = AuthRefresh;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/refresh/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by auth/refresh/0.2
+ */
 export type Response = AuthRefreshResponsePayload;
 
 /**

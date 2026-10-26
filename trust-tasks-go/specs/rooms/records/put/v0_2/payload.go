@@ -10,6 +10,8 @@ import (
 
 // Response Success response to rooms/records/put. Type
 // https://trusttasks.org/spec/rooms/records/put/0.2#response.
+//
+// Deprecated: superseded by rooms/records/put/0.3
 type Response struct {
 	// The stored record's key.
 	Key string `json:"key"`
@@ -162,6 +164,8 @@ type PayloadCleartext struct {
 // Payload A member writes a record to a data room, authorized by an authority chain the
 // room itself issued. 0.2 adds `blobs`: a record can carry a file, whose ciphertext the
 // host stores outside the record and whose description is sealed inside it.
+//
+// Deprecated: superseded by rooms/records/put/0.3
 type Payload struct {
 	// The room's identifier. A host verifies the presentation against credentials issued by
 	// this identifier, never against a member list of its own — which is what lets a room
@@ -212,6 +216,12 @@ const TypeURI = "https://trusttasks.org/spec/rooms/records/put/0.2"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by rooms/records/put/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/rooms/records/put/0.2#response"

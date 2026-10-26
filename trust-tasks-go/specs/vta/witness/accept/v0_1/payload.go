@@ -23,6 +23,8 @@ type Evidence struct {
 
 // Response The stored VWC's vault handle, its digest, and the evidence documents that
 // carry it. Sent only once the VWC is verified and stored.
+//
+// Deprecated: superseded by vta/witness/accept/0.2
 type Response struct {
 	SessionID SessionID `json:"sessionId"`
 
@@ -83,6 +85,8 @@ type CarriedDocument = map[string]json.RawMessage
 // Payload A client hands its VTA the witness's answer to the submission; the VTA verifies
 // the Verifiable Witness Credential it carries against the session, and stores it in the
 // credential vault with its evidence.
+//
+// Deprecated: superseded by vta/witness/accept/0.2
 type Payload struct {
 	SessionID SessionID `json:"sessionId"`
 
@@ -102,6 +106,12 @@ const TypeURI = "https://trusttasks.org/spec/vta/witness/accept/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vta/witness/accept/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/witness/accept/0.1#response"

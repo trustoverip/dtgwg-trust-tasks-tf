@@ -74,6 +74,8 @@ type ResponseLargestBlobsItem struct {
 }
 
 // Response VTC Rooms — Get — response payload
+//
+// Deprecated: superseded by vtc/rooms/get/0.3
 type Response struct {
 	Room HostedRoom `json:"room"`
 
@@ -247,6 +249,8 @@ const (
 // Payload A room-hosting administrator reads one hosted room's host record, storage
 // placement, limits and usage. The outer document members are owned by the framework —
 // SPEC §6.3.
+//
+// Deprecated: superseded by vtc/rooms/get/0.3
 type Payload struct {
 	// The room's identifier, as its owner minted it.
 	RoomID string `json:"roomId"`
@@ -263,6 +267,12 @@ const TypeURI = "https://trusttasks.org/spec/vtc/rooms/get/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vtc/rooms/get/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/rooms/get/0.1#response"

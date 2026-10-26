@@ -300,6 +300,123 @@ function readSpecPolicy(schemaPath) {
   };
 }
 
+/* ── Lifecycle: superseded, retired and withdrawn versions ───────────────── */
+
+/** Maturity rank of a `status`, for the supersession comparison. */
+const MATURITY_RANK = { draft: 0, candidate: 1, standard: 2 };
+
+/** `status` and `supersededBy` from a spec.md's front matter, or null. */
+function readLifecycleMeta(specPath) {
+  try {
+    const src = fsSync.readFileSync(specPath, "utf8");
+    if (!src.startsWith("---")) return null;
+    const end = src.indexOf("\n---", 3);
+    if (end < 0) return null;
+    const meta = YAML.parse(src.slice(3, end).replace(/^\r?\n/, ""));
+    return meta ? { status: meta.status, supersededBy: meta.supersededBy } : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Numeric MAJOR-then-MINOR comparison of two `M.N` strings. */
+function compareVersions(a, b) {
+  const [am, an] = a.split(".").map(Number);
+  const [bm, bn] = b.split(".").map(Number);
+  return am - bm || an - bn;
+}
+
+/**
+ * Derive every specification version's lifecycle from front matter, per SPEC
+ * "Superseded and Withdrawn Versions". Returns a map keyed `<slug>/<M.N>` to
+ * `{ withdrawn, note }`, where `note` is the deprecation text or null.
+ *
+ * - `status: withdrawn` is removed from the library entirely: no package.
+ * - A version's slug's *live* versions are those neither retired nor withdrawn.
+ * - A version is deprecated when it is `retired`, or SUPERSEDED — a later live
+ *   version of the same slug exists at an equal or higher maturity
+ *   (draft < candidate < standard).
+ * - Its successor is a retired spec's `supersededBy` (a bare slug resolving to
+ *   that slug's latest live version), else its own slug's latest live version.
+ *
+ * Deprecation is a warning and non-breaking; withdrawal deletes a package, which
+ * is why it is only flipped in scheduled batches. This is an independent
+ * derivation of the rule — the other three generators and check-bindings each
+ * have their own, for the reason decision 2 in the file header gives.
+ */
+async function readLifecycle() {
+  const bySlug = new Map();
+  for (const specPath of await walk(SPECS_DIR, /^spec\.md$/)) {
+    const parts = path.relative(SPECS_DIR, specPath).split(path.sep).slice(0, -1);
+    if (parts.some((p) => p.startsWith("_"))) continue;
+    const version = parts.pop();
+    if (!/^\d+\.\d+$/.test(version)) continue;
+    const meta = readLifecycleMeta(specPath);
+    if (!meta) continue;
+    const slug = parts.join("/");
+    if (!bySlug.has(slug)) bySlug.set(slug, []);
+    bySlug.get(slug).push({ version, ...meta });
+  }
+
+  const isLive = (v) => v.status !== "retired" && v.status !== "withdrawn";
+  const latestLive = (slug) => {
+    const live = (bySlug.get(slug) ?? []).filter(isLive).map((v) => v.version);
+    return live.sort(compareVersions).pop() ?? null;
+  };
+  const rank = (status) => MATURITY_RANK[status] ?? 0;
+
+  const out = new Map();
+  for (const [slug, versions] of bySlug) {
+    for (const v of versions) {
+      const key = `${slug}/${v.version}`;
+      if (v.status === "withdrawn") {
+        out.set(key, { withdrawn: true, note: null });
+        continue;
+      }
+      const retired = v.status === "retired";
+      const superseded =
+        !retired &&
+        versions.some(
+          (w) => isLive(w) && compareVersions(w.version, v.version) > 0 && rank(w.status) >= rank(v.status),
+        );
+      let note = null;
+      if (retired || superseded) {
+        let successor = null;
+        if (retired && typeof v.supersededBy === "string") {
+          if (/\/\d+\.\d+$/.test(v.supersededBy)) successor = v.supersededBy;
+          else {
+            const latest = latestLive(v.supersededBy);
+            successor = latest ? `${v.supersededBy}/${latest}` : null;
+          }
+        } else {
+          const latest = latestLive(slug);
+          successor = latest ? `${slug}/${latest}` : null;
+        }
+        if (retired) note = successor ? `retired; use ${successor}` : "retired";
+        else note = `superseded by ${successor}`;
+      }
+      out.set(key, { withdrawn: false, note });
+    }
+  }
+  return out;
+}
+
+/**
+ * Add a `// Deprecated: <note>` paragraph, last in the doc comment, to the
+ * declaration of `name` among `decls`. A no-op when nothing declares it.
+ */
+function markDeprecated(decls, name, note) {
+  for (let i = 0; i < decls.length; i++) {
+    const lines = decls[i].split("\n");
+    const at = lines.findIndex((l) => l.startsWith(`type ${name} `));
+    if (at < 0) continue;
+    const paragraph = at > 0 && lines[at - 1].startsWith("//") ? ["//"] : [];
+    lines.splice(at, 0, ...paragraph, `// Deprecated: ${note}`);
+    decls[i] = lines.join("\n");
+    return;
+  }
+}
+
 /* ── Go identifiers ──────────────────────────────────────────────────────── */
 
 /**
@@ -714,7 +831,7 @@ function emitNamed(em, node, target, defNames) {
 /* ── File assembly ───────────────────────────────────────────────────────── */
 
 /** The tail every generated request package carries: URIs, schemas, policy. */
-function emitTail(slugInfo, policy, schemas, hasResponse) {
+function emitTail(slugInfo, policy, schemas, hasResponse, deprecation) {
   if (!slugInfo) return [];
   const { slug, version } = slugInfo;
   const typeUri = `https://trusttasks.org/spec/${slug}/${version}`;
@@ -736,6 +853,16 @@ function emitTail(slugInfo, policy, schemas, hasResponse) {
       "// trusttasks.ReadForSpec. The direct declaration only; the chain is walked",
       "// through the registry-wide index in package specs.",
       `const Extends = ${goString(policy?.extends ?? "")}`,
+    ].join("\n"),
+  );
+
+  out.push(
+    [
+      "// Deprecation is empty for a current specification version, and otherwise says",
+      "// why this one is deprecated and what replaces it: \"superseded by <slug>/<M.N>\",",
+      "// \"retired; use <slug>/<M.N>\" or \"retired\". A deprecated version is still",
+      "// supported, but is withdrawn from this module in a later scheduled release.",
+      `const Deprecation = ${goString(deprecation ?? "")}`,
     ].join("\n"),
   );
 
@@ -887,7 +1014,7 @@ function outputFor(schemaPath) {
 }
 
 /** Generate one Go file from one schema. */
-function generateOne(schemaPath) {
+function generateOne(schemaPath, lifecycle) {
   const raw = JSON.parse(fsSync.readFileSync(schemaPath, "utf8"));
   const baseDir = path.dirname(schemaPath);
   const out = outputFor(schemaPath);
@@ -904,13 +1031,22 @@ function generateOne(schemaPath) {
   // else. Declaring a `Payload` for it would invent a type the spec does not
   // define.
   const rootHint = out.slugInfo ? "Payload" : null;
-  emitDeclarations(em, requestSchema, rootHint);
+  const { defNames, rootName } = emitDeclarations(em, requestSchema, rootHint);
+
+  const deprecation = out.slugInfo
+    ? (lifecycle.get(`${out.slugInfo.slug}/${out.slugInfo.version}`)?.note ?? null)
+    : null;
+  if (deprecation !== null) {
+    markDeprecated(em.decls, rootName, deprecation);
+    if (hasResponse) markDeprecated(em.decls, defNames.get("#/$defs/Response"), deprecation);
+  }
 
   const tail = emitTail(
     out.slugInfo,
     out.slugInfo ? readSpecPolicy(schemaPath) : null,
     { request: out.slugInfo ? requestSchema : null, response: hasResponse ? responseSchema : null },
     hasResponse,
+    deprecation,
   );
 
   const imports = [];
@@ -1003,15 +1139,26 @@ async function main() {
   await clean();
 
   const schemas = (await walk(SPECS_DIR, /\.schema\.json$/)).sort();
-  const filtered = schemas.filter((p) => !NOT_PAYLOAD_SCHEMAS.has(path.basename(p)));
-  console.log(`Generating bindings for ${filtered.length} schemas...`);
+  const lifecycle = await readLifecycle();
+  // A withdrawn version gets no package at all (see readLifecycle).
+  let withdrawn = 0;
+  const filtered = schemas.filter((p) => {
+    if (NOT_PAYLOAD_SCHEMAS.has(path.basename(p))) return false;
+    const info = slugFromSchemaPath(p);
+    if (info && lifecycle.get(`${info.slug}/${info.version}`)?.withdrawn) {
+      withdrawn++;
+      return false;
+    }
+    return true;
+  });
+  console.log(`Generating bindings for ${filtered.length} schemas (${withdrawn} withdrawn versions skipped)...`);
 
   let ok = 0;
   const packages = new Set();
   const extendsEntries = [];
   for (const schemaPath of filtered) {
     try {
-      const result = generateOne(schemaPath);
+      const result = generateOne(schemaPath, lifecycle);
       await fs.mkdir(result.dir, { recursive: true });
       await fs.writeFile(result.file, result.source, "utf8");
       packages.add(result.dir);

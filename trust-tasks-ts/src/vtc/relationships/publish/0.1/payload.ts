@@ -6,6 +6,7 @@
 import type { DigestMultibase, Ext } from "../../../../_shared/components.js";
 
 
+/** @deprecated superseded by vtc/relationships/publish/0.2 */
 export interface VTCRelationshipsPublishPayload {
   /**
    * A signed W3C Verifiable Relationship Credential (opaque here). Its issuer MUST equal the document proof signer; credentialSubject.id names the subject member; it carries its own DataIntegrityProof.
@@ -38,6 +39,7 @@ export interface VTCRelationshipsPublishPayload {
   };
   ext?: Ext;
 }
+/** @deprecated superseded by vtc/relationships/publish/0.2 */
 export interface VTCRelationshipsPublishResponsePayload {
   /**
    * Id assigned to the stored relationship (a UUID).
@@ -66,13 +68,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/vtc/relationships/publish/0
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vtc/relationships/publish/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/relationships/publish/0.2
+ */
 export type Payload = VTCRelationshipsPublishPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/relationships/publish/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/relationships/publish/0.2
+ */
 export type Response = VTCRelationshipsPublishResponsePayload;
 
 /**

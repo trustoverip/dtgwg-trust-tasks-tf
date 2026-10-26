@@ -10,6 +10,8 @@ import (
 
 // Response Success response to vta/webvh/agent-name/list. Type
 // https://trusttasks.org/spec/vta/webvh/agent-name/list/1.0#response.
+//
+// Deprecated: superseded by vta/webvh/agent-name/list/1.1
 type Response struct {
 	DID string `json:"did"`
 
@@ -40,6 +42,8 @@ type AgentNameEntry struct {
 }
 
 // Payload Every agent name held for a DID, enabled or not.
+//
+// Deprecated: superseded by vta/webvh/agent-name/list/1.1
 type Payload struct {
 	// DID the name is bound to.
 	DID string `json:"did"`
@@ -56,6 +60,12 @@ const TypeURI = "https://trusttasks.org/spec/vta/webvh/agent-name/list/1.0"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vta/webvh/agent-name/list/1.1"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/webvh/agent-name/list/1.0#response"

@@ -50,6 +50,8 @@ type SenderLastSeen struct {
 }
 
 // Response VTA Services Report — response payload
+//
+// Deprecated: superseded by vta/services/report/0.2
 type Response struct {
 	// The lower bound applied, when the request gave one.
 	Since *string `json:"since,omitempty"`
@@ -74,6 +76,8 @@ type Ext = map[string]json.RawMessage
 // Payload Asks an agent for its per-mediator inbound counts and each sender's last-seen
 // mediator over a time window. The outer document members (id, type, issuer, recipient,
 // issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+//
+// Deprecated: superseded by vta/services/report/0.2
 type Payload struct {
 	// Lower bound, RFC 3339. Absent means as far back as the agent's telemetry goes.
 	Since *string `json:"since,omitempty"`
@@ -95,6 +99,12 @@ const TypeURI = "https://trusttasks.org/spec/vta/services/report/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vta/services/report/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/services/report/0.1#response"

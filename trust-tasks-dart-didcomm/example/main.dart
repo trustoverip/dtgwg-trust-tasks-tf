@@ -11,7 +11,7 @@
 // absorbs it instead of executing it again (bindings/didcomm/0.2 §6.1).
 
 import 'package:ssi/ssi.dart';
-import 'package:trust_tasks/specs/trust_task_discovery/v0_1/payload.dart'
+import 'package:trust_tasks/specs/trust_task_discovery/v0_3/payload.dart'
     as discovery;
 import 'package:trust_tasks/trust_tasks.dart';
 import 'package:trust_tasks_didcomm/trust_tasks_didcomm.dart';

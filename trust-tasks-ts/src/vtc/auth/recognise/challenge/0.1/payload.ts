@@ -6,9 +6,11 @@
 import type { Ext } from "../../../../../_shared/components.js";
 
 
+/** @deprecated superseded by vtc/auth/recognise/challenge/0.2 */
 export interface VTCAuthRecogniseChallengePayload {
   ext?: Ext;
 }
+/** @deprecated superseded by vtc/auth/recognise/challenge/0.2 */
 export interface VTCAuthRecogniseChallengeResponsePayload {
   /**
    * Single-use, unpredictable value to bind into the presentation. Consumed on first use regardless of verdict.
@@ -35,13 +37,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/vtc/auth/recognise/challeng
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vtc/auth/recognise/challenge/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/auth/recognise/challenge/0.2
+ */
 export type Payload = VTCAuthRecogniseChallengePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/auth/recognise/challenge/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/auth/recognise/challenge/0.2
+ */
 export type Response = VTCAuthRecogniseChallengeResponsePayload;
 
 /**

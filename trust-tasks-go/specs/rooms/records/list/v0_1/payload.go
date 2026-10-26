@@ -11,6 +11,8 @@ import (
 // Response Success response to rooms/records/list. Type
 // https://trusttasks.org/spec/rooms/records/list/0.1#response. Returns METADATA, never
 // bodies: a reader fetches the handful it wants with rooms/records/get.
+//
+// Deprecated: superseded by rooms/records/list/0.5
 type Response struct {
 	Records []RecordMetadata `json:"records"`
 
@@ -263,6 +265,8 @@ type AuthorityPresentation struct {
 }
 
 // Payload Rooms Records List — payload
+//
+// Deprecated: superseded by rooms/records/list/0.5
 type Payload struct {
 	// The room's identifier.
 	RoomID string `json:"roomId"`
@@ -302,6 +306,12 @@ const TypeURI = "https://trusttasks.org/spec/rooms/records/list/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by rooms/records/list/0.5"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/rooms/records/list/0.1#response"

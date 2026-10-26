@@ -8,6 +8,8 @@ import type { Ext, ForgeId_GitNsV0_1 as ForgeId, RepoResource_GitNsV0_1 as RepoR
 
 /**
  * The bridge reports how a job ended. Exactly one result is sent per job; the VTC updates the repository's state, bootstrap status and forge id from it.
+ *
+ * @deprecated superseded by git-ns/bridge/result/0.2
  */
 export interface GitNamespacesBridgeJobResultPayload {
   /**
@@ -56,6 +58,8 @@ export interface GitNamespacesBridgeJobResultPayload {
 }
 /**
  * The VTC has recorded the result.
+ *
+ * @deprecated superseded by git-ns/bridge/result/0.2
  */
 export interface GitNamespacesBridgeJobResultResponsePayload {
   jobId: string;
@@ -76,13 +80,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/git-ns/bridge/result/0.1" a
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by git-ns/bridge/result/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by git-ns/bridge/result/0.2
+ */
 export type Payload = GitNamespacesBridgeJobResultPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/git-ns/bridge/result/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by git-ns/bridge/result/0.2
+ */
 export type Response = GitNamespacesBridgeJobResultResponsePayload;
 
 /**

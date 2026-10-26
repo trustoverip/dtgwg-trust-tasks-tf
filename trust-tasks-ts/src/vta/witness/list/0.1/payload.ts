@@ -8,6 +8,8 @@ import type { DigestMultibase, EvidenceDocument, Ext, OutcomeEvidence } from "..
 
 /**
  * A client reads back from its VTA the Verifiable Witness Credentials vta/witness/accept stored for its principal, each with the outcome evidence stored beside it. Every filter is optional and those present are AND-combined.
+ *
+ * @deprecated superseded by vta/witness/list/0.2
  */
 export interface VTAWitnessListPayload {
   /**
@@ -30,6 +32,8 @@ export interface VTAWitnessListPayload {
 }
 /**
  * One entry per stored VWC that matched and that the caller may read. Empty when nothing matched, which is a successful answer, not an error.
+ *
+ * @deprecated superseded by vta/witness/list/0.2
  */
 export interface VTAWitnessListResponsePayload {
   /**
@@ -93,13 +97,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/vta/witness/list/0.1" as co
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vta/witness/list/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vta/witness/list/0.2
+ */
 export type Payload = VTAWitnessListPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/witness/list/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vta/witness/list/0.2
+ */
 export type Response = VTAWitnessListResponsePayload;
 
 /**

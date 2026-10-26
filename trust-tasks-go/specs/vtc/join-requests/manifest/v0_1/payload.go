@@ -18,6 +18,8 @@ type ResponseCriteriaItem struct {
 }
 
 // Response VTC Join-Requests Manifest — response payload
+//
+// Deprecated: superseded by vtc/join-requests/manifest/0.4
 type Response struct {
 	CommunityDID string                 `json:"communityDid"`
 	Criteria     []ResponseCriteriaItem `json:"criteria"`
@@ -29,6 +31,8 @@ type Response struct {
 type Ext = map[string]json.RawMessage
 
 // Payload VTC Join-Requests Manifest — payload
+//
+// Deprecated: superseded by vtc/join-requests/manifest/0.4
 type Payload struct {
 	Ext *Ext `json:"ext,omitempty"`
 }
@@ -43,6 +47,12 @@ const TypeURI = "https://trusttasks.org/spec/vtc/join-requests/manifest/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vtc/join-requests/manifest/0.4"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/join-requests/manifest/0.1#response"

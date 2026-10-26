@@ -8,6 +8,8 @@ import type { BoardVisibility, ChoiceQuestion, ElectionId, Ext, Key_VotingV0_1 a
 
 /**
  * The trustee's VTA generates the election's transport key and returns the voting/trustees/enrol request signed as the trustee.
+ *
+ * @deprecated superseded by vta/pcs/trustee/enrol/0.2
  */
 export interface VTAPCSTrusteeEnrolPayload {
   /**
@@ -26,6 +28,7 @@ export interface VTAPCSTrusteeEnrolPayload {
   manifest: Manifest;
   ext?: Ext;
 }
+/** @deprecated superseded by vta/pcs/trustee/enrol/0.2 */
 export interface VTAPCSTrusteeEnrolResponsePayload {
   document: EnrolDocument;
   ext?: Ext;
@@ -70,13 +73,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/vta/pcs/trustee/enrol/0.1" 
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vta/pcs/trustee/enrol/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vta/pcs/trustee/enrol/0.2
+ */
 export type Payload = VTAPCSTrusteeEnrolPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/pcs/trustee/enrol/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vta/pcs/trustee/enrol/0.2
+ */
 export type Response = VTAPCSTrusteeEnrolResponsePayload;
 
 /**

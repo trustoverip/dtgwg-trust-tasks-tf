@@ -8,6 +8,8 @@ import type { Bootstrap, Did_GitNsV0_3 as Did, DriftItem_GitNsV0_1 as DriftItem,
 
 /**
  * A holder of `git.repo.create` on a namespace creates a repository in it. The creator becomes its owner when their `git.repo.create` is held by explicit record; a creator whose `git.repo.create` is only implied by `git.ns.admin` names someone else in `owners`. The VTC reserves the name; a bridge creates the repository and turns commit trust on, or, where no bot can create repositories there, the response lists the steps a person must take.
+ *
+ * @deprecated superseded by git-ns/repo/create/0.4
  */
 export interface GitNamespacesCreateRepositoryPayload {
   /**
@@ -34,6 +36,8 @@ export interface GitNamespacesCreateRepositoryPayload {
 }
 /**
  * The reserved repository, and the manual steps when a person must create it.
+ *
+ * @deprecated superseded by git-ns/repo/create/0.4
  */
 export interface GitNamespacesCreateRepositoryResponsePayload {
   /**
@@ -63,13 +67,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/git-ns/repo/create/0.3" as 
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by git-ns/repo/create/0.4";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by git-ns/repo/create/0.4
+ */
 export type Payload = GitNamespacesCreateRepositoryPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/git-ns/repo/create/0.3#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by git-ns/repo/create/0.4
+ */
 export type Response = GitNamespacesCreateRepositoryResponsePayload;
 
 /**

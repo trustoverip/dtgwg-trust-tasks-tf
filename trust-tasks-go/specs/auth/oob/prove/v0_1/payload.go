@@ -12,6 +12,8 @@ import (
 // the step 1 members unchanged, plus the starter's key, where the request came from, and
 // which DID was identified. The SHA-256 of its JCS canonical form, proof included, is the
 // grant's `contextDigest`.
+//
+// Deprecated: superseded by auth/oob/prove/0.3
 type Response struct {
 	RequestID RequestID `json:"requestId"`
 	Service   Service   `json:"service"`
@@ -108,6 +110,8 @@ type RequestID = string
 // Issued and signed by the lock key `K_a`. The outer document members (id, type, issuer,
 // recipient, issuedAt, expiresAt, parentThreadId, proof) are owned by the framework —
 // SPEC §6.3.
+//
+// Deprecated: superseded by auth/oob/prove/0.3
 type Payload struct {
 	// A complete, signed auth/oob/identify/0.1 Trust Task document, issued by the approving
 	// DID and signed by its VTA for `authentication`. The service verifies it as a document
@@ -128,6 +132,12 @@ const TypeURI = "https://trusttasks.org/spec/auth/oob/prove/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by auth/oob/prove/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/auth/oob/prove/0.1#response"

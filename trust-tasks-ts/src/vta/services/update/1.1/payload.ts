@@ -8,6 +8,8 @@ import type { Ext, ServiceKind, ServiceMutationResult_VtaV0_1 as ServiceMutation
 
 /**
  * Request payload for vta/services/update. Replaces the settings on a transport that is already advertised. Refused when the transport is not currently enabled — that case is `enable`, and conflating the two would let a typo silently advertise a service the operator meant to change.
+ *
+ * @deprecated superseded by vta/services/update/1.2
  */
 export interface VTAServicesUpdatePayload {
   service: ServiceKind;
@@ -40,6 +42,8 @@ export interface VTAServicesUpdatePayload {
 }
 /**
  * Success response to vta/services/update. Type https://trusttasks.org/spec/vta/services/update/1.1#response.
+ *
+ * @deprecated superseded by vta/services/update/1.2
  */
 export interface VTAServicesUpdateResponsePayload {
   result: ServiceMutationResult;
@@ -60,13 +64,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/vta/services/update/1.1" as
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vta/services/update/1.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vta/services/update/1.2
+ */
 export type Payload = VTAServicesUpdatePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/services/update/1.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vta/services/update/1.2
+ */
 export type Response = VTAServicesUpdateResponsePayload;
 
 /**

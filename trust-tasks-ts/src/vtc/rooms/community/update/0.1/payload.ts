@@ -8,6 +8,8 @@ import type { CommunityRoomV2_VtcV0_1 as CommunityRoomV2, Ext, HostedRoom_VtcV0_
 
 /**
  * Change the details an administrator keeps track of a community-owned room by: its label, its description, its tags. Each member given replaces the stored one; a member absent is unchanged. At least one detail is required (`minProperties` counts `roomId` and `reason`), and `description` and `removeDescription` are mutually exclusive. Nothing here reaches the room, its key holder or its members' credentials. The outer document members are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by vtc/rooms/community/update/0.3
  */
 export interface VTCRoomsCommunityUpdatePayload {
   /**
@@ -35,6 +37,8 @@ export interface VTCRoomsCommunityUpdatePayload {
 }
 /**
  * Success response to vtc/rooms/community/update. Type https://trusttasks.org/spec/vtc/rooms/community/update/0.1#response. The room as it now stands, and whether this request changed it.
+ *
+ * @deprecated superseded by vtc/rooms/community/update/0.3
  */
 export interface VTCRoomsCommunityUpdateResponsePayload {
   room: CommunityRoomV2;
@@ -59,13 +63,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/vtc/rooms/community/update/
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vtc/rooms/community/update/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/rooms/community/update/0.3
+ */
 export type Payload = VTCRoomsCommunityUpdatePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/rooms/community/update/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/rooms/community/update/0.3
+ */
 export type Response = VTCRoomsCommunityUpdateResponsePayload;
 
 /**

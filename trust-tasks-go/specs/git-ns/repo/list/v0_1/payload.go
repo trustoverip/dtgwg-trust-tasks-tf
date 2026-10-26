@@ -157,6 +157,8 @@ type RepoStatus struct {
 
 // Response The repositories in the namespaces the caller administers, or in the one asked
 // for.
+//
+// Deprecated: superseded by git-ns/repo/list/0.2
 type Response struct {
 	// Every repository recorded in an administered namespace, in any state, ordered by
 	// `resource`; for a holder of the community-administrator capability without `namespace`,
@@ -228,6 +230,8 @@ type NamespaceID = string
 // Payload An administrator lists the repositories recorded in the namespaces they
 // administer — every one, for a holder of the community-administrator capability — with
 // owners, right counts, bootstrap, sync and forge status.
+//
+// Deprecated: superseded by git-ns/repo/list/0.2
 type Payload struct {
 	// Only the repositories in this namespace. It must be one the caller administers; a
 	// namespace they do not administer, or one this VTC does not have, is refused with
@@ -246,6 +250,12 @@ const TypeURI = "https://trusttasks.org/spec/git-ns/repo/list/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by git-ns/repo/list/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/git-ns/repo/list/0.1#response"

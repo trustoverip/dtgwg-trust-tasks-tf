@@ -8,6 +8,8 @@ import type { AdminRightRow_GitNsV0_5 as AdminRightRow, BreakGlass_GitNsV0_4 as 
 
 /**
  * A community administrator lists the recorded rights whose granter has since left the community, grouped by granter. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by git-ns/right/issued-by-departed/0.3
  */
 export interface GitNamespacesRightsIssuedByDepartedMembersPayload {
   /**
@@ -22,6 +24,8 @@ export interface GitNamespacesRightsIssuedByDepartedMembersPayload {
 }
 /**
  * Rights grouped by their departed granter, ordered by the granter's DID.
+ *
+ * @deprecated superseded by git-ns/right/issued-by-departed/0.3
  */
 export interface GitNamespacesRightsIssuedByDepartedMembersResponsePayload {
   /**
@@ -66,13 +70,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/git-ns/right/issued-by-depa
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by git-ns/right/issued-by-departed/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by git-ns/right/issued-by-departed/0.3
+ */
 export type Payload = GitNamespacesRightsIssuedByDepartedMembersPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/git-ns/right/issued-by-departed/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by git-ns/right/issued-by-departed/0.3
+ */
 export type Response = GitNamespacesRightsIssuedByDepartedMembersResponsePayload;
 
 /**

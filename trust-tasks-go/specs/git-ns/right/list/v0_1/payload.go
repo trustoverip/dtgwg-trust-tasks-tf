@@ -9,6 +9,8 @@ import (
 )
 
 // Response The matching rows, ordered by resource then subject.
+//
+// Deprecated: superseded by git-ns/right/list/0.3
 type Response struct {
 	// Rows matching `resource` and `subject`, ordered by `resource` then `subject`. A
 	// break-glass record waiting out a policy delay is included — it is exactly the one other
@@ -149,6 +151,8 @@ const (
 // Payload A community administrator enumerates every git right the VTC knows of, recorded
 // and role-derived alike, across every namespace. The outer document members (id, type,
 // issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+//
+// Deprecated: superseded by git-ns/right/list/0.3
 type Payload struct {
 	// Only rights on this resource or inside it. Absent: every resource.
 	Resource *Resource `json:"resource,omitempty"`
@@ -176,6 +180,12 @@ const TypeURI = "https://trusttasks.org/spec/git-ns/right/list/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by git-ns/right/list/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/git-ns/right/list/0.1#response"

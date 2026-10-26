@@ -8,6 +8,8 @@ import type { AgentNameEntry_VtaV0_1 as AgentNameEntry, Ext } from "../../../../
 
 /**
  * Every agent name held for a DID, enabled or not.
+ *
+ * @deprecated superseded by vta/webvh/agent-name/list/1.1
  */
 export interface VTAWebVHAgentNameListPayload {
   /**
@@ -18,6 +20,8 @@ export interface VTAWebVHAgentNameListPayload {
 }
 /**
  * Success response to vta/webvh/agent-name/list. Type https://trusttasks.org/spec/vta/webvh/agent-name/list/1.0#response.
+ *
+ * @deprecated superseded by vta/webvh/agent-name/list/1.1
  */
 export interface VTAWebVHAgentNameListResponsePayload {
   did: string;
@@ -42,13 +46,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/vta/webvh/agent-name/list/1
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vta/webvh/agent-name/list/1.1";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vta/webvh/agent-name/list/1.1
+ */
 export type Payload = VTAWebVHAgentNameListPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/webvh/agent-name/list/1.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vta/webvh/agent-name/list/1.1
+ */
 export type Response = VTAWebVHAgentNameListResponsePayload;
 
 /**

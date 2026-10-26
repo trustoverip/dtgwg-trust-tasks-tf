@@ -10,6 +10,8 @@ import (
 
 // Response Success response to vta/services/rollback. Type
 // https://trusttasks.org/spec/vta/services/rollback/1.0#response.
+//
+// Deprecated: superseded by vta/services/rollback/1.2
 type Response struct {
 	Result RollbackResult `json:"result"`
 	Ext    *Ext           `json:"ext,omitempty"`
@@ -84,6 +86,8 @@ const (
 // advertised settings by writing a NEW log entry — the history is append-only, so a
 // rollback is a forward step that restores an earlier state, never an erasure of what
 // happened.
+//
+// Deprecated: superseded by vta/services/rollback/1.2
 type Payload struct {
 	Service ServiceKind `json:"service"`
 	Ext     *Ext        `json:"ext,omitempty"`
@@ -99,6 +103,12 @@ const TypeURI = "https://trusttasks.org/spec/vta/services/rollback/1.0"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vta/services/rollback/1.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/services/rollback/1.0#response"

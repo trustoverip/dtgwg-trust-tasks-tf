@@ -17,6 +17,8 @@ export type JobId = string;
 
 /**
  * The VTC asks its bridge to do one piece of forge work in a namespace. The job names what to do (`kind`) and carries the desired state, never forge credentials — the bridge holds those. Which optional members a job carries is fixed by its `kind` (see the specification's kind table); a bridge refuses a job that carries a member its kind does not use, or lacks one its kind requires.
+ *
+ * @deprecated superseded by git-ns/bridge/job/0.6
  */
 export interface GitNamespacesBridgeJobPayload {
   /**
@@ -86,6 +88,8 @@ export interface BindTarget {
 }
 /**
  * Whether the bridge took the job.
+ *
+ * @deprecated superseded by git-ns/bridge/job/0.6
  */
 export interface GitNamespacesBridgeJobResponsePayload {
   jobId: JobId;
@@ -121,13 +125,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/git-ns/bridge/job/0.2" as c
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by git-ns/bridge/job/0.6";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by git-ns/bridge/job/0.6
+ */
 export type Payload = GitNamespacesBridgeJobPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/git-ns/bridge/job/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by git-ns/bridge/job/0.6
+ */
 export type Response = GitNamespacesBridgeJobResponsePayload;
 
 /**

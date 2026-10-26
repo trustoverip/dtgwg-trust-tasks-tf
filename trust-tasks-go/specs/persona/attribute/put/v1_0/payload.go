@@ -51,6 +51,8 @@ type ResponseHeldByPinItem struct {
 // is not a success: it is a trust-task-error carrying
 // persona/attribute/put:versionConflict, whose details carry the maintainer's current
 // version and value.
+//
+// Deprecated: superseded by persona/attribute/put/1.1
 type Response struct {
 	AttributeID Ulid    `json:"attributeId"`
 	Version     Version `json:"version"`
@@ -219,6 +221,8 @@ type ClaimType = string
 
 // Payload Create or replace one attribute in the holder's pool. Omit `attributeId` to
 // create; supply it to replace. `expectedVersion` makes the write conditional.
+//
+// Deprecated: superseded by persona/attribute/put/1.1
 type Payload struct {
 	// Omit to create — the maintainer assigns one and returns it. Supply to replace an
 	// existing attribute, or to make a create idempotent under retry; a supplied id that
@@ -271,6 +275,12 @@ const TypeURI = "https://trusttasks.org/spec/persona/attribute/put/1.0"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by persona/attribute/put/1.1"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/persona/attribute/put/1.0#response"

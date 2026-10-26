@@ -9,6 +9,8 @@ import (
 )
 
 // Response Registry Record Read — response payload (a TrustRecord)
+//
+// Deprecated: retired; use registry/record/query/0.2
 type Response struct {
 	EntityID    string                      `json:"entity_id"`
 	AuthorityID string                      `json:"authority_id"`
@@ -36,6 +38,8 @@ type Ext = map[string]json.RawMessage
 // Payload An administrator reads the full trust record identified by the four TRQP
 // identifiers (both the recognized and authorized facets, unlike the filtered TRQP query
 // responses).
+//
+// Deprecated: retired; use registry/record/query/0.2
 type Payload struct {
 	EntityID    string `json:"entity_id"`
 	AuthorityID string `json:"authority_id"`
@@ -54,6 +58,12 @@ const TypeURI = "https://trusttasks.org/spec/registry/record/read/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "retired; use registry/record/query/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/registry/record/read/0.1#response"

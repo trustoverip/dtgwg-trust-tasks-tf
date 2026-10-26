@@ -50,6 +50,8 @@ type Scope = map[string]json.RawMessage
 // Response The persisted DidTemplateRecord. The DidTemplate fields are flattened at the
 // top level alongside the resolved scope and provenance metadata. Same shape returned by
 // get/update.
+//
+// Deprecated: retired; use vta/did-templates/create/2.0
 type Response struct {
 	SchemaVersion int64                       `json:"schemaVersion"`
 	Name          string                      `json:"name"`
@@ -82,6 +84,8 @@ type Ext = map[string]json.RawMessage
 // admin (or super-admin). The template's own `name` is the resource id within the context
 // scope; the VTA refuses duplicates (use update to replace). The success response is the
 // persisted DidTemplateRecord.
+//
+// Deprecated: retired; use vta/did-templates/create/2.0
 type Payload struct {
 	// The context the template is scoped to.
 	ContextID string `json:"contextId"`
@@ -104,6 +108,12 @@ const TypeURI = "https://trusttasks.org/spec/vta/contexts/did-templates/create/1
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "retired; use vta/did-templates/create/2.0"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/contexts/did-templates/create/1.0#response"

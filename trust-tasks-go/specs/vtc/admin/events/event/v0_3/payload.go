@@ -41,6 +41,8 @@ const (
 // that changed. Fire-and-forget: there is no response. The outer document members (id,
 // type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC
 // §6.3.
+//
+// Deprecated: superseded by vtc/admin/events/event/0.5
 type Payload struct {
 	// What changed. Always one of the effective topics the subscribe response named.
 	Topic Topic `json:"topic"`
@@ -71,6 +73,12 @@ const TypeURI = "https://trusttasks.org/spec/vtc/admin/events/event/0.3"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vtc/admin/events/event/0.5"
 
 // PayloadSchemaJSON is this specification's payload schema, as JSON text.
 //

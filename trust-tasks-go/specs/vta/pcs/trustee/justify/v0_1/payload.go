@@ -29,6 +29,8 @@ type ResponseDocument struct {
 }
 
 // Response VTA PCS — Trustee Justify — response payload
+//
+// Deprecated: retired; use vta/pcs/trustee/justify/0.2
 type Response struct {
 	// The voting/trustees/justify request, signed as the trustee.
 	Document ResponseDocument `json:"document"`
@@ -50,6 +52,8 @@ type ElectionID = string
 
 // Payload The dealer's VTA reveals the share it dealt to a trustee that complained, and
 // returns the voting/trustees/justify request signed as the dealer.
+//
+// Deprecated: retired; use vta/pcs/trustee/justify/0.2
 type Payload struct {
 	// The VTA context the trustee's keys live in.
 	ContextID string `json:"contextId"`
@@ -74,6 +78,12 @@ const TypeURI = "https://trusttasks.org/spec/vta/pcs/trustee/justify/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "retired; use vta/pcs/trustee/justify/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/pcs/trustee/justify/0.1#response"

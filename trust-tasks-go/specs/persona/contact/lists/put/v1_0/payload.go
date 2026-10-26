@@ -11,6 +11,8 @@ import (
 // Response Success response to persona/contact/lists/put. Type
 // https://trusttasks.org/spec/persona/contact/lists/put/1.0#response. The list as it now
 // stands.
+//
+// Deprecated: superseded by persona/contact/lists/put/1.1
 type Response struct {
 	List ContactList `json:"list"`
 
@@ -73,6 +75,8 @@ type ListID = string
 // detail absent is unchanged. Membership is not changed here — a contact's lists are set
 // with persona/contact/put 1.1. The outer document members are owned by the framework —
 // SPEC §6.3.
+//
+// Deprecated: superseded by persona/contact/lists/put/1.1
 type Payload struct {
 	ContextID string `json:"contextId"`
 
@@ -106,6 +110,12 @@ const TypeURI = "https://trusttasks.org/spec/persona/contact/lists/put/1.0"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by persona/contact/lists/put/1.1"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/persona/contact/lists/put/1.0#response"

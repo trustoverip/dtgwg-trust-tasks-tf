@@ -13,6 +13,8 @@ import (
 // cannot read: the key that opens a link is a storage key no host ever holds, so a
 // response served to a party holding no epoch key discloses nothing but the number of
 // epochs, which the room's epoch number already told them.
+//
+// Deprecated: superseded by rooms/epoch/chain/0.2
 type Response struct {
 	RoomID string `json:"roomId"`
 
@@ -101,6 +103,8 @@ type AuthorityPresentation struct {
 }
 
 // Payload Rooms Epoch Chain — payload
+//
+// Deprecated: superseded by rooms/epoch/chain/0.2
 type Payload struct {
 	// The room whose epoch key chain is being fetched.
 	RoomID string `json:"roomId"`
@@ -132,6 +136,12 @@ const TypeURI = "https://trusttasks.org/spec/rooms/epoch/chain/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by rooms/epoch/chain/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/rooms/epoch/chain/0.1#response"

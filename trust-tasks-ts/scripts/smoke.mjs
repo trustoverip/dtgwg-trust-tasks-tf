@@ -34,11 +34,15 @@ assert.equal(typeof pkg.readForSpec, "function", "readForSpec missing from root 
 assert.equal(typeof pkg.EXTENDS_BY_TYPE_URI, "object", "EXTENDS_BY_TYPE_URI missing from root export");
 
 // A generated module, reached through the root barrel.
-const grant = pkg.AclGrant_v0_1;
-assert.ok(grant, "AclGrant_v0_1 missing from root export");
-assert.equal(grant.TYPE_URI, "https://trusttasks.org/spec/acl/grant/0.1");
+const grant = pkg.AclGrant_v0_2;
+assert.ok(grant, "AclGrant_v0_2 missing from root export");
+assert.equal(grant.TYPE_URI, "https://trusttasks.org/spec/acl/grant/0.2");
 assert.ok("EXTENDS" in grant, "generated modules carry EXTENDS");
 assert.equal(grant.SPEC.isProofRequired, true, "acl/grant declares proof REQUIRED (see #174)");
+// Every generated module states its lifecycle (null while current). The smoke
+// pins a current version, because a superseded one is eventually withdrawn
+// from the package (SPEC "Superseded and Withdrawn Versions").
+assert.ok("DEPRECATION" in grant, "generated modules must export DEPRECATION");
 
 // The two halves actually working together: a spec-declared requirement
 // reaching the pipeline through the built artifact.

@@ -9,6 +9,8 @@ import (
 )
 
 // Response VTC Join-Requests Approve — response payload
+//
+// Deprecated: retired; use vtc/join-requests/decide/0.1
 type Response struct {
 	RequestID string `json:"requestId"`
 	Status    string `json:"status"`
@@ -20,6 +22,8 @@ type Response struct {
 type Ext = map[string]json.RawMessage
 
 // Payload VTC Join-Requests Approve — payload
+//
+// Deprecated: retired; use vtc/join-requests/decide/0.1
 type Payload struct {
 	// The join request to approve.
 	ID  string `json:"id"`
@@ -36,6 +40,12 @@ const TypeURI = "https://trusttasks.org/spec/vtc/join-requests/approve/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "retired; use vtc/join-requests/decide/0.1"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/join-requests/approve/0.1#response"

@@ -9,6 +9,8 @@ import (
 )
 
 // Response What the caller may see.
+//
+// Deprecated: superseded by git-ns/view/0.6
 type Response struct {
 	// Namespaces bound to this VTC that contain, or are contained by, `resource`.
 	Namespaces []GitNamespace `json:"namespaces"`
@@ -319,6 +321,8 @@ type NamespaceID = string
 
 // Payload A member reads the namespaces, repositories and rights they are entitled to
 // see, optionally narrowed to one resource.
+//
+// Deprecated: superseded by git-ns/view/0.6
 type Payload struct {
 	// Narrow the answer to this resource and everything inside it. Absent: everything the
 	// caller may see.
@@ -336,6 +340,12 @@ const TypeURI = "https://trusttasks.org/spec/git-ns/view/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by git-ns/view/0.6"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/git-ns/view/0.1#response"

@@ -621,6 +621,19 @@ function slugFromSchemaPath(schemaPath) {
   return { slug, version };
 }
 
+/** A spec.md's YAML front matter, or null when it has none or cannot be read. */
+function readFrontMatter(specPath) {
+  try {
+    const src = fsSync.readFileSync(specPath, "utf8");
+    if (!src.startsWith("---")) return null;
+    const end = src.indexOf("\n---", 3);
+    if (end < 0) return null;
+    return YAML.parse(src.slice(3, end).replace(/^\r?\n/, "")) || null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Read the SPEC §7.2 policy flags out of a spec's front matter.
  *
@@ -637,17 +650,7 @@ function slugFromSchemaPath(schemaPath) {
  * is the one declared for the *issuer* party of the request.
  */
 function readSpecPolicy(schemaPath) {
-  const specPath = path.join(path.dirname(schemaPath), "spec.md");
-  let meta;
-  try {
-    const src = fsSync.readFileSync(specPath, "utf8");
-    if (!src.startsWith("---")) return null;
-    const end = src.indexOf("\n---", 3);
-    if (end < 0) return null;
-    meta = YAML.parse(src.slice(3, end).replace(/^\r?\n/, ""));
-  } catch {
-    return null;
-  }
+  const meta = readFrontMatter(path.join(path.dirname(schemaPath), "spec.md"));
   if (!meta) return null;
 
   const partyRequirement = (member) =>
@@ -705,6 +708,119 @@ function readSpecPolicy(schemaPath) {
     isRecipientRequired: partyRequirement("recipient"),
     responseIsRecipientRequired: partyRequirement("issuer"),
   };
+}
+
+// --- Version lifecycle (SPEC "Superseded and Withdrawn Versions") ----------
+//
+// Every published version is generated, but not every one is current:
+//
+//   - WITHDRAWN (`status: withdrawn`) — superseded or retired for at least 90
+//     days and flipped in a scheduled batch. Nothing is generated for it: no
+//     module, no barrel export. Removing a module is a breaking release, which
+//     is why withdrawal is batched rather than continuous.
+//   - DEPRECATED — not withdrawn, and either `status: retired`, or SUPERSEDED:
+//     a later version of the same slug is live (neither retired nor withdrawn)
+//     at an equal or higher maturity (draft < candidate < standard).
+//
+// A deprecated module carries its note in `DEPRECATION` and as `@deprecated`
+// on its root payload types, so a consumer's editor and linter flag the use
+// without anything breaking. The note text is byte-identical across the four
+// libraries; `npm run check-bindings` holds them to it. This is a third
+// independent implementation of the rule (see CLAUDE.md on why the generators
+// are not factored together).
+
+const MATURITY_RANK = { draft: 0, candidate: 1, standard: 2 };
+
+/** Numeric MAJOR-then-MINOR comparison of two "M.N" strings. */
+function compareVersions(a, b) {
+  const [am, an] = a.split(".").map(Number);
+  const [bm, bn] = b.split(".").map(Number);
+  return am - bm || an - bn;
+}
+
+/**
+ * Map every task spec version directory to its lifecycle verdict:
+ * `{ withdrawn: boolean, deprecation: string | null }`.
+ */
+async function computeLifecycle() {
+  const specFiles = (await walk(SPECS_DIR, /^spec\.md$/)).filter(
+    (p) => !path.relative(SPECS_DIR, p).split(path.sep).some((s) => s.startsWith("_")),
+  );
+
+  // slug → [{ version, status, supersededBy, dir }]
+  const bySlug = new Map();
+  for (const specPath of specFiles) {
+    const dir = path.dirname(specPath);
+    const segments = path.relative(SPECS_DIR, dir).split(path.sep);
+    const version = segments[segments.length - 1];
+    if (!/^\d+\.\d+$/.test(version)) continue;
+    const slug = segments.slice(0, -1).join("/");
+    const meta = readFrontMatter(specPath) || {};
+    if (!bySlug.has(slug)) bySlug.set(slug, []);
+    bySlug.get(slug).push({ version, status: meta.status, supersededBy: meta.supersededBy, dir });
+  }
+
+  const isLive = (v) => v.status !== "retired" && v.status !== "withdrawn";
+  const latestLive = (slug) => {
+    const live = (bySlug.get(slug) || []).filter(isLive);
+    if (!live.length) return null;
+    live.sort((a, b) => compareVersions(a.version, b.version));
+    return `${slug}/${live[live.length - 1].version}`;
+  };
+
+  const verdicts = new Map();
+  for (const [slug, versions] of bySlug) {
+    for (const v of versions) {
+      if (v.status === "withdrawn") {
+        verdicts.set(v.dir, { withdrawn: true, deprecation: null });
+        continue;
+      }
+      let deprecation = null;
+      if (v.status === "retired") {
+        let successor;
+        if (typeof v.supersededBy === "string") {
+          successor = /\/\d+\.\d+$/.test(v.supersededBy)
+            ? v.supersededBy
+            : latestLive(v.supersededBy);
+        } else {
+          successor = latestLive(slug);
+        }
+        deprecation = successor ? `retired; use ${successor}` : "retired";
+      } else {
+        const rank = MATURITY_RANK[v.status] ?? 0;
+        const superseded = versions.some(
+          (w) =>
+            isLive(w) &&
+            compareVersions(w.version, v.version) > 0 &&
+            (MATURITY_RANK[w.status] ?? 0) >= rank,
+        );
+        if (superseded) deprecation = `superseded by ${latestLive(slug)}`;
+      }
+      verdicts.set(v.dir, { withdrawn: false, deprecation });
+    }
+  }
+  return verdicts;
+}
+
+/**
+ * Add `@deprecated <note>` to the doc comment of the `export interface|type
+ * <name>` declared in `ts`, creating the comment if there is none. A name not
+ * declared in this module (a response aliasing a hoisted component) is left
+ * alone — the component is shared, and deprecation belongs to the spec.
+ */
+function markDeprecated(ts, name, note) {
+  const decl = new RegExp(`^export (?:interface|type) ${name}\\b`, "m");
+  const m = decl.exec(ts);
+  if (!m) return ts;
+  const before = ts.slice(0, m.index);
+  const after = ts.slice(m.index);
+  // The compiler writes a schema `description` as a multi-line JSDoc ending
+  // ` */` on the line directly above the declaration; extend that one.
+  if (/(^|\n) \*\/\n$/.test(before)) {
+    const close = before.lastIndexOf(" */");
+    return before.slice(0, close) + ` *\n * @deprecated ${note}\n` + before.slice(close) + after;
+  }
+  return before + `/** @deprecated ${note} */\n` + after;
 }
 
 // Synthetic property name used to drag `$defs.Response` into the compiler's
@@ -830,10 +946,14 @@ function stripResponseProbe(ts, schemaPath) {
   return { ts: stripped, responseType: m[1] };
 }
 
-function emitTail(slugInfo, ts, rootType, responseType, schemaPath, policy, schemas) {
+function emitTail(slugInfo, ts, rootType, responseType, schemaPath, policy, schemas, deprecation) {
   if (!slugInfo) return ""; // shared schemas are not Trust Tasks
   const { slug, version } = slugInfo;
   const typeUri = `https://trusttasks.org/spec/${slug}/${version}`;
+  const aliasDoc = (what) =>
+    deprecation
+      ? [`/**`, ` * Stable alias for this specification's ${what} shape.`, ` *`, ` * @deprecated ${deprecation}`, ` */`]
+      : [`/** Stable alias for this specification's ${what} shape. */`];
   const lines = [
     "",
     `/** Trust Task type URI. */`,
@@ -847,7 +967,15 @@ function emitTail(slugInfo, ts, rootType, responseType, schemaPath, policy, sche
     ` */`,
     `export const EXTENDS: string | null = ${policy?.extendsVersion ? JSON.stringify(policy.extendsVersion) : "null"};`,
     "",
-    `/** Stable alias for this specification's request payload shape. */`,
+    `/**`,
+    ` * Why this version is deprecated, or \`null\` while it is current. A`,
+    ` * superseded or retired version is still supported, and is withdrawn from`,
+    ` * this package in a later scheduled batch (SPEC "Superseded and Withdrawn`,
+    ` * Versions").`,
+    ` */`,
+    `export const DEPRECATION: string | null = ${JSON.stringify(deprecation ?? null)};`,
+    "",
+    ...aliasDoc("request payload"),
   ];
   // If the compiler already named the root `Payload` the alias is redundant and
   // would be a self-reference; anything else named `Payload` is a genuine clash
@@ -869,7 +997,7 @@ function emitTail(slugInfo, ts, rootType, responseType, schemaPath, policy, sche
       `/** Trust Task response type URI (request type URI + "#response"). */`,
       `export const RESPONSE_TYPE_URI = ${JSON.stringify(typeUri + "#response")} as const;`,
       "",
-      `/** Stable alias for this specification's success-response payload shape. */`,
+      ...aliasDoc("success-response payload"),
       ...(responseType === "Response"
         ? [`// (the response interface is already named \`Response\`)`]
         : [`export type Response = ${responseType};`]),
@@ -968,7 +1096,7 @@ function compileOptions(sourcePath, cwd) {
   };
 }
 
-async function generateOne(schemaPath, registry) {
+async function generateOne(schemaPath, registry, lifecycle) {
   const outPath = relativeOutPath(schemaPath);
   await ensureDir(path.dirname(outPath));
 
@@ -995,6 +1123,7 @@ async function generateOne(schemaPath, registry) {
 
   const slugInfo = slugFromSchemaPath(schemaPath);
   const policy = slugInfo ? readSpecPolicy(schemaPath) : null;
+  const deprecation = slugInfo ? (lifecycle.get(path.dirname(schemaPath))?.deprecation ?? null) : null;
   if (slugInfo && !policy) {
     // Every task spec has front matter (the registry build enforces it). A
     // miss here would silently emit a module with no SPEC, and a consumer
@@ -1012,15 +1141,15 @@ async function generateOne(schemaPath, registry) {
     schemas = { request: selfContained, response: responseSchemaOf(selfContained) };
   }
 
-  const tail = emitTail(
-    slugInfo,
-    ts,
-    rootTypeName(ts, schemaPath, raw),
-    responseType,
-    schemaPath,
-    policy,
-    schemas,
-  );
+  const rootType = rootTypeName(ts, schemaPath, raw);
+  if (deprecation) {
+    ts = markDeprecated(ts, rootType, deprecation);
+    // `responseType` is a type expression; only a bare name can be annotated.
+    if (responseType && /^[A-Za-z0-9_$]+$/.test(responseType) && responseType !== rootType) {
+      ts = markDeprecated(ts, responseType, deprecation);
+    }
+  }
+  const tail = emitTail(slugInfo, ts, rootType, responseType, schemaPath, policy, schemas, deprecation);
 
   // Imports go above the compiler's output and the re-exports below it, so
   // `rootTypeName`'s positional fallback still sees the compiler's own first
@@ -1384,7 +1513,20 @@ async function main() {
   //     one would be strictly worse — not generic over the payload, so unusable
   //     with consumeInbound — and having both invites picking the wrong one.
   const NOT_PAYLOAD_SCHEMAS = new Set(["spec.meta.schema.json", "trust-task.schema.json"]);
-  const filtered = schemas.filter((p) => !NOT_PAYLOAD_SCHEMAS.has(path.basename(p)));
+  // A withdrawn version is skipped whole — every schema in its directory —
+  // before the component registry is seeded, so it shapes nothing generated.
+  const lifecycle = await computeLifecycle();
+  const withdrawn = new Set(
+    [...lifecycle].filter(([, v]) => v.withdrawn).map(([dir]) => dir),
+  );
+  const filtered = schemas.filter(
+    (p) => !NOT_PAYLOAD_SCHEMAS.has(path.basename(p)) && !withdrawn.has(path.dirname(p)),
+  );
+  const deprecatedCount = [...lifecycle.values()].filter((v) => v.deprecation).length;
+  console.log(
+    `Lifecycle: ${lifecycle.size} spec versions, ${deprecatedCount} deprecated, ` +
+      `${withdrawn.size} withdrawn (skipped).`,
+  );
 
   // The component registry is seeded from the payload schemas and the shared
   // schemas. A `$def` neither reaches is duplicated nowhere and needs no
@@ -1411,7 +1553,7 @@ async function main() {
   const generated = [];
   for (const schemaPath of filtered) {
     try {
-      const result = await generateOne(schemaPath, registry);
+      const result = await generateOne(schemaPath, registry, lifecycle);
       generated.push(result);
       console.log("  ✓ " + path.relative(REPO_ROOT, schemaPath));
     } catch (err) {

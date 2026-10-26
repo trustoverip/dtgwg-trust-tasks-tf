@@ -8,6 +8,8 @@ import type { ApproverDid, Ext, PublicKeyCredentialDescriptor, PublicKeyCredenti
 
 /**
  * A relying party asks an approver (typically a wallet or a VTA) to ratify an AAL elevation for a subject's session, or — bound to one operation — to approve that one act without elevating any session, and states which kinds of evidence it will accept, including a statement by one of the subject's bound step-up approvers.
+ *
+ * @deprecated superseded by auth/step-up/approve-request/0.5
  */
 export interface AuthStepUpApproveRequest {
   /**
@@ -64,6 +66,8 @@ export interface AuthStepUpApproveRequest {
 }
 /**
  * Synchronous ack from the approver acknowledging it received the request and will (or will not) deliver an approve-response. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/approve-request/0.4#response.
+ *
+ * @deprecated superseded by auth/step-up/approve-request/0.5
  */
 export interface AuthStepUpApproveRequestResponsePayload {
   /**
@@ -91,13 +95,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/auth/step-up/approve-reques
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by auth/step-up/approve-request/0.5";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by auth/step-up/approve-request/0.5
+ */
 export type Payload = AuthStepUpApproveRequest;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/step-up/approve-request/0.4#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by auth/step-up/approve-request/0.5
+ */
 export type Response = AuthStepUpApproveRequestResponsePayload;
 
 /**

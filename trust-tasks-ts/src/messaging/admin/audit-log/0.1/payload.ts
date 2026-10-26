@@ -6,6 +6,7 @@
 import type { AuditAction, AuditEntry, Ext, Vid } from "../../../../_shared/components.js";
 
 
+/** @deprecated retired; use audit/list/0.2 */
 export interface MessagingAuditLogPayload {
   /**
    * Opaque continuation token from a prior page's nextCursor. Echoed verbatim; treated as unstructured by the requester.
@@ -22,6 +23,8 @@ export interface MessagingAuditLogPayload {
 }
 /**
  * The success response to a messaging/admin/audit-log request (newest-first). Carried in a Trust Task document whose type is https://trusttasks.org/spec/messaging/admin/audit-log/0.1#response.
+ *
+ * @deprecated retired; use audit/list/0.2
  */
 export interface MessagingAuditLogResponsePayload {
   /**
@@ -52,13 +55,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/messaging/admin/audit-log/0
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "retired; use audit/list/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated retired; use audit/list/0.2
+ */
 export type Payload = MessagingAuditLogPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/messaging/admin/audit-log/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated retired; use audit/list/0.2
+ */
 export type Response = MessagingAuditLogResponsePayload;
 
 /**

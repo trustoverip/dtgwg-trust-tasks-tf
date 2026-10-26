@@ -9,6 +9,8 @@ import (
 )
 
 // Response Push Provision — response payload
+//
+// Deprecated: retired; use push/provision/0.2
 type Response struct {
 	Handle string `json:"handle"`
 
@@ -39,6 +41,8 @@ type WakeTriggerPolicy struct {
 // the DIDs permitted to wake the device. The gateway accepts it only from the handle's
 // recorded controller VTA and enforces it on every push/wake. See the push wake-up
 // binding (https://trusttasks.org/binding/push/0.1).
+//
+// Deprecated: retired; use push/provision/0.2
 type Payload struct {
 	// The opaque gateway-issued handle (from push/register) whose allowlist is being set.
 	Handle string `json:"handle"`
@@ -60,6 +64,12 @@ const TypeURI = "https://trusttasks.org/spec/push/provision/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "retired; use push/provision/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/push/provision/0.1#response"

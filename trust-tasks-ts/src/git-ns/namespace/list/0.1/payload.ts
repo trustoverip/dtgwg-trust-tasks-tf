@@ -13,6 +13,8 @@ export type MappedRole = "none" | "read" | "triage" | "write" | "maintain" | "ad
 
 /**
  * An administrator lists the namespaces they administer — every one, for a holder of the community-administrator capability — with each one's admins, repository count, bridge and forge status.
+ *
+ * @deprecated superseded by git-ns/namespace/list/0.2
  */
 export interface GitNamespacesListNamespacesPayload {
   /**
@@ -23,6 +25,8 @@ export interface GitNamespacesListNamespacesPayload {
 }
 /**
  * The namespaces the caller administers, or the one asked for.
+ *
+ * @deprecated superseded by git-ns/namespace/list/0.2
  */
 export interface GitNamespacesListNamespacesResponsePayload {
   /**
@@ -182,13 +186,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/git-ns/namespace/list/0.1" 
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by git-ns/namespace/list/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by git-ns/namespace/list/0.2
+ */
 export type Payload = GitNamespacesListNamespacesPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/git-ns/namespace/list/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by git-ns/namespace/list/0.2
+ */
 export type Response = GitNamespacesListNamespacesResponsePayload;
 
 /**

@@ -24,6 +24,8 @@ type Membership struct {
 }
 
 // Response The session id and the witness/session document to send.
+//
+// Deprecated: superseded by vta/witness/open/0.2
 type Response struct {
 	SessionID SessionID `json:"sessionId"`
 
@@ -60,6 +62,8 @@ type SessionID = string
 // relationships: the VTA checks custody and the credentials to be presented, and returns
 // the witness/session document, built and signed as the principal's relationship DID, for
 // the client to send to the witness.
+//
+// Deprecated: superseded by vta/witness/open/0.2
 type Payload struct {
 	// The witness to be witnessed by, as its public DID: the recipient of every document of
 	// the session, and the issuer of every answer the VTA will accept for it. Chosen by the
@@ -105,6 +109,12 @@ const TypeURI = "https://trusttasks.org/spec/vta/witness/open/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vta/witness/open/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/witness/open/0.1#response"

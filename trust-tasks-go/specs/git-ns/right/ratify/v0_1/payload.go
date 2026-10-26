@@ -9,6 +9,8 @@ import (
 )
 
 // Response The ratified record.
+//
+// Deprecated: superseded by git-ns/right/ratify/0.2
 type Response struct {
 	// The record, now carrying `breakGlass.ratifiedBy` and `breakGlass.ratifiedAt`.
 	Right RightRecord `json:"right"`
@@ -134,6 +136,8 @@ const (
 // Payload An administrator other than its subject ratifies one unratified break-glass
 // record, turning it into an ordinary grant: it stops being flagged, and starts counting
 // toward the last-owner and last-admin invariants.
+//
+// Deprecated: superseded by git-ns/right/ratify/0.2
 type Payload struct {
 	// Who broke the glass: the record's subject.
 	Subject DID           `json:"subject"`
@@ -164,6 +168,12 @@ const TypeURI = "https://trusttasks.org/spec/git-ns/right/ratify/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by git-ns/right/ratify/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/git-ns/right/ratify/0.1#response"

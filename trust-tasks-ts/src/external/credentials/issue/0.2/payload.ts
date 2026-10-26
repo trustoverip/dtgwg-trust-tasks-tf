@@ -8,6 +8,8 @@ import type { AccountContextId, AccountId, CredentialScope, Ext, ProviderObjectA
 
 /**
  * Obtain a short-lived, downscoped provider credential from an external account, sealed to the caller: session or token credentials under `scope`, or a batch of presigned requests on one object under `presign`. The outer document members are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by external/credentials/issue/0.3
  */
 export type ExternalCredentialsIssuePayload = {
   context: AccountContextId;
@@ -42,6 +44,7 @@ export type PresignRequest =
  * A SHA-256 digest in standard base64 (RFC 4648 §4, padded), as S3 carries it in `x-amz-checksum-sha256`.
  */
 export type ChecksumSha256 = string;
+/** @deprecated superseded by external/credentials/issue/0.3 */
 export type ExternalCredentialsIssueResponsePayload = {
   [k: string]: unknown | undefined;
 };
@@ -153,13 +156,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/external/credentials/issue/
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by external/credentials/issue/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by external/credentials/issue/0.3
+ */
 export type Payload = ExternalCredentialsIssuePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/external/credentials/issue/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by external/credentials/issue/0.3
+ */
 export type Response = ExternalCredentialsIssueResponsePayload;
 
 /**

@@ -10,6 +10,8 @@ import (
 
 // Response Successful enrolment. The verificationMethod has already been appended to the
 // DID document via a WebVH log entry at the returned version.
+//
+// Deprecated: superseded by vta/passkey-vms/enroll-submit/0.2
 type Response struct {
 	// The verificationMethod entry exactly as it now appears in the DID document.
 	// `publicKeyMultibase` here is the server-re-derived key, which is authoritative.
@@ -66,6 +68,8 @@ type PasskeyVerificationMethod struct {
 // publicKeyMultibase — the browser's value is NOT trusted as authoritative. On success
 // the VTA appends the verificationMethod to the DID document via a WebVH log entry. All
 // byte-valued fields are base64url-encoded (no padding).
+//
+// Deprecated: superseded by vta/passkey-vms/enroll-submit/0.2
 type Payload struct {
 	// The DID the new verificationMethod is to be added to. MUST match the DID bound to
 	// `ceremonyId` at challenge time — a mismatch is rejected as a cross-DID replay.
@@ -122,6 +126,12 @@ const TypeURI = "https://trusttasks.org/spec/vta/passkey-vms/enroll-submit/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vta/passkey-vms/enroll-submit/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/passkey-vms/enroll-submit/0.1#response"

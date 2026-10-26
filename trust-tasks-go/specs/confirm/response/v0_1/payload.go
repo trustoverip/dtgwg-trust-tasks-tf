@@ -20,6 +20,8 @@ const (
 // Response Acknowledgement the relying party returns after processing the user decision.
 // Carried in a Trust Task document whose type is
 // https://trusttasks.org/spec/confirm/response/0.1#response.
+//
+// Deprecated: retired; use task-consent/decision/0.2
 type Response struct {
 	Status ResponseStatus `json:"status"`
 
@@ -43,6 +45,8 @@ const (
 
 // Payload The approver's signed user-decision: subject + challenge are echoed, decision
 // is `approved` or `denied`, and the document's proof is what the relying party verifies.
+//
+// Deprecated: retired; use task-consent/decision/0.2
 type Payload struct {
 	// Echoed from the matching confirm-request.
 	Subject string `json:"subject"`
@@ -67,6 +71,12 @@ const TypeURI = "https://trusttasks.org/spec/confirm/response/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "retired; use task-consent/decision/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/confirm/response/0.1#response"

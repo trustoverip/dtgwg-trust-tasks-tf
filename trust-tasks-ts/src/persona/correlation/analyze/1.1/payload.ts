@@ -8,6 +8,8 @@ import type { ClaimType, Ext, Ulid, ValueType } from "../../../../_shared/compon
 
 /**
  * Report where the holder's identities link to one another, and what can be done about each link. The findings task behind the counts the write tasks return.
+ *
+ * @deprecated superseded by persona/correlation/analyze/1.2
  */
 export interface PersonaCorrelationAnalyzePayload {
   /**
@@ -30,6 +32,8 @@ export interface PersonaCorrelationAnalyzePayload {
 }
 /**
  * Success response to persona/correlation/analyze. Type https://trusttasks.org/spec/persona/correlation/analyze/1.0#response.
+ *
+ * @deprecated superseded by persona/correlation/analyze/1.2
  */
 export interface PersonaCorrelationAnalyzeResponsePayload {
   /**
@@ -145,13 +149,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/persona/correlation/analyze
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by persona/correlation/analyze/1.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by persona/correlation/analyze/1.2
+ */
 export type Payload = PersonaCorrelationAnalyzePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/persona/correlation/analyze/1.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by persona/correlation/analyze/1.2
+ */
 export type Response = PersonaCorrelationAnalyzeResponsePayload;
 
 /**

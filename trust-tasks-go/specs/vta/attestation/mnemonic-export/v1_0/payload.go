@@ -9,6 +9,8 @@ import (
 )
 
 // Response VTA Attestation Mnemonic Export — response payload
+//
+// Deprecated: superseded by vta/attestation/mnemonic-export/1.1
 type Response struct {
 	// The ASCII-armored sealed bundle. It carries the mnemonic sealed to clientDid under a
 	// producer assertion whose attestation quote binds the client key, the nonce and the
@@ -35,6 +37,8 @@ type Ext = map[string]json.RawMessage
 // mnemonic, once, sealed to a key only the producer holds. The outer document members
 // (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework —
 // SPEC §6.3.
+//
+// Deprecated: superseded by vta/attestation/mnemonic-export/1.1
 type Payload struct {
 	// The Ed25519 did:key the mnemonic is sealed to, by its X25519 counterpart, so only the
 	// holder of this key's private half can open the answer. Over an end-to-end channel, a
@@ -66,6 +70,12 @@ const TypeURI = "https://trusttasks.org/spec/vta/attestation/mnemonic-export/1.0
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vta/attestation/mnemonic-export/1.1"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vta/attestation/mnemonic-export/1.0#response"

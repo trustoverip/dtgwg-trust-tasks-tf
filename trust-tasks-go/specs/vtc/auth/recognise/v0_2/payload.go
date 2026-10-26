@@ -21,6 +21,8 @@ type ResponseData struct {
 }
 
 // Response VTC Auth Recognise — response payload
+//
+// Deprecated: superseded by vtc/auth/recognise/0.3
 type Response struct {
 	// A cross-community session id (xc-<uuid>), distinguishing it from local-member sessions.
 	SessionID string       `json:"sessionId"`
@@ -33,6 +35,8 @@ type Response struct {
 type Ext = map[string]json.RawMessage
 
 // Payload VTC Auth Recognise — payload
+//
+// Deprecated: superseded by vtc/auth/recognise/0.3
 type Payload struct {
 	// A holder-signed W3C Verifiable Presentation embedding the foreign membership credential
 	// (`MembershipCredential`) and role credential (a Verifiable Authority Credential,
@@ -56,6 +60,12 @@ const TypeURI = "https://trusttasks.org/spec/vtc/auth/recognise/0.2"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vtc/auth/recognise/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/auth/recognise/0.2#response"

@@ -20,6 +20,8 @@ type ResponseItemsItem struct {
 // Response The success response to a vtc/groups/requests/list/0.1 request. Carried in a
 // Trust Task document whose type is
 // https://trusttasks.org/spec/vtc/groups/requests/list/0.1#response.
+//
+// Deprecated: superseded by vtc/groups/requests/list/0.2
 type Response struct {
 	Items      []ResponseItemsItem `json:"items"`
 	NextCursor *string             `json:"nextCursor,omitempty"`
@@ -167,6 +169,8 @@ const (
 
 // Payload A group manager lists requests to join the groups they manage, pending by
 // default. The outer document members are owned by the framework — SPEC §6.3.
+//
+// Deprecated: superseded by vtc/groups/requests/list/0.2
 type Payload struct {
 	GroupID *GroupID `json:"groupId,omitempty"`
 
@@ -187,6 +191,12 @@ const TypeURI = "https://trusttasks.org/spec/vtc/groups/requests/list/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by vtc/groups/requests/list/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/vtc/groups/requests/list/0.1#response"

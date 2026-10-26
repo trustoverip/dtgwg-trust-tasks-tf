@@ -8,6 +8,8 @@ import type { ChunkData, ChunkIndex, DigestMultibase, ExpiresAt, Ext, TransferId
 
 /**
  * One chunk of an open blob upload. The outer document members are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by rooms/blobs/upload/chunk/0.2
  */
 export interface RoomsBlobsUploadChunkPayload {
   uploadId: TransferId;
@@ -21,6 +23,8 @@ export interface RoomsBlobsUploadChunkPayload {
 }
 /**
  * Success response to rooms/blobs/upload/chunk. Type https://trusttasks.org/spec/rooms/blobs/upload/chunk/0.1#response.
+ *
+ * @deprecated superseded by rooms/blobs/upload/chunk/0.2
  */
 export interface RoomsBlobsUploadChunkResponsePayload {
   uploadId: TransferId;
@@ -51,13 +55,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/rooms/blobs/upload/chunk/0.
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by rooms/blobs/upload/chunk/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by rooms/blobs/upload/chunk/0.2
+ */
 export type Payload = RoomsBlobsUploadChunkPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/blobs/upload/chunk/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by rooms/blobs/upload/chunk/0.2
+ */
 export type Response = RoomsBlobsUploadChunkResponsePayload;
 
 /**

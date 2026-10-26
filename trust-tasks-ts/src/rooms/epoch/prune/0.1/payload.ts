@@ -8,6 +8,8 @@ import type { AuthorityPresentation, Ext } from "../../../../_shared/components.
 
 /**
  * TODO: what the request payload of rooms/epoch/prune carries. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by rooms/epoch/prune/0.2
  */
 export interface RoomsEpochPrunePayload {
   /**
@@ -35,6 +37,8 @@ export interface RoomsEpochPrunePayload {
 }
 /**
  * Success response to rooms/epoch/prune. Type https://trusttasks.org/spec/rooms/epoch/prune/0.1#response.
+ *
+ * @deprecated superseded by rooms/epoch/prune/0.2
  */
 export interface RoomsEpochPruneResponsePayload {
   roomId: string;
@@ -63,13 +67,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/rooms/epoch/prune/0.1" as c
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by rooms/epoch/prune/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by rooms/epoch/prune/0.2
+ */
 export type Payload = RoomsEpochPrunePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/epoch/prune/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by rooms/epoch/prune/0.2
+ */
 export type Response = RoomsEpochPruneResponsePayload;
 
 /**

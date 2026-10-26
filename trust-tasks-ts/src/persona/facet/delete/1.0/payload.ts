@@ -8,6 +8,8 @@ import type { ExpectedVersion_PersonaV0_1 as ExpectedVersion, Ext, Ulid } from "
 
 /**
  * Delete one facet. The faces and attributes that belonged to it are untouched — a facet is a way of arranging what the holder keeps, never a container for it.
+ *
+ * @deprecated retired; use persona/world/delete/1.0
  */
 export interface PersonaFacetDeletePayload {
   facetId: Ulid;
@@ -19,6 +21,8 @@ export interface PersonaFacetDeletePayload {
 }
 /**
  * Success response to persona/facet/delete. Type https://trusttasks.org/spec/persona/facet/delete/1.0#response.
+ *
+ * @deprecated retired; use persona/world/delete/1.0
  */
 export interface PersonaFacetDeleteResponsePayload {
   /**
@@ -46,13 +50,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/persona/facet/delete/1.0" a
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "retired; use persona/world/delete/1.0";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated retired; use persona/world/delete/1.0
+ */
 export type Payload = PersonaFacetDeletePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/persona/facet/delete/1.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated retired; use persona/world/delete/1.0
+ */
 export type Response = PersonaFacetDeleteResponsePayload;
 
 /**

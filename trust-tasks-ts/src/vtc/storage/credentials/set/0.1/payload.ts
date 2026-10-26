@@ -8,6 +8,8 @@ import type { CredentialState_VtcV0_1 as CredentialState, DigestMultibase, Ext, 
 
 /**
  * Store a `sealed` storage config's long-lived credential, sealed end to end to the community. Write-only: no task returns it. The outer document members are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by vtc/storage/credentials/set/0.3
  */
 export interface VTCStorageCredentialsSetPayload {
   configId: StorageConfigId;
@@ -25,6 +27,7 @@ export interface VTCStorageCredentialsSetPayload {
   reason: string;
   ext?: Ext;
 }
+/** @deprecated superseded by vtc/storage/credentials/set/0.3 */
 export interface VTCStorageCredentialsSetResponsePayload {
   configId: StorageConfigId;
   credentialState: CredentialState;
@@ -49,13 +52,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/vtc/storage/credentials/set
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vtc/storage/credentials/set/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/storage/credentials/set/0.3
+ */
 export type Payload = VTCStorageCredentialsSetPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/storage/credentials/set/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/storage/credentials/set/0.3
+ */
 export type Response = VTCStorageCredentialsSetResponsePayload;
 
 /**

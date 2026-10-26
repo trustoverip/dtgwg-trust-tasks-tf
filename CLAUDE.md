@@ -117,7 +117,7 @@ defects three times.
 | Check | Asserts | Cannot see |
 |---|---|---|
 | `codegen-drift`, `bindings-drift` (×3: TS, Go and Dart) | the generators were re-run | a generator that is **consistently wrong** — regenerating reproduces it and the diff is empty |
-| `bindings match specs` (`npm run check-bindings`) | generated Rust, TS, Go and Dart agree with each spec's front matter, its `$defs.Response`, and each other; Rust's `ERROR_CODES` matches each spec's `errorCodes`; and the Dart pubspec agrees with its own `packageVersion` | anything not expressible from front matter + schema |
+| `bindings match specs` (`npm run check-bindings`) | generated Rust, TS, Go and Dart agree with each spec's front matter, its `$defs.Response`, and each other; no withdrawn version is generated and every other one carries the same deprecation note in all four; Rust's `ERROR_CODES` matches each spec's `errorCodes`; and the Dart pubspec agrees with its own `packageVersion` | anything not expressible from front matter + schema |
 | `node --test (runtime)`, `cargo test`, `go test`, `dart test` | the hand-written §7.2 pipelines behave | the generated types they operate on |
 | `npm run smoke`, `go test ./smoke`, `dart test test/smoke_test.dart` | the built npm package imports as a consumer imports it; the Go and Dart packages drive a *generated* module through the real pipeline | |
 | `test:infra` | the CloudFront negotiation function's routing decisions | whether the deployed site actually serves them |
@@ -337,6 +337,26 @@ Measured on the `validate` build: 63s → 23s, peak memory 9.0 GB → 4.3 GB.
 `acl`-specimen unit-test modules are `#[cfg(all(test, feature = "acl"))]`, and an
 integration test file that uses a family opens with `#![cfg(feature = "…")]`
 for each one it names.
+
+## ⚠️ Superseded, retired and withdrawn versions in the generators
+
+All four generators implement one lifecycle rule (SPEC "Superseded and Withdrawn
+Versions"), each independently — do not factor it out, `check-bindings` derives it
+a fifth time and compares:
+
+- **`status: withdrawn`** — generated nowhere: no module, export, index entry or
+  conformance test. Versions become withdrawn only in the quarterly batch
+  (`.github/workflows/withdraw.yml` → `scripts/withdraw-due.mjs`), 90 days after
+  being superseded or retired, because removing a module is a breaking release.
+- **Deprecated** — `status: retired`, or superseded (a later live version of the
+  slug at equal or higher maturity). Every generated module carries a constant
+  (`DEPRECATION` in Rust and TS, `Deprecation` in Go, `deprecation` in Dart) that is
+  "none" or the byte-exact note `superseded by <slug>/<M.N>` / `retired; use …` /
+  `retired`; a deprecated one also marks its root types (`#[deprecated]`,
+  `@deprecated`, `// Deprecated:`, `@Deprecated`).
+- Rust CI denies warnings, so a hand-written use of a superseded generated type
+  needs `#[allow(deprecated)]` or a move to the current version — and must move
+  before that version's withdrawal batch, or the batch PR's CI fails.
 
 ## ⚠️ `extends`: routing a newer version to the version a consumer implements
 

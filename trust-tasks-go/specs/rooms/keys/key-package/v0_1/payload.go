@@ -10,6 +10,8 @@ import (
 
 // Response Success response to rooms/keys/key-package. Type
 // https://trusttasks.org/spec/rooms/keys/key-package/0.1#response.
+//
+// Deprecated: superseded by rooms/keys/key-package/0.2
 type Response struct {
 	// The MLS KeyPackage, base64url. Public: it carries a signature key, an HPKE init key and
 	// the leaf's credential, and nothing that opens anything.
@@ -29,6 +31,8 @@ type Ext = map[string]json.RawMessage
 // Payload An invited party asks the agent that will hold its room keys to mint an MLS
 // KeyPackage, so the room's owner can add it to the group. The private half stays with
 // the agent; only the KeyPackage travels.
+//
+// Deprecated: superseded by rooms/keys/key-package/0.2
 type Payload struct {
 	// The room to mint a KeyPackage for. Scoped per room rather than reused across rooms: one
 	// KeyPackage presented to two rooms correlates a member across them, which is the linkage
@@ -54,6 +58,12 @@ const TypeURI = "https://trusttasks.org/spec/rooms/keys/key-package/0.1"
 // trusttasks.ReadForSpec. The direct declaration only; the chain is walked
 // through the registry-wide index in package specs.
 const Extends = ""
+
+// Deprecation is empty for a current specification version, and otherwise says
+// why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
+// "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
+// supported, but is withdrawn from this module in a later scheduled release.
+const Deprecation = "superseded by rooms/keys/key-package/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/rooms/keys/key-package/0.1#response"

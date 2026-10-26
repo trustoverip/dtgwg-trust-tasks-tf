@@ -8,11 +8,14 @@ import type { Ext, RecordType, TrustRecord } from "../../../../_shared/component
 
 /**
  * An administrator asks a trust registry to create a new trust record (a recognition or authorization assertion). Idempotent per record key (entity+authority+action+resource); creating an existing key is an error.
+ *
+ * @deprecated retired; use registry/record/put/0.2
  */
 export interface RegistryRecordCreatePayload {
   record: TrustRecord;
   ext?: Ext;
 }
+/** @deprecated retired; use registry/record/put/0.2 */
 export interface RegistryRecordCreateResponsePayload {
   /**
    * Whether the record was created.
@@ -39,13 +42,29 @@ export const TYPE_URI = "https://trusttasks.org/spec/registry/record/create/0.1"
  */
 export const EXTENDS: string | null = null;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "retired; use registry/record/put/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated retired; use registry/record/put/0.2
+ */
 export type Payload = RegistryRecordCreatePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/registry/record/create/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated retired; use registry/record/put/0.2
+ */
 export type Response = RegistryRecordCreateResponsePayload;
 
 /**
