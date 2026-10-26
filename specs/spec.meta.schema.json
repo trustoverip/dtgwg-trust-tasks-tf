@@ -611,6 +611,11 @@
       "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
       "description": "Declares that this version is wire-identical to the named earlier version of the same slug, modulo the mechanical normalizations of SPEC \u00a74.10 \u2014 casing of member names and enumerated values \u2014 and framework/shared-schema `$ref` re-pins. Advisory: consumers MAY dual-accept documents of the named version by normalizing casing and retyping the URI, without a hand-written adapter. New versions should not need this field \u2014 editorial changes to a `draft` spec are made in place per SPEC \u00a75.2; it exists for wire-identical versions minted before that rule."
     },
+    "extends": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$",
+      "description": "Declares that this version is a backwards-compatible extension of the named earlier version of the same slug and MAJOR (SPEC \u00a75.2 Declared extension, \u00a77.3 item 22): it keeps every member, type, required member, enumerated value, constraint and definition of that version and only adds \u2014 an optional member, an appended enumerated value or oneOf/anyOf branch, a loosened bound, a new definition \u2014 with the same proof requirement and every declared error code. Binding even at draft. Consumers of the named version accept this version's documents by ignoring unknown members, and a reference to the named version is satisfied by this one, so the change cascades nowhere. The build checks the promise against the two payload schemas (scripts/lib/schema-compat.mjs)."
+    },
     "supersededBy": {
       "type": "string",
       "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*(/(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*))?$",
