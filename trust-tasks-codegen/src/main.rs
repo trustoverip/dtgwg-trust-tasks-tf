@@ -12,6 +12,16 @@
 //! cargo run -p trust-tasks-codegen
 //! cargo fmt
 //! ```
+//!
+//! With `--bundles <out-dir>` it instead writes the registry bundles — one
+//! self-contained `bundle.json` per specification version plus an
+//! `index.json` — and touches nothing in `trust-tasks-rs`. See [`bundle`].
+//!
+//! ```sh
+//! cargo run -p trust-tasks-codegen -- --bundles website/specs
+//! ```
+
+mod bundle;
 
 use std::collections::BTreeMap;
 use std::fs;
@@ -833,6 +843,19 @@ fn extract_examples(spec_md_path: &Path) -> Result<SpecExamples> {
 
 fn main() -> Result<()> {
     let repo_root = find_repo_root()?;
+
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    match args.as_slice() {
+        [] => {}
+        [flag, out] if flag == "--bundles" => {
+            return bundle::run(&repo_root, &std::env::current_dir()?.join(out));
+        }
+        _ => {
+            return Err(anyhow!(
+                "usage: trust-tasks-codegen [--bundles <out-dir>] (got {args:?})"
+            ))
+        }
+    }
     let specs_dir = repo_root.join("specs");
     let out_root = repo_root.join("trust-tasks-rs/src/specs");
 
@@ -1347,17 +1370,21 @@ fn indent_safe_docs(file: &mut syn::File) {
     IndentSafe.visit_file_mut(file);
 }
 
-/// Generate one spec's module, returning the path to write it to and its
-/// contents — **without touching the filesystem**.
+/// A specification version's self-contained schemas: the request payload
+/// schema with every cross-file `$ref` inlined, and — when it defines a
+/// `$defs.Response` — the response document wrapping it.
 ///
-/// Deliberately pure. [`main`] collects every module before
-/// [`clean_generated_tree`] runs, so a spec that fails to generate leaves the
-/// existing tree exactly as it was. It used to write as it went, after the
-/// clean: one malformed `payload.invalid-examples.json` then left 300+ files
-/// deleted and the workspace uncompilable, and the only symptom was a
-/// downstream `cargo fmt` error about an unresolvable module — pointing
-/// nowhere near the file at fault.
-fn generate_one(spec: &Spec, out_root: &Path) -> Result<GeneratedSpec> {
+/// The one place both are built. [`generate_one`] embeds them (pretty-printed)
+/// as `Payload::PAYLOAD_SCHEMA` / `Response::PAYLOAD_SCHEMA`, and the registry
+/// bundles (`--bundles`, see [`bundle`]) carry them as `schema` /
+/// `responseSchema`, so the two are the same JSON by construction rather than
+/// by a comparison someone has to remember to run.
+pub(crate) struct SpecSchemas {
+    pub(crate) schema: Value,
+    pub(crate) response: Option<Value>,
+}
+
+pub(crate) fn spec_schemas(spec: &Spec) -> Result<SpecSchemas> {
     let mut schema: Value = serde_json::from_str(&fs::read_to_string(&spec.schema_path)?)
         .with_context(|| format!("parse {}", spec.schema_path.display()))?;
 
@@ -1378,16 +1405,12 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<GeneratedSpec> {
         )
     })?;
 
-    // The inlined, self-contained schema is now the on-the-wire
-    // `Payload::PAYLOAD_SCHEMA`.
-    let raw = serde_json::to_string_pretty(&schema)? + "\n";
-
     // The response variant needs a schema of its own: the root schema
     // describes the *request* payload, and `$defs.Response` describes the
     // response. Wrap the latter in a document that keeps `$defs` reachable so
     // its internal `$ref`s still resolve, rather than lifting the subschema
     // out and breaking them.
-    let response_raw = schema
+    let response = schema
         .get("$defs")
         .and_then(|d| d.get("Response"))
         .map(|_| {
@@ -1406,8 +1429,79 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<GeneratedSpec> {
                 "$defs".into(),
                 schema.get("$defs").cloned().unwrap_or(Value::Null),
             );
-            serde_json::to_string_pretty(&Value::Object(doc)).map(|s| s + "\n")
-        })
+            Value::Object(doc)
+        });
+    Ok(SpecSchemas { schema, response })
+}
+
+/// Everything a specification version's front matter says about how its
+/// documents are consumed (SPEC §7.2 / §7.3), read once by the existing
+/// readers. Shared by [`generate_one`] and the registry bundles for the same
+/// reason [`SpecSchemas`] is.
+pub(crate) struct SpecPolicyDecl {
+    pub(crate) is_bearer: bool,
+    pub(crate) is_proof_required: ProofRequired,
+    pub(crate) is_issued_at_required: IssuedAtRequired,
+    pub(crate) max_document_bytes: MaxDocumentBytes,
+    /// The request's `recipient` member tracks the recipient party.
+    pub(crate) recipient_required: bool,
+    /// The response swaps the parties, so its `recipient` member tracks the
+    /// issuer party (§7.2 item 5).
+    pub(crate) issuer_required: bool,
+    pub(crate) error_codes: Vec<ErrorCodeDecl>,
+    pub(crate) extends: Option<String>,
+}
+
+pub(crate) fn read_spec_policy(spec: &Spec, has_response: bool) -> Result<SpecPolicyDecl> {
+    let md = spec.spec_md_path();
+    let is_bearer = read_bearer_flag(&md)?;
+    let is_proof_required = read_proof_required_flag(&md)?;
+    let is_issued_at_required = read_issued_at_required_flag(&md)?;
+    let max_document_bytes = read_max_document_bytes(&md)?;
+    if !has_response && max_document_bytes.response.is_some() {
+        return Err(anyhow!(
+            "{}/{}: maxDocumentBytes declares a `response` bound, but the schema defines no \
+             $defs.Response",
+            spec.slug,
+            spec.version
+        ));
+    }
+    Ok(SpecPolicyDecl {
+        is_bearer,
+        is_proof_required,
+        is_issued_at_required,
+        max_document_bytes,
+        recipient_required: read_member_required_flag(&md, "recipient")?,
+        issuer_required: read_member_required_flag(&md, "issuer")?,
+        error_codes: read_error_codes(spec)?,
+        extends: read_extends(spec)?,
+    })
+}
+
+/// Generate one spec's module, returning the path to write it to and its
+/// contents — **without touching the filesystem**.
+///
+/// Deliberately pure. [`main`] collects every module before
+/// [`clean_generated_tree`] runs, so a spec that fails to generate leaves the
+/// existing tree exactly as it was. It used to write as it went, after the
+/// clean: one malformed `payload.invalid-examples.json` then left 300+ files
+/// deleted and the workspace uncompilable, and the only symptom was a
+/// downstream `cargo fmt` error about an unresolvable module — pointing
+/// nowhere near the file at fault.
+fn generate_one(spec: &Spec, out_root: &Path) -> Result<GeneratedSpec> {
+    // The self-contained request and response schemas — the same JSON a
+    // registry bundle carries (see [`spec_schemas`]).
+    let SpecSchemas {
+        mut schema,
+        response: response_schema,
+    } = spec_schemas(spec)?;
+
+    // The inlined, self-contained schema is now the on-the-wire
+    // `Payload::PAYLOAD_SCHEMA`.
+    let raw = serde_json::to_string_pretty(&schema)? + "\n";
+    let response_raw = response_schema
+        .as_ref()
+        .map(|doc| serde_json::to_string_pretty(doc).map(|s| s + "\n"))
         .transpose()?;
 
     let has_response = normalize_titles(&mut schema)?;
@@ -1461,24 +1555,16 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<GeneratedSpec> {
             spec.version
         ));
     }
-    let is_bearer = read_bearer_flag(&spec.spec_md_path())?;
-    let is_proof_required = read_proof_required_flag(&spec.spec_md_path())?;
-    let is_issued_at_required = read_issued_at_required_flag(&spec.spec_md_path())?;
-    let max_document_bytes = read_max_document_bytes(&spec.spec_md_path())?;
-    if !has_response && max_document_bytes.response.is_some() {
-        return Err(anyhow!(
-            "{}/{}: maxDocumentBytes declares a `response` bound, but the schema defines no \
-             $defs.Response",
-            spec.slug,
-            spec.version
-        ));
-    }
-    // Request `recipient` member tracks the recipient party; the response swaps
-    // parties, so its `recipient` member tracks the issuer party (§7.2 item 5).
-    let recipient_required = read_member_required_flag(&spec.spec_md_path(), "recipient")?;
-    let issuer_required = read_member_required_flag(&spec.spec_md_path(), "issuer")?;
-    let error_codes = read_error_codes(spec)?;
-    let extends = read_extends(spec)?;
+    let SpecPolicyDecl {
+        is_bearer,
+        is_proof_required,
+        is_issued_at_required,
+        max_document_bytes,
+        recipient_required,
+        issuer_required,
+        error_codes,
+        extends,
+    } = read_spec_policy(spec, has_response)?;
     let module_tokens = render_module(
         spec,
         body,
@@ -3740,9 +3826,14 @@ mod lifecycle_tests {
 
     /// A throwaway `specs/` tree: one `spec.md` per `(slug, version, front matter)`.
     fn lifecycles(entries: &[(&str, &str, &str)]) -> BTreeMap<(String, String), Lifecycle> {
+        // A per-process counter as well as the clock: macOS's clock is
+        // microsecond-grained, so two tests running in parallel could share a
+        // directory and one would delete the other's tree mid-read.
+        static NEXT: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
         let root = std::env::temp_dir().join(format!(
-            "tt-codegen-lifecycle-{}-{}",
+            "tt-codegen-lifecycle-{}-{}-{}",
             std::process::id(),
+            NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed),
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
                 .unwrap()
