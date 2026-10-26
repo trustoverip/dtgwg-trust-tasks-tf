@@ -33,6 +33,7 @@ import { createErrorCodeCasingLint, checkStandardErrorCodeCasing } from './lib/e
 import { checkMemberCasing } from './lib/member-casing.mjs';
 import { checkWireConventions } from './lib/wire-conventions.mjs';
 import { checkStaleReferences } from './lib/stale-references.mjs';
+import { incompatibilities, frontMatterIncompatibilities } from './lib/schema-compat.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SPECS_DIR = path.join(ROOT, 'specs');
@@ -1491,6 +1492,7 @@ function buildTask(entry, meta, schema, uses) {
     // dual-accept a predecessor version. Both have to reach the page to work.
     knownImplementations: meta.knownImplementations || [],
     wireCompatibleWith: meta.wireCompatibleWith || null,
+    extends: meta.extends || null,
     supersededBy: meta.supersededBy || null,
     jsonLdContext: !!meta.jsonLdContext,
     hasResponse,
@@ -2242,6 +2244,48 @@ function main() {
       fail(rel, `wireCompatibleWith must name a strictly earlier version of the same slug (got '${t.wireCompatibleWith}' for version '${t.version}')`);
     }
   }
+
+  // `extends` (SPEC §5.2 "Declared extension", §7.3 item 22) is a promise the
+  // libraries ROUTE on: a consumer of the named version accepts this version's
+  // documents by ignoring the members it does not know, and the stale-references
+  // check stops asking specs that name the old version to move. So it is checked,
+  // not trusted — with the comparison that guards a released schema in place
+  // (scripts/lib/schema-compat.mjs): the named version's payload schema, Response
+  // included, must survive into this one intact, and only grow.
+  const frontMatterOf = (slug, version) => {
+    const raw = fs.readFileSync(path.join(SPECS_DIR, slug, version, 'spec.md'), 'utf8');
+    const m = raw.match(/^---\n([\s\S]*?)\n---/);
+    return m ? YAML.parse(m[1]) : {};
+  };
+  let extendsChecked = 0;
+  for (const t of tasks) {
+    if (!t.extends) continue;
+    const rel = `${t.slug}/${t.version}`;
+    if (!versionsBySlug.get(t.slug).has(t.extends)) {
+      fail(rel, `extends names version '${t.extends}', which does not exist for slug '${t.slug}'`);
+      continue;
+    }
+    if (cmpVersion(t.extends, t.version) >= 0 || t.extends.split('.')[0] !== t.version.split('.')[0]) {
+      fail(rel, `extends must name a strictly earlier version with the same MAJOR (got '${t.extends}' for version '${t.version}')`);
+      continue;
+    }
+    extendsChecked++;
+    const beforeFile = path.join(SPECS_DIR, t.slug, t.extends, 'payload.schema.json');
+    const afterFile = path.join(SPECS_DIR, t.slug, t.version, 'payload.schema.json');
+    const load = (f) => JSON.parse(fs.readFileSync(f, 'utf8'));
+    const found = [
+      ...incompatibilities(load(beforeFile), load(afterFile), { beforeFile, afterFile, loadBefore: load, loadAfter: load, acrossVersions: true }),
+      ...frontMatterIncompatibilities(frontMatterOf(t.slug, t.extends), frontMatterOf(t.slug, t.version)),
+    ];
+    for (const f of found) {
+      fail(
+        rel,
+        `declares extends: '${t.extends}', but ${f.pointer ? `${f.pointer}: ` : ''}${f.reason}. An extension may only add — ` +
+          `drop the declaration, or make the change additive.`
+      );
+    }
+  }
+  if (extendsChecked) console.log(`  Declared extensions: ${extendsChecked} version(s) checked against the version each extends`);
 
   // related[] referential integrity
   const slugSet = new Set(tasks.map((t) => t.slug));

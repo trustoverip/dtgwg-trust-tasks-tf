@@ -48,9 +48,12 @@ const typesOf = (node) => [].concat(node?.type ?? []).sort();
  * Compare `before` and `after`. `loadBefore(file)` / `loadAfter(file)` return
  * the parsed JSON of a file in each tree (or throw), for following `$ref`s;
  * `beforeFile` / `afterFile` are the files the two documents came from.
+ * `acrossVersions` compares two versions of a slug (an `extends` declaration)
+ * rather than one file over time: titles, which name generated types within a
+ * module, may then differ.
  * Returns `[{ pointer, reason }]` — empty when `after` is a compatible successor.
  */
-export function incompatibilities(before, after, { beforeFile, afterFile, loadBefore, loadAfter }) {
+export function incompatibilities(before, after, { beforeFile, afterFile, loadBefore, loadAfter, acrossVersions = false }) {
   const found = [];
   const visiting = new Set();
 
@@ -109,7 +112,8 @@ export function incompatibilities(before, after, { beforeFile, afterFile, loadBe
     if (!same(typesOf(b), typesOf(a))) {
       found.push({ pointer: `${pointer}/type`, reason: `type changed from ${JSON.stringify(b.type)} to ${JSON.stringify(a.type)}` });
     }
-    if (!same(b.title, a.title) && b.title !== undefined) {
+    // Across versions each is its own generated module, so a title naming the version may differ.
+    if (!acrossVersions && !same(b.title, a.title) && b.title !== undefined) {
       found.push({ pointer: `${pointer}/title`, reason: 'the `title` names a generated type; changing it renames that type' });
     }
     if (!same(b.const, a.const)) found.push({ pointer: `${pointer}/const`, reason: 'the `const` changed' });
