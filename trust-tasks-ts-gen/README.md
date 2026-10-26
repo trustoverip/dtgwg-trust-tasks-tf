@@ -42,22 +42,36 @@ declareExtends(); // once at start-up: the locked versions' `extends` declaratio
   It depends on `json-schema-to-typescript` and `prettier` at exact versions for
   that reason.
 
-## How a module differs from the prebuilt one
+## How the output compares with the prebuilt package
 
-The constants (`TYPE_URI`, `EXTENDS`, `DEPRECATION`, `SPEC`, `RESPONSE_SPEC`, …)
-and the payload/response declarations are what `@openvtc/trust-tasks` ships for
-the same version. Two things cannot be, from a bundle:
+Generated from current bundles, every module is the one `@openvtc/trust-tasks`
+ships for that version, byte for byte from its first import to its last
+constant, banner aside. Shared definitions are hoisted into one
+`<out>/_shared/components.ts` as the package hoists them: a bundle's
+`defOrigins` names each definition that was spliced in from a shared schema,
+and the one shared document it came from, so a definition reached by several
+locked tasks is declared once and each module imports it and re-exports it
+under its own name (`AclGrant_v0_2.AclEntry`). Three things differ, and cannot
+not:
 
-- **Shared definitions are declared in each module**, not imported from one
-  registry-wide `_shared/components.ts`. A bundle's schema is self-contained and
-  does not say which `$defs` entry was spliced in from which shared file, so the
-  cross-module hoisting the in-repo generator does (and its
-  `component-names.lock.json`) cannot be reproduced. Each definition is still
-  declared once per module, under the name the prebuilt module exports it by;
-  TypeScript is structural, so the same definition from two modules is
-  interchangeable.
+- **The identifiers inside `_shared/components.ts` depend on the lock.** A name
+  with one shape among the locked tasks is bare; one with several is qualified
+  with each shape's family and version (`AclEntry_AclV0_2`). The package decides
+  the same question over the whole registry, and never renames a published
+  identifier (`trust-tasks-ts/component-names.lock.json`) — history no bundle
+  carries. So an application pinning only `acl/grant` 0.2 gets `AclEntry`
+  where the package has `AclEntry_AclV0_2`, and generating every version
+  differs in one name (`TrustRecord`, which shipped bare before a second shape
+  appeared). The barrel does not export the components module for this reason:
+  use the names each module re-exports, which never change.
 - **`PAYLOAD_SCHEMA` has the bundle's member order** (sorted, RFC 8785) except
-  inside `properties`, which keeps the authored order. It is the same JSON.
+  in `properties` and the root `$defs`, which keep the order the package's
+  have. It is the same JSON.
+- **A bundle written before `defOrigins` existed** cannot tell a shared
+  definition from the schema's own, so its module declares every definition it
+  reaches itself, once each, under the name the package exports it by.
+  TypeScript is structural, so those and the hoisted ones are interchangeable.
+  `trust-tasks update` fetches current bundles.
 
 `scripts/equivalence.mjs` generates every registry version and holds the result to
 the prebuilt tree; its header says exactly what it compares.

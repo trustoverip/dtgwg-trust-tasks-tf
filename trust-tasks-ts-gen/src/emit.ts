@@ -10,34 +10,28 @@
  * aliasing, the deprecation markers — the code follows the script closely so
  * a reader can diff the two.
  *
- * ── The one deliberate difference: no cross-module hoisting ────────────────
+ * ── Shared definitions: hoisted when the bundle says which they are ────────
  *
  * The in-repo generator hoists every definition a payload schema reaches by a
- * cross-file `$ref` into one `_shared/components.ts`, and names each shape
- * once across the whole registry (`trust-tasks-ts/component-names.lock.json`
- * keeps those names stable). That needs two things a bundle does not carry:
- * which `$defs` entries were spliced in from a shared file (and from which
- * one), and the registry-wide set of shapes a name denotes. A bundle's schema
- * is self-contained — every `$ref` is already local — and says nothing about
- * where a definition was written.
+ * cross-file `$ref` into one `_shared/components.ts`, imports it into each
+ * module, and re-exports it there under its own name. A bundle's `defOrigins`
+ * names exactly those definitions (and the shared document each came from), so
+ * a module generated from such a bundle does the same: see components.ts, which
+ * declares them once for the whole output directory, and `generateModule`
+ * below. The payload schema's own `$defs` are left to the compiler, as there.
  *
- * So each module here declares the definitions it uses itself — once each,
- * under the names the prebuilt module re-exports them by (`AclEntry`, `Ext`,
- * …); see "Declaring each definition once per module" below. TypeScript is
- * structurally typed, so an `Ext` from one generated module and an `Ext` from
- * another are mutually assignable; what is lost is only the single
- * registry-wide declaration. The equivalence test (`scripts/equivalence.mjs`)
- * compares these declarations with the prebuilt modules' by type identity, not
- * by text.
- *
- * Hoisting them across the modules of one application faithfully would need
- * the bundle to say, per `$defs` entry, which shared file it was spliced from;
- * see the package README.
+ * A bundle written before `defOrigins` existed cannot tell a shared definition
+ * from the schema's own. Its module declares every definition it reaches
+ * itself, once each, under the name the prebuilt module exports it by; see
+ * "Declaring each definition once per module" below. TypeScript is
+ * structurally typed, so an `Ext` from one such module and the hoisted `Ext`
+ * are mutually assignable; what is lost is only the single declaration.
  */
 
 import { compile, type Options } from "json-schema-to-typescript";
 
 import { withAuthoredOrder, type Bundle, type Json, type JsonObject } from "./bundle.js";
+import { componentClauses, defRefName, titleTypeName, type ComponentRegistry, type UsedComponent } from "./components.js";
 
 /** What generated a module, for its banner. */
 export const GENERATOR = "trust-tasks-gen-ts (@openvtc/trust-tasks-gen)";
@@ -62,20 +56,6 @@ function responseProbeRef(response: JsonObject): JsonObject {
   const isPureAlias =
     typeof response.$ref === "string" && Object.keys(response).every((k) => RESPONSE_ANNOTATIONS.has(k));
   return isPureAlias ? { $ref: response.$ref as string } : { $ref: "#/$defs/Response" };
-}
-
-/**
- * The type name json-schema-to-typescript mints from a schema `title`: split
- * on anything that is not alphanumeric, upper-case each token's first letter,
- * and join.
- */
-function titleTypeName(title: Json | undefined): string | null {
-  if (typeof title !== "string") return null;
-  const parts = title
-    .split(/[^A-Za-z0-9]+/)
-    .filter(Boolean)
-    .map((word) => word[0]!.toUpperCase() + word.slice(1));
-  return parts.length ? parts.join("") : null;
 }
 
 const DECLARATION_RE = /^export (?:interface|type) ([A-Za-z0-9_$]+)/gm;
@@ -300,7 +280,7 @@ export interface GeneratedModule {
   readonly extendsVersion: string | null;
 }
 
-/* ── Declaring each definition once per module ──────────────────────────────
+/* ── Declaring each definition once per module (bundles without defOrigins) ─
  *
  * Left to itself the compiler declares a `$ref`'d definition afresh wherever a
  * reference carries sibling keywords (a `description`, as nearly every one
@@ -311,22 +291,15 @@ export interface GeneratedModule {
  * This does the same within the module: every `$defs` entry the payload or its
  * response reaches (other than `Response` itself, which the response probe
  * compiles) is referenced by name and declared once, below the root
- * declarations. Since a bundle cannot say which `$defs` came from a shared file
- * and which were the schema's own, it treats them all alike — so a schema's own
+ * declarations. Since a bundle without `defOrigins` cannot say which `$defs`
+ * came from a shared file and which were the schema's own, it treats them all
+ * alike — so a schema's own
  * definitions are declared this way too, where the in-repo generator left
  * those to the compiler.
  */
 
-const DEF_REF = /^#\/\$defs\/([^/]+)$/;
 const IDENTIFIER = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 const DEFS_ROOT_TYPE = "TrustTasksModuleDefinitionsRoot";
-
-/** The `$defs` name a `#/$defs/<name>` reference names, or null. */
-function defRefName(ref: unknown): string | null {
-  if (typeof ref !== "string") return null;
-  const m = DEF_REF.exec(ref);
-  return m ? m[1]!.replace(/~1/g, "/").replace(/~0/g, "~") : null;
-}
 
 /** Every `$defs` name referenced anywhere under `node`. */
 function referencedDefs(node: Json, out: Set<string>): Set<string> {
@@ -463,8 +436,139 @@ async function compileDefinitions(raw: JsonObject, names: ReadonlyMap<string, st
   return ts.replace(/\n{3,}/g, "\n\n").trim();
 }
 
-/** Generate the module for one (verified) bundle. */
-export async function generateModule(bundle: Bundle, source: string | null = null): Promise<GeneratedModule> {
+/** Insert `block` immediately after the generated banner comment. */
+function spliceAfterBanner(ts: string, block: string): string {
+  if (!block) return ts;
+  const end = ts.indexOf("*/");
+  if (end < 0) throw new Error("compiled output carries no banner comment to splice after");
+  return `${ts.slice(0, end + 2)}\n${block}${ts.slice(end + 2)}`;
+}
+
+/** The module's path relative to the output directory. */
+function modulePath(bundle: Bundle, source: string | null): string {
+  return `${source === null ? "" : `${source}/`}${bundle.slug}/${bundle.version}/payload.ts`;
+}
+
+/**
+ * Generate the module for one (verified) bundle. With a registry and a bundle
+ * that carries `defOrigins`, its shared definitions are imported from the
+ * registry's `_shared/components.ts`; otherwise they are declared in the module.
+ */
+export async function generateModule(
+  bundle: Bundle,
+  source: string | null = null,
+  registry: ComponentRegistry | null = null,
+): Promise<GeneratedModule> {
+  if (registry !== null && bundle.defOrigins !== null) return generateHoistedModule(bundle, source, registry);
+  return generateSelfContainedModule(bundle, source);
+}
+
+/**
+ * The in-repo generator's `generateOne`, for a bundle that says which of its
+ * `$defs` are shared: the payload schema is compiled as written — its own
+ * `$defs` only, in authored order — with every `$ref` to a shared definition
+ * rewritten to the hoisted type's name.
+ */
+async function generateHoistedModule(bundle: Bundle, source: string | null, registry: ComponentRegistry): Promise<GeneratedModule> {
+  const where = `${source === null ? "" : `@${source}/`}${bundle.slug}/${bundle.version}`;
+  const outPath = modulePath(bundle, source);
+  const origins = bundle.defOrigins!;
+  const { schema: full, responseSchema } = withAuthoredOrder(bundle);
+  const shared = registry.forBundle(bundle);
+
+  // The schema as its author wrote it: the spliced definitions removed, and
+  // `$defs` last, where a schema file keeps it — that is the order the script
+  // meets `$ref`s in, which decides which of two same-named definitions gets
+  // the bare name below.
+  const raw: JsonObject = {};
+  for (const [key, value] of Object.entries(full)) if (key !== "$defs") raw[key] = value;
+  const own: JsonObject = {};
+  for (const [key, value] of Object.entries(isObject(full.$defs) ? full.$defs : {})) {
+    if (!Object.prototype.hasOwnProperty.call(origins, key)) own[key] = value;
+  }
+  if (Object.keys(own).length > 0) raw.$defs = own;
+  const response = own.Response;
+  const hasResponse = isObject(response);
+
+  const input: JsonObject = structuredClone(
+    hasResponse
+      ? {
+          ...raw,
+          properties: { ...(isObject(raw.properties) ? raw.properties : {}), [RESPONSE_PROBE]: responseProbeRef(response) },
+        }
+      : raw,
+  );
+
+  // The script's `rewriteRefsToComponents`: each `$ref` to a shared definition
+  // becomes a `tsType` naming it locally. Two different shared definitions
+  // with one base name in one module cannot both hold it; the first met keeps
+  // it and the other keeps its qualified name.
+  const used = new Map<string, UsedComponent>();
+  const localNames = new Map<string, string>();
+  const claimed = new Map<string, string>();
+  const localNameFor = (tsName: string, baseName: string): string => {
+    const existing = localNames.get(tsName);
+    if (existing !== undefined) return existing;
+    const claimant = claimed.get(baseName);
+    const local = claimant === undefined ? baseName : tsName;
+    if (claimant === undefined) claimed.set(baseName, tsName);
+    localNames.set(tsName, local);
+    used.set(tsName, { tsName, local });
+    return local;
+  };
+  const rewrite = (node: Json): void => {
+    if (Array.isArray(node)) return node.forEach(rewrite);
+    if (!isObject(node)) return;
+    const name = defRefName(node.$ref);
+    if (name !== null && Object.prototype.hasOwnProperty.call(origins, name)) {
+      const component = shared.get(name);
+      if (!component) throw new Error(`${where}: $defs/${name} is shared, but the registry has no component for it`);
+      delete node.$ref;
+      node.tsType = localNameFor(component.tsName, component.baseName);
+      return;
+    }
+    for (const value of Object.values(node)) rewrite(value);
+  };
+  rewrite(input);
+
+  let ts = await compile(input as never, "payload.schema.json", compileOptions(bundle, source));
+  let responseType: string | null = null;
+  if (hasResponse) ({ ts, responseType } = stripResponseProbe(ts, where));
+  if (responseSchema === null && responseType !== null) {
+    throw new Error(`${where}: the schema declares $defs.Response but the bundle carries no responseSchema`);
+  }
+
+  const rootType = rootTypeName(ts, where, raw);
+  const deprecation = bundle.deprecation;
+  if (deprecation) {
+    ts = markDeprecated(ts, rootType, deprecation);
+    if (responseType && /^[A-Za-z0-9_$]+$/.test(responseType) && responseType !== rootType) {
+      ts = markDeprecated(ts, responseType, deprecation);
+    }
+  }
+  const tail = emitTail(ts, rootType, responseType, where, {
+    typeUri: bundle.typeUri,
+    extendsVersion: bundle.extends,
+    deprecation,
+    bundle,
+    schemas: { request: full, response: responseType ? responseSchema : null },
+  });
+
+  // Imports above the compiler's output and re-exports below it, as the script.
+  const { imports, reexports } = componentClauses(used, outPath, ts, registry, responseType ?? "");
+  return {
+    path: outPath,
+    source,
+    text: spliceAfterBanner(ts, imports) + reexports + tail,
+    slug: bundle.slug,
+    version: bundle.version,
+    typeUri: bundle.typeUri,
+    extendsVersion: bundle.extends,
+  };
+}
+
+/** A bundle without `defOrigins`: every definition declared in the module itself. */
+async function generateSelfContainedModule(bundle: Bundle, source: string | null): Promise<GeneratedModule> {
   const where = `${source === null ? "" : `@${source}/`}${bundle.slug}/${bundle.version}`;
   const { schema: raw, responseSchema } = withAuthoredOrder(bundle);
   const defs = isObject(raw.$defs) ? raw.$defs : {};
@@ -519,7 +623,7 @@ export async function generateModule(bundle: Bundle, source: string | null = nul
   });
 
   return {
-    path: `${source === null ? "" : `${source}/`}${bundle.slug}/${bundle.version}/payload.ts`,
+    path: modulePath(bundle, source),
     source,
     text: ts + tail,
     slug: bundle.slug,

@@ -42,6 +42,19 @@ export interface Bundle {
     readonly recipientRequired: VariantFlags;
   };
   readonly propertyOrder: Readonly<Record<string, readonly string[]>>;
+  /**
+   * `/schema` and `/responseSchema` → the root `$defs` names in the order the
+   * in-repo inliner leaves them. `{}` in a bundle written before it existed.
+   */
+  readonly defsOrder: Readonly<Record<string, readonly string[]>>;
+  /**
+   * Each `$defs` entry spliced in from a shared document → that document's
+   * `$id` + `#/$defs/<name>`; the payload schema's own definitions have none.
+   * `null` when the bundle predates the member — not `{}`, which says "no
+   * definition here was shared": a reader of an older bundle cannot tell a
+   * shared definition from the schema's own, and falls back accordingly.
+   */
+  readonly defOrigins: Readonly<Record<string, string>> | null;
   readonly schema: JsonObject;
   readonly responseSchema: JsonObject | null;
 }
@@ -96,6 +109,28 @@ export function parseBundle(value: unknown): Bundle {
   if (!isObject(order) || !Object.values(order).every((v) => Array.isArray(v) && v.every((n) => typeof n === "string"))) {
     throw new Error("bundle member propertyOrder must map JSON Pointers to arrays of member names");
   }
+  const defsOrder = value.defsOrder ?? {};
+  if (
+    !isObject(defsOrder) ||
+    !Object.entries(defsOrder).every(
+      ([k, v]) => (k === "/schema" || k === "/responseSchema") && Array.isArray(v) && v.every((n) => typeof n === "string"),
+    )
+  ) {
+    throw new Error("bundle member defsOrder must map /schema and /responseSchema to arrays of $defs names");
+  }
+  const defOrigins = value.defOrigins ?? null;
+  if (defOrigins !== null && (!isObject(defOrigins) || !Object.values(defOrigins).every((o) => typeof o === "string" && /#\/\$defs\/[^/]+$/.test(o)))) {
+    throw new Error("bundle member defOrigins must map $defs names to <document>#/$defs/<name>");
+  }
+  if (defOrigins !== null) {
+    const defs = isObject(value.schema.$defs) ? value.schema.$defs : {};
+    for (const name of Object.keys(defOrigins)) {
+      if (!Object.prototype.hasOwnProperty.call(defs, name)) throw new Error(`defOrigins names $defs/${name}, which the schema does not define`);
+    }
+    if (Object.prototype.hasOwnProperty.call(defOrigins, "Response")) {
+      throw new Error("defOrigins gives $defs/Response an origin, but the response is always the payload schema's own");
+    }
+  }
   return {
     bundleVersion: BUNDLE_VERSION,
     typeUri: value.typeUri as string,
@@ -111,6 +146,8 @@ export function parseBundle(value: unknown): Bundle {
       recipientRequired: flags(policy.recipientRequired, "recipientRequired"),
     },
     propertyOrder: order as Record<string, string[]>,
+    defsOrder: defsOrder as Record<string, string[]>,
+    defOrigins: defOrigins as Record<string, string> | null,
     schema: value.schema,
     responseSchema: value.responseSchema as JsonObject | null,
   };
@@ -173,9 +210,10 @@ const unescapeToken = (t: string): string => t.replace(/~1/g, "/").replace(/~0/g
  * The bundle's two schemas with every `properties` object put back in its
  * authored member order, as deep copies.
  *
- * Only `properties` is reordered: it is all `propertyOrder` records, and it is
- * the only member order a generated type can observe. Every other object keeps
- * the bundle's sorted order. A pointer that names nothing, or an order that
+ * `properties` is reordered from `propertyOrder`, the only member order a
+ * generated type can observe, and each root `$defs` from `defsOrder` (absent
+ * from an older bundle), the order the in-repo generator's schemas carry them
+ * in. Every other object keeps the bundle's sorted order. A pointer that names nothing, or an order that
  * does not list exactly the members present, is refused — it would mean the
  * bundle disagrees with itself.
  */
@@ -204,6 +242,22 @@ export function withAuthoredOrder(bundle: Bundle): { schema: JsonObject; respons
     const ordered: JsonObject = {};
     for (const name of names) ordered[name] = props[name]!;
     node.properties = ordered;
+  }
+  for (const [pointer, names] of Object.entries(bundle.defsOrder)) {
+    const root = roots[pointer.slice(1)];
+    if (!isObject(root)) {
+      if (names.length === 0) continue;
+      throw new Error(`defsOrder: ${pointer} names $defs, but the bundle has no ${pointer.slice(1)}`);
+    }
+    const defs = isObject(root.$defs) ? root.$defs : {};
+    const present = Object.keys(defs);
+    if (present.length !== names.length || !names.every((n) => Object.prototype.hasOwnProperty.call(defs, n))) {
+      throw new Error(`defsOrder: ${pointer} lists [${names.join(", ")}], but its $defs are [${present.join(", ")}]`);
+    }
+    if (names.length === 0) continue;
+    const ordered: JsonObject = {};
+    for (const name of names) ordered[name] = defs[name]!;
+    root.$defs = ordered;
   }
   return { schema: roots.schema as JsonObject, responseSchema: roots.responseSchema as JsonObject | null };
 }

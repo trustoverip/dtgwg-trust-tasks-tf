@@ -10,38 +10,46 @@
 // (`index.json` + `<slug>/<M.N>/bundle.json`); without --bundles this runs that
 // command into the work directory. Run after `npm run build` in this package.
 //
-// ── What is compared, region by region ──────────────────────────────────────
+// ── What is compared ────────────────────────────────────────────────────────
 //
 // A module is banner · [imports] · declarations · [re-exports] · tail.
 //
 //   banner        NOT compared: it names the generator and the source.
+//   imports, declarations, re-exports
+//                 BYTE-IDENTICAL, but for one normalisation: a shared
+//                 definition the prebuilt package names by a historical name
+//                 (see KNOWN RENAMES below) is mapped back to it first.
 //   tail          BYTE-IDENTICAL, with the two schema constants cut out: the
 //                 Type URIs, EXTENDS, DEPRECATION, the Payload / Response
 //                 aliases, SPEC and RESPONSE_SPEC.
 //   PAYLOAD_SCHEMA, RESPONSE_PAYLOAD_SCHEMA
-//                 JSON-EQUAL, and every `properties` object in the same member
-//                 order. Not byte-identical, unavoidably: a bundle is
-//                 RFC 8785 canonical (members sorted), and `propertyOrder`
-//                 restores the authored order of `properties` only.
-//   declarations  The payload/response root declarations are compared BYTE
-//                 for byte with the prebuilt module's own declarations. Every
-//                 type the two modules export (declared, re-exported, and the
-//                 `Payload` / `Response` aliases) is compared by TYPE IDENTITY
-//                 — `tsc` checks `Equal<Prebuilt.X, Generated.X>`, the
-//                 identity relation: same members, same optionality and
-//                 readonly-ness, same unions, recursively; doc comments aside.
-//                 The definitions a prebuilt module imports from the hoisted
-//                 `_shared/components.ts` are declared in the generated module
-//                 itself (a bundle does not say which `$defs` were shared —
-//                 see src/emit.ts), so those are compared only this way.
-//   exports       The set of type names each module exports must be equal.
+//                 JSON-EQUAL, with every `properties` object and every root
+//                 `$defs` in the same member order. Not byte-identical,
+//                 unavoidably: a bundle is RFC 8785 canonical (members sorted),
+//                 and `propertyOrder` / `defsOrder` restore only those two
+//                 orders — the only ones a generated type can observe.
+//   _shared/components.ts
+//                 Declaration by declaration, BYTE-IDENTICAL (same
+//                 normalisation). The prebuilt module may declare more: the
+//                 in-repo generator also hoists definitions only a shared
+//                 schema file reaches, which no payload schema — and so no
+//                 bundle — carries. Each such declaration must be one no
+//                 prebuilt spec module imports.
 //   index.ts      The `export * as <Namespace> from "<path>"` lines must equal
 //                 the prebuilt barrel's for the same modules.
 //   _extends.ts   Byte-identical after the banner.
+//   tsc           The generated tree, type-checked whole, as an application
+//                 would.
 //
-// Exit 1 on any difference outside "declarations not byte-identical", which is
-// reported (with the reason) rather than failed: it is the expected cost of
-// declaring a schema's own `$defs` the same way as the shared ones.
+// KNOWN RENAMES. The in-repo generator never renames a hoisted definition once
+// published (trust-tasks-ts/component-names.lock.json): a name that shipped
+// bare keeps it after a second shape of it appears. A bundle cannot carry that
+// history, so trust-tasks-gen-ts qualifies every shape of such a name. Each
+// rename is checked rather than assumed: the prebuilt name must be locked bare
+// while another shape of it is locked qualified, and the two declarations must
+// be byte-identical but for the name.
+//
+// Exit 1 on any difference not explained above.
 
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -113,7 +121,6 @@ console.log(`generated ${result.modules.length} modules from ${index.specs.lengt
 
 const failures = [];
 const fail = (what) => failures.push(what);
-const notes = { declarationsDiffer: [], counterDuplicates: [], extraDefinitions: [], assignableOnly: [] };
 
 function walk(dir, acc = []) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -150,13 +157,95 @@ for (const m of prebuiltModules) if (!generatedModules.has(m)) fail(`${m}: prebu
 for (const m of generatedModules) if (!prebuiltModules.has(m)) fail(`${m}: generated, not prebuilt`);
 const paired = [...prebuiltModules].filter((m) => generatedModules.has(m)).sort();
 
-// ── 3. Region by region ─────────────────────────────────────────────────────
+// ── 3. The shared components module ─────────────────────────────────────────
+
+const DECL_LINE = /^export (?:interface|type) ([A-Za-z0-9_$]+)/;
+
+/** Top-level declarations of a compiled module, by name, each with its leading JSDoc. */
+function declarationBlocks(text) {
+  const lines = text.slice(text.indexOf("*/") + 2).split("\n");
+  const blocks = new Map();
+  let name = null;
+  let body = [];
+  let pending = [];
+  const flush = () => name !== null && blocks.set(name, body.join("\n").trimEnd());
+  for (const line of lines) {
+    const decl = DECL_LINE.exec(line);
+    if (line.startsWith("/**") && name !== null) {
+      flush();
+      name = null;
+      body = [];
+      pending = [line];
+    } else if (decl) {
+      flush();
+      name = decl[1];
+      body = [...pending, line];
+      pending = [];
+    } else if (name === null) pending.push(line);
+    else body.push(line);
+  }
+  flush();
+  return blocks;
+}
+
+const nameLock = JSON.parse(fs.readFileSync(path.join(REPO, "trust-tasks-ts", "component-names.lock.json"), "utf8"));
+const lockedNames = new Set(Object.values(nameLock));
+const pComponents = declarationBlocks(fs.readFileSync(path.join(PREBUILT, "_shared", "components.ts"), "utf8"));
+const gComponentsFile = path.join(out, "_shared", "components.ts");
+const gComponents = fs.existsSync(gComponentsFile) ? declarationBlocks(fs.readFileSync(gComponentsFile, "utf8")) : new Map();
+if (gComponents.size === 0) fail("_shared/components.ts: not generated, or declares nothing");
+
+// generated name → prebuilt name, for the historical names (see the header).
+const renames = new Map();
+const renameReasons = [];
+for (const [gName, gBlock] of gComponents) {
+  if (pComponents.has(gName)) continue;
+  const m = /^(.+?)_([A-Z][A-Za-z0-9]*V\d+_\d+)$/.exec(gName);
+  const bare = m?.[1];
+  const qualifiedSiblings = bare ? [...lockedNames].filter((n) => n.startsWith(`${bare}_`)) : [];
+  if (
+    bare &&
+    pComponents.has(bare) &&
+    !gComponents.has(bare) &&
+    lockedNames.has(bare) &&
+    qualifiedSiblings.length > 0 &&
+    pComponents.get(bare) === gBlock.replace(new RegExp(`\\b${gName}\\b`, "g"), bare)
+  ) {
+    renames.set(gName, bare);
+    renameReasons.push(`${gName} is the prebuilt ${bare}: locked bare in component-names.lock.json, beside ${qualifiedSiblings.join(", ")}`);
+  } else fail(`_shared/components.ts: ${gName} is declared only by the generated module`);
+}
+const normalise = (text) => {
+  let t = text;
+  for (const [gName, pName] of renames) {
+    t = t.replace(new RegExp(`\\b${gName} as ${pName}\\b`, "g"), pName).replace(new RegExp(`\\b${gName}\\b`, "g"), pName);
+  }
+  return t;
+};
+let componentsIdentical = 0;
+for (const [gName, gBlock] of gComponents) {
+  const pName = renames.get(gName) ?? gName;
+  if (!pComponents.has(pName)) continue;
+  if (normalise(gBlock) === pComponents.get(pName)) componentsIdentical++;
+  else fail(`_shared/components.ts: ${gName} is not byte-identical to the prebuilt declaration`);
+}
+
+// A prebuilt-only declaration is fine only if no prebuilt spec module uses it.
+const IMPORT_RE = /\nimport type \{([^}]*)\} from "[^"]*_shared\/components\.js";\n/;
+const importedByPrebuilt = new Set();
+for (const rel of prebuiltModules) {
+  const m = IMPORT_RE.exec(fs.readFileSync(path.join(PREBUILT, rel), "utf8"));
+  for (const clause of m ? m[1].split(",") : []) importedByPrebuilt.add(clause.trim().split(/\s+as\s+/)[0]);
+}
+const covered = new Set([...gComponents.keys()].map((n) => renames.get(n) ?? n));
+const prebuiltOnly = [...pComponents.keys()].filter((n) => !covered.has(n)).sort();
+for (const name of prebuiltOnly) {
+  if (importedByPrebuilt.has(name)) fail(`_shared/components.ts: ${name} is imported by a prebuilt spec module but not generated`);
+}
+
+// ── 4. Module by module ─────────────────────────────────────────────────────
 
 const TAIL_START = "\n/** Trust Task type URI. */";
-const DEFINITIONS_MARK = "\n/* ── Definitions the payload schema references, declared once";
-const REEXPORT_RE = /\n\/\*\* Shared definitions this specification references[^\n]*\*\/\nexport type \{ ([^}]*) \};\n/;
-const IMPORT_RE = /\nimport type \{[^}]*\} from "[^"]*_shared\/components\.js";\n/;
-const DECL_RE = /^export (?:interface|type) ([A-Za-z0-9_$]+)/gm;
 
 function split(text, file) {
   const bannerEnd = text.indexOf("*/") + 2;
@@ -168,11 +257,11 @@ function split(text, file) {
 /** Cut `export const NAME = <json> as const;` out of `tail`, returning both. */
 function cutSchema(tail, name) {
   const start = tail.indexOf(`export const ${name} = `);
-  if (start < 0) return { tail, json: null };
+  if (start < 0) return { tail, json: null, text: null };
   const jsonStart = start + `export const ${name} = `.length;
   const end = tail.indexOf("\n} as const;", jsonStart);
-  const json = JSON.parse(tail.slice(jsonStart, end + 2));
-  return { tail: tail.slice(0, jsonStart) + "<schema>" + tail.slice(end + 2), json };
+  const text = tail.slice(jsonStart, end + 2);
+  return { tail: tail.slice(0, jsonStart) + "<schema>" + tail.slice(end + 2), json: JSON.parse(text), text };
 }
 
 function canonical(v) {
@@ -181,26 +270,34 @@ function canonical(v) {
   return JSON.stringify(v);
 }
 
-/** Pointers of `properties` objects whose member order differs. */
-function propertyOrderDiffs(a, b, at = "", out = []) {
-  if (Array.isArray(a) && Array.isArray(b)) a.forEach((x, i) => propertyOrderDiffs(x, b[i], `${at}/${i}`, out));
+/** Pointers of `properties` objects and root `$defs` whose member order differs. */
+function memberOrderDiffs(a, b, at = "", out = []) {
+  if (Array.isArray(a) && Array.isArray(b)) a.forEach((x, i) => memberOrderDiffs(x, b[i], `${at}/${i}`, out));
   else if (a && b && typeof a === "object" && typeof b === "object") {
-    if (a.properties && typeof a.properties === "object" && JSON.stringify(Object.keys(a.properties)) !== JSON.stringify(Object.keys(b.properties ?? {}))) {
-      out.push(`${at}/properties`);
+    for (const key of at === "" ? ["properties", "$defs"] : ["properties"]) {
+      if (a[key] && typeof a[key] === "object" && JSON.stringify(Object.keys(a[key])) !== JSON.stringify(Object.keys(b[key] ?? {}))) {
+        out.push(`${at}/${key}`);
+      }
     }
-    for (const k of Object.keys(a)) propertyOrderDiffs(a[k], b[k], `${at}/${k}`, out);
+    for (const k of Object.keys(a)) memberOrderDiffs(a[k], b[k], `${at}/${k}`, out);
   }
   return out;
 }
 
-const typeChecks = []; // { module, names }
+let middlesIdentical = 0;
+let middlesNormalised = 0;
+let schemasByteIdentical = 0;
+let schemasCompared = 0;
 for (const rel of paired) {
   const pText = fs.readFileSync(path.join(PREBUILT, rel), "utf8");
   const gText = fs.readFileSync(path.join(out, rel), "utf8");
   const p = split(pText, rel);
   const g = split(gText, rel);
 
-  // Tail, schemas cut out.
+  if (p.middle === g.middle) middlesIdentical++;
+  else if (p.middle === normalise(g.middle)) middlesNormalised++;
+  else fail(`${rel}: the declarations (imports, types, re-exports) are not byte-identical`);
+
   let pTail = p.tail;
   let gTail = g.tail;
   for (const name of ["PAYLOAD_SCHEMA", "RESPONSE_PAYLOAD_SCHEMA"]) {
@@ -213,88 +310,22 @@ for (const rel of paired) {
       continue;
     }
     if (pc.json === null) continue;
+    schemasCompared++;
+    if (pc.text === gc.text) schemasByteIdentical++;
     if (canonical(pc.json) !== canonical(gc.json)) fail(`${rel}: ${name} is not JSON-equal to the prebuilt`);
     else {
-      const order = propertyOrderDiffs(pc.json, gc.json);
+      const order = memberOrderDiffs(pc.json, gc.json);
       if (order.length) fail(`${rel}: ${name} member order differs at ${order.join(", ")}`);
     }
   }
   if (pTail !== gTail) fail(`${rel}: the tail (TYPE_URI … SPEC / RESPONSE_SPEC) is not byte-identical`);
-
-  // Declarations.
-  const reexport = REEXPORT_RE.exec(p.middle);
-  const reexported = reexport ? reexport[1].split(",").map((s) => s.trim()).filter(Boolean) : [];
-  const pDecls = p.middle.replace(IMPORT_RE, "\n").replace(REEXPORT_RE, "\n");
-  const mark = g.middle.indexOf(DEFINITIONS_MARK);
-  const gRoot = mark < 0 ? g.middle : g.middle.slice(0, mark);
-  if (pDecls.trim() !== gRoot.trim()) notes.declarationsDiffer.push(rel);
-
-  const pNames = new Set([...[...pDecls.matchAll(DECL_RE)].map((m) => m[1]), ...reexported]);
-  const gNames = new Set([...g.middle.matchAll(DECL_RE)].map((m) => m[1]));
-  for (const tailName of ["Payload", "Response"]) {
-    if (new RegExp(`^export type ${tailName} = `, "m").test(p.tail)) pNames.add(tailName);
-    if (new RegExp(`^export type ${tailName} = `, "m").test(g.tail)) gNames.add(tailName);
-  }
-  const onlyP = [...pNames].filter((n) => !gNames.has(n)).sort();
-  const onlyG = [...gNames].filter((n) => !pNames.has(n)).sort();
-  const pairs = [...pNames].filter((n) => gNames.has(n)).sort().map((n) => [n, n]);
-  // Two expected export-set differences, each still type-checked:
-  //  - a counter-suffixed duplicate the compiler minted in the prebuilt module
-  //    (`DidTemplateRef1`) for a schema's own definition, which the generated
-  //    module declares once — compared with that one declaration;
-  //  - a definition the generated module declares once that the prebuilt
-  //    module inlined at its use (`Did`, a `$defs` string with no title).
-  const definitionNames = new Set(mark < 0 ? [] : [...g.middle.slice(mark).matchAll(DECL_RE)].map((m) => m[1]));
-  for (const name of onlyP) {
-    const base = /^(.*?)\d+$/.exec(name)?.[1];
-    if (base && gNames.has(base) && pNames.has(base)) {
-      notes.counterDuplicates.push(`${rel}: ${name} (prebuilt) is ${base} (generated)`);
-      pairs.push([name, base]);
-    } else fail(`${rel}: exported only by the prebuilt module: ${name}`);
-  }
-  for (const name of onlyG) {
-    if (definitionNames.has(name)) notes.extraDefinitions.push(`${rel}: ${name}`);
-    else fail(`${rel}: exported only by the generated module: ${name}`);
-  }
-  typeChecks.push({ rel, pairs });
 }
 
-// ── 4. Type identity, with tsc ──────────────────────────────────────────────
+// ── 5. The generated tree type-checks whole ─────────────────────────────────
 
 const checkDir = path.join(work, "typecheck");
 fs.rmSync(checkDir, { recursive: true, force: true });
 fs.mkdirSync(checkDir, { recursive: true });
-const checkLines = [
-  "type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B ? 1 : 2) ? true : false;",
-  "type Assignable<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;",
-  "",
-];
-// line number (1-based) → { what: "module: Name", kind: "identity" | "assignable" }
-const lineOwner = new Map();
-typeChecks.forEach(({ rel }, i) => {
-  const spec = (root) => JSON.stringify(path.join(root, rel).replace(/\.ts$/, ".js"));
-  checkLines.push(`import type * as P${i} from ${spec(PREBUILT)};`, `import type * as G${i} from ${spec(out)};`);
-});
-checkLines.push("");
-let assertions = 0;
-typeChecks.forEach(({ rel, pairs }, i) => {
-  for (const [pName, gName] of pairs) {
-    const what = pName === gName ? `${rel}: ${pName}` : `${rel}: ${pName} (prebuilt) / ${gName} (generated)`;
-    checkLines.push(`export const c${assertions}: Equal<P${i}.${pName}, G${i}.${gName}> = true;`);
-    lineOwner.set(checkLines.length, { what, kind: "identity" });
-    checkLines.push(`export const a${assertions++}: Assignable<P${i}.${pName}, G${i}.${gName}> = true;`);
-    lineOwner.set(checkLines.length, { what, kind: "assignable" });
-  }
-});
-// A self-test the comparison can fail: two different shapes must not compare equal.
-checkLines.push(
-  "interface SelfTestA { a: string; b?: number }",
-  "interface SelfTestB { a: string; b: number }",
-  "export const selfTestDiffers: Equal<SelfTestA, SelfTestB> = false;",
-  "export const selfTestSame: Equal<SelfTestA, { a: string; b?: number }> = true;",
-  "",
-);
-fs.writeFileSync(path.join(checkDir, "equivalence.ts"), checkLines.join("\n"));
 fs.writeFileSync(
   path.join(checkDir, "tsconfig.json"),
   JSON.stringify(
@@ -309,16 +340,13 @@ fs.writeFileSync(
         types: [],
         paths: { "@openvtc/trust-tasks/runtime": [path.join(REPO, "trust-tasks-ts", "src", "_runtime", "index.ts")] },
       },
-      // The generated tree whole (index.ts and _extends.ts included), so it is
-      // type-checked as an application would, as well as compared.
-      include: ["equivalence.ts", path.join(out, "**", "*.ts")],
+      include: [path.join(out, "**", "*.ts")],
     },
     null,
     2,
   ),
 );
 const tsc = path.join(REPO, "trust-tasks-ts", "node_modules", "typescript", "bin", "tsc");
-let tscOutput = "";
 const tscStarted = Date.now();
 try {
   execFileSync(process.execPath, ["--max-old-space-size=8192", tsc, "-p", path.join(checkDir, "tsconfig.json")], {
@@ -326,24 +354,9 @@ try {
     stdio: ["ignore", "pipe", "pipe"],
   });
 } catch (err) {
-  tscOutput = `${err.stdout ?? ""}${err.stderr ?? ""}`;
+  for (const line of `${err.stdout ?? ""}${err.stderr ?? ""}`.split("\n").filter((l) => /error TS/.test(l))) fail(`tsc: ${line.trim()}`);
 }
-console.log(`tsc: ${assertions} type-identity assertions over ${typeChecks.length} module pairs in ${((Date.now() - tscStarted) / 1000).toFixed(1)} s`);
-// An identity failure whose mutual-assignability check passes is a difference
-// in how the compiler spelled one type (see the report); one whose
-// assignability fails too is a real difference in what the type accepts.
-const identityFailed = new Set();
-const assignableFailed = new Set();
-for (const line of tscOutput.split("\n").filter((l) => /error TS/.test(l))) {
-  const m = /equivalence\.ts\((\d+),\d+\)/.exec(line);
-  const owner = m ? lineOwner.get(Number(m[1])) : undefined;
-  if (owner) (owner.kind === "identity" ? identityFailed : assignableFailed).add(owner.what);
-  else fail(`tsc: ${line.trim()}`);
-}
-for (const what of assignableFailed) fail(`${what}: not mutually assignable with the prebuilt module's type`);
-for (const what of identityFailed) {
-  if (!assignableFailed.has(what)) notes.assignableOnly.push(what);
-}
+console.log(`tsc: the generated tree type-checked in ${((Date.now() - tscStarted) / 1000).toFixed(1)} s`);
 
 // ── 5. index.ts and _extends.ts ─────────────────────────────────────────────
 
@@ -363,19 +376,16 @@ if (afterBanner(fs.readFileSync(path.join(PREBUILT, "_extends.ts"), "utf8")) !==
 // ── Report ──────────────────────────────────────────────────────────────────
 
 console.log("");
-console.log(`modules compared:                      ${paired.length}`);
-console.log(`tails byte-identical (schemas aside):  ${paired.length - failures.filter((f) => f.includes("tail")).length}`);
-console.log(`root declarations byte-identical:      ${paired.length - notes.declarationsDiffer.length}`);
-console.log(`root declarations differing in text:   ${notes.declarationsDiffer.length} (reported, not failed — type identity is what is held)`);
-if (verbose) for (const m of notes.declarationsDiffer) console.log(`  · ${m}`);
-console.log(`types compared (identity + assignability): ${assertions}`);
-console.log(`  identical:                           ${assertions - notes.assignableOnly.length - assignableFailed.size}`);
-console.log(`  mutually assignable, not identical:  ${notes.assignableOnly.length}`);
-for (const m of notes.assignableOnly) console.log(`    · ${m}`);
-console.log(`counter-suffixed prebuilt duplicates compared with their one generated declaration: ${notes.counterDuplicates.length}`);
-if (verbose) for (const m of notes.counterDuplicates) console.log(`    · ${m}`);
-console.log(`definitions the generated module declares that the prebuilt inlined: ${notes.extraDefinitions.length}`);
-if (verbose) for (const m of notes.extraDefinitions) console.log(`    · ${m}`);
+console.log(`modules compared:                          ${paired.length}`);
+console.log(`  declarations byte-identical:             ${middlesIdentical}`);
+console.log(`  … after the known renames:               ${middlesNormalised}`);
+console.log(`  tails byte-identical (schemas aside):    ${paired.length - failures.filter((f) => f.includes("the tail")).length}`);
+console.log(`  schema constants JSON-equal, member order equal: ${schemasCompared} (byte-identical: ${schemasByteIdentical})`);
+console.log(`_shared/components.ts declarations:        ${gComponents.size} generated, ${pComponents.size} prebuilt`);
+console.log(`  byte-identical:                          ${componentsIdentical - renames.size}`);
+console.log(`  … after the known renames:               ${renames.size}`);
+for (const r of renameReasons) console.log(`    · ${r}`);
+console.log(`  prebuilt only, reached by no payload schema: ${prebuiltOnly.length}${prebuiltOnly.length ? ` (${prebuiltOnly.join(", ")})` : ""}`);
 console.log(`sourced fixture (@acme ${fixture.typeUri}): generated at acme/…, namespace Acme`);
 if (failures.length) {
   console.log(`\n${failures.length} difference(s):`);

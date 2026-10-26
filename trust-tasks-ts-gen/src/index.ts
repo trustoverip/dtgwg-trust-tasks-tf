@@ -17,4 +17,5 @@ export {
   withAuthoredOrder,
   type Bundle,
 } from "./bundle.js";
+export { buildComponentRegistry, COMPONENTS_PATH, type ComponentRegistry, type RegistryInput } from "./components.js";
 export { generateModule, namespaceFor, sourceNamespace, RUNTIME_SPECIFIER, type GeneratedModule } from "./emit.js";

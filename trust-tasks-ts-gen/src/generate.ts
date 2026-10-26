@@ -6,6 +6,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, wri
 import path from "node:path";
 
 import { readLockedBundle, type Bundle } from "./bundle.js";
+import { buildComponentRegistry, COMPONENTS_PATH } from "./components.js";
 import { emitExtendsIndex, emitIndex, emitSourceIndex, generateModule, type GeneratedModule } from "./emit.js";
 import { parseLock, taskLabel, type LockedTask } from "./lock.js";
 
@@ -96,7 +97,7 @@ export async function generateFiles(
   }
 
   const skipped = new Map<string, string>();
-  const modules: GeneratedModule[] = [];
+  const toGenerate: { task: LockedTask; bundle: Bundle }[] = [];
   for (const { task, bundle } of bundles) {
     const id = taskLabel(task);
     if (bundle.status === "withdrawn") {
@@ -107,10 +108,18 @@ export async function generateFiles(
       skipped.set(id, "a framework specification — @openvtc/trust-tasks carries it; nothing generated");
       continue;
     }
+    toGenerate.push({ task, bundle });
+  }
+
+  // The shared definitions of every module generated, declared once
+  // (components.ts). Bundles without `defOrigins` contribute none.
+  const registry = await buildComponentRegistry(toGenerate.map(({ task, bundle }) => ({ bundle, source: task.source })));
+  const modules: GeneratedModule[] = [];
+  for (const { task, bundle } of toGenerate) {
     try {
-      modules.push(await generateModule(bundle, task.source));
+      modules.push(await generateModule(bundle, task.source, registry));
     } catch (err) {
-      throw new Error(`${id}: ${(err as Error).message}`);
+      throw new Error(`${taskLabel(task)}: ${(err as Error).message}`);
     }
   }
   for (const [id, why] of skipped) log(`note: ${id}: ${why}`);
@@ -118,6 +127,7 @@ export async function generateFiles(
   modules.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
   const files = new Map<string, string>();
   for (const m of modules) files.set(m.path, m.text);
+  if (registry.text !== null) files.set(COMPONENTS_PATH, registry.text);
   files.set("_extends.ts", emitExtendsIndex(modules));
   files.set("index.ts", emitIndex(modules));
   for (const source of new Set(modules.map((m) => m.source))) {

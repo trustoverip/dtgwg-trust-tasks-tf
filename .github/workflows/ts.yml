@@ -227,10 +227,10 @@ jobs:
   # Consumer-side generation (docs/design/consumer-side-generation.md,
   # milestone 3): trust-tasks-gen-ts generates modules from registry bundles.
   # This runs it over EVERY bundle and compares the result with the prebuilt
-  # modules scripts/build-ts-bindings.mjs commits — tails byte-identical,
-  # schemas JSON-equal with the authored member order, every exported type
-  # compared by identity with tsc. What it compares and why some text cannot
-  # match: trust-tasks-ts-gen/scripts/equivalence.mjs.
+  # modules scripts/build-ts-bindings.mjs commits — every module and every
+  # hoisted shared definition byte-identical, schemas JSON-equal in the same
+  # member order, the generated tree type-checked. What it compares and the
+  # differences it explains: trust-tasks-ts-gen/scripts/equivalence.mjs.
   gen-equivalence:
     name: trust-tasks-gen-ts equivalence
     runs-on: ubuntu-latest

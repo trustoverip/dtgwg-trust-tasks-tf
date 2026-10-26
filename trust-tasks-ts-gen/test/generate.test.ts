@@ -6,7 +6,7 @@ import path from "node:path";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { generate, generateFiles, MARKER_FILE, parseLock } from "../src/index.js";
+import { generate, generateFiles, MARKER_FILE, parseLock, taskLabel } from "../src/index.js";
 
 // .test-build/test/generate.test.js → the package root.
 const PKG = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -44,7 +44,7 @@ function app(tasks: Task[], sources: Record<string, string> = {}): { dir: string
 
 function exampleTasks(): Task[] {
   const lock = parseLock(fs.readFileSync(path.join(EXAMPLE, "trust-tasks.lock"), "utf8"));
-  return lock.tasks.map((t) => ({
+  return lock.tasks.filter((t) => t.source === null).map((t) => ({
     slug: t.slug,
     version: t.version,
     typeUri: t.typeUri,
@@ -70,8 +70,9 @@ describe("parseLock", () => {
   it("reads the CLI's lock, with and without sources", () => {
     const lock = parseLock(fs.readFileSync(path.join(EXAMPLE, "trust-tasks.lock"), "utf8"));
     assert.equal(lock.version, 1);
-    assert.deepEqual(lock.tasks.map((t) => `${t.slug}/${t.version}`), ["acl/grant/0.2", "keys/list/0.2", "vault/get/0.3"]);
-    assert.ok(lock.tasks.every((t) => t.source === null));
+    // One slug, two authorities: a slug is unique only within its source (SPEC §6.5).
+    assert.deepEqual(lock.tasks.map(taskLabel), ["acl/grant/0.2", "keys/list/0.2", "vault/get/0.3", "@acme/vault/get/0.3"]);
+    assert.deepEqual(lock.sources.get("acme"), { path: "fixture-registry/site" });
 
     const sourced = parseLock(
       [
@@ -191,6 +192,101 @@ describe("generate", () => {
     assert.equal(notes.length, 2);
   });
 
+  describe("shared definitions (defOrigins)", () => {
+    const FRAMEWORK_EXT = "https://trusttasks.org/spec/trust-task/0.4/framework#/$defs/Ext";
+    const money = (version: string) => `https://tasks.example.com/spec/payments/_shared/${version}/money#/$defs/Amount`;
+
+    /** acl/grant 0.2 as a current bundle carries it: every definition but Response is shared. */
+    function aclWithOrigins(): Task {
+      const acl = exampleTasks().find((t) => t.slug === "acl/grant")!;
+      return edited(acl, (b) => {
+        const defs = (b.schema as { $defs: Record<string, unknown> }).$defs;
+        b.defOrigins = Object.fromEntries(
+          Object.keys(defs)
+            .filter((k) => k !== "Response")
+            .map((k) => [k, k === "Ext" ? FRAMEWORK_EXT : `https://trusttasks.org/spec/acl/_shared/0.2/acl-entry#/$defs/${k}`]),
+        );
+      });
+    }
+
+    /** The sourced fixture with the framework's Ext (as acl/grant carries it) and a shared Amount. */
+    function settleWithOrigins(over: Partial<Task> = {}, amountVersion = "1.0", amountDescription?: string): Task {
+      const aclExt = (JSON.parse(aclWithOrigins().bytes.toString()).schema.$defs as Record<string, unknown>).Ext;
+      return edited(fixtureTask(over), (b) => {
+        for (const root of [b.schema, b.responseSchema] as { $defs: Record<string, Record<string, unknown>> }[]) {
+          root.$defs.Ext = structuredClone(aclExt) as Record<string, unknown>;
+          if (amountDescription) root.$defs.Amount!.description = amountDescription;
+        }
+        b.defOrigins = { Amount: money(amountVersion), Ext: FRAMEWORK_EXT };
+        b.defsOrder = { "/schema": ["Response", "Amount", "Ext"], "/responseSchema": ["Response", "Amount", "Ext"] };
+        if (over.slug) {
+          b.slug = over.slug;
+          b.typeUri = over.typeUri;
+        }
+      });
+    }
+
+    it("declares each shared definition once in _shared/components.ts, and modules import it", async () => {
+      const { lock } = app([aclWithOrigins(), settleWithOrigins()], { acme: "https://tasks.example.com" });
+      const { files } = await generateFiles({ lock, ...quiet });
+      const components = files.get("_shared/components.ts")!;
+      assert.ok(components, "the components module is written");
+      assert.equal(components.match(/^export interface Ext \{$/gm)?.length, 1, "Ext, reached by both tasks, is declared once");
+      assert.match(components, /^export interface AclEntry \{$/m);
+      assert.match(components, /^export interface Amount \{$/m);
+
+      const acl = files.get("acl/grant/0.2/payload.ts")!;
+      assert.match(acl, /^import type \{ [^}]*\bAclEntry\b[^}]* \} from "\.\.\/\.\.\/\.\.\/_shared\/components\.js";$/m);
+      assert.match(acl, /^export type \{ [^}]*\bAclEntry\b[^}]* \};$/m, "re-exported under its own name");
+      assert.doesNotMatch(acl, /^export (interface|type) (AclEntry|Ext)\b/m);
+
+      const settle = files.get("acme/payments/settle/1.0/payload.ts")!;
+      assert.match(settle, /^import type \{ Amount, Ext \} from "\.\.\/\.\.\/\.\.\/\.\.\/_shared\/components\.js";$/m);
+      assert.doesNotMatch(settle, /^export interface Amount\b/m);
+      // The schema constant still carries every definition, in defsOrder's order.
+      assert.match(settle, /"\$defs": \{\n    "Response": \{[\s\S]*\n    "Amount": \{[\s\S]*\n    "Ext": \{/);
+    });
+
+    it("qualifies every shape of a name the locked tasks reach in more than one shape", async () => {
+      const refundUri = "https://tasks.example.com/spec/payments/refund/1.0";
+      const { lock } = app(
+        [settleWithOrigins(), settleWithOrigins({ slug: "payments/refund", typeUri: refundUri }, "1.1", "A refund, in minor units.")],
+        { acme: "https://tasks.example.com" },
+      );
+      const { files } = await generateFiles({ lock, ...quiet });
+      const components = files.get("_shared/components.ts")!;
+      assert.match(components, /^export interface Amount_AcmePaymentsV1_0 \{$/m);
+      assert.match(components, /^export interface Amount_AcmePaymentsV1_1 \{$/m);
+      assert.doesNotMatch(components, /^export interface Amount \{$/m);
+      assert.match(files.get("acme/payments/settle/1.0/payload.ts")!, /import type \{ Amount_AcmePaymentsV1_0 as Amount, Ext \}/);
+      assert.match(files.get("acme/payments/refund/1.0/payload.ts")!, /import type \{ Amount_AcmePaymentsV1_1 as Amount, Ext \}/);
+    });
+
+    it("falls back to declaring definitions in the module for a bundle without defOrigins", async () => {
+      const keys = exampleTasks().find((t) => t.slug === "keys/list")!;
+      assert.equal("defOrigins" in JSON.parse(keys.bytes.toString()), false, "the example's vendored bundles predate defOrigins");
+      const { lock } = app([aclWithOrigins(), keys]);
+      const { files } = await generateFiles({ lock, ...quiet });
+      assert.match(files.get("acl/grant/0.2/payload.ts")!, /from "\.\.\/\.\.\/\.\.\/_shared\/components\.js";$/m);
+      const list = files.get("keys/list/0.2/payload.ts")!;
+      assert.doesNotMatch(list, /_shared\/components/);
+      assert.match(list, /^export interface Ext \{$/m, "an older bundle's module declares its definitions itself");
+
+      const { files: old } = await generateFiles({ lock: app(exampleTasks()).lock, ...quiet });
+      assert.equal(old.has("_shared/components.ts"), false, "only older bundles: no components module");
+    });
+
+    it("refuses a defsOrder that does not list exactly the $defs", async () => {
+      const { lock } = app([edited(aclWithOrigins(), (b) => (b.defsOrder = { "/schema": ["Response"] }))]);
+      await assert.rejects(generateFiles({ lock, ...quiet }), /defsOrder: \/schema lists \[Response\]/);
+    });
+
+    it("refuses a defOrigins entry for a definition the schema does not have", async () => {
+      const { lock } = app([edited(aclWithOrigins(), (b) => ((b.defOrigins as Record<string, string>).Nope = FRAMEWORK_EXT))]);
+      await assert.rejects(generateFiles({ lock, ...quiet }), /defOrigins names \$defs\/Nope/);
+    });
+  });
+
   describe("third-party sources", () => {
     it("refuses a source named like an official task's first segment", async () => {
       const { lock } = app([...exampleTasks(), fixtureTask({ source: "acl" })], { acl: "https://tasks.example.com" });
@@ -217,6 +313,14 @@ describe("generate", () => {
       });
       const { lock } = app([task], { acme: "https://tasks.example.com" });
       await assert.rejects(generateFiles({ lock, ...quiet }), /cannot come from a third-party source/);
+    });
+
+    it("generates one slug from two authorities side by side (the Rust example's lock)", async () => {
+      const { files } = await generateFiles({ lock: path.join(EXAMPLE, "trust-tasks.lock"), ...quiet });
+      assert.match(files.get("vault/get/0.3/payload.ts")!, /^export const TYPE_URI = "https:\/\/trusttasks\.org\/spec\/vault\/get\/0\.3" as const;$/m);
+      assert.match(files.get("acme/vault/get/0.3/payload.ts")!, /^export const TYPE_URI = "https:\/\/tasks\.example\.com\/spec\/vault\/get\/0\.3" as const;$/m);
+      assert.match(files.get("index.ts")!, /^export \* as VaultGet_v0_3 from "\.\/vault\/get\/0\.3\/payload\.js";$/m);
+      assert.match(files.get("acme/index.ts")!, /^export \* as VaultGet_v0_3 from "\.\/vault\/get\/0\.3\/payload\.js";$/m);
     });
 
     it("accepts a URN Type URI", async () => {
