@@ -113,7 +113,7 @@ A list that dropped them could not distinguish a revoked credential from one tha
 
 Each record is a summary: which credential, to whom, when, and whether it is still good. The credential body is not carried.
 
-The reasoning is the one [`vault/list/0.1`](../../../../vault/list/0.1/) already states for secrets — *list exists to enumerate; release exists to use* — and it transfers. An issuer listing its own issuances is answering an inventory question, and a response that carried every claim body would make the routine act of looking at a roster into a bulk disclosure of everything the issuer ever asserted about anyone. It would also make the response size a function of claim size, so the cost of asking would scale with the sensitivity of the answer.
+The reasoning is the one [`vault/list/0.4`](../../../../vault/list/0.4/) already states for secrets — *list exists to enumerate; release exists to use* — and it transfers. An issuer listing its own issuances is answering an inventory question, and a response that carried every claim body would make the routine act of looking at a roster into a bulk disclosure of everything the issuer ever asserted about anyone. It would also make the response size a function of claim size, so the cost of asking would scale with the sensitivity of the answer.
 
 An issuer that needs a body has it: it minted the credential, and the `issue` response returned it. Where a case for re-reading one is made, that is a separate `vta/credentials/get` keyed on `credentialId` — deliberately not proposed here, so the disclosure decision is taken on its own terms rather than inherited from this one.
 

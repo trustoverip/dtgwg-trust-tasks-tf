@@ -79,7 +79,7 @@ published.
 
 Producer: populate `name`, `module`. Supply `id` + `expectedVersion` on update. Carry a proof.
 
-Consumer: verify `PolicyAdmin` capability. Parse the Rego with the evaluator (e.g. `regorus`); on parse failure return `regoInvalid` with `details.line/column/message`. Validate `appliesTo` against known context ids. On successful upsert, increment `version`, emit `sync/event/0.1` with kind `policyChanged`, hot-load into the evaluator cache so the next request sees the new rules.
+Consumer: verify `PolicyAdmin` capability. Parse the Rego with the evaluator (e.g. `regorus`); on parse failure return `regoInvalid` with `details.line/column/message`. Validate `appliesTo` against known context ids. On successful upsert, increment `version`, emit `sync/event/0.2` with kind `policyChanged`, hot-load into the evaluator cache so the next request sees the new rules.
 
 ## Security & Privacy
 

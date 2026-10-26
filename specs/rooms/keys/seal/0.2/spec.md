@@ -74,14 +74,14 @@ related:
 
 ## Abstract
 
-A writer hands its principal's **key holder** a record body and gets back the sealed form, ready to store with [`rooms/records/put`](../../../records/put/0.2/spec.md). It is the mirror of [`rooms/keys/open`](../../open/0.1/spec.md): plaintext in, ciphertext out, and the key never crosses in either direction.
+A writer hands its principal's **key holder** a record body and gets back the sealed form, ready to store with [`rooms/records/put`](../../../records/put/0.3/spec.md). It is the mirror of [`rooms/keys/open`](../../open/0.2/spec.md): plaintext in, ciphertext out, and the key never crosses in either direction.
 
 The body is a [`SealedRecordBody`](../../../_shared/0.1/room.schema.json), and its signature is what attributes the record: every reader verifies it, and on an `attributed` room checks it against the author the host recorded. Who signs depends on who is writing.
 
 - **An agent** acting under an attenuated chain ([`rooms/keys/present`](../../present/0.2/spec.md)) signs its own body, as its own author, and asks only for the seal. That is `0.1`'s behaviour, unchanged.
 - **The principal's own client** — a CLI, a browser extension, a phone, acting as the member rather than for them — holds no key of the member's. Its writes must be the member's, signed by the member's DID, and the only party holding that key is the key holder. So it asks for both: `signAsPrincipal: true`, and the key holder signs the body as the principal before sealing it.
 
-This is the write half of acting as the principal. The other half — the host-bound document that carries the sealed record, its presentation and its proof, all as the principal — is [`rooms/keys/act`](../../act/0.1/spec.md).
+This is the write half of acting as the principal. The other half — the host-bound document that carries the sealed record, its presentation and its proof, all as the principal — is [`rooms/keys/act`](../../act/0.8/spec.md).
 
 ## Status of this Document
 

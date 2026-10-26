@@ -54,7 +54,7 @@ related:
 
 ## Abstract
 
-A namespace's administrators need to see more about it than a member does: who else administers it, whether it has lost its last admin, whether its bridge can still reach the forge, which permissions the forge owner has not yet granted the community's app, and which role map the bridge applies. [`git-ns/view`](../../../view/0.5/spec.md) carries none of this — its `namespaces` are the binding and nothing else — because none of it is a member's business. This task is the administrator's list of their namespaces with that operational status: an admin console's *Namespaces* card, a command-line `namespace list`.
+A namespace's administrators need to see more about it than a member does: who else administers it, whether it has lost its last admin, whether its bridge can still reach the forge, which permissions the forge owner has not yet granted the community's app, and which role map the bridge applies. [`git-ns/view`](../../../view/0.6/spec.md) carries none of this — its `namespaces` are the binding and nothing else — because none of it is a member's business. This task is the administrator's list of their namespaces with that operational status: an admin console's *Namespaces* card, a command-line `namespace list`.
 
 It is a read. It changes nothing, grants nothing and publishes nothing.
 
@@ -81,7 +81,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 Not consequential, and declared for clarity. The caller is the DID the document's verified `proof` binds to its `issuer`, or the DID a key the VTC has recorded as delegated by that DID acts for; an unsigned document is refused with `proofRequired`.
 
-The entitlement is, for each namespace, **the community-administrator capability** in the VTC's own access control (the one [`git-ns/namespace/bind`](../../../namespace/bind/0.1/spec.md) requires), or **`git.ns.admin` on that namespace** held by explicit record and live at the instant the VTC evaluates the request, by a current member. These are the namespace's administrators, and the only people this task answers. Nothing else suffices: not `git.repo.own` or `git.repo.create`, not an administrator role in the VTC's access control scoped to less than the whole community, and not membership. A caller who administers no namespace is refused with `git-ns/namespace/list:notAdministrator`, and so is a caller naming, in `namespace`, a namespace they do not administer or one the VTC does not have.
+The entitlement is, for each namespace, **the community-administrator capability** in the VTC's own access control (the one [`git-ns/namespace/bind`](../../../namespace/bind/0.2/spec.md) requires), or **`git.ns.admin` on that namespace** held by explicit record and live at the instant the VTC evaluates the request, by a current member. These are the namespace's administrators, and the only people this task answers. Nothing else suffices: not `git.repo.own` or `git.repo.create`, not an administrator role in the VTC's access control scoped to less than the whole community, and not membership. A caller who administers no namespace is refused with `git-ns/namespace/list:notAdministrator`, and so is a caller naming, in `namespace`, a namespace they do not administer or one the VTC does not have.
 
 The capability and `git.ns.admin` are read from the VTC's own records at execution time; the `proof` establishes who asked, not that they may ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10). Nothing in the payload names or widens whose namespaces are listed.
 
@@ -89,11 +89,11 @@ The capability and `git.ns.admin` are read from the VTC's own records at executi
 
 **Administered namespace** — for a holder of the community-administrator capability, every namespace bound to the VTC, `pending` ones included. For anyone else, each namespace on which they hold a live, explicitly recorded `git.ns.admin`.
 
-**Headless** — a bound namespace with no live `git.ns.admin`: its last admin left the community or their right lapsed. Nobody can grant in it until a community administrator reseats one with [`git-ns/namespace/reseat`](../../../namespace/reseat/0.3/spec.md).
+**Headless** — a bound namespace with no live `git.ns.admin`: its last admin left the community or their right lapsed. Nobody can grant in it until a community administrator reseats one with [`git-ns/namespace/reseat`](../../../namespace/reseat/0.4/spec.md).
 
 **Forge status** — what the bridge serving the namespace last reported about its standing on the forge owner. It is the bridge's report, carried for display; the VTC takes no decision on it.
 
-**Role map** — as in [`git-ns/bridge/event`](../../../bridge/event/0.3/spec.md): the forge role each repository right projects to, as the bridge serving the namespace last reported it.
+**Role map** — as in [`git-ns/bridge/event`](../../../bridge/event/0.5/spec.md): the forge role each repository right projects to, as the bridge serving the namespace last reported it.
 
 ## Request
 

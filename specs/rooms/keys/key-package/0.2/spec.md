@@ -99,7 +99,7 @@ A conforming **recipient** (the key holder):
 
 A conforming **producer** (a member's surface):
 
-1. **MUST** send the KeyPackage it is given, unaltered, to the room's owner — in an offer of a community-owned room, as the `keyPackage` of [`vtc/rooms/offers/accept`](../../../../vtc/rooms/offers/accept/0.1/spec.md), completed as the member with [`rooms/keys/act`](../../act/0.5/spec.md).
+1. **MUST** send the KeyPackage it is given, unaltered, to the room's owner — in an offer of a community-owned room, as the `keyPackage` of [`vtc/rooms/offers/accept`](../../../../vtc/rooms/offers/accept/0.1/spec.md), completed as the member with [`rooms/keys/act`](../../act/0.8/spec.md).
 2. **SHOULD**, when `alreadyMinted` is `true`, expect that another surface may have sent it already, and that the owner's answer to it is a repeat of the one it gave that surface.
 
 ## Behaviour
@@ -117,7 +117,7 @@ Returning the outstanding KeyPackage is not reuse in that sense. It goes to the 
 What it buys is that the three steps of joining each answer a repeat with their first answer:
 
 1. the key holder returns the KeyPackage it already holds (Recipient item 3);
-2. the room's owner, asked again to admit the same KeyPackage, answers with the Welcome it already made ([`vtc/rooms/offers/accept`](../../../../vtc/rooms/offers/accept/0.1/spec.md), *Repeating an accept*; [`rooms/owner/group/add`](../../../owner/group/add/0.2/spec.md) item 8);
+2. the room's owner, asked again to admit the same KeyPackage, answers with the Welcome it already made ([`vtc/rooms/offers/accept`](../../../../vtc/rooms/offers/accept/0.1/spec.md), *Repeating an accept*; [`rooms/owner/group/add`](../../../owner/group/add/0.3/spec.md) item 8);
 3. the key holder, handed a Welcome for a group it already joined for the member, answers `alreadyJoined` ([`rooms/keys/welcome`](../../welcome/0.1/spec.md)).
 
 A surface that runs all three, from the start, finishes whatever any surface began — and cannot tell, and need not, whether one did. [`vtc/rooms/memberships/list`](../../../../vtc/rooms/memberships/list/0.1/spec.md) sets out when a surface does so.

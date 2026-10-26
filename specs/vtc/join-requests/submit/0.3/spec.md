@@ -100,7 +100,7 @@ errorCodes:
 
 ## Abstract
 
-The **VTC Join-Requests — Submit** Trust Task opens an application to join a community under one of the criteria it publishes ([`vtc/join-requests/manifest/0.3`](../../manifest/0.3/spec.md)). The applicant names the criterion by its `requirementsDigest`, presents a W3C Verifiable Presentation (`vp`) carrying what that criterion requires (which may be nothing), and optionally consents to trust-registry publication. The community decides the submission as the criterion's `admission` states: admitted, referred to an administrator, asked for more, or refused. On acceptance the community records a **pending** request and returns its `requestId`, which the applicant polls with [`vtc/join-requests/status`](../../status/0.1/).
+The **VTC Join-Requests — Submit** Trust Task opens an application to join a community under one of the criteria it publishes ([`vtc/join-requests/manifest/0.4`](../../manifest/0.4/spec.md)). The applicant names the criterion by its `requirementsDigest`, presents a W3C Verifiable Presentation (`vp`) carrying what that criterion requires (which may be nothing), and optionally consents to trust-registry publication. The community decides the submission as the criterion's `admission` states: admitted, referred to an administrator, asked for more, or refused. On acceptance the community records a **pending** request and returns its `requestId`, which the applicant polls with [`vtc/join-requests/status`](../../status/0.1/).
 
 ### Changes from 0.2
 
@@ -119,12 +119,12 @@ Consumer: verify the proof and the presentation; if the VP fails verification or
 
 The community's published criteria are its join rules; this section says how a submission is decided against them and adds no rule of its own.
 
-**Which criterion governs.** The criterion `criterion` names, at the version that digest names while that version is within its `requirementsGrace`, and the current version otherwise (vtc/join-requests/manifest/0.3 item 5). With `criterion` absent, the first criterion, in the order the community publishes them, that the submission meets; and when it meets none, the first criterion published. The order is the community's, so where several criteria are met, which one governs — automatic or reviewed — is its choice. A consumer **MUST** refuse with `notAccepting` when it publishes no criteria, and with `criterionUnknown` when `criterion` names none of them.
+**Which criterion governs.** The criterion `criterion` names, at the version that digest names while that version is within its `requirementsGrace`, and the current version otherwise (vtc/join-requests/manifest/0.4 item 5). With `criterion` absent, the first criterion, in the order the community publishes them, that the submission meets; and when it meets none, the first criterion published. The order is the community's, so where several criteria are met, which one governs — automatic or reviewed — is its choice. A consumer **MUST** refuse with `notAccepting` when it publishes no criteria, and with `criterionUnknown` when `criterion` names none of them.
 
 **Meeting it.** A submission meets the governing criterion when every requirement the criterion states is met, and only then:
 
 - *credentials* — the presentation carries credentials satisfying its `presentationDefinition`, each verifying (signature, validity window, revocation) and issued by a party its `credentialIssuers` admits;
-- *vetting* — the statements presented meet its `vetting` object, counted as vtc/join-requests/manifest/0.3 defines;
+- *vetting* — the statements presented meet its `vetting` object, counted as vtc/join-requests/manifest/0.4 defines;
 - *invitation* — when `invitationRequired`, the presentation carries a valid, unconsumed invitation this community issued to the applicant.
 
 A criterion that states none of these is met by every submission whose proof and presentation verify. Something presented that the governing criterion does not ask for — an invitation, a credential — does not help meet it.
@@ -193,7 +193,7 @@ on the request row.
 Minimisation is the applicant's, and it happens before the document is built: a
 presentation is a selective disclosure, so a producer **SHOULD** present the
 narrowest credential set and the fewest claims its reading of the
-[manifest](../../manifest/0.3/spec.md) requires. There is no narrowing
+[manifest](../../manifest/0.4/spec.md) requires. There is no narrowing
 afterwards. A producer **MUST NOT** move claims into `extensions` that it was
 unwilling to put in `vp` — material there sits outside the presentation's
 selective-disclosure machinery and is stored as plain JSON.
@@ -215,7 +215,7 @@ applicant has to address the community it means to join, having found that DID i
 a directory, a manifest, or a governance document published by someone else; a
 pairwise community identifier would mean no two prospective applicants could
 confirm they were applying to the same body, and the
-[manifest](../../manifest/0.3/spec.md) that tells them what to present could
+[manifest](../../manifest/0.4/spec.md) that tells them what to present could
 not be tied to the community that will judge it. The cost is the ordinary one: a
 community DID is a fixed point every observer of the ecosystem can name.
 
@@ -246,7 +246,7 @@ That row survives the decision. A **refused** applicant is left in a position
 worth stating plainly: the claims they disclosed to a community that would not
 have them remain on that community's systems, readable by every administrator
 through [`show`](../../show/0.1/spec.md) and enumerable in bulk through
-[`list`](../../list/0.1/spec.md), for as long as the community keeps the row.
+[`list`](../../list/0.2/spec.md), for as long as the community keeps the row.
 Nothing in this payload sets a lifetime, no member requests erasure, and no error
 code refuses a submission on retention grounds — the applicant's only control is
 the one they exercised before submitting, by choosing what to present.

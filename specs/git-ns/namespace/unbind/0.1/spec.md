@@ -54,7 +54,7 @@ related:
 
 ## Abstract
 
-Ends a VTC's governance of a namespace bound with [`git-ns/namespace/bind`](../../../../git-ns/namespace/bind/0.1/spec.md). Every right recorded on a resource inside the namespace is revoked and withdrawn from the Trust Registry, every repository in it becomes `detached`, and the namespace record is removed. Unbinding a `pending` namespace cancels the binding.
+Ends a VTC's governance of a namespace bound with [`git-ns/namespace/bind`](../../../../git-ns/namespace/bind/0.2/spec.md). Every right recorded on a resource inside the namespace is revoked and withdrawn from the Trust Registry, every repository in it becomes `detached`, and the namespace record is removed. Unbinding a `pending` namespace cancels the binding.
 
 Unbinding does not touch the forge: the repositories stay, and so does the forge app or bot if nobody removes it. But every repository in the namespace whose CI check names this VTC will fail that check from then on, because the rights it queries are gone. That is the honest outcome of withdrawing trust, and the reason this task is destructive.
 
@@ -88,7 +88,7 @@ The actor sends the request to the VTC. See the top-level schema in [`payload.sc
 2. Checks the authorization above, and evaluates its policy, which may refuse with `git-ns:policyDenied`.
 3. Revokes every record whose resource the namespace contains, including every `git.ns.admin` — the last-owner and last-admin invariants do not apply to a namespace that is going away — withdraws them from its registry projection, and records each as revoked by the actor.
 4. Sets every repository in the namespace to `detached` and stops projecting to the forge. It sends the bridge no job: removing the app or bot is for a forge owner to do.
-5. Removes the namespace. A later [`git-ns/namespace/bind`](../../../../git-ns/namespace/bind/0.1/spec.md) of the same owner is a new binding with a new identifier and no rights.
+5. Removes the namespace. A later [`git-ns/namespace/bind`](../../../../git-ns/namespace/bind/0.2/spec.md) of the same owner is a new binding with a new identifier and no rights.
 
 ### Unbinding a manual-mode namespace
 

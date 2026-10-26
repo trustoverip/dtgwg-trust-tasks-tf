@@ -76,11 +76,11 @@ errorCodes:
 
 The **Vault — Sign Trust Task** Trust Task asks the maintainer to attach a Data Integrity proof to a Trust Task envelope, signing as the principal DID of a `didSelfIssued` or `didcommPeer` vault entry. The long-term signing key never leaves the maintainer.
 
-This task complements `vault/proxy-login/0.1`: proxy-login mints a *session credential* (a SIOPv2 id_token, an OAuth bearer, etc.) at session-start time; sign-trust-task signs *individual Trust Tasks* the consumer needs to issue *during* an already-authenticated session.
+This task complements `vault/proxy-login/0.2`: proxy-login mints a *session credential* (a SIOPv2 id_token, an OAuth bearer, etc.) at session-start time; sign-trust-task signs *individual Trust Tasks* the consumer needs to issue *during* an already-authenticated session.
 
 ### Motivating use case
 
-A consumer logs in to a relying party via `vault/proxy-login/0.1`. The RP authenticates the resulting session as the vault entry's `principalDid` (the `iss`/`sub` of the SIOP id_token). The consumer then needs to send the RP a follow-up Trust Task — for example `acl/grant/0.1` to add a new admin. The RP's verifier requires the task's `proof.verificationMethod` to match the authenticated session's DID. If the consumer signs the task with its own holder DID (the wallet's general identity), the RP rejects with `proofInvalid`: "proof verificationMethod DID does not match the authenticated caller."
+A consumer logs in to a relying party via `vault/proxy-login/0.2`. The RP authenticates the resulting session as the vault entry's `principalDid` (the `iss`/`sub` of the SIOP id_token). The consumer then needs to send the RP a follow-up Trust Task — for example `acl/grant/0.2` to add a new admin. The RP's verifier requires the task's `proof.verificationMethod` to match the authenticated session's DID. If the consumer signs the task with its own holder DID (the wallet's general identity), the RP rejects with `proofInvalid`: "proof verificationMethod DID does not match the authenticated caller."
 
 `vault/sign-trust-task/0.1` closes that gap: the consumer hands the unsigned task to the maintainer, the maintainer signs as `principalDid`, the resulting envelope is acceptable to the RP.
 
@@ -94,7 +94,7 @@ A conforming **producer** **MUST**:
 
 1. Populate `entryId` with a vault entry the producer knows is `didSelfIssued` or `didcommPeer`. Other `secretKind`s are rejected with `notSignable`.
 2. Populate `unsignedEnvelope` with a complete Trust Task envelope per the framework (§4.x of SPEC.md): `id`, `type`, `issuer`, `recipient`, `issuedAt`, `payload` are REQUIRED; `threadId`, `expiresAt`, `ext` are OPTIONAL. The envelope MUST NOT carry a `proof`.
-3. Set `unsignedEnvelope.issuer` to the entry's `principalDid`. The producer learns `principalDid` from the entry metadata (`vault/list/0.1` / `vault/get/0.1` returns it; the proxy-login response also carries it implicitly via the minted id_token's `iss`).
+3. Set `unsignedEnvelope.issuer` to the entry's `principalDid`. The producer learns `principalDid` from the entry metadata (`vault/list/0.4` / `vault/get/0.3` returns it; the proxy-login response also carries it implicitly via the minted id_token's `iss`).
 4. Carry a `proof`.
 5. On `stepUpRequired`, satisfy the demanded method and retry with `stepUpProof`.
 
@@ -108,7 +108,7 @@ A conforming **consumer** (the vault maintainer) **MUST**:
 6. If `expiresAt` is present and in the past, reject with `envelopeExpired`.
 7. Evaluate the policy engine against `{ entry, consumer, envelope: { type, recipient }, request: { kind: "sign_trust_task" } }`. Possible outcomes: `allow`, `requireStepUp`, `deny`.
 8. On allow, JCS-canonicalise the envelope (proof slot first set to the proof's metadata without `proofValue`, per the eddsa-jcs-2022 Data Integrity rules), sign with the entry's signing key, attach `proof` to the envelope, return.
-9. The proof's `verificationMethod` MUST be `<principalDid>#<signingKeyId>` (same shape the proxy-login id_tokens use). `proof.cryptosuite` MUST be `eddsa-jcs-2022`. `proof.proofPurpose` MUST be decided by the envelope's `type` alone. It is `assertionMethod` exactly when `type` is a `https://trusttasks.org` Type URI (bare or `#request`, never `#response`) of one of the specifications that define their documents as the issuer's attestation, in any version (a closed list): [`auth/step-up/approve-response`](../../../auth/step-up/approve-response/0.5/spec.md), [`task-consent/decision`](../../../task-consent/decision/0.1/spec.md) and [`confirm/response`](../../../confirm/response/0.1/spec.md). It is `authentication` for every other document, which is operational, including the `#response` variant of those types and any private registry's type that reuses one of their slugs. Type URIs are compared exactly, without case folding or other normalisation. The consumer does not choose the purpose, and the maintainer MUST NOT sign any other document for `assertionMethod`.
+9. The proof's `verificationMethod` MUST be `<principalDid>#<signingKeyId>` (same shape the proxy-login id_tokens use). `proof.cryptosuite` MUST be `eddsa-jcs-2022`. `proof.proofPurpose` MUST be decided by the envelope's `type` alone. It is `assertionMethod` exactly when `type` is a `https://trusttasks.org` Type URI (bare or `#request`, never `#response`) of one of the specifications that define their documents as the issuer's attestation, in any version (a closed list): [`auth/step-up/approve-response`](../../../auth/step-up/approve-response/0.6/spec.md), [`task-consent/decision`](../../../task-consent/decision/0.2/spec.md) and [`confirm/response`](../../../confirm/response/0.1/spec.md). It is `authentication` for every other document, which is operational, including the `#response` variant of those types and any private registry's type that reuses one of their slugs. Type URIs are compared exactly, without case folding or other normalisation. The consumer does not choose the purpose, and the maintainer MUST NOT sign any other document for `assertionMethod`.
 10. Audit-log the sign with `{ who, when, entryId, envelope: { id, type, recipient }, outcome }`. The audit MUST NOT include the envelope's `payload` (which may carry sensitive RP-side data).
 
 ## Payload
@@ -249,7 +249,7 @@ The producer is expected to set `unsignedEnvelope.issuer` correctly on retry. Th
 
 **Issuer-DID exfiltration.** A misconfigured consumer that submits arbitrary envelopes risks the maintainer signing tasks the operator did not intend. Defence in depth:
 * `SignTrustTask` is a separate capability from `ProxyLogin`. Operators can grant proxy-login without sign-trust-task to limit blast radius.
-* Policy MAY restrict signing to a configured list of `envelope.type` values per consumer (e.g. an AI Agent Service might be limited to `vault/upsert/0.1` and `auth/refresh/0.1` only).
+* Policy MAY restrict signing to a configured list of `envelope.type` values per consumer (e.g. an AI Agent Service might be limited to `vault/upsert/0.4` and `auth/refresh/0.2` only).
 * Every signature is audited with `{ envelope.id, envelope.type, recipient }` so unexpected `type` values are detectable post-hoc.
 
 **Relationship to `proxyLogin` nonce.** `proxyLogin` carries an optional `nonce` that the maintainer embeds in the minted SIOP id_token. Sign-trust-task does not have a `nonce` field at the envelope level — if the recipient needs an anti-replay nonce, it lives in the task's `payload` (defined by the recipient's task type) and the consumer is responsible for populating it before submission. The maintainer just signs what's there.

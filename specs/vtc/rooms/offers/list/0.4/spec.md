@@ -106,7 +106,7 @@ A conforming **surface** (the member's own client):
 
 The entitlement is **being the member the offers are addressed to**, proven by the document's proof and checked against the community's own membership record at execution time. No administrative standing is involved, and none is accepted in its place: an administrator reading another member's offers would be reading credentials that name somebody else. A community answering members separately from administrators answers this on its member audience.
 
-**Signing as the member.** The DID an offer is addressed to is often one whose keys are held by the member's key holder, so the surface the member acts from has this request completed and signed as that DID with [`rooms/keys/act`](../../../../../rooms/keys/act/0.6/spec.md) at a version whose table lists this version of this type, which carries no presentation for it. `0.6`'s table lists `0.1`, `0.2` and `0.3` of this type, not `0.4`.
+**Signing as the member.** The DID an offer is addressed to is often one whose keys are held by the member's key holder, so the surface the member acts from has this request completed and signed as that DID with [`rooms/keys/act`](../../../../../rooms/keys/act/0.8/spec.md) at a version whose table lists this version of this type, which carries no presentation for it. `0.6`'s table lists `0.1`, `0.2` and `0.3` of this type, not `0.4`.
 
 ## Request
 

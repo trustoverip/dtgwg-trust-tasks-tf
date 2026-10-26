@@ -60,7 +60,7 @@ related:
 
 ## Abstract
 
-The second leg of redeeming an [`auth/passkey/enroll/invite`](../../../invite/0.2/spec.md). The invitee returns the result of `navigator.credentials.create` over the start's `options`, and of `navigator.credentials.get` over its `uvOptions` when there were any. The auth service binds the credential to the invite's subject with the invite's purpose, and consumes the invite.
+The second leg of redeeming an [`auth/passkey/enroll/invite`](../../../invite/0.3/spec.md). The invitee returns the result of `navigator.credentials.create` over the start's `options`, and of `navigator.credentials.get` over its `uvOptions` when there were any. The auth service binds the credential to the invite's subject with the invite's purpose, and consumes the invite.
 
 ## Status of this Document
 
@@ -81,7 +81,7 @@ A conforming **consumer** **MUST**:
 1. Look up the ceremony by `enrollmentId`. Unknown, or its invite consumed or invalidated since → `enrollmentNotFound`; past its expiry → `enrollmentExpired`.
 2. Where the start returned `uvOptions`, verify `uvCredential` against them, requiring the UV flag and a credential of the subject's of the same purpose → `userVerificationFailed` otherwise, and a missing `uvCredential` is a failure, never consent.
 3. Verify the attestation as WebAuthn Level 2 §7.1 requires → `attestationInvalid` otherwise.
-4. Persist the credential bound to the invite's subject with the invite's purpose — a `stepUp` credential where a login ceremony never reads it ([`enroll/invite` 0.2](../../../invite/0.2/spec.md#a-stepup-credential)) — and consume the invite and the ceremony, **atomically** with the persist.
+4. Persist the credential bound to the invite's subject with the invite's purpose — a `stepUp` credential where a login ceremony never reads it ([`enroll/invite` 0.3](../../../invite/0.3/spec.md#a-stepup-credential)) — and consume the invite and the ceremony, **atomically** with the persist.
 5. Record an audit event naming the subject, the purpose, the credential id and the inviting administrator.
 6. **SHOULD** tell the subject, over a channel it already has with them, that a credential was bound to their VID, so an enrolment they did not make does not go unnoticed.
 
@@ -115,4 +115,4 @@ The credential is kept until revoked; the redemption's audit record is durable.
 
 ### Consent/purpose
 
-The credential is used only for its purpose — for `stepUp`, only as the operation-bound gesture of [`enroll/invite` 0.2](../../../invite/0.2/spec.md#a-stepup-credential), rule 2.
+The credential is used only for its purpose — for `stepUp`, only as the operation-bound gesture of [`enroll/invite` 0.3](../../../invite/0.3/spec.md#a-stepup-credential), rule 2.

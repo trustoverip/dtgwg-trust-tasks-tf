@@ -108,13 +108,13 @@ related:
 
 A room's owner asks their **key holder** to renew a sealed room: to advance its epoch without changing who is in it.
 
-A room's epoch lapses. A room nobody renews becomes read-only, and after its retention window its storage may be reclaimed ([`rooms/create`](../../../../create/0.1/spec.md)). On an `open` room renewal is a bare [`rooms/epoch/mint`](../../../../epoch/mint/0.1/spec.md): the host records the next number and nothing else depends on it.
+A room's epoch lapses. A room nobody renews becomes read-only, and after its retention window its storage may be reclaimed ([`rooms/create`](../../../../create/0.2/spec.md)). On an `open` room renewal is a bare [`rooms/epoch/mint`](../../../../epoch/mint/0.1/spec.md): the host records the next number and nothing else depends on it.
 
 **On a sealed room — `attributed` or `private` — the room's epoch is the MLS group's epoch plus one**, and every record is sealed under a key derived from the group at the room's current epoch. An epoch advance at the host is therefore only correct together with an advance of the group, carried to the host as the `commit` of the mint. A mint without one moves the host and no member: the host is at N+1, every member's key holder is still at N, the host refuses every record sealed at N (a superseded epoch), and the owner's next admission or removal fails `epochConflict`, because its group is behind the room. A renewal that bricks the room for writing is the failure mode, and it looks like success.
 
-Until this task a sealed room had no correct way to renew. Admissions and removals ([`rooms/owner/group/add`](../../add/0.1/spec.md), [`rooms/owner/group/remove`](../../remove/0.1/spec.md)) advance its epoch correctly, but only as a side effect of a membership change; a sealed room whose membership is stable simply lapsed. This task is the third advance, beside those two: a commit that changes no membership — in MLS terms an update of the committer's own leaf, or an empty commit ([RFC 9420 §12.4](https://www.rfc-editor.org/rfc/rfc9420#section-12.4)) — carried to the host the same way.
+Until this task a sealed room had no correct way to renew. Admissions and removals ([`rooms/owner/group/add`](../../add/0.3/spec.md), [`rooms/owner/group/remove`](../../remove/0.3/spec.md)) advance its epoch correctly, but only as a side effect of a membership change; a sealed room whose membership is stable simply lapsed. This task is the third advance, beside those two: a commit that changes no membership — in MLS terms an update of the committer's own leaf, or an empty commit ([RFC 9420 §12.4](https://www.rfc-editor.org/rfc/rfc9420#section-12.4)) — carried to the host the same way.
 
-A member's own client holds no group key, so it cannot make a commit; [`rooms/keys/act`](../../../../keys/act/0.1/spec.md) therefore refuses to complete a `rooms/epoch/mint` for a sealed room, and names this task.
+A member's own client holds no group key, so it cannot make a commit; [`rooms/keys/act`](../../../../keys/act/0.8/spec.md) therefore refuses to complete a `rooms/epoch/mint` for a sealed room, and names this task.
 
 *This paragraph is non-normative.* The advance moves the room's profile too: the profile is stored per epoch, so a key holder that also serves [`rooms/keys/profile/write`](../../../../keys/profile/write/0.1/spec.md) reads it before advancing and re-writes it under the new epoch afterwards, which is what lets a member who joins now — or reads only from where they joined — see what the room is. See that specification's *Keeping the profile readable across epochs*.
 
@@ -155,12 +155,12 @@ A conforming recipient:
       - with `earlierRemovalRefused`, carrying the earlier removal's `member`, the host's `code` and whether the list was kept (`listKept`), whenever settling discards the removal or its advance.
 
       In both cases the recipient **MUST NOT** go on to this request's own work. The owner was told that the earlier removal was pending; it must not vanish inside a renewal that succeeds, leaving a member they believe removed still in the group.
-   2. **Any other pending advance** — an admission, a renewal, or a removal whose list the host has confirmed or which carries none — is settled by asking the host it was sent to for the room's epoch, with [`rooms/info`](../../../../info/0.1/spec.md) under the caller's `read` authority: the recipient applies the pending advance if the host is at its epoch, or discards it if the host is still at the epoch before it. A host anywhere else has moved on without it: discard it and refuse with `epochConflict`. A host that does not answer leaves the advance pending, and the request is refused with `hostUnreachable` (`stage: advance`). Discarding a removal's advance never discards a list the host has confirmed, which is the room's.
+   2. **Any other pending advance** — an admission, a renewal, or a removal whose list the host has confirmed or which carries none — is settled by asking the host it was sent to for the room's epoch, with [`rooms/info`](../../../../info/0.3/spec.md) under the caller's `read` authority: the recipient applies the pending advance if the host is at its epoch, or discards it if the host is still at the epoch before it. A host anywhere else has moved on without it: discard it and refuse with `epochConflict`. A host that does not answer leaves the advance pending, and the request is refused with `hostUnreachable` (`stage: advance`). Discarding a removal's advance never discards a list the host has confirmed, which is the room's.
 7. **MUST NOT** advance the room at the host without a commit, and **MUST NOT** carry in the commit a proposal that adds or removes a member. A membership change is an admission or a removal, each of which renews the room as it advances it.
 
 ## Authorization
 
-**The entitlement is membership of the group and the room's `admin` authority**, both of which the recipient holds for its caller — as for [`rooms/owner/group/add`](../../add/0.1/spec.md) and [`rooms/owner/group/remove`](../../remove/0.1/spec.md), and for the same reasons. The host verifies the `admin` chain on the epoch advance; the recipient does not decide that its caller is an admin.
+**The entitlement is membership of the group and the room's `admin` authority**, both of which the recipient holds for its caller — as for [`rooms/owner/group/add`](../../add/0.3/spec.md) and [`rooms/owner/group/remove`](../../remove/0.3/spec.md), and for the same reasons. The host verifies the `admin` chain on the epoch advance; the recipient does not decide that its caller is an admin.
 
 Per [SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements), verifying the VID, `issuer`, `recipient` or `proof` establishes *who sent this* and *that it is unaltered* — never that they were entitled to the outcome.
 
@@ -176,7 +176,7 @@ Per [SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements), verifying the VID, 
 
 ### Remote first
 
-The order in items 2 to 5 is that of [`rooms/owner/group/add`](../../add/0.1/spec.md), for its reason: a key holder that advanced its group and then failed to advance the host would seal to keys at an epoch the room is not at, and nothing would say so until somebody failed to open what it wrote. Advancing the host first, and applying only what the host accepted, means the worst a failure leaves is a renewal that did not happen.
+The order in items 2 to 5 is that of [`rooms/owner/group/add`](../../add/0.3/spec.md), for its reason: a key holder that advanced its group and then failed to advance the host would seal to keys at an epoch the room is not at, and nothing would say so until somebody failed to open what it wrote. Advancing the host first, and applying only what the host accepted, means the worst a failure leaves is a renewal that did not happen.
 
 ## Request
 

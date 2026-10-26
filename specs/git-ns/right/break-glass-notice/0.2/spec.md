@@ -47,7 +47,7 @@ related:
 
 ## Abstract
 
-A [break-glass](../../break-glass/0.1/spec.md) is safe only if nobody can miss it. This task is how the VTC makes sure of that outside its own consoles: it pushes a signed notice to every administrator of the namespace — every community administrator and every live `git.ns.admin` of it — the moment a member breaks the glass, and again when another administrator ratifies or revokes it, so that every alert an administrator was shown is also cleared.
+A [break-glass](../../break-glass/0.2/spec.md) is safe only if nobody can miss it. This task is how the VTC makes sure of that outside its own consoles: it pushes a signed notice to every administrator of the namespace — every community administrator and every live `git.ns.admin` of it — the moment a member breaks the glass, and again when another administrator ratifies or revokes it, so that every alert an administrator was shown is also cleared.
 
 Like [`vtc/members/removal-notice`](../../../../vtc/members/removal-notice/0.1/spec.md), it answers nothing: the recipient did not ask, is not waiting, and may be offline.
 
@@ -80,7 +80,7 @@ Not consequential for the recipient, and declared for clarity. The notice presup
 
 A conforming VTC:
 
-1. Sends a notice of event `breakGlass` after the break-glass is durable ([`git-ns/right/break-glass`](../../break-glass/0.1/spec.md) step 10), `ratified` after a ratification is durable ([`git-ns/right/ratify`](../../ratify/0.1/spec.md) step 6), and `revoked` after the revocation of any record carrying `breakGlass` is durable ([`git-ns/right/revoke`](../../revoke/0.3/spec.md) step 6) — never on deciding one.
+1. Sends a notice of event `breakGlass` after the break-glass is durable ([`git-ns/right/break-glass`](../../break-glass/0.2/spec.md) step 10), `ratified` after a ratification is durable ([`git-ns/right/ratify`](../../ratify/0.2/spec.md) step 6), and `revoked` after the revocation of any record carrying `breakGlass` is durable ([`git-ns/right/revoke`](../../revoke/0.4/spec.md) step 6) — never on deciding one.
 2. Sends one to every administrator of the namespace other than `by`, as they stand when the event takes effect, each as its own document with that administrator as `recipient`. It **MUST NOT** narrow that audience for any reason, community policy included.
 3. Sends it over the VTC's own authenticated messaging channel to the recipient, queued for guaranteed delivery with a window long enough for an administrator who is away; a VTC that can wake a recipient's device **SHOULD** do so.
 4. Sets `occurredAt` to when the event took effect, and `record` to the record as it stands after the event (for `revoked`, as it stood when revoked).
@@ -133,7 +133,7 @@ A recipient that shows administrators alerts **SHOULD** show a `breakGlass` noti
 
 ### Data carried
 
-The notice carries one right record, its break-glass justification and, for ratification and revocation, the actor's statement. Each recipient is an administrator of the namespace, entitled to all of it through [`git-ns/view`](../../../view/0.4/spec.md). A VTC **MUST NOT** send it to anyone else.
+The notice carries one right record, its break-glass justification and, for ratification and revocation, the actor's statement. Each recipient is an administrator of the namespace, entitled to all of it through [`git-ns/view`](../../../view/0.6/spec.md). A VTC **MUST NOT** send it to anyone else.
 
 ### Why everyone, every time
 

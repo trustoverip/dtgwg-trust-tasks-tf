@@ -50,7 +50,7 @@ related:
 
 ## Abstract
 
-The **External Accounts — Update** Trust Task changes an account's `label` or `settings` — a bucket, a role, a pool provider, a Sui allow-list. It cannot change the account's model, which would make it a different account with the same name, and it cannot touch the key, which [`external/accounts/keys/rotate`](../../keys/rotate/0.1/spec.md) does.
+The **External Accounts — Update** Trust Task changes an account's `label` or `settings` — a bucket, a role, a pool provider, a Sui allow-list. It cannot change the account's model, which would make it a different account with the same name, and it cannot touch the key, which [`external/accounts/keys/rotate`](../../keys/rotate/0.2/spec.md) does.
 
 Retargeting settings is the most dangerous quiet change an account can undergo: an integration keeps asking for "the account" and gets a different bucket. So it is consent-gated by recommendation, and a custodian marks the account as needing a fresh probe.
 

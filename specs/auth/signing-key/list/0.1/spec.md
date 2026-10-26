@@ -46,7 +46,7 @@ related:
 
 ## Abstract
 
-The **Auth — Signing Key List** Trust Task returns every signing-key delegation enrolled for the caller's identity through [`auth/signing-key/enroll`](../../enroll/0.1/spec.md): which `did:key`s may sign in its name, with the label each was given, when each was enrolled, when it was last used, when it expires, and whether it was revoked. It is the input to [`auth/signing-key/revoke`](../../revoke/0.1/spec.md), and the "this browser / other browsers" list an administration console shows beside its passkeys.
+The **Auth — Signing Key List** Trust Task returns every signing-key delegation enrolled for the caller's identity through [`auth/signing-key/enroll`](../../enroll/0.2/spec.md): which `did:key`s may sign in its name, with the label each was given, when each was enrolled, when it was last used, when it expires, and whether it was revoked. It is the input to [`auth/signing-key/revoke`](../../revoke/0.1/spec.md), and the "this browser / other browsers" list an administration console shows beside its passkeys.
 
 Revoked delegations are included so a holder can see that a device was disowned rather than never enrolled.
 

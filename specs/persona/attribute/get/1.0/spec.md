@@ -112,7 +112,7 @@ A producer **MUST NOT** place secret material in `ext`.
 
 A get discloses nothing to anyone but the caller, and the caller is the holder's
 own authority. It performs no correlation analysis and **MUST NOT** report one:
-[`persona/correlation/analyze`](../../../correlation/analyze/1.1/spec.md) is
+[`persona/correlation/analyze`](../../../correlation/analyze/1.2/spec.md) is
 where "how linkable would this make me" is answered, and answering it here
 would put a second, thinner opinion in a response whose job is to return a
 record.

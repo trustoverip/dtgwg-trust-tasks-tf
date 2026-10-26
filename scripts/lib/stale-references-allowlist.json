@@ -1,0 +1,11 @@
+{
+  "$comment": "References that name a superseded version of another specification on purpose, keyed by the referencing slug, then by the <slug>/<version> named, each with the reason. Read by scripts/lib/stale-references.mjs. A Changes-from section, an enumeration that runs to the latest version, and `or later` are already exempt; an entry is for anything else meant. An entry no longer found is reported as stale.",
+  "exceptions": {
+    "rooms/records/get": {
+      "rooms/records/put/0.1": "Says which records carry no `blobs`: those written by `rooms/records/put/0.1`, which had none. Naming a later version would invert it."
+    },
+    "rooms/records/list": {
+      "rooms/records/put/0.1": "Says which records carry no `blobs`: those written by `rooms/records/put/0.1`, which had none. Naming a later version would invert it."
+    }
+  }
+}

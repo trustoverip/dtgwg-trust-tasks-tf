@@ -52,7 +52,7 @@ related:
 
 ## Abstract
 
-A right's grant does not lapse when its granter leaves — [`git-ns/right/grant`](../../grant/0.3/spec.md)'s Authorization section is explicit that a granter's authority is checked at grant time, not held in trust afterward. Left unreviewed, the community accumulates rights authorised by people no longer there to answer for them, some in namespaces whose last admin was that same departure ([`git-ns/namespace/reseat`](../../../namespace/reseat/0.3/spec.md) exists for exactly that case). This task is the administrator's worklist for that risk: every recorded right whose granter has since left, grouped by granter, alongside the community's `cascade_on_departure` policy setting — `true` means departures already revoke these automatically and the list is normally empty; `false` means each one is a live right an administrator must look at and decide whether to keep or revoke individually. It is an admin console's *Issued by departed members* panel.
+A right's grant does not lapse when its granter leaves — [`git-ns/right/grant`](../../grant/0.4/spec.md)'s Authorization section is explicit that a granter's authority is checked at grant time, not held in trust afterward. Left unreviewed, the community accumulates rights authorised by people no longer there to answer for them, some in namespaces whose last admin was that same departure ([`git-ns/namespace/reseat`](../../../namespace/reseat/0.4/spec.md) exists for exactly that case). This task is the administrator's worklist for that risk: every recorded right whose granter has since left, grouped by granter, alongside the community's `cascade_on_departure` policy setting — `true` means departures already revoke these automatically and the list is normally empty; `false` means each one is a live right an administrator must look at and decide whether to keep or revoke individually. It is an admin console's *Issued by departed members* panel.
 
 It is a read. It changes nothing, grants nothing and publishes nothing.
 
@@ -82,7 +82,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 Not consequential, and declared for clarity. The caller is the DID the document's verified `proof` binds to its `issuer`; an unsigned document is refused with `proofRequired`.
 
-The entitlement is **the community-administrator capability** in the VTC's own access control, exactly as in [`git-ns/right/list`](../../list/0.1/spec.md) and for the same reason: a departed granter's surviving rights are not scoped to any namespace a caller might administer — the granter could have administered every namespace they touched, and now administers none. Holding `git.ns.admin` on some namespace does not entitle a caller to this list. A caller who does not hold the community-administrator capability is refused with `git-ns/right/issued-by-departed:notCommunityAdministrator`.
+The entitlement is **the community-administrator capability** in the VTC's own access control, exactly as in [`git-ns/right/list`](../../list/0.3/spec.md) and for the same reason: a departed granter's surviving rights are not scoped to any namespace a caller might administer — the granter could have administered every namespace they touched, and now administers none. Holding `git.ns.admin` on some namespace does not entitle a caller to this list. A caller who does not hold the community-administrator capability is refused with `git-ns/right/issued-by-departed:notCommunityAdministrator`.
 
 The capability is read from the VTC's own records at execution time; the `proof` establishes who asked, not that they may ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10).
 
@@ -90,7 +90,7 @@ The capability is read from the VTC's own records at execution time; the `proof`
 
 **Departed granter** — a DID recorded as `grantedBy` on a still-recorded right, who was a member of the community at the time of the grant and is not a current member now. The VTC's own DID, used as `grantedBy` for a right the VTC derives from its own configuration, is never a departed granter.
 
-**Cascade on departure** — the community's `cascade_on_departure` policy setting ([`git-ns/right/grant`](../../grant/0.3/spec.md)'s policy surface). When on, a member's departure revokes every right they granted as part of the same operation that revokes their own; this task's list is then normally empty, and a non-empty answer signals the policy has not yet run or was toggled on after these rights survived a departure under the old setting.
+**Cascade on departure** — the community's `cascade_on_departure` policy setting ([`git-ns/right/grant`](../../grant/0.4/spec.md)'s policy surface). When on, a member's departure revokes every right they granted as part of the same operation that revokes their own; this task's list is then normally empty, and a non-empty answer signals the policy has not yet run or was toggled on after these rights survived a departure under the old setting.
 
 ## Request
 
@@ -162,13 +162,13 @@ The VTC answers with the departed granters and their surviving rights, per the s
 
 ### Data carried
 
-The request carries at most a paging cursor. The response carries, for every departed granter: their DID, and for each right they issued that is still recorded — the subject, the right, the resource, when it was granted, and the granter's free-text reason. It is a narrower slice of what [`git-ns/right/list`](../../list/0.1/spec.md) can return, filtered to one governance question, but the reason field carries the same weight here: it is often the only record of *why* a now-unreachable person authorised something, which is exactly what makes it worth disclosing to an administrator deciding whether to revoke.
+The request carries at most a paging cursor. The response carries, for every departed granter: their DID, and for each right they issued that is still recorded — the subject, the right, the resource, when it was granted, and the granter's free-text reason. It is a narrower slice of what [`git-ns/right/list`](../../list/0.3/spec.md) can return, filtered to one governance question, but the reason field carries the same weight here: it is often the only record of *why* a now-unreachable person authorised something, which is exactly what makes it worth disclosing to an administrator deciding whether to revoke.
 
 ### Correlation
 
 Grouping by granter is itself the correlating operation this task performs: it answers "everything this one departed person authorised," which a filtered call to `git-ns/right/list` could also assemble, one granter at a time, for a caller who already knew to ask. What this task adds is the enumeration — it tells an administrator which departed granters have surviving rights at all, without the administrator first knowing their names.
 
-The **VTC** declares `identifierScope: public`, for the same reason as [`git-ns/right/list`](../../list/0.1/spec.md): the recipient is the community's own VTC, and a community administrator must recognise it as the same VTC every time they run this review. The **community administrator** carries no such declaration.
+The **VTC** declares `identifierScope: public`, for the same reason as [`git-ns/right/list`](../../list/0.3/spec.md): the recipient is the community's own VTC, and a community administrator must recognise it as the same VTC every time they run this review. The **community administrator** carries no such declaration.
 
 ### Retention
 

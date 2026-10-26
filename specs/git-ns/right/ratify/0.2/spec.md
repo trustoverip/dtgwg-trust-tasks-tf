@@ -64,7 +64,7 @@ related:
 
 ## Abstract
 
-A [break-glass](../../break-glass/0.1/spec.md) record is an elevated right its subject gave themselves, because nobody else could. It is a real right from the moment it is recorded, and it stays flagged — in every console, in [`git-ns/view`](../../../view/0.4/spec.md), in front of every other administrator — until one of them either takes it away with [`git-ns/right/revoke`](../../revoke/0.3/spec.md), or decides it should stand. This task is the second: the ratifier supplies, after the fact, the second person [separation of duties](../../grant/0.3/spec.md#the-fixed-rules) asked for.
+A [break-glass](../../break-glass/0.2/spec.md) record is an elevated right its subject gave themselves, because nobody else could. It is a real right from the moment it is recorded, and it stays flagged — in every console, in [`git-ns/view`](../../../view/0.6/spec.md), in front of every other administrator — until one of them either takes it away with [`git-ns/right/revoke`](../../revoke/0.4/spec.md), or decides it should stand. This task is the second: the ratifier supplies, after the fact, the second person [separation of duties](../../grant/0.4/spec.md#the-fixed-rules) asked for.
 
 Ratification changes nothing about who holds what. It clears the flag, and it makes the record count toward the last-owner and last-admin invariants, which an unratified break-glass record never does.
 
@@ -92,14 +92,14 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 The ratifier **MUST NOT** be the record's subject, and **MUST** be one of:
 
-- **an authority over the right on the resource** — a holder of a right whose grant authority covers the ratified right on the resource, per the [grant authority table](../../grant/0.3/spec.md#grant-authority) of `git-ns/right/grant`, where that right is **not itself held through an unratified break-glass record**. Ratification is the second person's decision; a second person whose own authority is a break-glass nobody has confirmed is not one;
+- **an authority over the right on the resource** — a holder of a right whose grant authority covers the ratified right on the resource, per the [grant authority table](../../grant/0.4/spec.md#grant-authority) of `git-ns/right/grant`, where that right is **not itself held through an unratified break-glass record**. Ratification is the second person's decision; a second person whose own authority is a break-glass nobody has confirmed is not one;
 - **a community administrator** — the community-administrator capability in the VTC's own access control, with or without a git right. It is the only entitlement there is for a break-glass `git.ns.admin` on a namespace that was headless, and it lets a community's administrators confirm any break-glass in any of its namespaces.
 
 The subject is refused with `git-ns/right/ratify:selfRatification`, whatever else they hold. Anyone else is refused with `permissionDenied`, or with `git-ns:escalation` when they hold rights on the resource but none that covers this right. The `proof` establishes who is acting, never that they may; the VTC resolves the signer, after any delegation it honours, before comparing it with the subject.
 
 ## Definitions
 
-**`subject`**, **`right`**, **`resource`** — identify the record exactly, as for [`git-ns/right/revoke`](../../revoke/0.3/spec.md).
+**`subject`**, **`right`**, **`resource`** — identify the record exactly, as for [`git-ns/right/revoke`](../../revoke/0.4/spec.md).
 
 **`breakGlassAt`** — the record's `breakGlass.recordedAt`, as the ratifier read it.
 
@@ -114,7 +114,7 @@ The administrator sends the request to the VTC. See the top-level schema in [`pa
 3. Refuses the record's subject with `git-ns/right/ratify:selfRatification`, then checks the rest of the [authorization](#authorization).
 4. Evaluates the community's git-namespace policy, which may refuse with `git-ns:policyDenied` (for example, a policy that only community administrators ratify a break-glass `git.ns.admin`) and may not override the rules above.
 5. Sets `breakGlass.ratifiedBy` to the actor and `breakGlass.ratifiedAt` to now, leaving every other member of the record as it was. Steps 1–3 and 5 **MUST** be atomic with respect to every other change to the resource's rights, so that a ratification and a revocation racing each other have exactly one outcome.
-6. Records an audit event carrying the ratifier, the record, `breakGlassAt` and `statement`, at the severity the break-glass was recorded at, and tells every administrator of the namespace — as [`git-ns/right/break-glass`](../../break-glass/0.1/spec.md#definitions) defines them — other than the ratifier, with a [`git-ns/right/break-glass-notice`](../../break-glass-notice/0.1/spec.md) of event `ratified`, as the break-glass itself was told. The response **MUST NOT** be sent before the change and the audit event are durable.
+6. Records an audit event carrying the ratifier, the record, `breakGlassAt` and `statement`, at the severity the break-glass was recorded at, and tells every administrator of the namespace — as [`git-ns/right/break-glass`](../../break-glass/0.2/spec.md#definitions) defines them — other than the ratifier, with a [`git-ns/right/break-glass-notice`](../../break-glass-notice/0.2/spec.md) of event `ratified`, as the break-glass itself was told. The response **MUST NOT** be sent before the change and the audit event are durable.
 
 The registry projection does not change: the right was already published as an ordinary one.
 

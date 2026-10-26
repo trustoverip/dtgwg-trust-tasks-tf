@@ -113,13 +113,13 @@ A conforming **consumer** (the VTA) **MUST**:
 5. Replace a live record with a tombstone taking the namespace's next counter value, discard the value, and return `existed: true` with the tombstone's `version` and `deletedAt`.
 6. Return `existed: false` and the existing tombstone's `version` when the address already holds one, changing nothing — a repeated delete **MUST NOT** take a new counter value, because that would present a change to every watching consumer where none occurred.
 7. Return `existed: false` with no `version` when the address holds nothing at all, writing **no** tombstone. Nothing ever existed there for a consumer to have learned about, so there is nothing to converge.
-8. Retain tombstones for a documented window — RECOMMENDED at least **30 days** — and, once it reaps them, refuse a [`vta/app-state/list`](../../list/1.0/spec.md) whose `sinceVersion` predates the oldest it still holds. A maintainer that reaps tombstones without that check hands consumers a feed that silently omits deletions, which is worse than not offering one.
+8. Retain tombstones for a documented window — RECOMMENDED at least **30 days** — and, once it reaps them, refuse a [`vta/app-state/list`](../../list/1.1/spec.md) whose `sinceVersion` predates the oldest it still holds. A maintainer that reaps tombstones without that check hands consumers a feed that silently omits deletions, which is worse than not offering one.
 
 ## Authorization
 
 Authority is **write access to application state in the named context**, held
 on the maintainer's ACL — the same authority
-[`vta/app-state/put`](../../put/1.0/spec.md) requires, and the same context
+[`vta/app-state/put`](../../put/1.1/spec.md) requires, and the same context
 boundary that gates keys, vault entries and policy. This task adds no scope of
 its own, and 1.0 grants nothing at namespace granularity: an application with
 write access to a context can delete records in every namespace within it.

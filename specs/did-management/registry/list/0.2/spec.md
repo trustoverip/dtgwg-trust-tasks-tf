@@ -49,7 +49,7 @@ related:
 
 **Registry List** enumerates the instances a control plane drives. It is what an operator console's fleet view reads, and — with [`did-management/stats/get`](../../../stats/get/0.1/spec.md) for the counters and [`did-management/server/config`](../../../server/config/0.1/spec.md) for the control plane's own settings — everything its dashboard needs. There is no separate "overview" task: the aggregate counts a dashboard shows (instances per verdict) are computed from this list by the reader.
 
-The list and [`did-management/registry/get`](../../get/0.1/spec.md) are the family's split read pair. The list offers two filters and no paging: a registry is a small, operator-scoped collection — tens of instances, not thousands — and a caller that needs one instance by identifier uses `get`, whose `notFound` is definite where an empty filtered page is not.
+The list and [`did-management/registry/get`](../../get/0.2/spec.md) are the family's split read pair. The list offers two filters and no paging: a registry is a small, operator-scoped collection — tens of instances, not thousands — and a caller that needs one instance by identifier uses `get`, whose `notFound` is definite where an empty filtered page is not.
 
 ## Status of this Document
 
@@ -82,7 +82,7 @@ The entitlement is **administrator standing on this control plane**, read from i
 
 ## Definitions
 
-**Instance**, **health verdict** — as in [`did-management/registry/get`](../../get/0.1/spec.md) and the shared `ServiceInstance` component.
+**Instance**, **health verdict** — as in [`did-management/registry/get`](../../get/0.2/spec.md) and the shared `ServiceInstance` component.
 
 ## Request
 

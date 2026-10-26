@@ -95,7 +95,7 @@ Consumer: verify the community-admin capability (`permissionDenied` otherwise). 
 The request is `id`, a two-value `decision`, and an optional `reason` capped at
 1024 characters. Nothing about the applicant travels inbound — the community
 already holds their presentation from
-[`submit`](../../submit/0.2/spec.md), and this task names a request rather than
+[`submit`](../../submit/0.3/spec.md), and this task names a request rather than
 re-describing a person.
 
 `reason` is the member that needs a rule, because it is operator-authored free
@@ -127,7 +127,7 @@ A refusal correlates too, and less visibly. It writes a `decision` block with a
 `code`, a `reason` and a `decidedAt` onto a row that already carries the
 applicant's claims, and that row remains readable through
 [`show`](../../show/0.1/spec.md) and enumerable through
-[`list`](../../list/0.1/spec.md). The refused party is thereafter, within this
+[`list`](../../list/0.2/spec.md). The refused party is thereafter, within this
 community, a durably identified applicant with a recorded reason attached.
 
 The administrator declares `identifierScope: pairwise`. Accountability for a

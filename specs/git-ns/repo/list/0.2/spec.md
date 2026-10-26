@@ -54,7 +54,7 @@ related:
 
 ## Abstract
 
-An administrator's repository table shows more than a member's: how many people hold each right, which bootstrap step failed and what the bridge said about it, which guard stops a pull request from satisfying its own check, when the check last ran, and whether the repository is still projected under an old role map. [`git-ns/view`](../../../view/0.5/spec.md) returns a repository's owners, bootstrap and drift, because every member may see those; the rest is operational detail for the people who fix it. This task is the administrator's list of the repositories in the namespaces they administer, with that status: an admin console's *Repos* table, a command-line `repos`.
+An administrator's repository table shows more than a member's: how many people hold each right, which bootstrap step failed and what the bridge said about it, which guard stops a pull request from satisfying its own check, when the check last ran, and whether the repository is still projected under an old role map. [`git-ns/view`](../../../view/0.6/spec.md) returns a repository's owners, bootstrap and drift, because every member may see those; the rest is operational detail for the people who fix it. This task is the administrator's list of the repositories in the namespaces they administer, with that status: an admin console's *Repos* table, a command-line `repos`.
 
 It is a read. It changes nothing, grants nothing and publishes nothing.
 
@@ -82,7 +82,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 Not consequential, and declared for clarity. The caller is the DID the document's verified `proof` binds to its `issuer`, or the DID a key the VTC has recorded as delegated by that DID acts for; an unsigned document is refused with `proofRequired`.
 
-The entitlement is, for each namespace, **the community-administrator capability** in the VTC's own access control (the one [`git-ns/namespace/bind`](../../../namespace/bind/0.1/spec.md) requires), or **`git.ns.admin` on that namespace** held by explicit record and live at the instant the VTC evaluates the request, by a current member. These are the namespace's administrators, and the only people this task answers. Nothing else suffices: not `git.repo.own` or `git.repo.create`, not an administrator role in the VTC's access control scoped to less than the whole community, and not membership. A caller who administers no namespace is refused with `git-ns/repo/list:notAdministrator`, and so is a caller naming, in `namespace`, a namespace they do not administer or one the VTC does not have.
+The entitlement is, for each namespace, **the community-administrator capability** in the VTC's own access control (the one [`git-ns/namespace/bind`](../../../namespace/bind/0.2/spec.md) requires), or **`git.ns.admin` on that namespace** held by explicit record and live at the instant the VTC evaluates the request, by a current member. These are the namespace's administrators, and the only people this task answers. Nothing else suffices: not `git.repo.own` or `git.repo.create`, not an administrator role in the VTC's access control scoped to less than the whole community, and not membership. A caller who administers no namespace is refused with `git-ns/repo/list:notAdministrator`, and so is a caller naming, in `namespace`, a namespace they do not administer or one the VTC does not have.
 
 The capability and `git.ns.admin` are read from the VTC's own records at execution time; the `proof` establishes who asked, not that they may ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10). Nothing in the payload names or widens whose namespaces are listed.
 
@@ -90,9 +90,9 @@ The capability and `git.ns.admin` are read from the VTC's own records at executi
 
 **Administered namespace** — for a holder of the community-administrator capability, every namespace bound to the VTC, `pending` ones included. For anyone else, each namespace on which they hold a live, explicitly recorded `git.ns.admin`.
 
-**Recorded right** — a live right record, never an implied one ([the rights model](../../../right/grant/0.3/spec.md)). `maintainers` and `committers` count records of `git.repo.maintain` and `git.commit.sign`; an owner's implied rights are not counted.
+**Recorded right** — a live right record, never an implied one ([the rights model](../../../right/grant/0.4/spec.md)). `maintainers` and `committers` count records of `git.repo.maintain` and `git.commit.sign`; an owner's implied rights are not counted.
 
-**Bridge report** — `steps`, `lastCheck`, `guard`, `failedStep` and `lastError` are what the bridge serving the namespace last reported for the repository ([`git-ns/bridge/result`](../../../bridge/result/0.1/spec.md)). They are carried for display; the VTC takes no decision on them.
+**Bridge report** — `steps`, `lastCheck`, `guard`, `failedStep` and `lastError` are what the bridge serving the namespace last reported for the repository ([`git-ns/bridge/result`](../../../bridge/result/0.2/spec.md)). They are carried for display; the VTC takes no decision on them.
 
 ## Request
 

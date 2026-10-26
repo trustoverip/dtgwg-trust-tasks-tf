@@ -108,7 +108,7 @@ A conforming **consumer** (the ACL maintainer) **MUST**:
 6. Re-evaluate the entries whose `delegatedBy` is the subject, since a delegated entry must not retain authority its delegator has lost ([CONVENTIONS §9](../../_shared/0.2/CONVENTIONS.md)).
 7. On acceptance, persist the document as the evidentiary record and return the resulting state.
 
-A revocation that is one step of a sweep over a context is enumerated with [`acl/list/0.2`](../../list/0.2/spec.md) in the `subtree` direction; a sweep that cannot remove every entry it found reports itself incomplete and names the entries that remain, rather than reporting success.
+A revocation that is one step of a sweep over a context is enumerated with [`acl/list/0.3`](../../list/0.3/spec.md) in the `subtree` direction; a sweep that cannot remove every entry it found reports itself incomplete and names the entries that remain, rather than reporting success.
 
 ## Authorization
 

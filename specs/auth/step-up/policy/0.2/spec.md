@@ -54,7 +54,7 @@ related:
 
 ## Abstract
 
-The **Auth — Step-up Policy** Trust Task carries a relying party's (an ACL maintainer's) decision about *when* a session must elevate to a higher Authenticator Assurance Level (AAL) before a gated operation runs, and *how* that elevation is ratified. It is the policy half of the step-up family: [`auth/step-up/approve-request`](../../approve-request/0.1/spec.md) / [`auth/step-up/approve-response`](../../approve-response/0.1/spec.md) are the *mechanism* by which a step-up is performed; this document is the *policy* that decides whether to demand one and who may approve it.
+The **Auth — Step-up Policy** Trust Task carries a relying party's (an ACL maintainer's) decision about *when* a session must elevate to a higher Authenticator Assurance Level (AAL) before a gated operation runs, and *how* that elevation is ratified. It is the policy half of the step-up family: [`auth/step-up/approve-request`](../../approve-request/0.5/spec.md) / [`auth/step-up/approve-response`](../../approve-response/0.6/spec.md) are the *mechanism* by which a step-up is performed; this document is the *policy* that decides whether to demand one and who may approve it.
 
 A maintainer holds one step-up policy. The policy is a per-**operation-class** *floor* — a minimum required mode. A floor composes with per-entry overrides carried on each subject's `AclEntry.stepUp` (see [`acl/_shared`](../../../../acl/_shared/0.1/acl-entry.schema.json)): an override MAY make the requirement **stricter** for that subject, never weaker. This lets an operator say *"deleting any context requires a delegated approval, system-wide"* while still allowing a sensitive context to demand more.
 
@@ -110,7 +110,7 @@ A request is **non-escalating** when **all** hold: (a) the caller acts on its ow
 * **Mode.** The required step-up shape: `none` (AAL1) | `self` | `delegated` | `delegatedAny`.
 * **Floor.** The maintainer's system-wide minimum mode for an operation-class.
 * **Override.** A per-entry `stepUp` setting (on the subject's `AclEntry`) that may raise — never lower — the floor for that subject.
-* **Approver.** The party that ratifies a step-up; for `delegated`, the `approver` VID on the caller's entry. See [`auth/step-up/approve-request`](../../approve-request/0.1/spec.md).
+* **Approver.** The party that ratifies a step-up; for `delegated`, the `approver` VID on the caller's entry. See [`auth/step-up/approve-request`](../../approve-request/0.5/spec.md).
 * **Non-escalating.** A self-service request that does not increase the caller's authority — see the check above.
 
 ## Request

@@ -52,7 +52,7 @@ related:
 
 ## Abstract
 
-The **Auth — Challenge** Trust Task asks an *auth service* to issue a fresh nonce that a *subject* will sign to prove control of their *VID*. The subject embeds the returned `challenge` value into a subsequent [`auth/authenticate/0.1`](../../authenticate/0.1/spec.md) document; the framework `proof` on that document, signed by the subject's VID, IS the authentication.
+The **Auth — Challenge** Trust Task asks an *auth service* to issue a fresh nonce that a *subject* will sign to prove control of their *VID*. The subject embeds the returned `challenge` value into a subsequent [`auth/authenticate/0.3`](../../authenticate/0.3/spec.md) document; the framework `proof` on that document, signed by the subject's VID, IS the authentication.
 
 This task only buys a nonce. No credentials are minted, no sessions are recorded as authenticated, and no claims are made about the producer. The auth service MAY rate-limit, log, or refuse — but the response carries no privilege.
 

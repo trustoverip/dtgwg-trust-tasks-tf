@@ -52,7 +52,7 @@ related:
 
 ## Abstract
 
-A namespace's audit rows and its bridge's jobs each answer a narrow question — [`git-ns/right/list`](../../../right/list/0.1/spec.md) shows what is granted *now*, [`git-ns/bridge/job/list`](../../../bridge/job/list/0.1/spec.md) shows what the bridge is doing *now* — but neither shows what changed and when, in the order it happened. This task interleaves both into one timeline: rights granted or revoked, drift reported, and bridge jobs, newest first. It is an admin console's *Activity* feed, a command-line `activity`.
+A namespace's audit rows and its bridge's jobs each answer a narrow question — [`git-ns/right/list`](../../../right/list/0.3/spec.md) shows what is granted *now*, [`git-ns/bridge/job/list`](../../../bridge/job/list/0.4/spec.md) shows what the bridge is doing *now* — but neither shows what changed and when, in the order it happened. This task interleaves both into one timeline: rights granted or revoked, drift reported, and bridge jobs, newest first. It is an admin console's *Activity* feed, a command-line `activity`.
 
 Unlike the rest of the community-administrator-only reads in this family, this one is for any namespace's administrators — an ordinary namespace admin who is not a community administrator still needs to see their own namespace's history, and this task narrows the answer to exactly the namespaces they administer.
 
@@ -82,7 +82,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 *Declared under [SPEC §7.3](/SPEC.md#73-specification-requirements) item 15.*
 
-Not consequential, and declared for clarity, following [`git-ns/namespace/list`](../../../namespace/list/0.1/spec.md), [`git-ns/repo/list`](../../../repo/list/0.1/spec.md) and [`git-ns/bridge/job/list`](../../../bridge/job/list/0.1/spec.md), whose Authorization sections this one restates for activity. The caller is the DID the document's verified `proof` binds to its `issuer`; an unsigned document is refused with `proofRequired`.
+Not consequential, and declared for clarity, following [`git-ns/namespace/list`](../../../namespace/list/0.2/spec.md), [`git-ns/repo/list`](../../../repo/list/0.2/spec.md) and [`git-ns/bridge/job/list`](../../../bridge/job/list/0.4/spec.md), whose Authorization sections this one restates for activity. The caller is the DID the document's verified `proof` binds to its `issuer`; an unsigned document is refused with `proofRequired`.
 
 The entitlement is, for each namespace, **the community-administrator capability** in the VTC's own access control, or **`git.ns.admin` on that namespace** held by explicit record and live at the instant the VTC evaluates the request, by a current member. An activity item belongs to the namespace its audit row or job names, so this task scopes exactly as the namespace, repository and job listings do: a namespace admin sees the activity of their own namespaces, and a community administrator sees every namespace's activity, including a community-wide audit row that names no namespace (one recorded before the namespace it concerned was unbound). A caller who administers no namespace is refused with `git-ns/activity/list:notAdministrator`, and so is a caller naming, in `namespace`, one they do not administer or one the VTC does not have.
 
@@ -90,7 +90,7 @@ The capability and `git.ns.admin` are read from the VTC's own records at executi
 
 ## Definitions
 
-**Administered namespace** — as in [`git-ns/namespace/list`](../../../namespace/list/0.1/spec.md): for a holder of the community-administrator capability, every namespace bound to the VTC; for anyone else, each namespace on which they hold a live, explicitly recorded `git.ns.admin`.
+**Administered namespace** — as in [`git-ns/namespace/list`](../../../namespace/list/0.2/spec.md): for a holder of the community-administrator capability, every namespace bound to the VTC; for anyone else, each namespace on which they hold a live, explicitly recorded `git.ns.admin`.
 
 **Activity item** — one audit row or one bridge job, restated as a single timeline entry. An audit-sourced item's `occurredAt` is the row's own timestamp; a job-sourced item's `occurredAt` is when a bridge accepted it, or when it was queued if never accepted. `actor` and `subject` are absent on an audit item exactly when a right-to-be-forgotten erasure has removed them from the underlying row, and are always absent on a job item, which the VTC's queue does not attribute to an actor.
 
@@ -177,9 +177,9 @@ The request carries at most a namespace and a paging cursor. The response carrie
 
 ### Correlation
 
-Interleaving audit rows and job state into one timeline is itself the point of this task, and its principal privacy property. A namespace admin who is not a community administrator sees only their own namespaces' history — the same boundary [`git-ns/namespace/list`](../../../namespace/list/0.1/spec.md) and [`git-ns/repo/list`](../../../repo/list/0.1/spec.md) draw — and a right-to-be-forgotten erasure that has removed `actor`/`subject` from an audit row removes them from this timeline identically: this task reads the same rows, not a separate copy that could retain what the erasure removed.
+Interleaving audit rows and job state into one timeline is itself the point of this task, and its principal privacy property. A namespace admin who is not a community administrator sees only their own namespaces' history — the same boundary [`git-ns/namespace/list`](../../../namespace/list/0.2/spec.md) and [`git-ns/repo/list`](../../../repo/list/0.2/spec.md) draw — and a right-to-be-forgotten erasure that has removed `actor`/`subject` from an audit row removes them from this timeline identically: this task reads the same rows, not a separate copy that could retain what the erasure removed.
 
-The **VTC** declares `identifierScope: public`; the **administrator** `pairwise`, matching the rest of the read family. `namespace`, `resource` and `right` are already visible to a namespace's administrators through the tasks that produced each row ([`git-ns/right/grant`](../../../right/grant/0.3/spec.md), [`git-ns/bridge/job`](../../../bridge/job/0.4/spec.md)); this task adds the ordering and the interleaving, not a new identifier.
+The **VTC** declares `identifierScope: public`; the **administrator** `pairwise`, matching the rest of the read family. `namespace`, `resource` and `right` are already visible to a namespace's administrators through the tasks that produced each row ([`git-ns/right/grant`](../../../right/grant/0.4/spec.md), [`git-ns/bridge/job`](../../../bridge/job/0.6/spec.md)); this task adds the ordering and the interleaving, not a new identifier.
 
 ### Retention
 

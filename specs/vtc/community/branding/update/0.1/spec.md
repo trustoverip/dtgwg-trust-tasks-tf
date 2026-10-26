@@ -45,7 +45,7 @@ related:
 
 ## Abstract
 
-The **VTC Community — Branding — Update** Trust Task replaces the community's branding — the display name, accent colour and logo URL that [`vtc/join-requests/manifest/0.2`](../../../../join-requests/manifest/0.2/spec.md) publishes as `branding`. What an administrator stores here is exactly what the manifest publishes.
+The **VTC Community — Branding — Update** Trust Task replaces the community's branding — the display name, accent colour and logo URL that [`vtc/join-requests/manifest/0.4`](../../../../join-requests/manifest/0.4/spec.md) publishes as `branding`. What an administrator stores here is exactly what the manifest publishes.
 
 The update replaces the whole value: a member absent from the request is cleared. An empty branding removes it, and the manifest then publishes none.
 
@@ -61,7 +61,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 A conforming **community** (`recipient`):
 
-1. **MUST** refuse a caller that does not hold administrator standing with `permissionDenied`, after resolving the proof's signer — or, for a signer that is a delegated signing key ([`auth/signing-key/enroll`](../../../../../auth/signing-key/enroll/0.1/spec.md)), the identity it acts for — to its access-control entry at execution time.
+1. **MUST** refuse a caller that does not hold administrator standing with `permissionDenied`, after resolving the proof's signer — or, for a signer that is a delegated signing key ([`auth/signing-key/enroll`](../../../../../auth/signing-key/enroll/0.2/spec.md)), the identity it acts for — to its access-control entry at execution time.
 2. **MUST** refuse, with `malformedRequest`, a branding the manifest schema refuses — the check is the same one a manifest consumer applies, so nothing is stored that the manifest could not publish.
 3. **MUST** store `accentColor` in lower case, since the colour is compared case-insensitively, and **MUST** treat an empty branding as removing it.
 4. **MUST** record the change in its audit trail, naming the administrator and the members that changed, and **MUST** refuse with `unavailable` rather than make an unaudited change when it cannot write the audit record. An update that changes nothing is not audited.

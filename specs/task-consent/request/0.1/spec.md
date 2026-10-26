@@ -61,7 +61,7 @@ related:
 The **Task Consent — Request** Trust Task carries one pending privileged task to
 a human. It is the first half of the delegated-execution consent flow; the
 approver's answer returns as a
-[`task-consent/decision/0.1`](../../decision/0.1/spec.md).
+[`task-consent/decision/0.2`](../../decision/0.2/spec.md).
 
 It exists because of a gap that a payload alone cannot close. When a policy
 returns `requireConsent` (see
@@ -402,7 +402,7 @@ designed to withhold.
 The approver device's copy is exchange-scoped. `sideEffects` is `none`: raising a
 prompt persists nothing. The document is held so that a prompt can be rendered and so
 that `challenge` and `payloadDigest` can be echoed verbatim in the matching
-[`task-consent/decision`](../../decision/0.1/spec.md), and `expiresAt` closes the
+[`task-consent/decision`](../../decision/0.2/spec.md), and `expiresAt` closes the
 window — after that instant the request has lapsed and no decision is accepted for it.
 
 The consequence for a device implementer is specific: once the prompt is answered,

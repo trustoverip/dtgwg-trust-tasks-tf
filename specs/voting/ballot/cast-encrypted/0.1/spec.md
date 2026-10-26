@@ -85,7 +85,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 A conforming **producer** (the voter's client) **MUST**:
 
-1. Send the cast document its VTA built ([`vta/pcs/vote-encrypted`](../../../../vta/pcs/vote-encrypted/0.2/spec.md)) unchanged, signed by the key made for it, over HTTPS (CONVENTIONS §2.4), and resend it unchanged if the answer is lost.
+1. Send the cast document its VTA built ([`vta/pcs/vote-encrypted`](../../../../vta/pcs/vote-encrypted/0.3/spec.md)) unchanged, signed by the key made for it, over HTTPS (CONVENTIONS §2.4), and resend it unchanged if the answer is lost.
 
 A conforming **consumer** (the ballot box) **MUST**, in this order:
 

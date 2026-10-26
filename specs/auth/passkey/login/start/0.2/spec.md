@@ -57,7 +57,7 @@ related:
 
 ## Abstract
 
-The **Auth — Passkey Login (start)** Trust Task is the first leg of a WebAuthn assertion ceremony. The producer asks the auth service for `PublicKeyCredentialRequestOptions`; the user agent hands them to `navigator.credentials.get({ publicKey })`, and the resulting assertion is returned via [`auth/passkey/login/finish/0.1`](../../finish/0.1/spec.md).
+The **Auth — Passkey Login (start)** Trust Task is the first leg of a WebAuthn assertion ceremony. The producer asks the auth service for `PublicKeyCredentialRequestOptions`; the user agent hands them to `navigator.credentials.get({ publicKey })`, and the resulting assertion is returned via [`auth/passkey/login/finish/0.2`](../../finish/0.2/spec.md).
 
 This task serves two semantically-distinct flows, distinguished by `payload.purpose`:
 

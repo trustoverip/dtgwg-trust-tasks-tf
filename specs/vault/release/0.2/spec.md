@@ -62,7 +62,7 @@ errorCodes:
 
 ## Abstract
 
-The **Vault — Release** Trust Task is the fallback when `vault/proxy-login/0.1` cannot be used: the consumer needs the raw secret bytes (autofill into a desktop app, browser-bound channel binding at the third party, copy-to-clipboard, etc.). The maintainer returns the secret in an HPKE-sealed envelope with a short TTL the consumer is required to enforce.
+The **Vault — Release** Trust Task is the fallback when `vault/proxy-login/0.2` cannot be used: the consumer needs the raw secret bytes (autofill into a desktop app, browser-bound channel binding at the third party, copy-to-clipboard, etc.). The maintainer returns the secret in an HPKE-sealed envelope with a short TTL the consumer is required to enforce.
 
 Release is the higher-risk path. Use proxy-login when possible.
 
@@ -82,7 +82,7 @@ A conforming **consumer** (the vault maintainer) **MUST**:
 2. Evaluate policy. Possible outcomes: `allow`, `requireStepUp`, `deny`.
 3. On allow: unseal the stored secret, validate against `vault-secret.schema.json` for the entry's `secretKind`, re-seal under HPKE to the consumer's published recipient key.
 4. Cap `ttlSeconds` at the maintainer's policy ceiling (RECOMMENDED ≤ 300 seconds for `password`, ≤ 60 for `bearerToken` and `oauthTokens`, ≤ 30 for `sshKey`).
-5. Record `lastUsedAt = now` on the entry; emit a `sync/event/0.1` of kind `vaultUpserted`.
+5. Record `lastUsedAt = now` on the entry; emit a `sync/event/0.2` of kind `vaultUpserted`.
 6. Audit-log the release with `{ who, when, entryId, ttlSeconds, outcome }` — NOT the secret bytes.
 
 ## Payload

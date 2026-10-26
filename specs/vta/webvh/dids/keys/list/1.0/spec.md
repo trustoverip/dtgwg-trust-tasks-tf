@@ -66,7 +66,7 @@ It is the screen every client opens first, and the one it re-reads to show progr
 a rotation in its overlap window, a change waiting for a second approval, a key revoked
 for compromise.
 
-[`keys/list`](../../../../../../keys/list/0.1/spec.md) cannot answer this. It lists a
+[`keys/list`](../../../../../../keys/list/0.2/spec.md) cannot answer this. It lists a
 custodian's key records, which know nothing about DIDs, relationships or roles; and it
 is custodian-wide, where this is scoped to one DID and so to the one context whose
 authorization governs it.

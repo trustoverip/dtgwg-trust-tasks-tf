@@ -80,7 +80,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 Not consequential, and declared for clarity. The caller is the DID the document's verified `proof` binds to its `issuer`; an unsigned document is refused with `proofRequired`.
 
-The entitlement is **the community-administrator capability** in the VTC's own access control, exactly as in [`git-ns/right/list`](../../../right/list/0.1/spec.md). Whether publishing is configured, and what the mirror holds, are facts about the whole VTC's relationship with the Trust Registry — not about any one namespace — so holding `git.ns.admin` on a namespace does not entitle a caller to this task, even narrowed by `resource` to that namespace. A caller who does not hold the community-administrator capability is refused with `git-ns/projection/show:notCommunityAdministrator`.
+The entitlement is **the community-administrator capability** in the VTC's own access control, exactly as in [`git-ns/right/list`](../../../right/list/0.3/spec.md). Whether publishing is configured, and what the mirror holds, are facts about the whole VTC's relationship with the Trust Registry — not about any one namespace — so holding `git.ns.admin` on a namespace does not entitle a caller to this task, even narrowed by `resource` to that namespace. A caller who does not hold the community-administrator capability is refused with `git-ns/projection/show:notCommunityAdministrator`.
 
 The capability is read from the VTC's own records at execution time; the `proof` establishes who asked, not that they may ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10).
 

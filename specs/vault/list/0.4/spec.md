@@ -52,9 +52,9 @@ errorCodes:
 
 ## Abstract
 
-The **Vault — List** Trust Task returns the **metadata view** of credential entries stored on a vault maintainer. Consumers use it to render a password-manager UI, drive search and filtering, answer questions like *"what are all my logins?"*, *"when did I last use facebook.com?"*, *"what's about to expire?"*, and *"which of my passwords are in known breaches?"*, and bootstrap a local cache before subscribing to incremental sync (`vault/sync/0.1`).
+The **Vault — List** Trust Task returns the **metadata view** of credential entries stored on a vault maintainer. Consumers use it to render a password-manager UI, drive search and filtering, answer questions like *"what are all my logins?"*, *"when did I last use facebook.com?"*, *"what's about to expire?"*, and *"which of my passwords are in known breaches?"*, and bootstrap a local cache before subscribing to incremental sync (`vault/sync/0.3`).
 
-This task **never returns secret material**. Even when the consumer has `VaultRead` capability for a returned entry, the secret is only released by `vault/release/0.1` (where policy is re-evaluated, recent user verification can be required, and the release is recorded in the audit log). List exists to enumerate; release exists to use.
+This task **never returns secret material**. Even when the consumer has `VaultRead` capability for a returned entry, the secret is only released by `vault/release/0.2` (where policy is re-evaluated, recent user verification can be required, and the release is recorded in the audit log). List exists to enumerate; release exists to use.
 
 Filters are AND-combined. Pagination is opaque-cursor based. The maintainer chooses ordering; the recommended default is most-recently-used first.
 
@@ -279,7 +279,7 @@ A success *response* document carries `type: https://trusttasks.org/spec/vault/l
 
 ## Security & Privacy
 
-**Mobile binding integrity.** When matching `targetIosBundleId` or `targetAndroidPackage`, the maintainer is only matching the identifier the requesting Companion claims. Production deployments SHOULD additionally verify the requesting Companion's device-level attestation (App Attest on iOS, Play Integrity on Android) at the ACL layer before granting `VaultRead` — see `device/register/0.1`. Android matching MUST verify the signing fingerprint, not just the package name, because package names alone are forgeable on rooted devices.
+**Mobile binding integrity.** When matching `targetIosBundleId` or `targetAndroidPackage`, the maintainer is only matching the identifier the requesting Companion claims. Production deployments SHOULD additionally verify the requesting Companion's device-level attestation (App Attest on iOS, Play Integrity on Android) at the ACL layer before granting `VaultRead` — see `device/register/0.2`. Android matching MUST verify the signing fingerprint, not just the package name, because package names alone are forgeable on rooted devices.
 
 **Cursor stability.** Cursors MUST NOT encode secret state; the maintainer MUST assume a cursor may be persisted by the consumer and replayed weeks later. Recommended implementation: opaque pointer to a server-side query snapshot with a short TTL, returning `cursorInvalid` after expiry.
 

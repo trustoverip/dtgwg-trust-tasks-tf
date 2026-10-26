@@ -72,7 +72,7 @@ related:
 
 ## Abstract
 
-The **VTA PCS — Voter Accept** Trust Task is the second half of obtaining a voter's ticket. The client passes the community's [`vtc/elections/tickets/issue`](../../../../../vtc/elections/tickets/issue/0.1/spec.md) response; the VTA unblinds it with the state [`vta/pcs/voter/register`](../../../../../vta/pcs/voter/register/0.1/spec.md) kept, checks the ticket against the community's voting key, and keeps it wrapped like every other PCS secret of the engine ([VTA conventions §2](../../../../../vta/_shared/0.4/CONVENTIONS.md#2-custody)). The family's shared rules are in [`CONVENTIONS.md`](../../../../../voting/_shared/0.1/CONVENTIONS.md).
+The **VTA PCS — Voter Accept** Trust Task is the second half of obtaining a voter's ticket. The client passes the community's [`vtc/elections/tickets/issue`](../../../../../vtc/elections/tickets/issue/0.1/spec.md) response; the VTA unblinds it with the state [`vta/pcs/voter/register`](../../../../../vta/pcs/voter/register/0.2/spec.md) kept, checks the ticket against the community's voting key, and keeps it wrapped like every other PCS secret of the engine ([VTA conventions §2](../../../../../vta/_shared/0.4/CONVENTIONS.md#2-custody)). The family's shared rules are in [`CONVENTIONS.md`](../../../../../voting/_shared/0.1/CONVENTIONS.md).
 
 ## Status of this Document
 

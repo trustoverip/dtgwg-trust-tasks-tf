@@ -107,7 +107,7 @@ related:
 
 The **Task Consent — Decision** Trust Task is a human's answer to a pending privileged task — a
 [`task-consent/request/0.1`](../../request/0.1/spec.md), or an action parked by a Verifiable
-Trust Community and shown through [`vtc/admin/actions/list/0.1`](../../../vtc/admin/actions/list/0.1/spec.md)
+Trust Community and shown through [`vtc/admin/actions/list/0.3`](../../../vtc/admin/actions/list/0.3/spec.md)
 — and the authorization an executor consumes before running it.
 
 The invariant it serves is unchanged from 0.1:

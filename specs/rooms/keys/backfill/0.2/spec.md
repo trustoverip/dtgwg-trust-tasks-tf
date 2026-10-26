@@ -57,7 +57,7 @@ related:
 
 A member asks their **key holder** — the agent that holds their room keys — to fetch the room's epoch key chain from its host and keep it, so that records written before they joined become readable.
 
-This is [`rooms/epoch/chain`](../../../epoch/chain/0.1/spec.md) and [`rooms/keys/chain`](../../chain/0.1/spec.md) performed as one act by the party that can perform both. It exists because **the member frequently cannot make the middle call at all**: fetching from a host needs a channel to that host, and the surfaces a person actually uses — a browser extension, a phone — hold a channel to their own agent and to nothing else.
+This is [`rooms/epoch/chain`](../../../epoch/chain/0.2/spec.md) and [`rooms/keys/chain`](../../chain/0.2/spec.md) performed as one act by the party that can perform both. It exists because **the member frequently cannot make the middle call at all**: fetching from a host needs a channel to that host, and the surfaces a person actually uses — a browser extension, a phone — hold a channel to their own agent and to nothing else.
 
 The alternative, which this replaces, is a member who mints a presentation at their agent, carries it to the host themselves, carries the answer back, and hands it to the same agent. Three hops through the party least able to make the middle one, to move key material that never needed to leave the agent that already holds the rest of it.
 
@@ -112,7 +112,7 @@ A consumer **SHOULD** nonetheless bound this: it is an outbound request to a cal
 
 **`host`** — the host to fetch from, as a DID.
 
-**`fromEpoch`**, **`limit`** — the window to ask the host for. Both are passed through to [`rooms/epoch/chain`](../../../epoch/chain/0.1/spec.md).
+**`fromEpoch`**, **`limit`** — the window to ask the host for. Both are passed through to [`rooms/epoch/chain`](../../../epoch/chain/0.2/spec.md).
 
 **`earliestReadableEpoch`**, **`fetched`**, **`stored`** (response) — see below; the three are not restatements of each other.
 

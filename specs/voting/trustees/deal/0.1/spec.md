@@ -79,7 +79,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 A conforming **producer** (the trustee, through its client) **MUST**:
 
-1. Sign the request as the trustee's DID, and send the dealing its VTA built ([`vta/pcs/trustee/deal`](../../../../vta/pcs/trustee/deal/0.1/spec.md)) unchanged.
+1. Sign the request as the trustee's DID, and send the dealing its VTA built ([`vta/pcs/trustee/deal`](../../../../vta/pcs/trustee/deal/0.3/spec.md)) unchanged.
 
 A conforming **consumer** (the ballot box) **MUST**, in this order:
 

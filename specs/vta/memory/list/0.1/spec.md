@@ -128,7 +128,7 @@ entry carrying both `key` and `value` in cleartext.
 
 There is no paging member, no filter, no key prefix, and — the omission worth
 naming — no projection. Compare
-[`vta/app-state/list/1.0`](../../../app-state/list/1.0/spec.md), which carries
+[`vta/app-state/list/1.1`](../../../app-state/list/1.1/spec.md), which carries
 `includeValues` defaulting to false precisely so a caller can ask *what is
 stored* without also receiving *what it says*. This task has no such member, so
 there is no conforming way to enumerate keys without disclosing every value

@@ -54,7 +54,7 @@ related:
 
 The **Messaging — Subscribe to Traffic Monitor** Trust Task opens a live, filtered tap on what is moving through a mediator: frames arriving and leaving, messages stored, delivered, forwarded, expired or deleted, and frames refused along with the reason. Each step is tagged with the channel it used (websocket, REST, peer mediator) and the wire protocol it carried (DIDComm v2, DIDComm v1, TSP). Its purpose is troubleshooting. It answers "is my message reaching the mediator, and what happens to it there?" without anyone reading server logs.
 
-Events arrive as [`messaging/monitor/event`](../../event/0.1/spec.md) batches over the subscriber's live connection. A subscription is a **lease**. It lapses unless renewed, so an abandoned console cannot leave a tap running. It ends early on [`messaging/monitor/unsubscribe`](../../unsubscribe/0.1/spec.md).
+Events arrive as [`messaging/monitor/event`](../../event/0.2/spec.md) batches over the subscriber's live connection. A subscription is a **lease**. It lapses unless renewed, so an abandoned console cannot leave a tap running. It ends early on [`messaging/monitor/unsubscribe`](../../unsubscribe/0.1/spec.md).
 
 The stream carries **metadata only** ([`MonitorEvent`](../../../_shared/0.1/mediator-ops.schema.json#/$defs/MonitorEvent)). It never carries a message body.
 

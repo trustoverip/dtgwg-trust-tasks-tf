@@ -88,7 +88,7 @@ the room unopenable by *everyone*, the writer included. That is not forward secr
 a library deleting itself.
 
 The rungs accumulate into the room's **epoch key chain**, which a member fetches with
-[`rooms/epoch/chain`](../../chain/0.1/spec.md) and walks backwards. Backwards only: a
+[`rooms/epoch/chain`](../../chain/0.2/spec.md) and walks backwards. Backwards only: a
 member holding an earlier key still derives nothing later, so removal stays exactly as
 forward-only as the paragraphs above describe.
 
@@ -116,11 +116,11 @@ under it.
 
 *This paragraph is non-normative.* The party that can produce a correct mint for a sealed
 room is therefore the one holding the owner's group: the owner's key holder, through
-[`rooms/owner/group/add`](../../../owner/group/add/0.1/spec.md),
-[`rooms/owner/group/remove`](../../../owner/group/remove/0.1/spec.md) and
-[`rooms/owner/group/renew`](../../../owner/group/renew/0.1/spec.md), the last of which
+[`rooms/owner/group/add`](../../../owner/group/add/0.3/spec.md),
+[`rooms/owner/group/remove`](../../../owner/group/remove/0.3/spec.md) and
+[`rooms/owner/group/renew`](../../../owner/group/renew/0.2/spec.md), the last of which
 renews a room without changing its membership. A member's own client holds no group key,
-and [`rooms/keys/act`](../../../keys/act/0.1/spec.md) refuses to complete a mint for a room
+and [`rooms/keys/act`](../../../keys/act/0.8/spec.md) refuses to complete a mint for a room
 whose group it holds. On an `open` room there is no group, and any holder of `admin` may
 mint directly.
 
@@ -137,7 +137,7 @@ conferring `admin` at the room's scope, and **MUST** set `epoch` to exactly one 
 than the current epoch.
 
 A conforming **consumer** (the host) **MUST** reject a non-sequential epoch, **MUST** apply
-the chain rules of [`rooms/records/put`](../../../records/put/0.1/spec.md), and **MUST NOT**
+the chain rules of [`rooms/records/put`](../../../records/put/0.3/spec.md), and **MUST NOT**
 accept a record sealed under a superseded epoch once the new one is in force. A host
 **never learns the key** — only the number.
 

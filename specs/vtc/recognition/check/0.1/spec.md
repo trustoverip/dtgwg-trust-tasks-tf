@@ -34,7 +34,7 @@ errorCodes: []
 
 ## Abstract
 
-The **VTC Recognition — Check** Trust Task answers whether this community recognises a foreign `did` — the precondition for that identity obtaining a cross-community session via [`vtc/auth/recognise`](../../../auth/recognise/0.1/).
+The **VTC Recognition — Check** Trust Task answers whether this community recognises a foreign `did` — the precondition for that identity obtaining a cross-community session via [`vtc/auth/recognise`](../../../auth/recognise/0.3/).
 
 It returns `registryConfigured` alongside `recognised`, and that second field is the point of the task. Recognition is backed by a trust registry; if none is configured, `recognised: false` means "cannot say", not "not recognised". Collapsing the two would let a misconfiguration read as a deliberate refusal.
 

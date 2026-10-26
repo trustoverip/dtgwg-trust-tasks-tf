@@ -63,7 +63,7 @@ related:
 
 ## Abstract
 
-An owner hands their ownership of a repository to someone else. `to` is recorded as an owner and the caller's own `git.repo.own` record is revoked, in one step, so the repository never has fewer owners than before. Ownership moves between people; the repository stays where it is on the forge. Moving a repository to another forge owner is a forge operation, which the bridge reports as `repoTransferred` ([`git-ns/bridge/event`](../../../../git-ns/bridge/event/0.2/spec.md)).
+An owner hands their ownership of a repository to someone else. `to` is recorded as an owner and the caller's own `git.repo.own` record is revoked, in one step, so the repository never has fewer owners than before. Ownership moves between people; the repository stays where it is on the forge. Moving a repository to another forge owner is a forge operation, which the bridge reports as `repoTransferred` ([`git-ns/bridge/event`](../../../../git-ns/bridge/event/0.5/spec.md)).
 
 ## Changes from 0.2
 
@@ -86,7 +86,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 *Declared under [SPEC §7.3](/SPEC.md#73-specification-requirements) item 15.*
 
-The entitlement is **an explicit `git.repo.own` record on the repository** — this task hands over the caller's own record, and a namespace admin whose ownership is only implied has none to hand over (they use [`git-ns/right/grant`](../../../../git-ns/right/grant/0.2/spec.md) instead). A caller without one is refused with `git-ns/repo/transfer:notOwner`. Receiving ownership is a grant of `git.repo.own` to `to` and is subject to the same [fixed rules](../../../../git-ns/right/grant/0.2/spec.md#the-fixed-rules) and policy as [`git-ns/right/grant`](../../../../git-ns/right/grant/0.2/spec.md).
+The entitlement is **an explicit `git.repo.own` record on the repository** — this task hands over the caller's own record, and a namespace admin whose ownership is only implied has none to hand over (they use [`git-ns/right/grant`](../../../../git-ns/right/grant/0.4/spec.md) instead). A caller without one is refused with `git-ns/repo/transfer:notOwner`. Receiving ownership is a grant of `git.repo.own` to `to` and is subject to the same [fixed rules](../../../../git-ns/right/grant/0.4/spec.md#the-fixed-rules) and policy as [`git-ns/right/grant`](../../../../git-ns/right/grant/0.4/spec.md).
 
 ## Definitions
 

@@ -82,13 +82,13 @@ related:
 
 ## Abstract
 
-The **Auth — Step-up Approve Response** Trust Task is the ratification of an earlier [`auth/step-up/approve-request/0.4`](../../approve-request/0.4/spec.md). The approver echoes the request's `subject`, `challenge` and — when the request carried one — `sessionId`, sets `decision` to `approved` or `denied`, signs the document with its `assertionMethod` key, and backs the decision with **one of three cryptographic gates**, selected by the optional `payload.evidence` tagged union:
+The **Auth — Step-up Approve Response** Trust Task is the ratification of an earlier [`auth/step-up/approve-request/0.5`](../../approve-request/0.5/spec.md). The approver echoes the request's `subject`, `challenge` and — when the request carried one — `sessionId`, sets `decision` to `approved` or `denied`, signs the document with its `assertionMethod` key, and backs the decision with **one of three cryptographic gates**, selected by the optional `payload.evidence` tagged union:
 
 - **`evidence.kind = didSigned`** (the default when `evidence` is absent) — the framework `proof` IS the gate: a Data Integrity signature from a key the approver controls. Resulting `amr` reflects `"did"`/`"vta"`.
-- **`evidence.kind = webauthn`** — the approver carries an `AuthenticatorAssertionResponse` produced by a platform passkey over the step-up `challenge`. The assertion is the gate, verified in addition to the framework proof, exactly as [`auth/passkey/login/finish/0.1`](../../../passkey/login/finish/0.1/spec.md) does. Resulting `amr` reflects `"passkey"`.
+- **`evidence.kind = webauthn`** — the approver carries an `AuthenticatorAssertionResponse` produced by a platform passkey over the step-up `challenge`. The assertion is the gate, verified in addition to the framework proof, exactly as [`auth/passkey/login/finish/0.2`](../../../passkey/login/finish/0.2/spec.md) does. Resulting `amr` reflects `"passkey"`.
 - **`evidence.kind = approverSigned`** — the document carries a complete, signed [`auth/step-up/approver/attest/0.1`](../../approver/attest/0.1/spec.md) statement with `purpose: stepUp`, made by one of the subject's bound **step-up approvers** over the step-up `challenge` and `boundTo`. The statement is the gate, verified in addition to the framework proof. Resulting `amr` reflects `"approver"`.
 
-A relying party advertises which gates it will accept via the request's `accepts` ([`approve-request/0.4`](../../approve-request/0.4/spec.md)).
+A relying party advertises which gates it will accept via the request's `accepts` ([`approve-request/0.4`](../../approve-request/0.5/spec.md)).
 
 **Who signs — self vs delegated.** The document `issuer` is the **approver**, which need not be the subject. In **self** step-up the subject ratifies its own session or operation (`issuer == subject`). In **delegated** step-up a distinct, pre-authorized approver ratifies on the subject's behalf (`issuer != subject`) — see [`auth/step-up/policy`](../../policy/0.2/spec.md). Either way the gate proves the **approver** signed; the relying party **separately** verifies that approver is authorized to ratify for the subject. `approverSigned` is self step-up only (see below).
 
@@ -223,7 +223,7 @@ The approver (`issuer`) sends the response document to the relying party (`recip
 
 ### A wallet administrator approves one signed grant with a step-up approver
 
-The community refused a signed `acl/grant` with an inline [`approve-request/0.4`](../../approve-request/0.4/spec.md) accepting `approverSigned` and naming Alice's bound approver. The browser plugin recomputed `boundTo` from the grant, showed it, and — after the gesture that unlocks its key — signed the statement. The console then had Alice's wallet sign this document **as Alice's own DID**, embedding the statement unchanged. The community verifies Alice's proof, then the statement, then that its signer is Alice's live approver.
+The community refused a signed `acl/grant` with an inline [`approve-request/0.4`](../../approve-request/0.5/spec.md) accepting `approverSigned` and naming Alice's bound approver. The browser plugin recomputed `boundTo` from the grant, showed it, and — after the gesture that unlocks its key — signed the statement. The console then had Alice's wallet sign this document **as Alice's own DID**, embedding the statement unchanged. The community verifies Alice's proof, then the statement, then that its signer is Alice's live approver.
 
 ```json
 {

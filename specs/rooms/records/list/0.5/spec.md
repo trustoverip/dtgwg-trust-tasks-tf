@@ -69,12 +69,12 @@ delete, so retracted records resurrect on the next full rebuild and disagree wit
 that saw the retraction.
 
 Each row carries `blobs` when its record names a stored file
-([`rooms/records/put/0.2`](../../put/0.2/spec.md)). A mirror syncing a room learns from a
+([`rooms/records/put/0.3`](../../put/0.3/spec.md)). A mirror syncing a room learns from a
 listing which blobs each record keeps alive and fetches the ones it lacks with
-[`rooms/blobs/get`](../../../blobs/get/0.1/spec.md); a tombstone carries none, which is how
+[`rooms/blobs/get`](../../../blobs/get/0.2/spec.md); a tombstone carries none, which is how
 a mirror learns to release them.
 
-Version 0.3 adds `lastPrune`. A prune ([`rooms/records/prune`](../../prune/0.1/spec.md))
+Version 0.3 adds `lastPrune`. A prune ([`rooms/records/prune`](../../prune/0.2/spec.md))
 removes records outright — tombstones included — so there is nothing left in the room for a
 `sinceVersion` reader to learn the removal from. `lastPrune` is what it learns from instead.
 
@@ -116,7 +116,7 @@ Breaking on the wire, released as a `MINOR` increment under [§5.2](/SPEC.md#52-
 [[RFC2119]](https://www.rfc-editor.org/rfc/rfc2119) and [[RFC8174]](https://www.rfc-editor.org/rfc/rfc8174) key-word conventions apply.
 
 A conforming **consumer** (the host) **MUST** apply the chain rules of
-[`rooms/records/put`](../../put/0.1/spec.md); **MUST** return retracted records to a caller
+[`rooms/records/put`](../../put/0.3/spec.md); **MUST** return retracted records to a caller
 supplying `sinceVersion`, so that a deletion propagates; **MUST NOT** accept a cursor it did
 not issue; and **MUST NOT** return record bodies from this task.
 
@@ -132,7 +132,7 @@ for it.
 
 A host **MUST** return `lastPrune` on every page of every listing of a room whose records have
 ever been pruned — whatever its `prefix` or `sinceVersion` — as the latest
-[`rooms/records/prune`](../../prune/0.1/spec.md) left it, and **MUST** omit it otherwise. It
+[`rooms/records/prune`](../../prune/0.2/spec.md) left it, and **MUST** omit it otherwise. It
 **MUST NOT** return a pruned record, or any trace of one beyond the marker: a pruned tombstone
 is not a tombstone.
 

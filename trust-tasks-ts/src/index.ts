@@ -1034,6 +1034,7 @@ export * as VtcElectionsCertify_v0_1 from "./vtc/elections/certify/0.1/payload.j
 export * as VtcElectionsClose_v0_1 from "./vtc/elections/close/0.1/payload.js";
 export * as VtcElectionsCreate_v0_1 from "./vtc/elections/create/0.1/payload.js";
 export * as VtcElectionsCreate_v0_2 from "./vtc/elections/create/0.2/payload.js";
+export * as VtcElectionsCreate_v0_3 from "./vtc/elections/create/0.3/payload.js";
 export * as VtcElectionsList_v0_1 from "./vtc/elections/list/0.1/payload.js";
 export * as VtcElectionsList_v0_2 from "./vtc/elections/list/0.2/payload.js";
 export * as VtcElectionsList_v0_3 from "./vtc/elections/list/0.3/payload.js";
@@ -1193,8 +1194,10 @@ export * as VtcRoomsOffersList_v0_2 from "./vtc/rooms/offers/list/0.2/payload.js
 export * as VtcRoomsOffersList_v0_3 from "./vtc/rooms/offers/list/0.3/payload.js";
 export * as VtcRoomsOffersList_v0_4 from "./vtc/rooms/offers/list/0.4/payload.js";
 export * as VtcRoomsStorageAssign_v0_1 from "./vtc/rooms/storage/assign/0.1/payload.js";
+export * as VtcRoomsStorageAssign_v0_2 from "./vtc/rooms/storage/assign/0.2/payload.js";
 export * as VtcRoomsStorageMigrate_v0_1 from "./vtc/rooms/storage/migrate/0.1/payload.js";
 export * as VtcRoomsStorageMigrate_v0_2 from "./vtc/rooms/storage/migrate/0.2/payload.js";
+export * as VtcRoomsStorageMigrate_v0_3 from "./vtc/rooms/storage/migrate/0.3/payload.js";
 export * as VtcRoomsUsage_v0_1 from "./vtc/rooms/usage/0.1/payload.js";
 export * as VtcSchemasAcceptsDelete_v0_1 from "./vtc/schemas/accepts/delete/0.1/payload.js";
 export * as VtcSchemasAcceptsList_v0_1 from "./vtc/schemas/accepts/list/0.1/payload.js";
@@ -1209,6 +1212,7 @@ export * as VtcSchemasRegister_v0_1 from "./vtc/schemas/register/0.1/payload.js"
 export * as VtcSchemasShow_v0_1 from "./vtc/schemas/show/0.1/payload.js";
 export * as VtcStorageConfigsCreate_v0_1 from "./vtc/storage/configs/create/0.1/payload.js";
 export * as VtcStorageConfigsCreate_v0_2 from "./vtc/storage/configs/create/0.2/payload.js";
+export * as VtcStorageConfigsCreate_v0_3 from "./vtc/storage/configs/create/0.3/payload.js";
 export * as VtcStorageConfigsGet_v0_1 from "./vtc/storage/configs/get/0.1/payload.js";
 export * as VtcStorageConfigsGet_v0_2 from "./vtc/storage/configs/get/0.2/payload.js";
 export * as VtcStorageConfigsList_v0_1 from "./vtc/storage/configs/list/0.1/payload.js";
@@ -1216,10 +1220,13 @@ export * as VtcStorageConfigsList_v0_2 from "./vtc/storage/configs/list/0.2/payl
 export * as VtcStorageConfigsProbe_v0_1 from "./vtc/storage/configs/probe/0.1/payload.js";
 export * as VtcStorageConfigsRetire_v0_1 from "./vtc/storage/configs/retire/0.1/payload.js";
 export * as VtcStorageConfigsRetire_v0_2 from "./vtc/storage/configs/retire/0.2/payload.js";
+export * as VtcStorageConfigsRetire_v0_3 from "./vtc/storage/configs/retire/0.3/payload.js";
 export * as VtcStorageConfigsUpdate_v0_1 from "./vtc/storage/configs/update/0.1/payload.js";
 export * as VtcStorageConfigsUpdate_v0_2 from "./vtc/storage/configs/update/0.2/payload.js";
+export * as VtcStorageConfigsUpdate_v0_3 from "./vtc/storage/configs/update/0.3/payload.js";
 export * as VtcStorageCredentialsSet_v0_1 from "./vtc/storage/credentials/set/0.1/payload.js";
 export * as VtcStorageCredentialsSet_v0_2 from "./vtc/storage/credentials/set/0.2/payload.js";
+export * as VtcStorageCredentialsSet_v0_3 from "./vtc/storage/credentials/set/0.3/payload.js";
 export * as VtcVettingAutoGrantShow_v0_1 from "./vtc/vetting/auto-grant/show/0.1/payload.js";
 export * as VtcVettingAutoGrantUpdate_v0_1 from "./vtc/vetting/auto-grant/update/0.1/payload.js";
 export * as VtcVettingHiddenPublish_v0_1 from "./vtc/vetting/hidden/publish/0.1/payload.js";

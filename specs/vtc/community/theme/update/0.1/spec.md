@@ -87,7 +87,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 A conforming **community** (`recipient`):
 
-1. **MUST** refuse a caller that does not hold administrator standing with `permissionDenied`, after resolving the proof's signer — or, for a signer that is a delegated signing key ([`auth/signing-key/enroll`](../../../../../auth/signing-key/enroll/0.1/spec.md)), the identity it acts for — to its access-control entry at execution time. This applies to a dry run too: the check runs the community's own parser, and is not a service for anyone who asks.
+1. **MUST** refuse a caller that does not hold administrator standing with `permissionDenied`, after resolving the proof's signer — or, for a signer that is a delegated signing key ([`auth/signing-key/enroll`](../../../../../auth/signing-key/enroll/0.2/spec.md)), the identity it acts for — to its access-control entry at execution time. This applies to a dry run too: the check runs the community's own parser, and is not a service for anyone who asks.
 2. **MUST** refuse a stylesheet longer than 32768 bytes in UTF-8 with `malformedRequest`. The schema's `maxLength` counts code points; this bound counts bytes, and both apply.
 3. **MUST** check the stylesheet against the [theme profile](#the-theme-profile) and **MUST** refuse, with `vtc/community/theme/update:outsideProfile`, one that uses any construct the profile does not admit. A check that cannot parse the stylesheet refuses it.
 4. **MUST** store, and answer with, the stylesheet with its comments removed and otherwise unchanged. Removing comments is the only normalisation; it is what a client compares, so the stored text is what the dry run returned.

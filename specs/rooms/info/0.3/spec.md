@@ -65,7 +65,7 @@ effective allowance. Like every task in the `rooms/*` family, it is authorized b
 presentation of credentials the room issued, never by an account at the host.
 
 Version 0.2 adds how long the room keeps its records — its `recordRetention`, which says
-which records [`rooms/records/prune`](../../records/prune/0.1/spec.md) may remove — and the
+which records [`rooms/records/prune`](../../records/prune/0.2/spec.md) may remove — and the
 room's `lastPrune`. Every member who may read a room can read the rule its records are removed
 under, before any is.
 
@@ -95,7 +95,7 @@ Breaking on the wire, released as a `MINOR` increment under [§5.2](/SPEC.md#52-
 
 A conforming **host** (`recipient`) **MUST**:
 
-1. Verify the presentation exactly as [`rooms/records/get`](../../records/get/0.1/spec.md)
+1. Verify the presentation exactly as [`rooms/records/get`](../../records/get/0.2/spec.md)
    does — every link of the chain, at most 8, no link widening its parent, no parent
    dereferenced, the leaf bound to the party authenticated for this request, and on a
    `private` room a `subjectBinding` — and require that it confer `read` at this room's

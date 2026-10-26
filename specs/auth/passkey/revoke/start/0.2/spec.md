@@ -66,7 +66,7 @@ related:
 
 The **Auth — Passkey Revoke (start)** Trust Task is the first leg of removing a passkey. The producer names a credential; the auth service returns `PublicKeyCredentialRequestOptions` for a **fresh user-verification ceremony by the producer**. Nothing is removed until [`auth/passkey/revoke/finish/0.2`](../../finish/0.2/spec.md) presents the resulting assertion.
 
-0.2 exists for the **step-up credentials** of [`auth/passkey/enroll/invite/0.2`](../../../enroll/invite/0.2/spec.md) (`purpose: stepUp`): passkeys that never open a session and are accepted only as the user-verification gesture of an operation-bound step-up. Their holders commonly have no session and only one such credential, so 0.1's shape — the owner revokes, over their own credentials, never their last — would leave a lost step-up authenticator irrevocable. 0.2 adds an **administrator revoking for the subject**, and lifts the last-credential refusal for step-up credentials.
+0.2 exists for the **step-up credentials** of [`auth/passkey/enroll/invite/0.3`](../../../enroll/invite/0.3/spec.md) (`purpose: stepUp`): passkeys that never open a session and are accepted only as the user-verification gesture of an operation-bound step-up. Their holders commonly have no session and only one such credential, so 0.1's shape — the owner revokes, over their own credentials, never their last — would leave a lost step-up authenticator irrevocable. 0.2 adds an **administrator revoking for the subject**, and lifts the last-credential refusal for step-up credentials.
 
 ## Changes from 0.1
 
@@ -109,7 +109,7 @@ A conforming consumer **MUST NOT** remove the credential on this leg, and **MUST
 
 ### Why an owner's step-up credential verifies its own revocation
 
-A step-up credential is accepted only as a gesture bound to one operation of its own subject ([`enroll/invite` 0.2](../../../enroll/invite/0.2/spec.md#a-stepup-credential), rule 2), and revoking it is such an operation. Including the target lets a subject who still holds the authenticator, but no longer trusts it, remove it. A subject who has lost it has nothing to verify with, and that is the administrator's case in step 2 — which is why 0.2 adds it.
+A step-up credential is accepted only as a gesture bound to one operation of its own subject ([`enroll/invite` 0.3](../../../enroll/invite/0.3/spec.md#a-stepup-credential), rule 2), and revoking it is such an operation. Including the target lets a subject who still holds the authenticator, but no longer trusts it, remove it. A subject who has lost it has nothing to verify with, and that is the administrator's case in step 2 — which is why 0.2 adds it.
 
 ### The last-credential refusal
 
@@ -119,7 +119,7 @@ Unchanged from [0.1](../0.1/spec.md#the-last-credential-refusal) for session cre
 
 * **Producer.** The party acting; identified by `issuer` and confirmed by the `proof`. The credential's owner, or an administrator acting for them.
 * **Target subject.** Whose credential is revoked: `payload.subject`, or the producer.
-* **Purpose.** `session` or `stepUp`, as fixed when the credential was bound ([`enroll/invite` 0.2](../../../enroll/invite/0.2/spec.md)).
+* **Purpose.** `session` or `stepUp`, as fixed when the credential was bound ([`enroll/invite` 0.3](../../../enroll/invite/0.3/spec.md)).
 
 ## Payload
 
