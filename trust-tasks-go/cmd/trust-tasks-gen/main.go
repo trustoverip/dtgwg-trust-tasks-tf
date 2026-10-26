@@ -33,10 +33,10 @@
 // A task from a third-party source (a `[sources.<name>]` table in the lock,
 // SPEC §6.5) is read from trust-tasks/@<name>/<slug>/<M.N>.bundle.json and
 // generated under <out>/<name>/<slug>/v<M>_<N>, its TypeURI taken from the
-// bundle. Note that the runtime's Type-URI parsing (SlugFromTypeURI, and so
-// ReadForSpec / ReadForSpecWith / ExtendsChainReaches, ExtendedCode and
-// FamilyCode) still accepts only https://trusttasks.org/spec/ URIs; ConsumeInbound
-// and RespondWith do not parse the Type URI and work for a sourced task.
+// bundle. The runtime parses every SPEC §6.1 Type URI form (trusttasks.ParseTypeURI),
+// so ExtendedCode and FamilyCode namespace a sourced task's codes by its slug,
+// and ReadForSpecWith / ExtendsChainReaches — given the generated root package's
+// ExtendsOf — follow its declared extensions under its own authority only.
 package main
 
 import (
