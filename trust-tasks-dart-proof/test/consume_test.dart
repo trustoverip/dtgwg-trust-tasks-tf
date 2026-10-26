@@ -1,6 +1,10 @@
 // The verifier in the place it is meant to be used: behind ProofPolicy.verify,
 // inside the §7.2 pipeline.
 
+// acl/grant 0.1 is superseded; it stays because its proof-REQUIRED policy and
+// minimal entry are all this test needs, which 0.2's required scopes obscure.
+// ignore_for_file: deprecated_member_use
+
 import 'package:test/test.dart';
 import 'package:trust_tasks/specs/acl/grant/v0_1/payload.dart' as acl_grant;
 import 'package:trust_tasks/trust_tasks.dart';

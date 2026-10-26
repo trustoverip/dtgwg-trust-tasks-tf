@@ -303,13 +303,18 @@ final class HttpsServer {
   void enableDiscovery(
       {bool public = false, String frameworkVersion = '0.6.0'}) {
     final release = _frameworkRelease(frameworkVersion);
+    // Discovery 0.1 and 0.2 are superseded but still answered, for peers that
+    // ask in them; hence the deprecated_member_use ignores below.
+    // ignore: deprecated_member_use
     on<discovery.Payload, discovery.Response>(
       spec: discovery.spec,
+      // ignore: deprecated_member_use
       decode: discovery.Payload.fromJson,
       encode: (p) => p.toJson(),
       encodeResponse: (r) => r.toJson(),
       handler: (doc, ctx) async {
         _refuseUnauthenticatedDiscovery(public, ctx);
+        // ignore: deprecated_member_use
         return discovery.Response(
           supportedTypes: _discoverable(doc.payload.patterns),
           frameworkVersion:
@@ -317,13 +322,16 @@ final class HttpsServer {
         );
       },
     );
+    // ignore: deprecated_member_use
     on<discovery_v0_2.Payload, discovery_v0_2.Response>(
       spec: discovery_v0_2.spec,
+      // ignore: deprecated_member_use
       decode: discovery_v0_2.Payload.fromJson,
       encode: (p) => p.toJson(),
       encodeResponse: (r) => r.toJson(),
       handler: (doc, ctx) async {
         _refuseUnauthenticatedDiscovery(public, ctx);
+        // ignore: deprecated_member_use
         return discovery_v0_2.Response(
           supportedTypes: _discoverable(doc.payload.patterns),
           frameworkVersion: release?.join('.'),

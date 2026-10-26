@@ -138,6 +138,7 @@ class StoredWitnessing {
 
 /// One entry per stored VWC that matched and that the caller may read. Empty when
 /// nothing matched, which is a successful answer, not an error.
+@Deprecated('superseded by vta/witness/list/0.2')
 class Response {
   const Response({
     required this.witnessings,
@@ -179,6 +180,7 @@ class Response {
 /// A client reads back from its VTA the Verifiable Witness Credentials
 /// vta/witness/accept stored for its principal, each with the outcome evidence stored
 /// beside it. Every filter is optional and those present are AND-combined.
+@Deprecated('superseded by vta/witness/list/0.2')
 class Payload {
   const Payload({
     this.relationshipDid,
@@ -219,6 +221,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'superseded by vta/witness/list/0.2';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/vta/witness/list/0.1';

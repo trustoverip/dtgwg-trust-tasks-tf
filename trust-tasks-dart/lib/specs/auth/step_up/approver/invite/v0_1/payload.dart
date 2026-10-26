@@ -8,6 +8,7 @@ import 'package:trust_tasks/trust_tasks.dart';
 typedef Ext = Map<String, dynamic>;
 
 /// The issued invite. The claim code is returned only here.
+@Deprecated('superseded by auth/step-up/approver/invite/0.2')
 class Response {
   const Response({
     required this.inviteId,
@@ -63,6 +64,7 @@ typedef ApproverLabel = String;
 /// invited subject with a separately delivered claim code, to bind a step-up approver
 /// to that subject. The outer document members (id, type, issuer, recipient, issuedAt,
 /// expiresAt, proof) are owned by the framework — SPEC §6.3.
+@Deprecated('superseded by auth/step-up/approver/invite/0.2')
 class Payload {
   const Payload({
     required this.subject,
@@ -100,6 +102,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'superseded by auth/step-up/approver/invite/0.2';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri =

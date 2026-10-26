@@ -372,6 +372,7 @@ class VaultEntry {
 
 /// The success response to a vault/list request. Carried in a Trust Task document
 /// whose type is https://trusttasks.org/spec/vault/list/0.1#response.
+@Deprecated('superseded by vault/list/0.4')
 class Response {
   const Response({
     required this.entries,
@@ -456,6 +457,7 @@ extension type const PayloadStatus(String value) {
 /// within the caller's bound and its own ceiling. Secret material is NEVER returned by
 /// this task — even when the requesting consumer has VaultRead capability for the
 /// entry, the secret is only released via vault/release/0.1.
+@Deprecated('superseded by vault/list/0.4')
 class Payload {
   const Payload({
     this.contextId,
@@ -584,6 +586,15 @@ class Payload {
         if (status != null) 'status': status!.value,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'superseded by vault/list/0.4';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/vault/list/0.1';

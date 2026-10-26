@@ -68,6 +68,7 @@ typedef Ext = Map<String, dynamic>;
 /// Step 1 of the disclosure ladder, signed by the service's assertionMethod key: who
 /// the service is, where the request will be used and for what, and when the decision
 /// window closes. It MUST contain nothing about the starter.
+@Deprecated('superseded by auth/oob/claim/0.2')
 class Response {
   const Response({
     required this.requestId,
@@ -116,6 +117,7 @@ class Response {
 /// service, and carrying the request's handle both here and as the envelope's
 /// `parentThreadId`. The outer document members (id, type, issuer, recipient,
 /// issuedAt, expiresAt, parentThreadId, proof) are owned by the framework — SPEC §6.3.
+@Deprecated('superseded by auth/oob/claim/0.2')
 class Payload {
   const Payload({
     required this.requestId,
@@ -139,6 +141,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'superseded by auth/oob/claim/0.2';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/auth/oob/claim/0.1';

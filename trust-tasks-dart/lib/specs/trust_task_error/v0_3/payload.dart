@@ -40,6 +40,7 @@ class PayloadInResponseTo {
 }
 
 /// The canonical error-response payload per SPEC.md §8.2.
+@Deprecated('superseded by trust-task-error/0.5')
 class Payload {
   const Payload({
     required this.code,
@@ -101,6 +102,15 @@ class Payload {
         if (details != null) 'details': details!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'superseded by trust-task-error/0.5';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/trust-task-error/0.3';

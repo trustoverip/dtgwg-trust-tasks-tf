@@ -138,6 +138,7 @@ class ElectionSummary {
 typedef Ext = Map<String, dynamic>;
 
 /// Voting — Election Register — response payload
+@Deprecated('superseded by voting/election/register/0.2')
 class Response {
   const Response({
     required this.election,
@@ -480,6 +481,7 @@ class Manifest {
 
 /// A community registers an election it signed with the ballot box the election's
 /// manifest names. The ballot box answers with its view of the election.
+@Deprecated('superseded by voting/election/register/0.2')
 class Payload {
   const Payload({
     required this.community,
@@ -521,6 +523,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'superseded by voting/election/register/0.2';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri =

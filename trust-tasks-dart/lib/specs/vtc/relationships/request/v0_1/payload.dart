@@ -9,6 +9,7 @@ typedef Ext = Map<String, dynamic>;
 
 /// The issued credential. Returned only where the issuing member agreed; a decline is
 /// a trust-task-error, not a response with an empty field.
+@Deprecated('superseded by vtc/relationships/request/0.2')
 class Response {
   const Response({
     required this.vrc,
@@ -48,6 +49,7 @@ class Response {
 /// Everything here is a hint: the issuing member decides, and declines with a
 /// trust-task-error carrying `vtc/relationships/request:declined` rather than a
 /// bespoke rejection message.
+@Deprecated('superseded by vtc/relationships/request/0.2')
 class Payload {
   const Payload({
     this.reason,
@@ -73,6 +75,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'superseded by vtc/relationships/request/0.2';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri =

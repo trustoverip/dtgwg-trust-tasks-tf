@@ -164,6 +164,7 @@ typedef Ext = Map<String, dynamic>;
 
 /// What is published, and how far it is from what the VTC's records currently call
 /// for.
+@Deprecated('superseded by git-ns/projection/show/0.3')
 class Response {
   const Response({
     required this.registryConfigured,
@@ -218,6 +219,7 @@ class Response {
 /// to the Trust Registry for its git namespaces. The outer document members (id, type,
 /// issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC
 /// §6.3.
+@Deprecated('superseded by git-ns/projection/show/0.3')
 class Payload {
   const Payload({
     this.resource,
@@ -255,6 +257,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'superseded by git-ns/projection/show/0.3';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/git-ns/projection/show/0.2';

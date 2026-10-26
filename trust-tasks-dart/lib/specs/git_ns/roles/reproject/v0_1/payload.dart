@@ -12,6 +12,7 @@ typedef RepoResource = String;
 typedef Ext = Map<String, dynamic>;
 
 /// The repositories the VTC queued a projectRoles job for.
+@Deprecated('superseded by git-ns/roles/reproject/0.2')
 class Response {
   const Response({
     required this.repos,
@@ -49,6 +50,7 @@ typedef Resource = String;
 /// the VTC send its bridge the complete forge roles of one repository, or of every
 /// repository in a namespace, again — so the forge comes to match the VTC's rights
 /// under the role map the bridge now applies. No right changes.
+@Deprecated('superseded by git-ns/roles/reproject/0.2')
 class Payload {
   const Payload({
     required this.resource,
@@ -78,6 +80,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'superseded by git-ns/roles/reproject/0.2';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/git-ns/roles/reproject/0.1';

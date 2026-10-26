@@ -50,6 +50,7 @@ extension type const PayloadCommand(String value) {
 /// it. When an action names it, the action's `payload` is this record. The outer
 /// document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are
 /// owned by the framework — SPEC §6.3.
+@Deprecated('superseded by vtc/operator/offline-write/0.2')
 class Payload {
   const Payload({
     required this.command,
@@ -105,6 +106,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'superseded by vtc/operator/offline-write/0.2';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri =

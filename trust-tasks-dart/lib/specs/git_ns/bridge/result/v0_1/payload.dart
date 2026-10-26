@@ -8,6 +8,7 @@ import 'package:trust_tasks/trust_tasks.dart';
 typedef Ext = Map<String, dynamic>;
 
 /// The VTC has recorded the result.
+@Deprecated('superseded by git-ns/bridge/result/0.2')
 class Response {
   const Response({
     required this.jobId,
@@ -173,6 +174,7 @@ class PayloadError {
 
 /// The bridge reports how a job ended. Exactly one result is sent per job; the VTC
 /// updates the repository's state, bootstrap status and forge id from it.
+@Deprecated('superseded by git-ns/bridge/result/0.2')
 class Payload {
   const Payload({
     required this.jobId,
@@ -231,6 +233,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'superseded by git-ns/bridge/result/0.2';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/git-ns/bridge/result/0.1';

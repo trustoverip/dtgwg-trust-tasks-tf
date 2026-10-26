@@ -28,6 +28,7 @@ extension type const ResponseStatus(String value) {
 /// not) deliver a confirm/response. The actual signed confirmation arrives via
 /// confirm/response out-of-band. Carried in a Trust Task document whose type is
 /// https://trusttasks.org/spec/confirm/request/0.1#response.
+@Deprecated('retired; use task-consent/request/0.1')
 class Response {
   const Response({
     required this.status,
@@ -59,6 +60,7 @@ class Response {
 /// A relying party asks a wallet (or other approval agent) to obtain user confirmation
 /// for an action. The wallet surfaces the reason to the user and returns a signed
 /// confirm/response.
+@Deprecated('retired; use task-consent/request/0.1')
 class Payload {
   const Payload({
     required this.subject,
@@ -118,6 +120,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'retired; use task-consent/request/0.1';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/confirm/request/0.1';

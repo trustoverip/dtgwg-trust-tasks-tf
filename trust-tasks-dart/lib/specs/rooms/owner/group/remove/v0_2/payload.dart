@@ -64,6 +64,7 @@ typedef Ext = Map<String, dynamic>;
 /// https://trusttasks.org/spec/rooms/owner/group/remove/0.2#response. The revocation
 /// list in force at the host, and the room's new epoch, which the removed member holds
 /// no key for.
+@Deprecated('superseded by rooms/owner/group/remove/0.3')
 class Response {
   const Response({
     required this.roomId,
@@ -128,6 +129,7 @@ class Response {
 /// A room's owner asks their own agent to remove a member: withdraw every credential
 /// the room gave them, at its host at once, and then remove their leaf from the room's
 /// MLS group and advance its epoch. 0.2 adds the withdrawal, made first.
+@Deprecated('superseded by rooms/owner/group/remove/0.3')
 class Payload {
   const Payload({
     required this.roomId,
@@ -200,6 +202,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'superseded by rooms/owner/group/remove/0.3';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri =

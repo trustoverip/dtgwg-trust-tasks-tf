@@ -32,6 +32,7 @@ typedef Ext = Map<String, dynamic>;
 /// is not a success: it is a trust-task-error carrying
 /// vta/app-state/put:versionConflict, whose details carry the maintainer's current
 /// version and value.
+@Deprecated('superseded by vta/app-state/put/1.1')
 class Response {
   const Response({
     required this.contextId,
@@ -106,6 +107,7 @@ typedef ExpectedVersion = int;
 /// update) is supplied. `expectedVersion` makes the write conditional: a positive
 /// value requires the record to be at exactly that version, and zero requires that no
 /// live record exists.
+@Deprecated('superseded by vta/app-state/put/1.1')
 class Payload {
   const Payload({
     required this.contextId,
@@ -165,6 +167,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'superseded by vta/app-state/put/1.1';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/vta/app-state/put/1.0';

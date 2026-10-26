@@ -77,6 +77,7 @@ class ResponseDiagnostics {
 /// wipe; absent if the target was offline or compromised. The maintainer treats the
 /// absence of a response as 'not confirmed' but considers the device neutralised
 /// because of the server-side defence-in-depth.
+@Deprecated('superseded by device/wipe/0.2')
 class Response {
   const Response({
     required this.deviceId,
@@ -142,6 +143,7 @@ extension type const PayloadScope(String value) {
 /// maintainer additionally revokes ACL access and rotates the device's cache-key
 /// derivation root, so that defence in depth means a non-compliant device is still
 /// neutralised.
+@Deprecated('superseded by device/wipe/0.2')
 class Payload {
   const Payload({
     required this.deviceId,
@@ -187,6 +189,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'superseded by device/wipe/0.2';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/device/wipe/0.1';

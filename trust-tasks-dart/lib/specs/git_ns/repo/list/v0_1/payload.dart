@@ -417,6 +417,7 @@ class RepoStatus {
 typedef Ext = Map<String, dynamic>;
 
 /// The repositories in the namespaces the caller administers, or in the one asked for.
+@Deprecated('superseded by git-ns/repo/list/0.2')
 class Response {
   const Response({
     required this.repos,
@@ -447,6 +448,7 @@ class Response {
 /// An administrator lists the repositories recorded in the namespaces they administer
 /// — every one, for a holder of the community-administrator capability — with owners,
 /// right counts, bootstrap, sync and forge status.
+@Deprecated('superseded by git-ns/repo/list/0.2')
 class Payload {
   const Payload({
     this.namespace,
@@ -471,6 +473,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'superseded by git-ns/repo/list/0.2';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/git-ns/repo/list/0.1';

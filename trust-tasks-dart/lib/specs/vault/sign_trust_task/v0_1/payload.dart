@@ -85,6 +85,7 @@ class UnsignedTrustTaskEnvelope {
 }
 
 /// Vault Sign Trust Task — response payload
+@Deprecated('superseded by vault/sign-trust-task/0.2')
 class Response {
   const Response({
     required this.signedEnvelope,
@@ -233,6 +234,7 @@ class ConsumerContext {
 /// This is the per-envelope signing complement to `vault/proxy-login/0.1`'s
 /// session-credential minting: proxy-login mints a session at session-start;
 /// sign-trust-task signs individual follow-up tasks during the session.
+@Deprecated('superseded by vault/sign-trust-task/0.2')
 class Payload {
   const Payload({
     required this.entryId,
@@ -285,6 +287,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'superseded by vault/sign-trust-task/0.2';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/vault/sign-trust-task/0.1';

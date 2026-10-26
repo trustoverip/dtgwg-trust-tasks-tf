@@ -66,6 +66,7 @@ class GraphEdge {
 typedef Ext = Map<String, dynamic>;
 
 /// VTC Relationships Graph — response payload
+@Deprecated('retired; use vtc/relationships/graph/0.2')
 class Response {
   const Response({
     required this.nodes,
@@ -100,6 +101,7 @@ class Response {
 }
 
 /// VTC Relationships Graph — payload
+@Deprecated('retired; use vtc/relationships/graph/0.2')
 class Payload {
   const Payload({
     this.ext,
@@ -117,6 +119,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'retired; use vtc/relationships/graph/0.2';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri =

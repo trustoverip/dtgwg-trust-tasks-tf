@@ -180,6 +180,7 @@ extension type const ResponseStatus(String value) {
 /// Acknowledgement the relying party returns after processing the approval. Carried in
 /// a Trust Task document whose type is
 /// https://trusttasks.org/spec/auth/step-up/approve-response/0.4#response.
+@Deprecated('superseded by auth/step-up/approve-response/0.6')
 class Response {
   const Response({
     required this.status,
@@ -253,6 +254,7 @@ extension type const PayloadDecision(String value) {
 /// when the request carried one) are echoed inside a gated document so the relying
 /// party can elevate the session, or apply the approval to the one operation it was
 /// bound to.
+@Deprecated('superseded by auth/step-up/approve-response/0.6')
 class Payload {
   const Payload({
     required this.subject,
@@ -323,6 +325,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'superseded by auth/step-up/approve-response/0.6';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri =

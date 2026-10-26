@@ -9,6 +9,7 @@ typedef Ext = Map<String, dynamic>;
 
 /// Success response to rooms/keys/present. Type
 /// https://trusttasks.org/spec/rooms/keys/present/0.1#response.
+@Deprecated('retired; use rooms/keys/present/0.2')
 class Response {
   const Response({
     required this.presentation,
@@ -66,6 +67,7 @@ extension type const PayloadAction(String value) {
 /// An agent asks the party holding its principal's room credentials to produce a
 /// presentation for one room operation. The credentials never cross to the agent; only
 /// the presentation does, and it is bound to the operation it was asked for.
+@Deprecated('retired; use rooms/keys/present/0.2')
 class Payload {
   const Payload({
     required this.roomId,
@@ -113,6 +115,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'retired; use rooms/keys/present/0.2';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/rooms/keys/present/0.1';

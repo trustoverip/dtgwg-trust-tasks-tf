@@ -678,6 +678,7 @@ class ExternalAccount {
 typedef Ext = Map<String, dynamic>;
 
 /// External Accounts — Suspend — response payload
+@Deprecated('superseded by external/accounts/suspend/0.2')
 class Response {
   const Response({
     required this.account,
@@ -704,6 +705,7 @@ class Response {
 /// A manager suspends an external account — the kill switch: every issuance and
 /// signature is refused at once, by one person, without consent. The outer document
 /// members are owned by the framework — SPEC §6.3.
+@Deprecated('superseded by external/accounts/suspend/0.2')
 class Payload {
   const Payload({
     required this.context,
@@ -736,6 +738,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'superseded by external/accounts/suspend/0.2';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri =

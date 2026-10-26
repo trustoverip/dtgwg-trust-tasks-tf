@@ -256,12 +256,16 @@ void main() {
         localVid: server,
         auth: StaticBearerAuth({aliceToken: alice}),
         clock: () => fixedNow,
+        // acl/grant 0.1 is superseded; it is here only as a proof-REQUIRED spec.
+        // ignore: deprecated_member_use
       )..on<acl_grant.Payload, acl_grant.Response>(
           spec: acl_grant.spec,
+          // ignore: deprecated_member_use
           decode: acl_grant.Payload.fromJson,
           encode: (p) => p.toJson(),
           encodeResponse: (r) => r.toJson(),
           handler: (doc, ctx) async =>
+              // ignore: deprecated_member_use
               acl_grant.Response(entry: doc.payload.entry),
         );
       final doc = echoDoc(type: acl_grant.typeUri)

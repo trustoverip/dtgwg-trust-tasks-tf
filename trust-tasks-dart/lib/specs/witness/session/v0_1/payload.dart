@@ -10,6 +10,7 @@ typedef Ext = Map<String, dynamic>;
 /// The session challenge, issued under the REQUIRED proof. The presentation under
 /// witness/session/submit binds to {challenge, domain}. It reaches only the party that
 /// opened this session — which is why each party opens its own.
+@Deprecated('superseded by witness/session/0.2')
 class Response {
   const Response({
     required this.challenge,
@@ -48,6 +49,7 @@ class Response {
 /// exchange between two parties runs two sessions with the same witness, each naming
 /// the same parties pair. The response issues the session challenge; the request
 /// document's id is the value that party's VWC later carries as taskContext.
+@Deprecated('superseded by witness/session/0.2')
 class Payload {
   const Payload({
     required this.parties,
@@ -72,6 +74,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'superseded by witness/session/0.2';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/witness/session/0.1';

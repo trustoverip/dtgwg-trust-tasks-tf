@@ -76,6 +76,7 @@ class ServiceMutationResult {
 
 /// Success response to vta/services/enable. Type
 /// https://trusttasks.org/spec/vta/services/enable/1.0#response.
+@Deprecated('superseded by vta/services/enable/1.1')
 class Response {
   const Response({
     required this.result,
@@ -173,6 +174,7 @@ class PayloadConfig {
 /// Request payload for vta/services/enable. Adds a transport to the agent's DID
 /// document and republishes the signed log. Enabling a transport already enabled is a
 /// conflict, not a no-op — use `update` to change its settings.
+@Deprecated('superseded by vta/services/enable/1.1')
 class Payload {
   const Payload({
     required this.service,
@@ -203,6 +205,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'superseded by vta/services/enable/1.1';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/vta/services/enable/1.0';

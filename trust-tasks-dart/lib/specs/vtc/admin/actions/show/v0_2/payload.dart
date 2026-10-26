@@ -536,6 +536,7 @@ class Action {
 
 /// The action as the caller is entitled to see it. Failures use trust-task-error, not
 /// this shape.
+@Deprecated('superseded by vtc/admin/actions/show/0.3')
 class Response {
   const Response({
     required this.action,
@@ -563,6 +564,7 @@ class Response {
 /// (continuation `proceed`, hint {actionId}). The enumeration sibling is
 /// vtc/admin/actions/list/0.2. The outer document members (id, type, issuer,
 /// recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+@Deprecated('superseded by vtc/admin/actions/show/0.3')
 class Payload {
   const Payload({
     required this.actionId,
@@ -585,6 +587,15 @@ class Payload {
         if (ext != null) 'ext': ext!,
       };
 }
+
+/// Why this specification version is deprecated, or null when it is current.
+///
+/// Set when the version is retired, or superseded by a later version of the
+/// same slug at an equal or higher maturity (SPEC "Superseded and Withdrawn
+/// Versions"). A deprecated version is still supported; it is removed from
+/// this package once withdrawn.
+// ignore: unnecessary_nullable_for_final_variable_declarations
+const String? deprecation = 'superseded by vtc/admin/actions/show/0.3';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/vtc/admin/actions/show/0.2';
