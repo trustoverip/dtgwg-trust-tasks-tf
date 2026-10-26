@@ -3,7 +3,7 @@ name = "trust-tasks-cli"
 # A new crate's first version. From here on release-plz assigns it, as it does
 # for every other crate (RELEASING.md). The first crates.io publish is manual:
 # trusted publishing cannot create a crate that does not exist yet.
-version = "0.1.1"
+version = "0.1.2"
 edition.workspace = true
 rust-version = "1.95"
 license.workspace = true

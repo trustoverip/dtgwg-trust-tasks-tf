@@ -3,6 +3,45 @@
 Notable changes to the published packages. Generated from conventional commits
 by [git-cliff](https://git-cliff.org) when a release is cut — do not edit by
 hand.
+## [0.1.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-build-v0.1.1...trust-tasks-build-v0.1.2) — 2026-10-26
+
+
+### Added
+
+- **build**: Bundles record the $defs order and each shared definition's origin ([#938](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/938))
+
+* feat(build): bundles record the $defs order and each shared definition's origin
+
+  A bundle's schemas are key-sorted, so the TypeScript, Go and Dart generators
+  could not declare a schema's definitions in the order their in-repo
+  counterparts do (1,100 of 1,127 Go files and 662 Dart files differed only in
+  that order), and the TypeScript generator could not tell one shared component
+  copied into many bundles from unrelated definitions that share a name.
+
+  Two members, both additive within bundleVersion 1 (readers ignore them, and
+  treat them as {} when absent):
+
+  - defsOrder: /schema and /responseSchema -> the root $defs names in the
+    order the TS/Go/Dart inliners leave them: the payload schema's own as
+    authored, then each spliced definition in the order a last-in-first-out
+    $ref frontier, collected in document order, reaches it. The builder
+    replays that walk over the authored documents and refuses a bundle whose
+    replay does not name exactly its $defs.
+  - defOrigins: each spliced definition -> <its document's $id>#/$defs/<name>,
+    or, for a document with no $id, its path under the specifications root
+    below the Type URI prefix.
+
+  check-bundles verifies both without the Rust builder: defsOrder against the
+  $defs order of the TypeScript module's schemas (all 1,127 agree, as they do
+  with Go's embedded schema text), and every origin against the $ids and $defs
+  of the shared schemas in specs/.
+
+  Every bundle's digest changes once when this deploys. The by-digest store is
+  append-only, so existing locks still build, check and fetch; `trust-tasks
+  update` takes the new bytes and says so.
+
+
+
 ## [0.1.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-build-v0.1.0...trust-tasks-build-v0.1.1) — 2026-10-26
 
 
