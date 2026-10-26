@@ -32,6 +32,15 @@
 //                               @Deprecated (see buildLifecycleIndex; a
 //                               withdrawn version is not generated at all)
 //
+//   extendsVersion            — the `MAJOR.MINOR` this version declares it
+//                               extends (SPEC §5.2 "Declared extension"), or
+//                               null. The DIRECT declaration only, not the chain.
+//
+// And one library beside them, lib/specs/extends_index.dart, mapping every bare
+// request Type URI that declares `extends` to the version it extends — the index
+// the runtime's readForVersion walks, so a library upgrade alone teaches an
+// application that x/0.3 may be read as the x/0.2 it implements.
+//
 // ── Decisions specific to Dart ─────────────────────────────────────────────
 //
 // 1. ONE LIBRARY PER SCHEMA, imported with a prefix. Dart's `export` is flat —
@@ -234,6 +243,21 @@ function responseSchemaOf(schema) {
  * the parties, so the requirement governing a *response*'s `recipient` member is
  * the one declared for the *issuer* party of the request.
  */
+/**
+ * The version a spec declares it extends (SPEC §5.2 "Declared extension"), or
+ * null. Only the direct declaration: the runtime walks the chain itself through
+ * the generated index, one link per entry.
+ */
+function readExtends(schemaPath) {
+  const meta = readFrontMatter(path.join(path.dirname(schemaPath), "spec.md"));
+  const value = meta?.extends;
+  if (value === undefined || value === null) return null;
+  if (typeof value !== "string" || !/^\d+\.\d+$/.test(value)) {
+    throw new Error(`front matter extends must be a "MAJOR.MINOR" string, got ${JSON.stringify(value)}`);
+  }
+  return value;
+}
+
 function readSpecPolicy(schemaPath) {
   const meta = readFrontMatter(path.join(path.dirname(schemaPath), "spec.md"));
   if (!meta) return null;
@@ -948,7 +972,7 @@ function emitNamed(em, node, target, defNames) {
 /* ── File assembly ───────────────────────────────────────────────────────── */
 
 /** The tail every generated request library carries: URIs, schemas, policy. */
-function emitTail(slugInfo, policy, schemas, hasResponse, deprecation) {
+function emitTail(slugInfo, policy, schemas, hasResponse, deprecation, extendsVersion) {
   if (!slugInfo) return [];
   const { slug, version } = slugInfo;
   const uri = `https://trusttasks.org/spec/${slug}/${version}`;
@@ -975,6 +999,26 @@ function emitTail(slugInfo, policy, schemas, hasResponse, deprecation) {
     [
       "/// The Trust Task type URI this library's [Payload] is carried under.",
       `const String typeUri = ${dartString(uri)};`,
+    ].join("\n"),
+  );
+
+  out.push(
+    [
+      "/// The `MAJOR.MINOR` this version declares it extends (SPEC §5.2, \"Declared",
+      "/// extension\"), or null when it declares none.",
+      "///",
+      "/// Only the direct declaration. A consumer implementing that version SHOULD",
+      "/// accept a document of this one by ignoring the payload members it does not",
+      "/// recognise; [readForVersion] does that, walking the whole chain through",
+      "/// `package:trust_tasks/specs/extends_index.dart`. Named `extendsVersion`",
+      "/// because `extends` is a reserved word.",
+      // `String?` in both forms, so code reading it is written once for every
+      // library. The lint that would narrow a non-null initialiser to `String`
+      // is silenced for exactly that reason.
+      ...(extendsVersion === null
+        ? []
+        : ["// ignore: unnecessary_nullable_for_final_variable_declarations"]),
+      `const String? extendsVersion = ${extendsVersion === null ? "null" : dartString(extendsVersion)};`,
     ].join("\n"),
   );
 
@@ -1132,12 +1176,14 @@ function generateOne(schemaPath, lifecycle) {
     markDeprecated(em, [rootName, responseName].filter((n) => n !== null), deprecation);
   }
 
+  const extendsVersion = out.slugInfo ? readExtends(schemaPath) : null;
   const tail = emitTail(
     out.slugInfo,
     out.slugInfo ? readSpecPolicy(schemaPath) : null,
     { request: out.slugInfo ? requestSchema : null, response: hasResponse ? responseSchema : null },
     hasResponse,
     deprecation,
+    extendsVersion,
   );
 
   const header = [
@@ -1152,7 +1198,46 @@ function generateOne(schemaPath, lifecycle) {
   if (tail.length > 0) header.push("", `import '${RUNTIME_IMPORT}';`);
 
   const body = [...em.decls, ...tail];
-  return { ...out, source: `${[...header, "", ...body.join("\n\n").split("\n")].join("\n")}\n` };
+  return {
+    ...out,
+    extendsVersion,
+    source: `${[...header, "", ...body.join("\n\n").split("\n")].join("\n")}\n`,
+  };
+}
+
+/** Where the extends index lands. Not a spec path, so it cannot collide with one. */
+const EXTENDS_INDEX_FILE = path.join(OUT_DIR, "extends_index.dart");
+
+/**
+ * The library mapping every bare request Type URI that declares `extends` to the
+ * version it extends.
+ *
+ * The smallest index that serves the runtime: Dart has no per-Type-URI index of
+ * generated modules (a consumer imports the one specification it needs), and
+ * walking a chain must not require importing every version on it. An undeclared
+ * version is simply absent, which the runtime reads as "extends nothing".
+ */
+function emitExtendsIndex(entries) {
+  const sorted = [...entries].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+  const lines = [
+    "// Code generated by scripts/build-dart-bindings.mjs. DO NOT EDIT.",
+    "// Source: the `extends` front matter of every specification under specs/.",
+    "",
+    "/// Every Trust Task version that declares `extends` (SPEC §5.2, \"Declared",
+    "/// extension\"), keyed by its bare request Type URI, mapped to the `MAJOR.MINOR`",
+    "/// it extends. A version that declares none is absent.",
+    "///",
+    "/// One link per entry; a chain is followed by looking the extended version's",
+    "/// own Type URI up again, which `readForVersion` in the runtime does.",
+    "library;",
+    "",
+    "/// See the library documentation.",
+    "const Map<String, String> extendsIndex = <String, String>{",
+    ...sorted.map(([uri, v]) => `  ${dartString(uri)}: ${dartString(v)},`),
+    "};",
+    "",
+  ];
+  return lines.join("\n");
 }
 
 /* ── Driver ──────────────────────────────────────────────────────────────── */
@@ -1204,6 +1289,7 @@ async function main() {
   let deprecated = 0;
   let withdrawn = 0;
   const seen = new Map();
+  const extendsEntries = [];
   for (const schemaPath of filtered) {
     try {
       // A withdrawn version is generated not at all. Shared schemas have no
@@ -1229,6 +1315,10 @@ async function main() {
         );
       }
       seen.set(result.file, path.relative(REPO_ROOT, schemaPath));
+      if (result.slugInfo && result.extendsVersion !== null) {
+        const { slug, version } = result.slugInfo;
+        extendsEntries.push([`https://trusttasks.org/spec/${slug}/${version}`, result.extendsVersion]);
+      }
 
       await fs.mkdir(result.dir, { recursive: true });
       await fs.writeFile(result.file, result.source, "utf8");
@@ -1239,6 +1329,11 @@ async function main() {
       process.exitCode = 1;
     }
   }
+
+  if (seen.has(EXTENDS_INDEX_FILE)) {
+    throw new Error(`a schema library already occupies ${path.relative(REPO_ROOT, EXTENDS_INDEX_FILE)}`);
+  }
+  await fs.writeFile(EXTENDS_INDEX_FILE, emitExtendsIndex(extendsEntries), "utf8");
 
   // Format in-process, for the reason build-go-bindings.mjs gives at the same
   // point: a contributor without the Dart SDK would otherwise commit

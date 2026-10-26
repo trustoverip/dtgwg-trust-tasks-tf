@@ -27,6 +27,14 @@ export type { Ext, Histogram, HistogramBucket, Metric, MetricsSnapshot };
 export const TYPE_URI = "https://trusttasks.org/spec/vta/metrics/show/0.1" as const;
 
 /**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
+/**
  * Why this version is deprecated, or `null` while it is current. A
  * superseded or retired version is still supported, and is withdrawn from
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn

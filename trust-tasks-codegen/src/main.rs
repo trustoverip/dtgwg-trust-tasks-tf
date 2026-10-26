@@ -476,6 +476,66 @@ fn read_max_document_bytes(spec_md_path: &Path) -> Result<MaxDocumentBytes> {
     Ok(MaxDocumentBytes { request, response })
 }
 
+/// Read a `spec.md`'s front matter `extends` (SPEC §5.2 "Declared extension"):
+/// the earlier `MAJOR.MINOR` of the same slug this version declares it only
+/// adds to. `None` when the version declares none.
+///
+/// Only the direct declaration — a chain is walked at runtime through
+/// `extends_for`, one link per lookup. The build (`scripts/build-registry.mjs`)
+/// has already proved the declaration additive; this checks only the shape the
+/// runtime depends on, so a malformed value cannot produce a link the walk
+/// would follow somewhere it was never promised.
+fn read_extends(spec: &Spec) -> Result<Option<String>> {
+    let spec_md_path = spec.spec_md_path();
+    if !spec_md_path.exists() {
+        return Ok(None);
+    }
+    let text = fs::read_to_string(&spec_md_path)
+        .with_context(|| format!("read {}", spec_md_path.display()))?;
+    let mut lines = text.lines();
+    if lines.next().unwrap_or("").trim() != "---" {
+        return Ok(None);
+    }
+    let mut front_matter = String::new();
+    for line in lines {
+        if line.trim() == "---" {
+            break;
+        }
+        front_matter.push_str(line);
+        front_matter.push('\n');
+    }
+    let value: serde_json::Value = serde_saphyr::from_str(&front_matter)
+        .with_context(|| format!("parse YAML front matter in {}", spec_md_path.display()))?;
+    let Some(decl) = value.get("extends") else {
+        return Ok(None);
+    };
+    let target = decl.as_str().ok_or_else(|| {
+        anyhow!(
+            "{}: extends must be a \"MAJOR.MINOR\" string",
+            spec_md_path.display()
+        )
+    })?;
+    extends_shape(&spec.version, target)
+        .map_err(|why| anyhow!("{}: extends: '{target}' {why}", spec_md_path.display()))?;
+    Ok(Some(target.to_string()))
+}
+
+/// `Ok` when `target` is a `MAJOR.MINOR` with `version`'s MAJOR and a strictly
+/// lower MINOR — the only links SPEC §5.2 permits.
+fn extends_shape(version: &str, target: &str) -> std::result::Result<(), &'static str> {
+    let parse = |v: &str| -> Option<(u32, u32)> {
+        let (major, minor) = v.split_once('.')?;
+        Some((major.parse().ok()?, minor.parse().ok()?))
+    };
+    let (Some((major, minor)), Some((t_major, t_minor))) = (parse(version), parse(target)) else {
+        return Err("is not a MAJOR.MINOR version");
+    };
+    if t_major != major || t_minor >= minor {
+        return Err("must name a strictly earlier version with the same MAJOR");
+    }
+    Ok(())
+}
+
 /// Read whether the party filling the framework `member` (`"issuer"` or
 /// `"recipient"`) is declared `requirement: REQUIRED` in the spec's front
 /// matter. Returns `false` when no party carries that `member`, when its
@@ -855,6 +915,7 @@ fn main() -> Result<()> {
 
     write_mod_tree(&specs, &out_root)?;
     write_schema_index(&specs, &repo_root)?;
+    write_extends_index(&specs, &repo_root)?;
     write_cargo_features(&gated, &repo_root)?;
 
     println!(
@@ -1417,6 +1478,7 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<GeneratedSpec> {
     let recipient_required = read_member_required_flag(&spec.spec_md_path(), "recipient")?;
     let issuer_required = read_member_required_flag(&spec.spec_md_path(), "issuer")?;
     let error_codes = read_error_codes(spec)?;
+    let extends = read_extends(spec)?;
     let module_tokens = render_module(
         spec,
         body,
@@ -1428,6 +1490,7 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<GeneratedSpec> {
         recipient_required,
         issuer_required,
         &error_codes,
+        extends.as_deref(),
         &raw,
         response_raw.as_deref(),
     );
@@ -1803,6 +1866,7 @@ fn render_module(
     recipient_required: bool,
     issuer_required: bool,
     error_codes: &[ErrorCodeDecl],
+    extends: Option<&str>,
     schema_json: &str,
     response_schema_json: Option<&str>,
 ) -> TokenStream {
@@ -1917,6 +1981,21 @@ fn render_module(
 
     let error_codes_items = render_error_codes(error_codes);
 
+    // SPEC §5.2 "Declared extension" — the direct declaration only. Emitted on
+    // every module, `None` included, so "this version declares no extension"
+    // is a value a consumer reads rather than an item it infers is missing.
+    let extends_value = match extends {
+        Some(v) => quote! { Some(#v) },
+        None => quote! { None },
+    };
+    let extends_item = quote! {
+        /// The earlier `MAJOR.MINOR` of this slug that this version declares it
+        /// extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+        /// `None`. Only the direct declaration; walk a chain with
+        /// [`crate::extension::extends_for`].
+        pub const EXTENDS: Option<&str> = #extends_value;
+    };
+
     // SPEC "Superseded and Withdrawn Versions" — see [`compute_lifecycles`].
     // `DEPRECATION` is on every module so the answer is a value a consumer can
     // read; the `#[deprecated]` on the root types themselves is added after
@@ -1961,6 +2040,8 @@ fn render_module(
         }
 
         #response_payload_impl
+
+        #extends_item
 
         #error_codes_items
     }
@@ -2463,11 +2544,62 @@ pub fn max_document_bytes_for(type_uri: &str) -> Option<usize> {{
 {size_arms}        _ => None,
     }}
 }}
+
+/// The version the specification behind `type_uri` declares it extends (SPEC
+/// §5.2 "Declared extension"), or `None`. Re-exported from
+/// [`crate::extension`], which also walks the chain; it is here so every
+/// per-Type-URI lookup has one home.
+pub use crate::extension::extends_for;
 "#
     );
 
     let path = repo_root.join("trust-tasks-rs/src/schema_index.rs");
     fs::write(path, body)?;
+    Ok(())
+}
+
+/// Emit `trust-tasks-rs/src/extends_index.rs` — bare request Type URI → the
+/// `MAJOR.MINOR` its specification declares it extends (front matter
+/// `extends`, SPEC §5.2 "Declared extension").
+///
+/// Not part of `schema_index`, and not feature-gated per family, on purpose:
+/// the dispatchers route along it, and they are compiled whether or not the
+/// `validate` feature (which gates `schema_index`) or the received version's
+/// family module is. The arms are string literals rather than references to
+/// each module's `EXTENDS`, so a build without a family still knows that
+/// family's chain — the received version never needs a module of its own to
+/// be routed to the version the consumer implements. `check-bindings` holds
+/// the per-module constants to the front matter; the generator holds this
+/// table to the same reading, since both come from [`read_extends`] here.
+fn write_extends_index(specs: &[Spec], repo_root: &Path) -> Result<()> {
+    let mut arms = String::new();
+    for spec in specs {
+        if let Some(target) = read_extends(spec)? {
+            arms.push_str(&format!(
+                "        {:?} => Some({:?}),\n",
+                spec.type_uri(),
+                target
+            ));
+        }
+    }
+    let body = format!(
+        r#"//! Generated by `trust-tasks-codegen` — do not edit by hand.
+//!
+//! Bare request Type URI → the `MAJOR.MINOR` its specification declares it
+//! extends (SPEC §5.2 "Declared extension"). Read through
+//! [`crate::extension::extends_for`].
+
+/// The direct `extends` declaration of the specification behind the bare
+/// request `type_uri`, or `None`.
+pub(crate) fn declared_extends(type_uri: &str) -> Option<&'static str> {{
+    #[allow(clippy::match_single_binding)]
+    match type_uri {{
+{arms}        _ => None,
+    }}
+}}
+"#
+    );
+    fs::write(repo_root.join("trust-tasks-rs/src/extends_index.rs"), body)?;
     Ok(())
 }
 
@@ -3518,6 +3650,23 @@ errorCodes:
         let out = render_error_codes(&[]).to_string();
         assert!(out.contains("pub const ERROR_CODES"));
         assert!(!out.contains("mod error_codes"));
+    }
+}
+
+#[cfg(test)]
+mod extends_tests {
+    use super::*;
+
+    #[test]
+    fn only_a_strictly_earlier_minor_of_the_same_major_is_a_link() {
+        assert!(extends_shape("0.3", "0.2").is_ok());
+        assert!(extends_shape("0.3", "0.1").is_ok());
+        assert!(extends_shape("1.10", "1.9").is_ok());
+        assert!(extends_shape("0.3", "0.3").is_err());
+        assert!(extends_shape("0.3", "0.4").is_err());
+        assert!(extends_shape("1.1", "0.9").is_err());
+        assert!(extends_shape("0.3", "0.x").is_err());
+        assert!(extends_shape("0.3", "2").is_err());
     }
 }
 

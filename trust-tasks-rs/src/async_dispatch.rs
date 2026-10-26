@@ -8,7 +8,9 @@ use std::pin::Pin;
 
 use serde_json::Value;
 
-use crate::dispatcher::{build_error_response, canonical_key, downcast_payload, RequestOrigin};
+use crate::dispatcher::{
+    build_error_response, canonical_key, downcast_payload, forward_target, RequestOrigin,
+};
 use crate::document::{ErrorResponse, TrustTask};
 use crate::error::{ErrorPayload, RejectReason};
 use crate::payload::Payload;
@@ -103,6 +105,9 @@ pub struct AsyncDispatcher<Ctx, R> {
     /// registered is `unsupportedVersion` rather than `unsupportedType`
     /// (SPEC §5.2 / §8.3).
     slugs: HashSet<String>,
+    /// The payload schema of each registered handler's `P`, under the same
+    /// key, for pruning a forward-routed document (SPEC §5.2).
+    schemas: HashMap<String, Option<&'static str>>,
 }
 
 impl<Ctx, R> Default for AsyncDispatcher<Ctx, R> {
@@ -118,6 +123,7 @@ impl<Ctx, R> AsyncDispatcher<Ctx, R> {
         Self {
             handlers: HashMap::new(),
             slugs: HashSet::new(),
+            schemas: HashMap::new(),
         }
     }
 
@@ -137,6 +143,11 @@ impl<Ctx, R> AsyncDispatcher<Ctx, R> {
     ///
     /// Before the handler runs, a request-variant document is checked with
     /// [`TrustTask::enforce_spec_policy`] — see the type-level docs.
+    ///
+    /// As with [`Dispatcher::on`](crate::Dispatcher::on), the handler also
+    /// receives a later version's documents when that version declares an
+    /// extension chain reaching `P`'s (SPEC §5.2) and has no handler of its
+    /// own — see [`Self::dispatch`].
     pub fn on_async<P, F, Fut>(mut self, handler: F) -> Self
     where
         P: Payload + 'static,
@@ -166,6 +177,8 @@ impl<Ctx, R> AsyncDispatcher<Ctx, R> {
             Box::pin(async move { Ok(fut.await) })
         };
         self.slugs.insert(P::type_uri().slug().to_string());
+        self.schemas
+            .insert(canonical_key(&P::type_uri()), P::PAYLOAD_SCHEMA);
         self.handlers
             .insert(canonical_key(&P::type_uri()), Box::new(wrapped));
         self
@@ -178,24 +191,43 @@ impl<Ctx, R> AsyncDispatcher<Ctx, R> {
     ///
     /// * `Ok(R)` — handler invoked successfully.
     /// * `Err(RejectReason::UnsupportedVersion)` — the slug is registered
-    ///   but not at this Type URI's `MAJOR.MINOR` (SPEC §5.2 / §8.3).
+    ///   but not at this Type URI's `MAJOR.MINOR` (SPEC §5.2 / §8.3), and no
+    ///   registered version is reached by its declared extension chain.
     /// * `Err(RejectReason::UnsupportedType)` — the slug is not registered
     ///   at all.
     /// * `Err(RejectReason::MalformedRequest)` — the URI matched but the
     ///   payload failed to deserialize against `P`.
     /// * any [`RejectReason`] [`TrustTask::enforce_spec_policy`] raises —
     ///   [`ProofRequired`](RejectReason::ProofRequired) most often.
-    pub async fn dispatch(&self, doc: TrustTask<Value>, ctx: Ctx) -> Result<R, RejectReason> {
+    ///
+    /// A document of a version with no handler of its own, whose declared
+    /// extension chain reaches a registered version of the same slug, is
+    /// routed to the highest such version with its payload pruned — exactly
+    /// as [`Dispatcher::dispatch`](crate::Dispatcher::dispatch) does, and with
+    /// the same rule for proofs: verify over the document as received, before
+    /// dispatching. The §7.2 policy checks are the implemented version's,
+    /// which a declared extension shares (the build refuses one that changes
+    /// the proof requirement).
+    pub async fn dispatch(&self, mut doc: TrustTask<Value>, ctx: Ctx) -> Result<R, RejectReason> {
         let key = canonical_key(&doc.type_uri);
-        match self.handlers.get(&key) {
-            Some(handler) => handler(doc, ctx).await,
-            // SPEC §5.2 / §8.3: a recognized slug at an unregistered
-            // `MAJOR.MINOR` is `unsupportedVersion`; an unrecognized slug is
-            // `unsupportedType`.
-            None if self.slugs.contains(doc.type_uri.slug()) => {
-                Err(RejectReason::UnsupportedVersion { type_uri: key })
+        if let Some(handler) = self.handlers.get(&key) {
+            return handler(doc, ctx).await;
+        }
+        // SPEC §5.2 / §8.3: a recognized slug at an unregistered
+        // `MAJOR.MINOR` is `unsupportedVersion` — unless the version declares
+        // an extension of one that is registered; an unrecognized slug is
+        // `unsupportedType`.
+        if !self.slugs.contains(doc.type_uri.slug()) {
+            return Err(RejectReason::UnsupportedType { type_uri: key });
+        }
+        match forward_target(&doc.type_uri, &self.handlers) {
+            Some(target) => {
+                if let Some(schema) = self.schemas.get(&target).copied().flatten() {
+                    crate::extension::prune_payload(&mut doc.payload, schema);
+                }
+                self.handlers[&target](doc, ctx).await
             }
-            None => Err(RejectReason::UnsupportedType { type_uri: key }),
+            None => Err(RejectReason::UnsupportedVersion { type_uri: key }),
         }
     }
 
@@ -503,5 +535,63 @@ mod tests {
         let handle = tokio::spawn(async move { d.dispatch(inbound(GRANT_V0_1, true), ()).await });
 
         assert_eq!(handle.await.unwrap().unwrap(), "handled");
+    }
+
+    /// SPEC §5.2 "Declared extension": a fictional `acl/grant/0.9` declared
+    /// (through the test overlay on the generated table) to extend `0.1`
+    /// reaches the `0.1` handler with members it added pruned — at the top
+    /// level and inside `entry`, which is a `$ref` into `$defs` — still under
+    /// the implemented version's §7.2 policy, and is answered as `0.9`.
+    #[tokio::test]
+    async fn an_extending_version_is_routed_pruned_and_answered_as_received() {
+        crate::extension::test_index::declare(
+            "https://trusttasks.org/spec/acl/grant/0.9",
+            Some("0.1"),
+        );
+        let dispatcher = AsyncDispatcher::<(), TrustTask<grant::Response>>::new()
+            .on_async::<grant::Payload, _, _>(|req, _ctx| async move {
+                req.respond_with(
+                    "resp-1",
+                    grant::Response {
+                        entry: req.payload.entry.clone(),
+                        ext: None,
+                    },
+                )
+            });
+
+        let extended = |with_proof: bool| {
+            let mut doc = inbound("https://trusttasks.org/spec/acl/grant/0.9", with_proof);
+            doc.payload["priority"] = Value::from(3);
+            doc.payload["entry"]["note"] = Value::from("added in 0.9");
+            doc
+        };
+
+        let response = dispatcher
+            .dispatch(extended(true), ())
+            .await
+            .expect("routed to the 0.1 handler");
+        assert_eq!(
+            response.type_uri.to_string(),
+            "https://trusttasks.org/spec/acl/grant/0.9#response"
+        );
+        assert_eq!(response.payload.entry.subject, "did:web:alice.example");
+
+        // The implemented version's policy still applies: 0.1 requires a proof.
+        let err = dispatcher.dispatch(extended(false), ()).await.unwrap_err();
+        assert!(matches!(err, RejectReason::ProofRequired), "{err:?}");
+
+        // A version that declares nothing is refused as before.
+        crate::extension::test_index::declare("https://trusttasks.org/spec/acl/grant/0.8", None);
+        let err = dispatcher
+            .dispatch(
+                inbound("https://trusttasks.org/spec/acl/grant/0.8", true),
+                (),
+            )
+            .await
+            .unwrap_err();
+        assert!(
+            matches!(err, RejectReason::UnsupportedVersion { .. }),
+            "{err:?}"
+        );
     }
 }

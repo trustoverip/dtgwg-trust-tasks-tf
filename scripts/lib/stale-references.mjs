@@ -33,7 +33,12 @@
  *   text      a prose link, a prose mention, or a schema description. The
  *             fixer rewrites these (`npm run fix-stale-references`).
  *
- * Not findings, because they name an old version on purpose:
+ * Not findings: a reference to a version the latest one declares it EXTENDS
+ * (directly or along a chain — SPEC §5.2 "Declared extension"). An extension
+ * keeps everything the older version had, so naming the older one is still
+ * right, and an additive change asks nothing of the specs that name it.
+ *
+ * Not findings either, because they name an old version on purpose:
  *
  *   - anything under a history heading — `Changes from …`, `What 0.4 changed
  *     from 0.3`, `Version history` — at any level, which is about the past;
@@ -62,15 +67,19 @@ const compareVersions = (a, b) => {
 /** `specs`: slug → Map(version → status); `latest`/`latestLive`: slug → its latest (neither retired nor withdrawn) version. */
 function registry(specsDir) {
   const specs = new Map();
+  const extendsOf = new Map(); // `<slug>/<version>` → the version it declares it extends
   (function walk(dir) {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
       if (!entry.isDirectory() || entry.name.startsWith('_')) continue;
       const full = path.join(dir, entry.name);
       if (/^\d+\.\d+$/.test(entry.name) && fs.existsSync(path.join(full, 'spec.md'))) {
         const slug = path.relative(specsDir, dir).split(path.sep).join('/');
-        const status = fs.readFileSync(path.join(full, 'spec.md'), 'utf8').match(/^status:\s*["']?([a-z]+)/m)?.[1] ?? null;
+        const text = fs.readFileSync(path.join(full, 'spec.md'), 'utf8');
+        const status = text.match(/^status:\s*["']?([a-z]+)/m)?.[1] ?? null;
+        const ext = text.match(/^extends:\s*["']?(\d+\.\d+)/m)?.[1];
         if (!specs.has(slug)) specs.set(slug, new Map());
         specs.get(slug).set(entry.name, status);
+        if (ext) extendsOf.set(`${slug}/${entry.name}`, ext);
       } else {
         walk(full);
       }
@@ -84,7 +93,13 @@ function registry(specsDir) {
     const live = sorted.filter((v) => versions.get(v) !== 'retired' && versions.get(v) !== 'withdrawn');
     if (live.length) latestLive.set(slug, live.at(-1));
   }
-  return { specs, latest, latestLive };
+  // Every version a version's `extends` chain reaches (SPEC §5.2 "Declared extension").
+  const extended = (slug, version) => {
+    const out = new Set();
+    for (let v = extendsOf.get(`${slug}/${version}`); v && !out.has(v); v = extendsOf.get(`${slug}/${v}`)) out.add(v);
+    return out;
+  };
+  return { specs, latest, latestLive, extended };
 }
 
 // A Type URI, or a bare `<slug>/<MAJOR.MINOR>` (a mention, or a relative link
@@ -150,6 +165,9 @@ function referencesIn(slug, dir, specsDir, reg) {
       if (target === 'trust-task-error') return; // SPEC §8.1 routes to the current version; checkBindingErrorSpecPin owns it
       const latest = reg.latestLive.get(target);
       if (compareVersions(version, latest) >= 0) return;
+      // The latest version declares it extends this one: a reference to it is
+      // satisfied by every version along the chain, so it is not stale.
+      if (reg.extended(target, latest).has(version)) return;
       seen.add(versionAt);
       const ln = lineOf(versionAt);
       const where = context[ln] ?? 'json';

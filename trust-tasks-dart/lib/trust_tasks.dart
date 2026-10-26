@@ -40,6 +40,7 @@ export 'src/runtime/canonical.dart';
 export 'src/runtime/codes.dart';
 export 'src/runtime/consume.dart';
 export 'src/runtime/document.dart';
+export 'src/runtime/extension.dart';
 export 'src/runtime/freshness.dart';
 export 'src/runtime/replay.dart';
 export 'src/runtime/transport.dart';

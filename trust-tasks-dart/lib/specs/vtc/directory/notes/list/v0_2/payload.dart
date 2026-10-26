@@ -166,6 +166,16 @@ const String? deprecation = null;
 const String typeUri =
     'https://trusttasks.org/spec/vtc/directory/notes/list/0.2';
 
+/// The `MAJOR.MINOR` this version declares it extends (SPEC §5.2, "Declared
+/// extension"), or null when it declares none.
+///
+/// Only the direct declaration. A consumer implementing that version SHOULD
+/// accept a document of this one by ignoring the payload members it does not
+/// recognise; [readForVersion] does that, walking the whole chain through
+/// `package:trust_tasks/specs/extends_index.dart`. Named `extendsVersion`
+/// because `extends` is a reserved word.
+const String? extendsVersion = null;
+
 /// The success-response form of [typeUri] (SPEC §4.4.1).
 const String responseTypeUri =
     'https://trusttasks.org/spec/vtc/directory/notes/list/0.2#response';

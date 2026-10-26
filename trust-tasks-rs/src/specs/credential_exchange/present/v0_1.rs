@@ -275,6 +275,11 @@ impl crate::Payload for Payload {
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/credential-exchange/present/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Holder to verifier: an OID4VP vp_token carrying the selectively-disclosed, holder-bound presentation. Replies on the query thread.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"vp_token\": {\n      \"description\": \"The OID4VP `vp_token`, format-agnostic by design. A JSON **string** is an SD-JWT-VC presentation: the consented disclosures plus a mandatory key-binding JWT over the verifier's nonce and audience. A JSON **object** is a W3C Data-Integrity VP whose proof carries the same nonce and domain. A consumer selects the verification path from the value's type rather than a separate format discriminator, so a new credential format needs no new member here. snake_case is OID4VP's own name for this field.\",\n      \"type\": [\n        \"string\",\n        \"object\"\n      ]\n    }\n  },\n  \"required\": [\n    \"vp_token\"\n  ],\n  \"title\": \"Credential Exchange Present — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
+/// The earlier `MAJOR.MINOR` of this slug that this version declares it
+/// extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+/// `None`. Only the direct declaration; walk a chain with
+/// [`crate::extension::extends_for`].
+pub const EXTENDS: Option<&str> = None;
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] =

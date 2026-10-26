@@ -689,12 +689,27 @@ where
 /// the typed form both pass through — so a proof checked over `received`
 /// covers the document the handler is given.
 fn is_received_form_of<P: Payload>(received: &Value, doc: &TrustTask<P>) -> bool {
-    match serde_json::from_value::<TrustTask<P>>(received.clone()) {
-        Ok(parsed) => match (serde_json::to_value(&parsed), serde_json::to_value(doc)) {
+    let parsed = serde_json::from_value::<TrustTask<P>>(received.clone())
+        .ok()
+        .or_else(|| {
+            // SPEC §5.2 "Declared extension": a document of a later version
+            // that extends `P`'s is consumed as `P` once its payload is pruned
+            // (`extension::read_as`, as the dispatchers do). Re-derive that
+            // reading here so such a document is recognised as the one being
+            // consumed — while the verifier is still handed `received`, the
+            // document as signed, extension members and all.
+            let untyped = serde_json::from_value::<TrustTask<Value>>(received.clone()).ok()?;
+            if !crate::extension::extension_reaches(&untyped.type_uri, &P::type_uri()) {
+                return None;
+            }
+            crate::extension::read_as::<P>(untyped).ok()
+        });
+    match parsed {
+        Some(parsed) => match (serde_json::to_value(&parsed), serde_json::to_value(doc)) {
             (Ok(a), Ok(b)) => a == b,
             _ => false,
         },
-        Err(_) => false,
+        None => false,
     }
 }
 
@@ -1474,5 +1489,109 @@ mod tests {
             matches!(outcome, ConsumeOutcome::Suppressed),
             "expected Suppressed under identity_mismatch with no transport-authenticated sender"
         );
+    }
+
+    /// A verifier that binds the proof to the exact received JSON: its
+    /// `proofValue` must be the SHA-256 of the JCS form of the document
+    /// without `proof`. Any member dropped or changed between signing and
+    /// verifying — pruning included — fails it.
+    struct DigestVerifier;
+
+    fn digest_without_proof(doc: &Value) -> String {
+        let mut unsigned = doc.clone();
+        unsigned.as_object_mut().unwrap().remove("proof");
+        crate::sha256_hex(crate::canonical_json(&unsigned).as_bytes())
+    }
+
+    #[async_trait::async_trait]
+    impl ProofVerifier for DigestVerifier {
+        async fn verify<P>(&self, doc: &TrustTask<P>) -> Result<(), VerificationError>
+        where
+            P: Serialize + Send + Sync,
+        {
+            self.verify_received(&serde_json::to_value(doc).unwrap())
+                .await
+        }
+
+        async fn verify_received(&self, received: &Value) -> Result<(), VerificationError> {
+            let claimed = received["proof"]["proofValue"].as_str().unwrap_or_default();
+            if claimed == digest_without_proof(received) {
+                Ok(())
+            } else {
+                Err(VerificationError::SignatureInvalid)
+            }
+        }
+    }
+
+    /// SPEC §5.2 "Declared extension" through the full pipeline: a signed
+    /// document of a (fictional) `acl/grant/0.9` declared to extend `0.1` is
+    /// read as `0.1` with its added members pruned, and its proof is verified
+    /// over the document **as received** — added members and all — not over
+    /// the pruned one, over which it would fail.
+    #[tokio::test]
+    async fn a_signed_extended_document_verifies_over_what_was_received() {
+        crate::extension::test_index::declare(
+            "https://trusttasks.org/spec/acl/grant/0.9",
+            Some("0.1"),
+        );
+        let mut doc = TrustTask::for_payload("req-ext", grant_payload());
+        doc.issuer = Some("did:web:org.example".into());
+        doc.recipient = Some("did:web:maintainer.example".into());
+        doc.issued_at = Some(Utc::now());
+        let mut received = serde_json::to_value(&doc).unwrap();
+        received["type"] = Value::from("https://trusttasks.org/spec/acl/grant/0.9");
+        received["payload"]["priority"] = Value::from(3);
+        received["payload"]["entry"]["note"] = Value::from("added in 0.9");
+        let mut proof = serde_json::to_value(dummy_proof()).unwrap();
+        proof["proofValue"] = Value::from(digest_without_proof(&received));
+        received["proof"] = proof;
+
+        let consume = |received: Value| async move {
+            let typed = crate::extension::read_as::<grant::Payload>(
+                serde_json::from_value(received.clone()).unwrap(),
+            )
+            .expect("0.9 reads as 0.1");
+            // The typed document is pruned, so the proof does not hold over
+            // it — which is why the verifier must never see it.
+            let typed_value = serde_json::to_value(&typed).unwrap();
+            assert_ne!(
+                typed_value["proof"]["proofValue"].as_str().unwrap(),
+                digest_without_proof(&typed_value),
+            );
+            consume_inbound::<_, _, _, _, NoValidator, _, _>(
+                &NoopHandler::new(),
+                ProofPolicy::VerifyReceived(&DigestVerifier, &received),
+                PayloadPolicy::<NoValidator>::AcceptUnvalidated,
+                ConsumeChecks::not_consequential(),
+                typed,
+                "did:web:maintainer.example",
+                Utc::now(),
+                || "err-ext".to_string(),
+                |req, _parties| async move {
+                    let entry = req.payload.entry.clone();
+                    Ok(req.respond_with("resp-ext", grant::Response { entry, ext: None }))
+                },
+            )
+            .await
+        };
+
+        match consume(received.clone()).await {
+            ConsumeOutcome::Handled(resp) => assert_eq!(
+                resp.type_uri.to_string(),
+                "https://trusttasks.org/spec/acl/grant/0.9#response"
+            ),
+            other => panic!("expected Handled, got {other:?}"),
+        }
+
+        // The verifier saw the added members: change one after signing and
+        // the proof fails, although pruning would have removed it.
+        let mut tampered = received;
+        tampered["payload"]["entry"]["note"] = Value::from("changed");
+        match consume(tampered).await {
+            ConsumeOutcome::Rejected(err) => {
+                assert_eq!(err.payload.code, StandardCode::ProofInvalid.into())
+            }
+            other => panic!("expected Rejected(proofInvalid), got {other:?}"),
+        }
     }
 }
