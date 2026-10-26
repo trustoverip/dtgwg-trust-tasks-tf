@@ -4,7 +4,7 @@
 #![allow(deprecated)]
 /// Why this specification version is deprecated (SPEC "Superseded and
 /// Withdrawn Versions"), or `None` while it is current.
-pub const DEPRECATION: Option<&str> = Some("retired; use registry/record/query/0.2");
+pub const DEPRECATION: Option<&str> = Some("retired; use registry/record/query/0.3");
 #[allow(unused_imports)]
 use serde::{Deserialize, Serialize};
 /// Error types.
@@ -181,7 +181,7 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "retired; use registry/record/query/0.2")]
+#[deprecated(note = "retired; use registry/record/query/0.3")]
 pub struct Payload {
     pub action: ::std::string::String,
     pub authority_id: ::std::string::String,
@@ -320,7 +320,7 @@ impl ::std::convert::TryFrom<::std::string::String> for RecordType {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
-#[deprecated(note = "retired; use registry/record/query/0.2")]
+#[deprecated(note = "retired; use registry/record/query/0.3")]
 pub struct Response {
     pub action: ::std::string::String,
     pub authority_id: ::std::string::String,

@@ -79,7 +79,7 @@ class TrustRecord {
 typedef Ext = Map<String, dynamic>;
 
 /// Registry Record Query — response payload
-@Deprecated('superseded by registry/record/query/0.2')
+@Deprecated('superseded by registry/record/query/0.3')
 class Response {
   const Response({
     required this.records,
@@ -117,7 +117,7 @@ class Response {
 /// Fewer parts: a filtered, cursor-paginated enumeration — fixing the pagination gap
 /// the superseded registry/record/list conceded. Key field names are verbatim TRQP
 /// (snake_case), matching the registry/* family.
-@Deprecated('superseded by registry/record/query/0.2')
+@Deprecated('superseded by registry/record/query/0.3')
 class Payload {
   const Payload({
     this.entityId,
@@ -179,7 +179,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'superseded by registry/record/query/0.2';
+const String? deprecation = 'superseded by registry/record/query/0.3';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/registry/record/query/0.1';

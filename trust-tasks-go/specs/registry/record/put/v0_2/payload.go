@@ -9,6 +9,8 @@ import (
 )
 
 // Response Registry Record Put — response payload
+//
+// Deprecated: superseded by registry/record/put/0.3
 type Response struct {
 	// Whether the record was stored.
 	OK bool `json:"ok"`
@@ -58,6 +60,8 @@ const (
 // following the vault/upsert precedent; the optional `expectedExisting` assertion
 // recovers the strict create-only / update-only semantics of the superseded
 // registry/record/create and registry/record/update tasks.
+//
+// Deprecated: superseded by registry/record/put/0.3
 type Payload struct {
 	Record TrustRecord `json:"record"`
 
@@ -84,7 +88,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by registry/record/put/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/registry/record/put/0.2#response"

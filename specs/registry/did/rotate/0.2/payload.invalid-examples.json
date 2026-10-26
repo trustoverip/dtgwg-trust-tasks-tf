@@ -1,0 +1,26 @@
+[
+  {
+    "note": "preRotationCount must be an integer, not a string.",
+    "payload": {
+      "preRotationCount": "3"
+    }
+  },
+  {
+    "note": "preRotationCount must not be negative.",
+    "payload": {
+      "preRotationCount": -1
+    }
+  },
+  {
+    "note": "label must be a string.",
+    "payload": {
+      "label": 7
+    }
+  },
+  {
+    "note": "The pre-0.2 snake_case member `pre_rotation_count` is rejected (additionalProperties: false); the member is `preRotationCount`.",
+    "payload": {
+      "pre_rotation_count": 3
+    }
+  }
+]

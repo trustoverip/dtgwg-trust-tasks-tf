@@ -1,0 +1,86 @@
+[
+  {
+    "note": "Empty payload omits the required member `record`.",
+    "payload": {}
+  },
+  {
+    "note": "record missing required members (recordType and the identifiers).",
+    "payload": {
+      "record": {
+        "entityId": "did:example:entity"
+      }
+    }
+  },
+  {
+    "note": "expectedExisting must be a boolean, not a string.",
+    "payload": {
+      "record": {
+        "entityId": "did:example:entity",
+        "authorityId": "did:example:authority",
+        "action": "issue",
+        "resource": "vc",
+        "recordType": "authorization"
+      },
+      "expectedExisting": "yes"
+    }
+  },
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "record": {
+        "entityId": "did:example:entity",
+        "authorityId": "did:example:authority",
+        "action": "issue",
+        "resource": "vc",
+        "recordType": "authorization"
+      },
+      "__notARealMember__": true
+    }
+  },
+  {
+    "note": "Response carrying the pre-0.2 `created` flag — renamed `wasCreated`, since `created` is reserved for a timestamp; additionalProperties: false rejects the old name and `wasCreated` is required.",
+    "variant": "response",
+    "payload": {
+      "ok": true,
+      "created": true
+    }
+  },
+  {
+    "note": "The pre-0.3 snake_case record members are rejected (TrustRecord additionalProperties: false); the members are `entityId`, `authorityId` and `recordType`.",
+    "payload": {
+      "record": {
+        "entity_id": "did:example:entity",
+        "authority_id": "did:example:authority",
+        "action": "issue",
+        "resource": "vc",
+        "record_type": "authorization"
+      }
+    }
+  },
+  {
+    "note": "validFrom must be an RFC 3339 date-time.",
+    "payload": {
+      "record": {
+        "entityId": "did:example:entity",
+        "authorityId": "did:example:authority",
+        "action": "issue",
+        "resource": "vc",
+        "recordType": "authorization",
+        "validFrom": "next tuesday"
+      }
+    }
+  },
+  {
+    "note": "validUntil must be a string, not Unix seconds.",
+    "payload": {
+      "record": {
+        "entityId": "did:example:entity",
+        "authorityId": "did:example:authority",
+        "action": "issue",
+        "resource": "vc",
+        "recordType": "authorization",
+        "validUntil": 1782864000
+      }
+    }
+  }
+]

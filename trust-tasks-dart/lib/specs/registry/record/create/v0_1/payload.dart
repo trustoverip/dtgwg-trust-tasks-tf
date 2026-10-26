@@ -9,7 +9,7 @@ import 'package:trust_tasks/trust_tasks.dart';
 typedef Ext = Map<String, dynamic>;
 
 /// Registry Record Create — response payload
-@Deprecated('retired; use registry/record/put/0.2')
+@Deprecated('retired; use registry/record/put/0.3')
 class Response {
   const Response({
     required this.ok,
@@ -112,7 +112,7 @@ class TrustRecord {
 /// An administrator asks a trust registry to create a new trust record (a recognition
 /// or authorization assertion). Idempotent per record key
 /// (entity+authority+action+resource); creating an existing key is an error.
-@Deprecated('retired; use registry/record/put/0.2')
+@Deprecated('retired; use registry/record/put/0.3')
 class Payload {
   const Payload({
     required this.record,
@@ -142,7 +142,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'retired; use registry/record/put/0.2';
+const String? deprecation = 'retired; use registry/record/put/0.3';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/registry/record/create/0.1';
