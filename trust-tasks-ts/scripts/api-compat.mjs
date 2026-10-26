@@ -301,6 +301,11 @@ function main(argv) {
       console.log(`ok: ${breaks.length} incompatible change(s) against ${label}, declared by the PR title's \`${SCOPE}\` scope with \`!\`:\n${list}`);
       return 0;
     }
+    const prior = alreadyBreaking(label.split("@").pop());
+    if (prior) {
+      console.log(`ok: ${breaks.length} incompatible change(s) against ${label}; a change merged since that release already makes the next one breaking (${prior}):\n${list}`);
+      return 0;
+    }
     console.log(`::error::${breaks.length} incompatible API change(s) against ${label}, and the PR title does not declare a breaking change for \`${SCOPE}\``);
     console.log(`${list}\n
 Either make the change compatible, or retitle the PR with \`feat(${SCOPE})!: …\`
@@ -310,6 +315,38 @@ See RELEASING.md.`);
   } finally {
     fs.rmSync(work, { recursive: true, force: true });
   }
+}
+
+/**
+ * Whether a commit merged since the published `version` already makes the next
+ * npm release breaking, by scripts/release-bump-ts.sh's own rule: a `!` scoped
+ * to this package (or unscoped), or a `BREAKING CHANGE` trailer, among commits
+ * touching what the package is generated from. Without it, every pull request
+ * after a declared break would fail here until the next release, because the
+ * baseline still lacks the break. Returns the deciding subject, or null. Keep it
+ * identical to the bump script's `breaking_here`.
+ */
+function alreadyBreaking(version) {
+  const SCOPES = ["ts", "ts-bindings"];
+  const tag = `trust-tasks-ts-v${version}`;
+  const base = process.env.BASE_REF || "HEAD";
+  let log;
+  try {
+    log = execFileSync("git", ["log", "--format=%s%n%b", `${tag}..${base}`, "--", "specs", "trust-tasks-ts", "scripts/build-ts-bindings.mjs"], {
+      cwd: path.join(PKG_DIR, ".."),
+      encoding: "utf8",
+      maxBuffer: 1 << 28,
+    });
+  } catch {
+    return null; // no such tag locally (a shallow clone): judge the PR on its own
+  }
+  if (/^BREAKING[ -]CHANGE/m.test(log)) return "a BREAKING CHANGE trailer";
+  for (const line of log.split("\n")) {
+    const m = /^[a-z]+(?:\(([^)]*)\))?!:/.exec(line);
+    if (!m) continue;
+    if (!m[1] || m[1].split(",").map((x) => x.trim()).some((x) => SCOPES.includes(x))) return line;
+  }
+  return null;
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

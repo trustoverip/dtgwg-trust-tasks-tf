@@ -167,6 +167,10 @@ jobs:
       pull-requests: read
     steps:
       - uses: actions/checkout@v6
+        with:
+          # History and tags: a break already declared since the published
+          # release (trust-tasks-ts-v*) lets this PR's break through.
+          fetch-depth: 0
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
@@ -188,6 +192,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_REF: ${{ github.event.pull_request.base.sha }}
         run: |
           set -euo pipefail
           PR_TITLE=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq .title)
