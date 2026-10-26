@@ -200,3 +200,23 @@ schemas against the **TypeScript** generator's `PAYLOAD_SCHEMA` /
 
 Measured on main, 2026-10-26: 1,121 bundles, 14.6 MB in total, 13.0 KB
 average, 56.8 KB largest; `index.json` 350 KB.
+
+## Open before `bundleVersion` 1 is relied on (from building milestone 1)
+
+1. **Member order.** The bundle's schema is key-sorted (it is the Rust codegen's
+   inlined schema, which passes through a sorted map). The TS, Go and Dart
+   generators read the authored order from `payload.schema.json`, so generating
+   them from bundles (milestone 3) would reorder every struct's fields —
+   harmless on the wire (proofs are over JCS) but churn in every generated file.
+   Decision for milestone 2: the bundle carries the authored order, and the
+   digest is defined over the JCS form of the bundle rather than the file bytes,
+   so content identity stays independent of formatting.
+2. **Immutability.** A `draft` may be edited in place, so the bytes at
+   `/specs/<slug>/<M.N>/bundle.json` can change while a lockfile pins the old
+   digest. Milestone 2 adds an append-only store, `/specs/by-digest/sha256-<hex>.json`,
+   never deleted by deploy, and `trust-tasks add`/`check` fetch by digest.
+3. **Index size.** ~310 bytes an entry is ~1.5 MB at 5,000 tasks; split it per
+   slug (`/specs/<slug>/index.json`) when the CLI needs it.
+4. **Resolved fields.** `supersededBy` is raw front matter (may name a bare slug);
+   resolve it to `slug/M.N` as `deprecation` already is, or drop it.
+
