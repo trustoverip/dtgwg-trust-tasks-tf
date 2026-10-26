@@ -41,21 +41,25 @@ case "$PKG" in
     # specs/** and the generator because the bindings under trust-tasks-ts/src
     # are generated from them.
     WATCH=("specs" "$PKG_DIR" "scripts/build-ts-bindings.mjs")
+    SCOPES="ts ts-bindings"
     ;;
   @openvtc/trust-tasks-proof)
     PKG_DIR="trust-tasks-ts-proof"
     TAG_PREFIX="trust-tasks-ts-proof-v"
     WATCH=("$PKG_DIR")
+    SCOPES="ts-proof"
     ;;
   @openvtc/trust-tasks-tsp)
     PKG_DIR="trust-tasks-ts-tsp"
     TAG_PREFIX="trust-tasks-ts-tsp-v"
     WATCH=("$PKG_DIR")
+    SCOPES="ts-tsp"
     ;;
   @openvtc/trust-tasks-capability-client)
     PKG_DIR="trust-tasks-ts-capability-client"
     TAG_PREFIX="trust-tasks-ts-capability-client-v"
     WATCH=("$PKG_DIR")
+    SCOPES="ts-capability-client"
     ;;
   *)
     echo "::error::unknown TS package '$PKG'"
@@ -102,7 +106,27 @@ range="$tag..HEAD"
 # failure — so a breaking change was silently scored as a patch whenever the log
 # was long enough to still be writing. It happened to #610 (`feat(persona)!`).
 log=$(git log --format='%s%n%b' "$range" -- "${WATCH[@]}")
-if grep -qE '^[a-z]+(\([^)]*\))?!:|^BREAKING[ -]CHANGE' <<<"$log"; then
+# A `!` counts only when it is scoped to THIS package (SCOPES, above) or carries
+# no scope at all, or the body has a `BREAKING CHANGE:` trailer. commit-lint
+# refuses a `!` scoped to anything but a package, but history predates that:
+# `feat(vault)!:` (#919) and `fix(codegen)!:` (#917, the Rust generator) would
+# otherwise make this package a breaking release with no API change in it.
+breaking_here() {
+  local line scopes s
+  grep -qE '^BREAKING[ -]CHANGE' <<<"$log" && return 0
+  while IFS= read -r line; do
+    [[ $line =~ ^[a-z]+(\(([^\)]*)\))?!: ]] || continue
+    scopes=${BASH_REMATCH[2]}
+    [ -z "$scopes" ] && return 0
+    IFS=',' read -ra parts <<<"$scopes"
+    for s in "${parts[@]}"; do
+      s=${s// /}
+      [[ " $SCOPES " == *" $s "* ]] && return 0
+    done
+  done <<<"$log"
+  return 1
+}
+if breaking_here; then
   level=breaking
 else
   level=patch
