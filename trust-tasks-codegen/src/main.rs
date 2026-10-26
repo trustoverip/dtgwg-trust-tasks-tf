@@ -38,7 +38,7 @@ const ALL_SPECS_FEATURE: &str = "all-specs";
 ///
 /// These are **not** feature-gated. The crate's own hand-written framework
 /// machinery depends on them unconditionally (`discovery.rs` does
-/// `use crate::specs::trust_task_discovery::v0_1 as wire;` at module scope),
+/// `use crate::specs::trust_task_discovery::v0_3 as wire_v0_3;` at module scope),
 /// so gating them would mean gating the framework surface that every consumer
 /// needs whatever families they picked. They are also 1.4% of the generated
 /// tree, so there is nothing to win by it.
