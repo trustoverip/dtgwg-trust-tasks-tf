@@ -48,6 +48,17 @@ discriminants, so a value inserted mid-list renumbers every value after it — a
 breaking change to the crates even though the wire only grew. Add a value at
 the end. CI checks this (`npm run check-enum-append-only`).
 
+**Withdrawals are the one scheduled breaking release.** A spec version
+superseded or retired for 90 days is withdrawn — dropped from all four libraries
+— in a quarterly batch: `.github/workflows/withdraw.yml` opens a pull request on
+the first day of each quarter titled `feat(rs, ts, go, dart)!: withdraw N
+specification versions …`. Merging it, then the Release PR, ships the quarter's
+removals as one MINOR of every library, announced by the deprecation notes the
+libraries have carried since each version was superseded. The batch's CI runs
+every test, so a hand-written use of a withdrawn version (a smoke test, an
+example) fails there and is moved to the successor in the same PR. The workflow
+needs `RELEASE_PLZ_TOKEN`, as the Release PR does, for its PR to trigger CI.
+
 **`spec` is ours, not the standard's**, and release-plz does not know it — an
 unrecognised type is scored as a **patch**. That is right for an in-place schema
 edit and wrong for a **new spec family**, which is additive API surface in both

@@ -134,7 +134,7 @@ export function checkMemberCasing({ specsDir, allowlistPath, fail, warn, log }) 
     }
     counts.schemas++;
     const family = familyOf(rel);
-    const retired = statusOf(file) === 'retired';
+    const retired = statusOf(file) === 'retired' || statusOf(file) === 'withdrawn';
     for (const { kind, name } of offendersIn(schema)) {
       if ((kind === 'member' ? externalMembers : externalValues).has(name)) {
         counts.external++;

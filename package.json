@@ -20,7 +20,8 @@
     "check-dart-packages": "node scripts/check-dart-packages.mjs",
     "check-bindings": "node scripts/check-bindings-conformance.mjs",
     "check-enum-append-only": "node scripts/check-enum-append-only.mjs",
-    "fix-stale-references": "node scripts/fix-stale-references.mjs"
+    "fix-stale-references": "node scripts/fix-stale-references.mjs",
+    "withdraw-due": "node scripts/withdraw-due.mjs"
   },
   "engines": {
     "node": ">=24"

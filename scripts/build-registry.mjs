@@ -606,7 +606,7 @@ function checkIssuedAtFloor(meta, rel, hasResponse) {
   const consequential = isConsequential(meta);
   if (!consequential) return { consequential, unmet: false, frozen: false };
 
-  const frozen = meta.status === 'retired';
+  const frozen = meta.status === 'retired' || meta.status === 'withdrawn';
   if (!declared.declared) return { consequential, unmet: !frozen, frozen };
 
   const variants = hasResponse ? ['request', 'response'] : ['request'];
@@ -870,7 +870,7 @@ const FREE_TEXT_MEMBER =
   /^(note|notes|reason|rationale|description|message|comment|comments|summary|justification|text|body|remark|remarks|explanation|purpose|memo|label|caption|title)$/i;
 
 function checkFreeTextBounds(meta, schema, rel) {
-  const frozen = meta.status === 'retired';
+  const frozen = meta.status === 'retired' || meta.status === 'withdrawn';
   const offenders = [];
 
   const visit = (node, seenNodes) => {
@@ -966,7 +966,7 @@ function checkErrorCodeNamespaces(meta, rel) {
       // documents stay verifiable, and `retired` is terminal, so there is no
       // conforming version increment in which to correct one. Counted, never
       // failed, on the same reasoning as the two casing lints.
-      if (meta.status === 'retired') {
+      if (meta.status === 'retired' || meta.status === 'withdrawn') {
         shadowLint.frozen++;
         shadowLint.frozenSpecs.add(rel);
         continue;
@@ -1190,7 +1190,7 @@ function twoPartAfterRule(v) {
   return maj > fMaj || (maj === fMaj && min >= fMin);
 }
 function checkTargetFrameworkForm(v, rel, status) {
-  if (twoPartAfterRule(v) && status !== 'retired') {
+  if (twoPartAfterRule(v) && status !== 'retired' && status !== 'withdrawn') {
     fail(
       rel,
       `targetFrameworkVersion "${v}" is two-part, but framework ${v} postdates the three-part rule of ` +
@@ -1531,7 +1531,7 @@ window.TT_STATS = (function () {
   for (const t of window.TT_TASKS) {
     const prev = bySlug.get(t.slug);
     if (!prev) { bySlug.set(t.slug, t); continue; }
-    const pr = prev.status === 'retired', tr = t.status === 'retired';
+    const pr = prev.status === 'retired' || prev.status === 'withdrawn', tr = t.status === 'retired' || t.status === 'withdrawn';
     if (pr !== tr) { if (pr) bySlug.set(t.slug, t); continue; }
     if (cmpVer(t.version, prev.version) > 0) bySlug.set(t.slug, t);
   }
@@ -2094,12 +2094,12 @@ function main() {
       continue;
     }
     // Friendlier targeted checks the JSON-Schema if/then/else can't phrase well:
-    if (meta.supersededBy && meta.status !== 'retired') {
-      fail(`${rel}/spec.md`, `supersededBy is only permitted when status is 'retired' (got status: '${meta.status}'). See SPEC §7.3 item 11.`);
+    if (meta.supersededBy && meta.status !== 'retired' && meta.status !== 'withdrawn') {
+      fail(`${rel}/spec.md`, `supersededBy is only permitted when status is 'retired' or 'withdrawn' (got status: '${meta.status}'). See SPEC §7.3 item 11.`);
       continue;
     }
-    if (meta.status === 'retired' && !meta.supersededBy) {
-      warn(`${rel}/spec.md: status is 'retired' but no supersededBy declared — SPEC §7.3 item 11 RECOMMENDS one`);
+    if ((meta.status === 'retired' || meta.status === 'withdrawn') && !meta.supersededBy) {
+      warn(`${rel}/spec.md: status is '${meta.status}' but no supersededBy declared — SPEC §7.3 item 11 RECOMMENDS one`);
     }
     checkTargetFrameworkForm(meta.targetFrameworkVersion, `${rel}/spec.md`, meta.status);
     checkErrorCodeNamespaces(meta, rel);

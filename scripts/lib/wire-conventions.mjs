@@ -211,7 +211,7 @@ export function checkWireConventions({ specsDir, allowlistPath, fail, warn, log 
   const counts = { specs: 0, retired: 0, excepted: 0, offending: 0 };
 
   for (const { slug, version, dir } of latestSpecs(specsDir)) {
-    if (statusOf(dir) === 'retired') {
+    if (statusOf(dir) === 'retired' || statusOf(dir) === 'withdrawn') {
       counts.retired++;
       continue;
     }
