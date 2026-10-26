@@ -176,6 +176,37 @@ function apitoolPackages() {
 }
 
 // ── Main ───────────────────────────────────────────────────────────────────
+/**
+ * Whether a commit merged since the published `version` already makes the next
+ * release breaking, by scripts/release-bump-dart.sh's own rule: a `!` scoped to
+ * this package (or unscoped), or a `BREAKING CHANGE` trailer, among commits
+ * touching what the package is generated from. Without it, every pull request
+ * after a declared break would fail until the next release, because pub.dev
+ * still has the old API. Returns the deciding subject, or null. Keep it identical
+ * to the bump script's `breaking_here`.
+ */
+function alreadyBreaking(version) {
+  const SCOPES = ["dart", "dart-bindings"];
+  const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+  let log;
+  try {
+    log = execFileSync(
+      "git",
+      ["log", "--format=%s%n%b", `trust-tasks-dart-v${version}..${process.env.BASE_REF || "HEAD"}`, "--", "specs", "trust-tasks-dart", "scripts/build-dart-bindings.mjs"],
+      { cwd: root, encoding: "utf8", maxBuffer: 1 << 28 },
+    );
+  } catch {
+    return null; // no such tag locally (a shallow clone): judge the PR on its own
+  }
+  if (/^BREAKING[ -]CHANGE/m.test(log)) return "a BREAKING CHANGE trailer";
+  for (const line of log.split("\n")) {
+    const m = /^[a-z]+(?:\(([^)]*)\))?!:/.exec(line);
+    if (!m) continue;
+    if (!m[1] || m[1].split(",").map((x) => x.trim()).some((x) => SCOPES.includes(x))) return line;
+  }
+  return null;
+}
+
 async function main() {
   const declared = declaresBreak(process.env.PR_TITLE ?? "", SCOPE);
   const packages = apitoolPackages();
@@ -235,6 +266,11 @@ async function main() {
 
   if (declared) {
     console.log(`ok: ${n} to ${PACKAGE} since ${oldVersion}, declared by the title's \`!\` (${SCOPE}):\n${list}`);
+    return 0;
+  }
+  const prior = alreadyBreaking(oldVersion);
+  if (prior) {
+    console.log(`ok: ${n} to ${PACKAGE} since ${oldVersion}; a change merged since that release already makes the next one breaking (${prior}):\n${list}`);
     return 0;
   }
   console.log(`::error::${n} to ${PACKAGE}'s public API since ${oldVersion}, and the PR title does not declare one.`);

@@ -150,6 +150,10 @@ jobs:
       pull-requests: read
     steps:
       - uses: actions/checkout@v6
+        with:
+          # History and tags: a break already declared since the published
+          # release (trust-tasks-dart-v*) lets this PR's break through.
+          fetch-depth: 0
       - uses: actions/setup-node@v6
         with:
           node-version: "24"
@@ -170,6 +174,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           EVENT_TITLE: ${{ github.event.pull_request.title }}
+          BASE_REF: ${{ github.event.pull_request.base.sha }}
         run: |
           PR_TITLE=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq .title) || PR_TITLE=$EVENT_TITLE
           export PR_TITLE
