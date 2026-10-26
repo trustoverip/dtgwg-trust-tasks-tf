@@ -35,18 +35,26 @@ Types: `feat` `fix` `docs` `test` `ci` `build` `perf` `refactor` `chore`
 `security` `spec` `site` `revert`. (`site` is a change to the registry website
 under `website/`; it reaches no published package.)
 
-**`!` is for a package's API, not for wire behaviour.** All eight core crates
-release as one group, so one `!` makes every one of them a breaking release.
+**`!` is for a package's API, not for wire behaviour — and CI enforces it.**
+All eight core crates release as one group, and the npm, Go and Dart bump
+scripts read the same `!`, so one `!` makes every package a breaking release.
 Write it only when a library's public API breaks — a removed or renamed type,
-member or function, a changed signature. A change to what a task means on the
-wire (a new refusal, a tightened rule) that leaves the generated types as they
-were is versioned by the specification — a new task version where consumers
-must tell the two apart — and its title carries no `!`.
+member or function, a changed signature — and scope it to the package
+(`feat(rs)!:`, `fix(codegen)!:`, `feat(go-didcomm)!:`). The commit-lint job
+refuses a `!` whose scope is not a package. A specification change never needs
+one: before this was enforced, 22 titles carried a `!` for a spec change, and
+#858's cost every package a MINOR although no library API changed at all.
 
-**Enum values are append-only.** A generated Rust enum has implicit
-discriminants, so a value inserted mid-list renumbers every value after it — a
-breaking change to the crates even though the wire only grew. Add a value at
-the end. CI checks this (`npm run check-enum-append-only`).
+**A released specification changes only additively.** A released version is
+compiled into every library, so an in-place edit that changes its generated
+types breaks all of them. In place it may only gain an optional member, an
+appended enum value (never one inserted mid-list — that renumbers every
+generated Rust variant after it), an appended `oneOf`/`anyOf` branch, a loosened
+bound, a new `$defs` entry, or a description; `proofRequirement` may not change
+and declared `errorCodes` may only grow. Anything else goes in a new version
+folder, which is a new module — an additive patch for every library. CI compares
+each changed spec against the last release (`npm run check-published-schemas`);
+a version merged since the last release can still be fixed in place.
 
 **Withdrawals are the one scheduled breaking release.** A spec version
 superseded or retired for 90 days is withdrawn — dropped from all four libraries

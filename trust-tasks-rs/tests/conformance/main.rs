@@ -1370,6 +1370,7 @@ mod vault {
         }
         mod get {
             mod v0_1;
+            mod v0_2;
         }
         mod present {
             mod v0_1;
