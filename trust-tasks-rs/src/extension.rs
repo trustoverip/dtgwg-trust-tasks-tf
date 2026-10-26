@@ -61,8 +61,9 @@ const MAX_DEPTH: usize = 128;
 /// The `MAJOR.MINOR` the specification behind `type_uri` declares it extends
 /// (front matter `extends`, SPEC §5.2 "Declared extension"), or `None`.
 ///
-/// Pass the bare request Type URI on the canonical `https://trusttasks.org`
-/// authority, as the other per-Type-URI lookups take it. Only the direct
+/// Pass the bare request Type URI, whole — the registry's, or any other
+/// authority's (SPEC §6.5): the tables are keyed by the full string, so the
+/// same slug under two authorities has two independent entries. Only the direct
 /// declaration: `x/0.3` extending `0.2` answers `Some("0.2")` even when `0.2`
 /// itself extends `0.1` — walk the chain by asking again, or use
 /// [`extension_reaches`].
@@ -160,13 +161,14 @@ fn parse_major_minor(v: &str) -> Option<(u32, u32)> {
 /// the case in which SPEC §5.2 asks a consumer of `implemented` to accept a
 /// `received` document.
 ///
-/// Same slug, same variant (`#request` and no fragment are one variant), and a
-/// chain of `extends` declarations from `received` down to `implemented`'s
-/// `MAJOR.MINOR`. `false` for the identical version: that is not an extension,
-/// it is the version itself.
+/// Same authority and slug, same variant (`#request` and no fragment are one
+/// variant), and a chain of `extends` declarations from `received` down to
+/// `implemented`'s `MAJOR.MINOR`. `false` for the identical version: that is
+/// not an extension, it is the version itself.
 pub fn extension_reaches(received: &TypeUri, implemented: &TypeUri) -> bool {
     let target = implemented.for_routing();
-    received.slug() == implemented.slug() && chain(&received.for_routing()).contains(&target)
+    received.specification_key() == implemented.specification_key()
+        && chain(&received.for_routing()).contains(&target)
 }
 
 /// Read `doc` as a document of the version `P` implements.
@@ -179,8 +181,10 @@ pub fn extension_reaches(received: &TypeUri, implemented: &TypeUri) -> bool {
 ///   ([`prune_payload`]) and then deserialized. The document keeps the `type`
 ///   it arrived with, so [`TrustTask::respond_with`] answers the received
 ///   version.
-/// * Otherwise [`RejectReason::UnsupportedVersion`] for the same slug, and
-///   [`RejectReason::UnsupportedType`] for another.
+/// * Otherwise [`RejectReason::UnsupportedVersion`] for the same slug under
+///   the same authority, and [`RejectReason::UnsupportedType`] for another —
+///   including the same slug under another authority, which is another
+///   specification (SPEC §6.1).
 ///
 /// A payload that does not deserialize into `P` — after pruning, in the
 /// forward case — is [`RejectReason::MalformedRequest`].
@@ -198,7 +202,7 @@ pub fn read_as<P: Payload>(doc: TrustTask<Value>) -> Result<TrustTask<P>, Reject
         return forward::<P>(doc, P::PAYLOAD_SCHEMA);
     }
     let type_uri = received.to_string();
-    if doc.type_uri.slug() == implemented.slug() {
+    if doc.type_uri.specification_key() == implemented.specification_key() {
         Err(RejectReason::UnsupportedVersion { type_uri })
     } else {
         Err(RejectReason::UnsupportedType { type_uri })

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tasks.acme.example/spec/payments/settle/1.0",
+  "title": "Payments Settle 1.0 — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["amount", "reference"],
+  "properties": {
+    "reference": { "type": "string", "minLength": 1 },
+    "amount": { "$ref": "../../_shared/1.0/money.schema.json#/$defs/Money" },
+    "ext": { "$ref": "https://trusttasks.org/specs/_framework/0.4/framework.schema.json#/$defs/Ext" }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["settled"],
+      "properties": {
+        "settled": { "type": "boolean" }
+      }
+    }
+  }
+}

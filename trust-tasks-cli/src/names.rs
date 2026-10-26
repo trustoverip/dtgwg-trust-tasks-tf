@@ -1,4 +1,5 @@
-//! Slugs, versions, digests — the identifiers every file in a project names.
+//! Slugs, versions, digests, task identifiers — the identifiers every file in
+//! a project names.
 
 use std::cmp::Ordering;
 use std::fmt;
@@ -68,6 +69,65 @@ pub fn check_slug(slug: &str) -> Result<()> {
     Ok(())
 }
 
+/// Validates a source name, as `[sources.<name>]` and `<name>:<slug>` write it:
+/// `[a-z][a-z0-9]*(-[a-z0-9]+)*`.
+pub fn check_source_name(name: &str) -> Result<()> {
+    if !trust_tasks_build::is_source_name(name) {
+        bail!(
+            "`{name}` is not a source name (lowercase letters, digits and single hyphens, starting with a letter, e.g. `acme` or `acme-payments`)"
+        );
+    }
+    Ok(())
+}
+
+/// Which task: a slug from the official registry, or `<source>:<slug>` from a
+/// third-party source named in `[sources]`.
+///
+/// Ordered official first, then by source name, then slug — the lockfile's
+/// order.
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct TaskId {
+    pub source: Option<String>,
+    pub slug: String,
+}
+
+impl TaskId {
+    pub fn new(source: Option<&str>, slug: &str) -> TaskId {
+        TaskId {
+            source: source.map(str::to_string),
+            slug: slug.to_string(),
+        }
+    }
+
+    /// Parses `<slug>` or `<source>:<slug>`.
+    pub fn parse(s: &str) -> Result<TaskId> {
+        let id = match s.split_once(':') {
+            Some((source, slug)) => {
+                check_source_name(source)?;
+                TaskId::new(Some(source), slug)
+            }
+            None => TaskId::new(None, s),
+        };
+        check_slug(&id.slug)?;
+        if id.source.is_some() && trust_tasks_build::is_reserved_slug(&id.slug) {
+            bail!(
+                "`{id}`: `{}` is a framework slug — SPEC §6.1 reserves trust-task* and trust-ceremony* on every authority, so no source may serve one (SPEC §6.5 item 2)",
+                id.slug
+            );
+        }
+        Ok(id)
+    }
+}
+
+impl fmt::Display for TaskId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.source {
+            Some(source) => write!(f, "{source}:{}", self.slug),
+            None => f.write_str(&self.slug),
+        }
+    }
+}
+
 /// What a command-line task argument asks for.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Requested {
@@ -79,8 +139,8 @@ pub enum Requested {
     Exact(Version),
 }
 
-/// Parses `<slug>[/<M.N>|@latest|@<M.N>]`.
-pub fn parse_task_arg(arg: &str) -> Result<(String, Requested)> {
+/// Parses `[<source>:]<slug>[/<M.N>|@latest|@<M.N>]`.
+pub fn parse_task_arg(arg: &str) -> Result<(TaskId, Requested)> {
     let (slug, req) = if let Some((slug, at)) = arg.split_once('@') {
         if at == "latest" {
             (slug.to_string(), Requested::Latest)
@@ -97,8 +157,7 @@ pub fn parse_task_arg(arg: &str) -> Result<(String, Requested)> {
     } else {
         (arg.to_string(), Requested::Bare)
     };
-    check_slug(&slug)?;
-    Ok((slug, req))
+    Ok((TaskId::parse(&slug)?, req))
 }
 
 /// `sha256:<hex>` of `bytes` — the digest form of the index and the lockfile.
@@ -147,27 +206,62 @@ mod tests {
         assert!(Version::parse("+1.2").is_none());
     }
 
+    fn official(slug: &str) -> TaskId {
+        TaskId::new(None, slug)
+    }
+
     #[test]
     fn task_args() {
         assert_eq!(
             parse_task_arg("vault/upsert/0.4").unwrap(),
             (
-                "vault/upsert".into(),
+                official("vault/upsert"),
                 Requested::Exact(Version::parse("0.4").unwrap())
             )
         );
         assert_eq!(
             parse_task_arg("vault/upsert@latest").unwrap(),
-            ("vault/upsert".into(), Requested::Latest)
+            (official("vault/upsert"), Requested::Latest)
         );
         assert_eq!(
             parse_task_arg("vault/upsert").unwrap(),
-            ("vault/upsert".into(), Requested::Bare)
+            (official("vault/upsert"), Requested::Bare)
         );
         assert_eq!(
             parse_task_arg("trust-task-discovery").unwrap(),
-            ("trust-task-discovery".into(), Requested::Bare)
+            (official("trust-task-discovery"), Requested::Bare)
         );
+        assert_eq!(
+            parse_task_arg("acme:payments/settle/1.0").unwrap(),
+            (
+                TaskId::new(Some("acme"), "payments/settle"),
+                Requested::Exact(Version::parse("1.0").unwrap())
+            )
+        );
+        assert_eq!(
+            parse_task_arg("acme-pay:payments/settle@latest").unwrap(),
+            (
+                TaskId::new(Some("acme-pay"), "payments/settle"),
+                Requested::Latest
+            )
+        );
+        assert_eq!(
+            TaskId::new(Some("acme"), "a/b").to_string(),
+            "acme:a/b".to_string()
+        );
+        // Official first, then by source, then slug.
+        let mut ids = [
+            TaskId::new(Some("b"), "a"),
+            TaskId::new(Some("a"), "z"),
+            official("z"),
+        ];
+        ids.sort();
+        assert_eq!(ids[0], official("z"));
+        assert_eq!(ids[1], TaskId::new(Some("a"), "z"));
+        assert!(parse_task_arg("Acme:payments/settle").is_err());
+        assert!(parse_task_arg("acme_x:payments/settle").is_err());
+        assert!(parse_task_arg("acme:trust-task-ok").is_err());
+        assert!(parse_task_arg("acme:").is_err());
         assert!(parse_task_arg("../etc/passwd").is_err());
         assert!(parse_task_arg("Vault/Upsert").is_err());
         assert!(parse_task_arg("vault/upsert@next").is_err());

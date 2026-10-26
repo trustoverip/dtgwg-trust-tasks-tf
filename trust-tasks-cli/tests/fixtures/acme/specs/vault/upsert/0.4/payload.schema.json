@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tasks.acme.example/spec/vault/upsert/0.4",
+  "title": "acme Vault Upsert 0.4 — payload",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["key"],
+  "properties": {
+    "key": { "type": "string" }
+  }
+}

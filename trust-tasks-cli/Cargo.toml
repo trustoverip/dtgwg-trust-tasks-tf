@@ -25,6 +25,11 @@ doc = false
 
 [dependencies]
 anyhow = "1"
+# The identity rules a lock is held to (shared with generation, so a lock this
+# CLI writes is one the generator accepts) and, with `publish`, the bundle
+# builder behind `trust-tasks registry build` — the one the official registry
+# is built with.
+trust-tasks-build = { path = "../trust-tasks-build", version = "0.1", features = ["publish"] }
 clap = { version = "4", features = ["derive", "env"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -40,3 +45,7 @@ ureq = { version = "3", default-features = false, features = ["rustls", "gzip"] 
 
 [dev-dependencies]
 tempfile = "3"
+# A mock https source for tests/sources.rs: a CA and a certificate it issues,
+# served with rustls on ring (the provider ureq already uses).
+rcgen = "0.14"
+rustls = { version = "0.23", default-features = false, features = ["ring", "std"] }

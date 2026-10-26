@@ -14,14 +14,13 @@ path = "src/main.rs"
 
 [dependencies]
 # The per-module generator: the same code an application's build.rs runs on a
-# vendored bundle. Path-only, because this crate is never published.
-trust-tasks-build = { path = "../trust-tasks-build" }
+# vendored bundle; and, with `publish`, the bundle builder (front matter,
+# `$ref` inlining, lifecycles) that `trust-tasks registry build` shares.
+# Path-only, because this crate is never published.
+trust-tasks-build = { path = "../trust-tasks-build", features = ["publish"] }
 anyhow = "1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-# Safe-Rust YAML parser. serde_yaml (deprecated) pulls unsafe-libyaml,
-# which is unmaintained (RUSTSEC-2024-0449) and fails `cargo deny`.
-serde-saphyr = "1"
 toml = "1"
 typify = "0.6"
 # Pinned to 0.8 by `typify`: this crate hands typify a `schemars::RootSchema`,
@@ -34,6 +33,6 @@ syn = { version = "2", features = ["full", "visit-mut"] }
 proc-macro2 = "1"
 quote = "1"
 heck = "0.5"
+
+[dev-dependencies]
 walkdir = "2"
-# Content addresses of the registry bundles (`--bundles`).
-sha2 = "0.10"

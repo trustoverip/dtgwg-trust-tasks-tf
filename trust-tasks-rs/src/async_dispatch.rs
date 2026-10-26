@@ -103,7 +103,8 @@ pub struct AsyncDispatcher<Ctx, R> {
     /// Slugs (version-independent) of every registered handler, so an
     /// inbound document whose slug is known but whose `MAJOR.MINOR` is not
     /// registered is `unsupportedVersion` rather than `unsupportedType`
-    /// (SPEC §5.2 / §8.3).
+    /// (SPEC §5.2 / §8.3). Keyed by authority as well as slug, as
+    /// [`crate::Dispatcher`]'s is.
     slugs: HashSet<String>,
     /// The payload schema of each registered handler's `P`, under the same
     /// key, for pruning a forward-routed document (SPEC §5.2).
@@ -176,7 +177,7 @@ impl<Ctx, R> AsyncDispatcher<Ctx, R> {
             let fut = handler(typed, ctx);
             Box::pin(async move { Ok(fut.await) })
         };
-        self.slugs.insert(P::type_uri().slug().to_string());
+        self.slugs.insert(P::type_uri().specification_key());
         self.schemas
             .insert(canonical_key(&P::type_uri()), P::PAYLOAD_SCHEMA);
         self.handlers
@@ -217,7 +218,7 @@ impl<Ctx, R> AsyncDispatcher<Ctx, R> {
         // `MAJOR.MINOR` is `unsupportedVersion` — unless the version declares
         // an extension of one that is registered; an unrecognized slug is
         // `unsupportedType`.
-        if !self.slugs.contains(doc.type_uri.slug()) {
+        if !self.slugs.contains(&doc.type_uri.specification_key()) {
             return Err(RejectReason::UnsupportedType { type_uri: key });
         }
         match forward_target(&doc.type_uri, &self.handlers) {

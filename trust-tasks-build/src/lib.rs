@@ -32,6 +32,19 @@
 //! `trust_tasks_rs::Payload` impls with the version's policy constants,
 //! `EXTENDS`, `DEPRECATION` and `ERROR_CODES`.
 //!
+//! # Third-party sources
+//!
+//! A lockfile may also pin specifications from a third-party source — a
+//! specification under another authority than `https://trusttasks.org` (SPEC
+//! §6.5), vendored at `trust-tasks/@<source>/<slug>/<M.N>.bundle.json`. Each
+//! source's tasks sit under a top-level module named for it, so the source
+//! `acme`'s `payments/settle` 1.0 is `tasks::acme::payments::settle::v1_0`,
+//! beside the registry's families. Identity is always the bundle's Type URI,
+//! so a sourced `vault/get` and the registry's `vault/get` are different types
+//! with different `TYPE_URI`s, and never route into each other. A source named
+//! like an official family in the same lock is refused, as is a sourced bundle
+//! claiming the registry's authority, or one with a framework slug.
+//!
 //! # Dependencies of the generated code
 //!
 //! The generated code names the runtime as `::trust_tasks_rs`, and serde,
@@ -61,7 +74,10 @@ mod bundle;
 mod error_codes;
 mod generate;
 mod lock;
+mod names;
 mod passes;
+#[cfg(feature = "publish")]
+pub mod publish;
 mod render;
 
 use std::fmt;
@@ -71,7 +87,11 @@ use std::path::{Path, PathBuf};
 pub use bundle::{Bundle, PerVariant, Policy, BUNDLE_VERSION};
 pub use error_codes::ErrorCodeDecl;
 pub use generate::{generate_locked, generate_module, Generated, Target};
-pub use lock::{sha256_digest, LockedTask, Lockfile, LOCK_VERSION};
+pub use lock::{sha256_digest, LockedSource, LockedTask, Lockfile, LOCK_VERSION};
+pub use names::{
+    is_official_type_uri, is_reserved_slug, is_source_name, is_spec_slug, is_spec_version,
+    official_type_uri, type_uri_parts, OFFICIAL_AUTHORITY,
+};
 
 /// Reads front-matter `errorCodes` for the repository's own codegen. Not a
 /// stable API.
@@ -389,6 +409,136 @@ mod tests {
             .to_string();
         assert!(err.contains("part of the runtime"), "{err}");
         fs::remove_dir_all(&dir).ok();
+    }
+
+    /// The demo bundle re-issued under another Type URI, as a third-party
+    /// source would publish its own `demo/thing` 0.2.
+    fn bundle_at(type_uri: &str) -> Vec<u8> {
+        let mut v: serde_json::Value = serde_json::from_slice(&demo_bundle()).unwrap();
+        v["typeUri"] = json!(type_uri);
+        serde_json::to_vec(&v).unwrap()
+    }
+
+    /// A lock pinning the registry's `demo/thing` 0.2 and `source`'s
+    /// `demo/thing` 0.2 at `sourced_uri`, both vendored.
+    fn two_authorities(dir: &Path, source: &str, sourced_uri: &str) -> PathBuf {
+        let official = demo_bundle();
+        vendor(dir, "demo/thing", "0.2", &official);
+        let sourced = bundle_at(sourced_uri);
+        vendor(dir, &format!("@{source}/demo/thing"), "0.2", &sourced);
+        let lock = dir.join("trust-tasks.lock");
+        fs::write(
+            &lock,
+            format!(
+                "version = 1\nregistry = \"https://trusttasks.org\"\n\n\
+                 [sources.{source}]\nurl = \"https://tasks.example.com\"\n\n\
+                 [[task]]\nslug = \"demo/thing\"\nversion = \"0.2\"\n\
+                 type_uri = \"https://trusttasks.org/spec/demo/thing/0.2\"\ndigest = \"{}\"\n\n\
+                 [[task]]\nsource = \"{source}\"\nslug = \"demo/thing\"\nversion = \"0.2\"\n\
+                 type_uri = \"{sourced_uri}\"\ndigest = \"{}\"\n",
+                sha256_digest(&official),
+                sha256_digest(&sourced)
+            ),
+        )
+        .unwrap();
+        lock
+    }
+
+    #[test]
+    fn one_slug_from_two_authorities_is_two_specifications() {
+        let dir = scratch("two-authorities");
+        let acme = "https://tasks.example.com/spec/demo/thing/0.2";
+        let lock = two_authorities(&dir, "acme", acme);
+        let generated = Config::new().lockfile(&lock).generate().unwrap();
+        let source = &generated.source;
+        syn::parse_file(source).expect("the generated file parses");
+        assert!(source.contains("pub mod demo {\npub mod thing {\npub mod v0_2 {"));
+        assert!(source.contains("pub mod acme {\npub mod demo {\npub mod thing {\npub mod v0_2 {"));
+        assert!(source.contains(
+            "const TYPE_URI: &'static str = \"https://trusttasks.org/spec/demo/thing/0.2\";"
+        ));
+        assert!(source.contains(&format!("const TYPE_URI: &'static str = \"{acme}\";")));
+        assert!(source.contains(&format!(
+            "const TYPE_URI: &'static str = \"{acme}#response\";"
+        )));
+        // The extends table is keyed by the whole Type URI, so the two chains
+        // never meet.
+        assert!(source.contains("(\"https://trusttasks.org/spec/demo/thing/0.2\", \"0.1\")"));
+        assert!(source.contains(&format!("({acme:?}, \"0.1\")")));
+        assert!(generated
+            .inputs
+            .iter()
+            .any(|p| p.ends_with("trust-tasks/@acme/demo/thing/0.2.bundle.json")));
+
+        // Every SPEC §6.1 form generates.
+        for uri in [
+            "urn:example:tasks:spec:demo:thing:0.2",
+            "did:web:tasks.example.com/spec/demo/thing/0.2",
+        ] {
+            let dir = scratch("forms");
+            let lock = two_authorities(&dir, "acme", uri);
+            let source = Config::new().lockfile(&lock).generate().unwrap().source;
+            assert!(
+                source.contains(&format!("const TYPE_URI: &'static str = {uri:?};")),
+                "{uri}"
+            );
+            fs::remove_dir_all(&dir).ok();
+        }
+        fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn sourced_tasks_are_held_to_the_authority_rules() {
+        let err = |source: &str, uri: &str| {
+            let dir = scratch("authority");
+            let lock = two_authorities(&dir, source, uri);
+            let e = Config::new()
+                .lockfile(&lock)
+                .generate()
+                .unwrap_err()
+                .to_string();
+            fs::remove_dir_all(&dir).ok();
+            e
+        };
+        let acme = "https://tasks.example.com/spec/demo/thing/0.2";
+        // A source claiming the registry's authority (SPEC §6.5 item 1) — which
+        // here is also one Type URI pinned twice.
+        let e = err("acme", "https://trusttasks.org/spec/demo/thing/0.2");
+        assert!(e.contains("one Type URI names one specification"), "{e}");
+        let e = err("acme", "https://TrustTasks.org/spec/demo/thing/0.2");
+        assert!(e.contains("claims the registry's authority"), "{e}");
+        // A source named for an official family.
+        let e = err("demo", acme);
+        assert!(e.contains("share one generated namespace"), "{e}");
+        // A source whose name is no Rust module name.
+        let e = err("type", acme);
+        assert!(e.contains("is not a Rust module name"), "{e}");
+        // A Type URI naming another slug.
+        let e = err("acme", "https://tasks.example.com/spec/demo/other/0.2");
+        assert!(e.contains("names demo/other 0.2"), "{e}");
+        // http (SPEC §6.1).
+        let e = err("acme", "http://tasks.example.com/spec/demo/thing/0.2");
+        assert!(e.contains("is not a SPEC §6.1 Type URI"), "{e}");
+
+        // A framework slug from a source (SPEC §6.5 item 2).
+        let lock = "version = 1\n[sources.acme]\npath = \"x\"\n[[task]]\nsource = \"acme\"\n\
+             slug = \"trust-task-ok\"\nversion = \"0.1\"\n\
+             type_uri = \"https://tasks.example.com/spec/trust-task-ok/0.1\"\ndigest = \"sha256:00\"\n";
+        let e = Lockfile::parse(lock).unwrap_err().to_string();
+        assert!(e.contains("which no source may serve"), "{e}");
+        // An official entry under another authority.
+        let lock = "version = 1\n[[task]]\nslug = \"a\"\nversion = \"0.1\"\n\
+                    type_uri = \"https://tasks.example.com/spec/a/0.1\"\ndigest = \"sha256:00\"\n";
+        let e = Lockfile::parse(lock).unwrap_err().to_string();
+        assert!(
+            e.contains("an official task's Type URI is https://trusttasks.org/spec/a/0.1"),
+            "{e}"
+        );
+        // A sourced entry with no [sources.*] table.
+        let lock = "version = 1\n[[task]]\nsource = \"acme\"\nslug = \"a\"\nversion = \"0.1\"\n\
+                    type_uri = \"https://tasks.example.com/spec/a/0.1\"\ndigest = \"sha256:00\"\n";
+        let e = Lockfile::parse(lock).unwrap_err().to_string();
+        assert!(e.contains("no [sources.acme]"), "{e}");
     }
 
     #[test]

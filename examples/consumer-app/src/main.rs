@@ -1,9 +1,17 @@
-//! An application that speaks three Trust Tasks and compiles only those.
+//! An application that speaks four Trust Tasks and compiles only those.
 //!
-//! `trust-tasks.lock` pins `acl/grant/0.2`, `keys/list/0.2` and `vault/get/0.3`;
-//! their registry bundles are vendored under `trust-tasks/`. `build.rs` runs
-//! `trust-tasks-build`, which checks each bundle against its locked digest and
-//! writes their Rust types to `$OUT_DIR`, included below as `tasks`. The
+//! `trust-tasks.lock` pins `acl/grant/0.2`, `keys/list/0.2` and `vault/get/0.3`
+//! from the registry, and `acme:vault/get/0.3` from a third-party source —
+//! acme's registry, `[sources.acme]` in `trust-tasks.toml`, here the fixture
+//! under `fixture-registry/`. acme's `vault/get` 0.3 has the registry's slug
+//! and version and is a different specification: a slug is unique only within
+//! its authority (SPEC §6.1), and its Type URI is
+//! `https://tasks.example.com/spec/vault/get/0.3`.
+//!
+//! The bundles are vendored under `trust-tasks/` (acme's under
+//! `trust-tasks/@acme/`). `build.rs` runs `trust-tasks-build`, which checks
+//! each bundle against its locked digest and writes their Rust types to
+//! `$OUT_DIR`, included below as `tasks` — acme's under `tasks::acme`. The
 //! application depends on `trust-tasks-rs` with `default-features = false`, so
 //! none of the registry's prebuilt specification modules is compiled.
 //!
@@ -25,6 +33,7 @@ mod tasks {
 }
 
 use tasks::acl::grant::v0_2 as grant;
+use tasks::acme::vault::get::v0_3 as acme_vault_get;
 use tasks::keys::list::v0_2 as keys_list;
 use tasks::vault::get::v0_3 as vault_get;
 
@@ -54,6 +63,15 @@ fn main() -> Result<(), Error> {
     const { assert!(grant::Payload::IS_PROOF_REQUIRED) };
     const { assert!(!keys_list::Payload::IS_PROOF_REQUIRED) };
     assert_eq!(vault_get::error_codes::NOT_FOUND.code, "vault/get:notFound");
+    // One slug and version, two authorities, two specifications.
+    assert_eq!(
+        acme_vault_get::Payload::TYPE_URI,
+        "https://tasks.example.com/spec/vault/get/0.3"
+    );
+    assert_ne!(
+        acme_vault_get::Payload::TYPE_URI,
+        vault_get::Payload::TYPE_URI
+    );
 
     let consumer = consumer();
 
@@ -133,7 +151,43 @@ fn main() -> Result<(), Error> {
     );
     assert_eq!(reply["payload"]["code"], "unsupportedType");
 
-    println!("round trip ok: 3 generated tasks, nothing else compiled");
+    // 5. acme's vault/get — the same slug and version as (2), under acme's
+    //    authority: routed to its own handler by its whole Type URI, and
+    //    answered; never to the registry's vault/get handler.
+    let mut request: TrustTask<acme_vault_get::Payload> = TrustTask::for_payload(
+        "urn:uuid:00000000-0000-4000-8000-000000000005",
+        acme_vault_get::Payload::builder()
+            .path("/payments/endpoint")
+            .try_into()?,
+    );
+    request.issuer = Some(PRODUCER.into());
+    request.recipient = Some(CONSUMER.into());
+    let reply = round_trip(&consumer, serde_json::to_string(&request)?)?;
+    println!("acme:vault/get → {}", reply["type"]);
+    assert_eq!(
+        reply["type"],
+        "https://tasks.example.com/spec/vault/get/0.3#response"
+    );
+    let response: TrustTask<acme_vault_get::Response> = serde_json::from_value(reply)?;
+    assert_eq!(response.payload.value, "https://payments.acme.example");
+
+    // 6. A registry vault/get payload sent under acme's Type URI is acme's to
+    //    judge — malformed for acme's schema — not quietly the registry's.
+    let crossed = serde_json::json!({
+        "id": "urn:uuid:00000000-0000-4000-8000-000000000006",
+        "type": "https://tasks.example.com/spec/vault/get/0.3",
+        "issuer": PRODUCER,
+        "recipient": CONSUMER,
+        "payload": { "id": "entry-42" }
+    });
+    let reply = round_trip(&consumer, crossed.to_string())?;
+    println!(
+        "acme:vault/get (registry payload) → code={}",
+        reply["payload"]["code"]
+    );
+    assert_eq!(reply["payload"]["code"], "malformedRequest");
+
+    println!("round trip ok: 4 generated tasks from two authorities, nothing else compiled");
     Ok(())
 }
 
@@ -167,6 +221,18 @@ fn consumer() -> Dispatcher<Value> {
             }
             println!("  [consumer] vault/get id={}", *doc.payload.id);
             json!(&doc.reject_with("urn:uuid:reply-vault", vault_get::error_codes::NOT_FOUND))
+        })
+        .on::<acme_vault_get::Payload, _>(|doc| {
+            if let Err(reason) = doc.enforce_spec_policy() {
+                return json!(&doc.reject_with("urn:uuid:reply-acme", reason));
+            }
+            println!("  [consumer] acme:vault/get path={}", *doc.payload.path);
+            let response: acme_vault_get::Response = acme_vault_get::Response::builder()
+                .path(doc.payload.path.to_string())
+                .value("https://payments.acme.example")
+                .try_into()
+                .expect("acme vault/get response");
+            json!(&doc.respond_with("urn:uuid:reply-acme", response))
         })
         .on::<grant::Payload, _>(|doc| {
             if let Err(reason) = doc.enforce_spec_policy() {

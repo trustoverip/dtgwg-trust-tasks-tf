@@ -9,16 +9,24 @@
 //!   digest, append-only;
 //! - `specs/<slug>/<M.N>/bundle.json` holds a version's current bytes (a draft
 //!   may change in place).
+//!
+//! A third-party source (`[sources.<name>]`) serves the same layout, at an
+//! `https://` URL or from a directory, for specifications under its own
+//! authority (SPEC §6.5). Whichever it comes from, a bundle is held to the
+//! identity it is pinned as: its Type URI names its slug and version, and sits
+//! under `https://trusttasks.org/` exactly when it comes from the official
+//! registry.
 
 use std::collections::BTreeMap;
 use std::io::ErrorKind;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use anyhow::{anyhow, bail, Context, Result};
 use serde::Deserialize;
 
-use crate::names::{check_slug, digest_hex, digest_of, Version};
+use crate::manifest::{check_source_url, SourceLoc};
+use crate::names::{check_slug, digest_hex, digest_of, TaskId, Version};
 
 pub const DEFAULT_REGISTRY: &str = "https://trusttasks.org";
 
@@ -33,6 +41,70 @@ pub fn normalize(url: &str) -> String {
     url.trim_end_matches('/').to_string()
 }
 
+/// A PEM bundle of root certificates to trust instead of the Mozilla roots —
+/// for a source (or a registry mirror) behind an internal CA. When set, it is
+/// the whole trust store: include public roots too if trusttasks.org must
+/// also be reached.
+pub const CA_FILE_ENV: &str = "TRUST_TASKS_CA_FILE";
+
+fn http_agent() -> Result<ureq::Agent> {
+    let mut config = ureq::Agent::config_builder()
+        .timeout_global(Some(Duration::from_secs(120)))
+        .user_agent(concat!("trust-tasks-cli/", env!("CARGO_PKG_VERSION")));
+    if let Some(path) = std::env::var_os(CA_FILE_ENV).filter(|p| !p.is_empty()) {
+        let pem = std::fs::read(&path)
+            .with_context(|| format!("reading {CA_FILE_ENV}={}", Path::new(&path).display()))?;
+        let certs = ureq::tls::parse_pem(&pem)
+            .filter_map(|item| match item {
+                Ok(ureq::tls::PemItem::Certificate(c)) => Some(Ok(c)),
+                Ok(_) => None,
+                Err(e) => Some(Err(e)),
+            })
+            .collect::<std::result::Result<Vec<_>, _>>()
+            .with_context(|| format!("{CA_FILE_ENV}: not a PEM certificate bundle"))?;
+        if certs.is_empty() {
+            bail!(
+                "{CA_FILE_ENV}={} holds no certificates",
+                Path::new(&path).display()
+            );
+        }
+        config = config.tls_config(
+            ureq::tls::TlsConfig::builder()
+                .root_certs(ureq::tls::RootCerts::new_with_certs(&certs))
+                .build(),
+        );
+    }
+    Ok(config.build().into())
+}
+
+/// The identity rules a pinned version's Type URI is held to, from the index
+/// or from the bundle itself: it names the version's slug and version (SPEC
+/// §6.1, in any form), and it is under `https://trusttasks.org/` exactly when
+/// the task is official — a third-party source claiming the registry's
+/// authority is refused (SPEC §6.5 item 1), and so is an "official" bundle
+/// outside it.
+pub fn check_identity(id: &TaskId, v: Version, type_uri: &str) -> Result<()> {
+    match trust_tasks_build::type_uri_parts(type_uri) {
+        Some((slug, version)) if slug == id.slug && version == v.to_string() => {}
+        Some((slug, version)) => {
+            bail!("{id} {v}: its Type URI {type_uri} names {slug} {version}, not {id} {v}")
+        }
+        None => bail!("{id} {v}: {type_uri} is not a SPEC §6.1 Type URI"),
+    }
+    match &id.source {
+        None if type_uri != trust_tasks_build::official_type_uri(&id.slug, &v.to_string()) => bail!(
+            "{id} {v}: the official registry served Type URI {type_uri}, which is not under {}/spec/ — a specification under another authority is pinned from a [sources.<name>] as <name>:{}",
+            trust_tasks_build::OFFICIAL_AUTHORITY,
+            id.slug
+        ),
+        Some(source) if trust_tasks_build::is_official_type_uri(type_uri) => bail!(
+            "{id} {v}: source `{source}` served Type URI {type_uri}, which claims the public registry's authority ({}/) — a third-party source may not (SPEC §6.5 item 1)",
+            trust_tasks_build::OFFICIAL_AUTHORITY
+        ),
+        _ => Ok(()),
+    }
+}
+
 enum Source {
     Http { base: String, agent: ureq::Agent },
     Dir(PathBuf),
@@ -40,6 +112,8 @@ enum Source {
 
 pub struct Registry {
     source: Source,
+    /// "the registry", or "source `acme`" — for messages.
+    pub label: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -85,26 +159,28 @@ pub struct Excluded {
 pub struct Index {
     pub by_slug: BTreeMap<String, BTreeMap<Version, IndexEntry>>,
     pub excluded: Vec<Excluded>,
+    /// "the registry", or "source `acme`".
+    pub label: String,
 }
 
 impl Index {
-    pub fn parse(bytes: &[u8]) -> Result<Index> {
+    pub fn parse(bytes: &[u8], label: &str) -> Result<Index> {
         let raw: RawIndex = serde_json::from_slice(bytes)
-            .context("the registry's specs/index.json is not a valid index")?;
+            .with_context(|| format!("{label}'s specs/index.json is not a valid index"))?;
         if raw.index_version != INDEX_VERSION {
             bail!(
-                "the registry's index is indexVersion {}; this trust-tasks reads indexVersion {INDEX_VERSION} — upgrade trust-tasks-cli",
+                "{label}'s index is indexVersion {}; this trust-tasks reads indexVersion {INDEX_VERSION} — upgrade trust-tasks-cli",
                 raw.index_version
             );
         }
         let mut by_slug: BTreeMap<String, BTreeMap<Version, IndexEntry>> = BTreeMap::new();
         for e in raw.specs {
-            check_slug(&e.slug).with_context(|| format!("registry index entry {}", e.type_uri))?;
+            check_slug(&e.slug).with_context(|| format!("{label}'s index entry {}", e.type_uri))?;
             digest_hex(&e.digest)
-                .with_context(|| format!("registry index entry {}", e.type_uri))?;
+                .with_context(|| format!("{label}'s index entry {}", e.type_uri))?;
             let v = Version::parse(&e.version).ok_or_else(|| {
                 anyhow!(
-                    "registry index entry {}: bad version `{}`",
+                    "{label}'s index entry {}: bad version `{}`",
                     e.type_uri,
                     e.version
                 )
@@ -114,6 +190,7 @@ impl Index {
         Ok(Index {
             by_slug,
             excluded: raw.excluded,
+            label: label.to_string(),
         })
     }
 
@@ -133,11 +210,15 @@ impl Index {
 
     /// The versions of `slug`, or an error that says why there are none.
     pub fn versions(&self, slug: &str) -> Result<&BTreeMap<Version, IndexEntry>> {
+        let label = &self.label;
         if let Some(v) = self.by_slug.get(slug) {
             return Ok(v);
         }
         if let Some(x) = self.excluded.iter().find(|x| x.slug == slug) {
-            bail!("`{slug}` has no registry bundle: {}", x.reason);
+            if label == "the registry" {
+                bail!("`{slug}` has no registry bundle: {}", x.reason);
+            }
+            bail!("`{slug}` has no bundle in {label}: {}", x.reason);
         }
         let near: Vec<&str> = self
             .by_slug
@@ -150,10 +231,10 @@ impl Index {
             .take(12)
             .collect();
         if near.is_empty() {
-            bail!("`{slug}` is not in the registry");
+            bail!("`{slug}` is not in {label}");
         }
         bail!(
-            "`{slug}` is not in the registry; did you mean one of: {}",
+            "`{slug}` is not in {label}; did you mean one of: {}",
             near.join(", ")
         );
     }
@@ -199,16 +280,14 @@ pub struct Fetched {
 }
 
 impl Registry {
+    /// The official registry (or a mirror of it): `--registry`, the manifest's
+    /// `registry`, or trusttasks.org.
     pub fn open(url: &str) -> Result<Registry> {
         let url = normalize(url);
         let source = if url.starts_with("https://") || url.starts_with("http://") {
-            let config = ureq::Agent::config_builder()
-                .timeout_global(Some(Duration::from_secs(120)))
-                .user_agent(concat!("trust-tasks-cli/", env!("CARGO_PKG_VERSION")))
-                .build();
             Source::Http {
                 base: url.clone(),
-                agent: config.into(),
+                agent: http_agent()?,
             }
         } else {
             let path = url.strip_prefix("file://").unwrap_or(&url);
@@ -219,7 +298,29 @@ impl Registry {
             }
             Source::Dir(PathBuf::from(path))
         };
-        Ok(Registry { source })
+        Ok(Registry {
+            source,
+            label: "the registry".to_string(),
+        })
+    }
+
+    /// The third-party source `name`: an `https://` site root, or a directory
+    /// relative to `project_root`.
+    pub fn open_source(name: &str, loc: &SourceLoc, project_root: &Path) -> Result<Registry> {
+        let source = match loc {
+            SourceLoc::Url(url) => {
+                check_source_url(name, url)?;
+                Source::Http {
+                    base: normalize(url),
+                    agent: http_agent()?,
+                }
+            }
+            SourceLoc::Path(p) => Source::Dir(project_root.join(p)),
+        };
+        Ok(Registry {
+            source,
+            label: format!("source `{name}`"),
+        })
     }
 
     /// `Ok(None)` when the registry has no such file.
@@ -254,6 +355,19 @@ impl Registry {
         }
     }
 
+    fn is_official(&self) -> bool {
+        self.label == "the registry"
+    }
+
+    /// "the registry index", or "source `acme`'s index".
+    fn index_name(&self) -> String {
+        if self.is_official() {
+            "the registry index".to_string()
+        } else {
+            format!("{}'s index", self.label)
+        }
+    }
+
     fn describe(&self, rel: &str) -> String {
         match &self.source {
             Source::Http { base, .. } => format!("{base}/{rel}"),
@@ -264,12 +378,17 @@ impl Registry {
     pub fn index(&self) -> Result<Index> {
         let rel = "specs/index.json";
         let bytes = self.get(rel)?.ok_or_else(|| {
+            let what = if self.is_official() {
+                "registry index".to_string()
+            } else {
+                format!("index for {}", self.label)
+            };
             anyhow!(
-                "no registry index at {} — a registry is a site root with specs/index.json under it",
+                "no {what} at {} — a registry is a site root with specs/index.json under it",
                 self.describe(rel)
             )
         })?;
-        Index::parse(&bytes)
+        Index::parse(&bytes, &self.label)
     }
 
     /// Fetches the bundle whose digest is `digest`, by digest, falling back to
@@ -281,16 +400,18 @@ impl Registry {
     /// *current* bytes.
     pub fn fetch_bundle(
         &self,
-        slug: &str,
+        id: &TaskId,
         v: Version,
         digest: &str,
         entry: Option<&IndexEntry>,
     ) -> Result<Fetched> {
+        let slug = id;
+        let label = &self.label;
         let hex = digest_hex(digest)?;
         let by_digest = format!("specs/by-digest/sha256-{hex}.json");
         if let Some(bytes) = self.get(&by_digest)? {
             if digest_of(&bytes) == digest {
-                check_bundle(&bytes, slug, v)?;
+                check_bundle(&bytes, id, v)?;
                 return Ok(Fetched {
                     bytes,
                     via: Via::Digest,
@@ -310,25 +431,27 @@ impl Registry {
         }
         let Some(entry) = entry.filter(|e| e.digest == digest) else {
             bail!(
-                "{slug} {v}: the registry no longer has the bundle with digest {digest} — it is not in the by-digest store ({}), and the version's current bytes have a different digest",
+                "{slug} {v}: {label} no longer has the bundle with digest {digest} — it is not in the by-digest store ({}), and the version's current bytes have a different digest",
                 self.describe(&by_digest)
             );
         };
         let rel = format!("specs/{}", entry.path);
         let bytes = self.get(&rel)?.ok_or_else(|| {
             anyhow!(
-                "{slug} {v}: the registry index lists {} but it is missing",
+                "{slug} {v}: {} lists {} but it is missing",
+                self.index_name(),
                 self.describe(&rel)
             )
         })?;
         let got = digest_of(&bytes);
         if got != digest {
             bail!(
-                "digest mismatch: {} is {got}, but the registry index says {digest}",
-                self.describe(&rel)
+                "digest mismatch: {} is {got}, but {} says {digest}",
+                self.describe(&rel),
+                self.index_name()
             );
         }
-        check_bundle(&bytes, slug, v)?;
+        check_bundle(&bytes, id, v)?;
         Ok(Fetched {
             bytes,
             via: Via::Path,
@@ -360,15 +483,17 @@ pub fn read_bundle_head(bytes: &[u8]) -> Result<BundleHead> {
     Ok(head)
 }
 
-/// The bundle is for the version it was fetched as.
-pub fn check_bundle(bytes: &[u8], slug: &str, v: Version) -> Result<BundleHead> {
-    let head = read_bundle_head(bytes).with_context(|| format!("{slug} {v}"))?;
-    if head.slug != slug || Version::parse(&head.version) != Some(v) {
+/// The bundle is for the version it was fetched as, under the authority its
+/// origin may serve ([`check_identity`]).
+pub fn check_bundle(bytes: &[u8], id: &TaskId, v: Version) -> Result<BundleHead> {
+    let head = read_bundle_head(bytes).with_context(|| format!("{id} {v}"))?;
+    if head.slug != id.slug || Version::parse(&head.version) != Some(v) {
         bail!(
-            "{slug} {v}: the bundle is for {} {}, not {slug} {v}",
+            "{id} {v}: the bundle is for {} {}, not {id} {v}",
             head.slug,
             head.version
         );
     }
+    check_identity(id, v, &head.type_uri)?;
     Ok(head)
 }

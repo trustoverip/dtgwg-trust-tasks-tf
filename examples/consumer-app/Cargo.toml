@@ -5,7 +5,7 @@ edition.workspace = true
 rust-version = "1.95"
 license.workspace = true
 repository.workspace = true
-description = "Example application: generates the three Trust Tasks it pins in trust-tasks.lock at build time, with trust-tasks-build."
+description = "Example application: generates the four Trust Tasks it pins in trust-tasks.lock at build time, with trust-tasks-build — three from the registry and one from a third-party source."
 publish = false
 
 [dependencies]

@@ -438,7 +438,7 @@ impl DiscoveryRegistry {
         self.type_uris
             .iter()
             .filter(move |uri| match parse_slug(uri) {
-                Some(slug) => query_matches(patterns, slug),
+                Some(slug) => query_matches(patterns, &slug),
                 None => false,
             })
     }
@@ -462,17 +462,19 @@ impl<S: Into<String>> FromIterator<S> for DiscoveryRegistry {
     }
 }
 
-/// Extract the slug from a registered Type URI. Returns `None` for
-/// inputs that don't parse as a Type URI (which can't happen for
-/// URIs we registered through `with_type_uri` since they came from a
-/// `TypeUri`).
-fn parse_slug(uri: &str) -> Option<&str> {
-    // The Type URI shape is `https://.../spec/<slug>/<MAJOR.MINOR>`.
-    // We don't re-parse via `TypeUri::from_str` because we already know
-    // the URIs are well-formed; cheap string slicing is fine.
+/// Extract the slug from a registered Type URI, in any SPEC §6.1 form — the
+/// URN form spells it with `:` between segments, so it is read through
+/// [`crate::TypeUri`] rather than sliced. A string `register_str` accepted
+/// that does not parse (the framework's own three-part
+/// `…/spec/trust-task/<M.N.P>`) falls back to the path-form slicing this
+/// always did. `None` when neither finds a slug.
+fn parse_slug(uri: &str) -> Option<String> {
+    if let Ok(t) = uri.parse::<crate::TypeUri>() {
+        return Some(t.slug().to_string());
+    }
     let after_spec = uri.split_once("/spec/")?.1;
     let last_slash = after_spec.rfind('/')?;
-    Some(&after_spec[..last_slash])
+    Some(after_spec[..last_slash].to_string())
 }
 
 #[cfg(test)]
