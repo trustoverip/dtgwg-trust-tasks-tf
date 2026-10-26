@@ -15,6 +15,11 @@
  * supersedes it having to chase every specimen at once, and fails once the batch
  * is close, so nothing is left for the batch itself.
  *
+ * Support kept ON PURPOSE until the batch goes in a block opened by a comment
+ * line ending `(superseded)` (`// --- trust-task-discovery 0.1 / 0.2
+ * (superseded) ---`) and closed by one starting `// --- end`. Those are listed as
+ * the batch PR's deletions, never failed on.
+ *
  * A Type URI string, or a JSON document naming a due version, is not a use: a
  * withdrawn version's schema stays published. Only references to the generated
  * MODULE count — Rust `specs::acl::grant::v0_1`, Go `…/specs/acl/grant/v0_1"`,
@@ -53,12 +58,21 @@ const due = dueVersions(batch);
 const GENERATED = /^(specs\/|website\/|trust-tasks-rs\/src\/specs\/|trust-tasks-rs\/src\/(schema_index|extends_index)\.rs$|trust-tasks-rs\/tests\/conformance\/|trust-tasks-ts\/src\/(?!_runtime\/)|trust-tasks-go\/specs\/|trust-tasks-dart\/lib\/specs\/)/;
 const files = execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8', maxBuffer: 1 << 28 })
   .split('\n')
-  .filter((f) => /\.(rs|ts|go|dart|mjs|js)$/.test(f) && !GENERATED.test(f));
+  // scripts/ is excluded: the generators and these checks name versions only in
+  // comments and data, and never import a generated module.
+  .filter((f) => /\.(rs|ts|go|dart|mjs|js)$/.test(f) && !GENERATED.test(f) && !f.startsWith('scripts/'));
 const sources = files.map((f) => [f, fs.readFileSync(path.join(ROOT, f), 'utf8')]);
 
 const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const pascal = (slug) => slug.split(/[/-]/).map((w) => w[0].toUpperCase() + w.slice(1)).join('');
 const uses = [];
+// Support kept ON PURPOSE until the batch — a responder that still answers an old
+// version for older peers — sits in a block whose first comment line ends
+// `(superseded)` and whose last starts `--- end`. The batch PR deletes those
+// blocks; they are listed for it here, never failed on.
+const SUPERSEDED_OPEN = /^\s*(\/\/|#)\s*--- .*\(superseded\)/;
+const SUPERSEDED_CLOSE = /^\s*(\/\/|#)\s*--- end\b/;
+const deletions = [];
 for (const d of due) {
   const [M, m] = d.version.split('.');
   const rx = new RegExp(
@@ -67,19 +81,29 @@ for (const d of due) {
       `${escape(`/specs/${d.slug}/v${M}_${m}`)}"`, // Go import
       escape(`specs/${d.slug.replace(/-/g, '_')}/v${M}_${m}/payload.dart`), // Dart import
       `\\b${escape(pascal(d.slug))}_v${M}_${m}\\b`, // TS root namespace
-      escape(`${d.slug}/${d.version}/payload`), // TS module path
+      `${escape(`${d.slug}/${d.version}/payload`)}(\\.js)?["']`, // TS import specifier
     ].join('|')
   );
   for (const [file, text] of sources) {
     const lines = text.split('\n');
+    let held = false; // inside a `--- … (superseded)` … `--- end` block
     lines.forEach((line, i) => {
-      if (rx.test(line)) uses.push({ file, line: i + 1, version: `${d.slug}/${d.version}`, successor: d.successor });
+      if (SUPERSEDED_OPEN.test(line)) held = true;
+      else if (held && SUPERSEDED_CLOSE.test(line)) held = false;
+      if (!rx.test(line)) return;
+      (held ? deletions : uses).push({ file, line: i + 1, version: `${d.slug}/${d.version}`, successor: d.successor });
     });
   }
 }
 
+if (deletions.length) {
+  const files = [...new Set(deletions.map((d) => d.file))];
+  console.log(
+    `The ${batchText} batch PR deletes ${deletions.length} use(s) kept on purpose in \`(superseded)\` blocks, in: ${files.join(', ')}.`
+  );
+}
 if (!uses.length) {
-  console.log(`Withdrawal readiness: ${due.length} version(s) due on ${batchText} (${daysLeft} days); no hand-written code imports any of them.`);
+  console.log(`Withdrawal readiness: ${due.length} version(s) due on ${batchText} (${daysLeft} days); no other hand-written code imports any of them.`);
   process.exit(0);
 }
 const failing = daysLeft <= FAIL_WITHIN_DAYS;
