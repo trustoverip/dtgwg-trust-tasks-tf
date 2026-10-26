@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vault/get/0.3",
   "title": "Vault Get — payload",
-  "description": "Fetch the metadata view of a single vault entry by id. Returns the same VaultEntry shape vault/list does, but for one specific entry. Secret material is NEVER returned by this task; use vault/release/0.1 to obtain secret bytes.",
+  "description": "Fetch the metadata view of a single vault entry by id. Returns the same VaultEntry shape vault/list does, but for one specific entry. Secret material is NEVER returned by this task; use vault/release/0.2 to obtain secret bytes.",
   "type": "object",
   "additionalProperties": false,
   "required": ["id"],

@@ -7,7 +7,7 @@ import type { AclChangedEvent_SyncV0_2 as AclChangedEvent, AndroidApp_VaultV0_2 
 
 
 /**
- * Consumer requests an incremental delta of vault changes since a given seq baseline. The maintainer returns an ordered list of upsert/delete/acl/policy events, followed by a new seq baseline the consumer SHOULD persist for the next sync. Pairs with sync/event/0.1 server-push notifications: a live consumer subscribes to push events; on reconnect after offline, it calls vault/sync to catch up.
+ * Consumer requests an incremental delta of vault changes since a given seq baseline. The maintainer returns an ordered list of upsert/delete/acl/policy events, followed by a new seq baseline the consumer SHOULD persist for the next sync. Pairs with sync/event/0.2 server-push notifications: a live consumer subscribes to push events; on reconnect after offline, it calls vault/sync to catch up.
  */
 export interface VaultSyncPayload {
   /**
@@ -26,7 +26,7 @@ export interface VaultSyncPayload {
 }
 export interface VaultSyncResponsePayload {
   /**
-   * Ordered events; consumer applies in order. Each event carries its own `seq` (strictly monotonic, no gaps within a context). Shape is the same as sync/event/0.1's push form.
+   * Ordered events; consumer applies in order. Each event carries its own `seq` (strictly monotonic, no gaps within a context). Shape is the same as sync/event/0.2's push form.
    */
   events: SyncEvent[];
   /**
@@ -68,7 +68,7 @@ export const PAYLOAD_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vault/sync/0.3",
   "title": "Vault Sync — payload",
-  "description": "Consumer requests an incremental delta of vault changes since a given seq baseline. The maintainer returns an ordered list of upsert/delete/acl/policy events, followed by a new seq baseline the consumer SHOULD persist for the next sync. Pairs with sync/event/0.1 server-push notifications: a live consumer subscribes to push events; on reconnect after offline, it calls vault/sync to catch up.",
+  "description": "Consumer requests an incremental delta of vault changes since a given seq baseline. The maintainer returns an ordered list of upsert/delete/acl/policy events, followed by a new seq baseline the consumer SHOULD persist for the next sync. Pairs with sync/event/0.2 server-push notifications: a live consumer subscribes to push events; on reconnect after offline, it calls vault/sync to catch up.",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -109,7 +109,7 @@ export const PAYLOAD_SCHEMA = {
           "items": {
             "$ref": "#/$defs/SyncEvent"
           },
-          "description": "Ordered events; consumer applies in order. Each event carries its own `seq` (strictly monotonic, no gaps within a context). Shape is the same as sync/event/0.1's push form."
+          "description": "Ordered events; consumer applies in order. Each event carries its own `seq` (strictly monotonic, no gaps within a context). Shape is the same as sync/event/0.2's push form."
         },
         "newSinceSeq": {
           "type": "integer",
@@ -610,7 +610,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "items": {
             "$ref": "#/$defs/SyncEvent"
           },
-          "description": "Ordered events; consumer applies in order. Each event carries its own `seq` (strictly monotonic, no gaps within a context). Shape is the same as sync/event/0.1's push form."
+          "description": "Ordered events; consumer applies in order. Each event carries its own `seq` (strictly monotonic, no gaps within a context). Shape is the same as sync/event/0.2's push form."
         },
         "newSinceSeq": {
           "type": "integer",

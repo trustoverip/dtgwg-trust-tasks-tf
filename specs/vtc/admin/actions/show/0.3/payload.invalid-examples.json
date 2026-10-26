@@ -35,7 +35,7 @@
         "actionId": "act_7Hq2mZp9Lx4vRk8T",
         "category": "approval",
         "kind": "acl.grant.authority",
-        "typeUri": "https://trusttasks.org/spec/acl/grant/0.1",
+        "typeUri": "https://trusttasks.org/spec/acl/grant/0.2",
         "requester": "did:web:alice.example",
         "status": "open",
         "createdAt": "2026-10-02T08:00:00Z",
@@ -56,7 +56,10 @@
         "payload": {
           "entry": {
             "subject": "did:web:carol.example",
-            "role": "admin"
+            "role": "admin",
+            "act": { "scope": "all" },
+            "keys": { "scope": "all" },
+            "capabilities": { "scope": "ceiling" }
           }
         },
         "payloadDigest": "zQmb1XVvHqbCe5nUPFxpJcRz3RtP4pQyKgTsWJgNBzVhE7d",
@@ -72,7 +75,7 @@
         "actionId": "act_7Hq2mZp9Lx4vRk8T",
         "category": "approval",
         "kind": "acl.grant.authority",
-        "typeUri": "https://trusttasks.org/spec/acl/grant/0.1",
+        "typeUri": "https://trusttasks.org/spec/acl/grant/0.2",
         "requester": "did:web:alice.example",
         "status": "open",
         "createdAt": "2026-10-02T08:00:00Z",
@@ -93,7 +96,10 @@
         "payload": {
           "entry": {
             "subject": "did:web:carol.example",
-            "role": "admin"
+            "role": "admin",
+            "act": { "scope": "all" },
+            "keys": { "scope": "all" },
+            "capabilities": { "scope": "ceiling" }
           }
         },
         "payloadDigest": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
@@ -109,7 +115,7 @@
         "actionId": "act_7Hq2mZp9Lx4vRk8T",
         "category": "approval",
         "kind": "acl.grant.authority",
-        "typeUri": "https://trusttasks.org/spec/acl/grant/0.1",
+        "typeUri": "https://trusttasks.org/spec/acl/grant/0.2",
         "requester": "did:web:alice.example",
         "status": "open",
         "createdAt": "2026-10-02T08:00:00Z",
@@ -143,6 +149,9 @@
           "entry": {
             "subject": "did:web:carol.example",
             "role": "admin",
+            "act": { "scope": "all" },
+            "keys": { "scope": "all" },
+            "capabilities": { "scope": "ceiling" },
             "label": "Carol — operations"
           }
         },
