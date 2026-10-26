@@ -2,13 +2,13 @@
 
 Generate TypeScript modules for exactly the Trust Tasks an application pins, from
 the registry bundles vendored beside its `trust-tasks.lock`. The modules use the
-runtime in [`@openvtc/trust-tasks`](../trust-tasks-ts), imported as
+runtime in [`@openvtc/trust-tasks`](https://www.npmjs.com/package/@openvtc/trust-tasks) 0.27.8 or later, imported as
 `@openvtc/trust-tasks/runtime`, so the application never loads the prebuilt
 modules for the whole registry.
 
 ```sh
 trust-tasks add vault/get acl/grant          # the `trust-tasks` CLI: writes trust-tasks.lock + trust-tasks/
-npm i @openvtc/trust-tasks
+npm i @openvtc/trust-tasks@^0.27.8         # the runtime; 0.27.8 is the first with the ./runtime export
 npm i -D @openvtc/trust-tasks-gen
 npx trust-tasks-gen-ts --lock trust-tasks.lock --out src/trust-tasks
 ```
@@ -21,8 +21,8 @@ declareExtends(); // once at start-up: the locked versions' `extends` declaratio
 // VaultGet_v0_3.Payload, .Response, .SPEC, .PAYLOAD_SCHEMA, … as in @openvtc/trust-tasks
 ```
 
-`trust-tasks generate --lang ts` runs the same thing. A complete application is
-[`examples/consumer-app-ts`](../examples/consumer-app-ts).
+The `trust-tasks` command comes from `cargo install trust-tasks-cli`. A complete
+application is [`examples/consumer-app-ts`](https://github.com/trustoverip/dtgwg-trust-tasks-tf/tree/main/examples/consumer-app-ts).
 
 ## What it does
 
