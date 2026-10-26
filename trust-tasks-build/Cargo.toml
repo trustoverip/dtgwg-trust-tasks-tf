@@ -9,6 +9,7 @@ repository.workspace = true
 description = "Build-time generator for Trust Tasks: turns the specification versions an application pins in trust-tasks.lock into Rust types for trust-tasks-rs."
 homepage = "https://trusttasks.org/"
 documentation = "https://docs.rs/trust-tasks-build"
+readme = "README.md"
 keywords = ["trust-tasks", "trustoverip", "codegen", "build", "json-schema"]
 categories = ["development-tools::build-utils"]
 publish = true
