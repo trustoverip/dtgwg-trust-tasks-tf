@@ -139,6 +139,27 @@ say it.
 Unrecognized **top-level** members survive a round trip in `Document.Extra`, per
 the §7.1 / §7.2 guidance to preserve them.
 
+## Generating only the tasks you use
+
+An application can generate the packages for just the task versions it pins,
+instead of importing them from `specs/`. Lock them with the `trust-tasks` CLI
+(which writes `trust-tasks.lock` and vendors each version's registry bundle
+under `trust-tasks/`), then:
+
+```go
+//go:generate go run github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/cmd/trust-tasks-gen --lock trust-tasks.lock --out internal/tasks
+```
+
+`go generate` verifies every vendored bundle against its locked digest and
+writes `internal/tasks/<slug>/v<M>_<N>/payload.go` — the same `Payload`,
+`Response`, `TypeURI`, `Spec`, `PayloadSchemaJSON`, … as the package under
+`specs/` — plus `internal/tasks/trusttasks.go`, whose `ExtendsOf` is an
+`ExtendsLookup` for `trusttasks.ReadForSpecWith`. The generator is standard
+library only, reads no network, and owns its out directory (it refuses to
+clear a non-empty one it did not write). A task from a third-party source in
+the lock is generated under `internal/tasks/<source>/…`. See
+[`examples/consumer-app-go`](../examples/consumer-app-go).
+
 ## Regenerating
 
 From the repository root:

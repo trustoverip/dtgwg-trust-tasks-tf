@@ -1,0 +1,30 @@
+version = 1
+registry = "https://trusttasks.org"
+
+[sources.acme]
+url = "https://tasks.example.com"
+
+[[task]]
+slug = "acl/grant"
+version = "0.2"
+type_uri = "https://trusttasks.org/spec/acl/grant/0.2"
+digest = "sha256:fa547284ce5f218ac5036f18585c598ad4b3f871ef604da738c228f5da8aab50"
+
+[[task]]
+slug = "keys/list"
+version = "0.2"
+type_uri = "https://trusttasks.org/spec/keys/list/0.2"
+digest = "sha256:2b4d08ebd8a7af4a00ae23fae4c3bd1c3a4c64b2f0e6d521f31443d78f2259f5"
+
+[[task]]
+slug = "vault/get"
+version = "0.3"
+type_uri = "https://trusttasks.org/spec/vault/get/0.3"
+digest = "sha256:c2fb4081a761d2479a51d194e5d54081b5dffe3d06da3ad4791432d8c22419d7"
+
+[[task]]
+source = "acme"
+slug = "payments/settle"
+version = "1.0"
+type_uri = "https://tasks.example.com/spec/payments/settle/1.0"
+digest = "sha256:70071af4888202767a5fb7b80fdd56cdb55672f1a8f68d10bfe9e4cfe2ecfb29"
