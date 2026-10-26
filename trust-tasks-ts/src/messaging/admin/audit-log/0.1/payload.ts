@@ -44,6 +44,14 @@ export type { AuditAction, AuditEntry, Ext, Vid };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/messaging/admin/audit-log/0.1" as const;
 
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
 /** Stable alias for this specification's request payload shape. */
 export type Payload = MessagingAuditLogPayload;
 

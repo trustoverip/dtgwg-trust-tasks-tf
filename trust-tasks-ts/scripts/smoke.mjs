@@ -30,11 +30,14 @@ assert.equal(
   "function",
   "consequentialChecks missing from root export",
 );
+assert.equal(typeof pkg.readForSpec, "function", "readForSpec missing from root export");
+assert.equal(typeof pkg.EXTENDS_BY_TYPE_URI, "object", "EXTENDS_BY_TYPE_URI missing from root export");
 
 // A generated module, reached through the root barrel.
 const grant = pkg.AclGrant_v0_1;
 assert.ok(grant, "AclGrant_v0_1 missing from root export");
 assert.equal(grant.TYPE_URI, "https://trusttasks.org/spec/acl/grant/0.1");
+assert.ok("EXTENDS" in grant, "generated modules carry EXTENDS");
 assert.equal(grant.SPEC.isProofRequired, true, "acl/grant declares proof REQUIRED (see #174)");
 
 // The two halves actually working together: a spec-declared requirement

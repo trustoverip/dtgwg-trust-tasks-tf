@@ -104,6 +104,14 @@ export type { Did, Ext, NamespaceId, RepoResource };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/git-ns/bridge/job/list/0.4" as const;
 
+/**
+ * The earlier version of this specification that this one declares it
+ * extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+ * `null`. Only the direct declaration — follow the chain with
+ * `extendsChain` / `readForSpec`.
+ */
+export const EXTENDS: string | null = null;
+
 /** Stable alias for this specification's request payload shape. */
 export type Payload = GitNamespacesListBridgeJobsPayload;
 
