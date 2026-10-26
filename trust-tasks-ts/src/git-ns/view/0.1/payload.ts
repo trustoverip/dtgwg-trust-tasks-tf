@@ -8,6 +8,8 @@ import type { Bootstrap, Did_GitNsV0_1 as Did, DriftItem_GitNsV0_1 as DriftItem,
 
 /**
  * A member reads the namespaces, repositories and rights they are entitled to see, optionally narrowed to one resource.
+ *
+ * @deprecated superseded by git-ns/view/0.6
  */
 export interface GitNamespacesViewPayload {
   /**
@@ -18,6 +20,8 @@ export interface GitNamespacesViewPayload {
 }
 /**
  * What the caller may see.
+ *
+ * @deprecated superseded by git-ns/view/0.6
  */
 export interface GitNamespacesViewResponsePayload {
   /**
@@ -41,13 +45,29 @@ export type { Bootstrap, Did, DriftItem, Ext, ForgeAccount, ForgeHost, ForgeId, 
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/git-ns/view/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by git-ns/view/0.6";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by git-ns/view/0.6
+ */
 export type Payload = GitNamespacesViewPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/git-ns/view/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by git-ns/view/0.6
+ */
 export type Response = GitNamespacesViewResponsePayload;
 
 /**

@@ -13,6 +13,8 @@ export type Scope = Builtin | Global | Context;
 
 /**
  * Replace an existing DID template scoped to a context on a VTA. Gated on the context's admin (or super-admin). `name` is the resource id within the context scope and MUST equal `template.name`. The VTA preserves the original createdAt/createdBy and advances updatedAt. The success response is the persisted DidTemplateRecord.
+ *
+ * @deprecated retired; use vta/did-templates/update/2.0
  */
 export interface VTAContextDIDTemplateUpdatePayload {
   /**
@@ -76,6 +78,8 @@ export interface DidTemplate {
 }
 /**
  * The persisted DidTemplateRecord after replacement. The DidTemplate fields are flattened at the top level alongside the resolved scope and provenance metadata. Same shape returned by create/get.
+ *
+ * @deprecated retired; use vta/did-templates/update/2.0
  */
 export interface VTAContextDIDTemplateUpdateResponsePayload {
   schemaVersion: 1;
@@ -122,13 +126,29 @@ export type { Ext };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vta/contexts/did-templates/update/1.0" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "retired; use vta/did-templates/update/2.0";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated retired; use vta/did-templates/update/2.0
+ */
 export type Payload = VTAContextDIDTemplateUpdatePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vta/contexts/did-templates/update/1.0#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated retired; use vta/did-templates/update/2.0
+ */
 export type Response = VTAContextDIDTemplateUpdateResponsePayload;
 
 /**

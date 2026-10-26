@@ -8,6 +8,8 @@ import type { Ext } from "../../../../_shared/components.js";
 
 /**
  * The lock holder delivers the member's signed decision on an out-of-band request by carrying a signed auth/oob/grant document. Issued and signed by the lock key `K_a`. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, parentThreadId, proof) are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by auth/oob/respond/0.3
  */
 export interface AuthOOBRespondPayload {
   /**
@@ -18,6 +20,8 @@ export interface AuthOOBRespondPayload {
 }
 /**
  * The outcome the service recorded. It never contains session material: authority goes to the starter key, through auth/oob/redeem only.
+ *
+ * @deprecated superseded by auth/oob/respond/0.3
  */
 export interface AuthOOBRespondResponsePayload {
   /**
@@ -33,13 +37,29 @@ export type { Ext };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/oob/respond/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by auth/oob/respond/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by auth/oob/respond/0.3
+ */
 export type Payload = AuthOOBRespondPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/oob/respond/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by auth/oob/respond/0.3
+ */
 export type Response = AuthOOBRespondResponsePayload;
 
 /**

@@ -8,6 +8,8 @@ import type { Ext } from "../../../_shared/components.js";
 
 /**
  * The maintainer issues a wipe to a Companion or Service. The target is expected to destroy its local cache and (depending on scope) its device-local key material. The action is best-effort — a compromised device may silently drop the wipe — so the maintainer additionally revokes ACL access and rotates the device's cache-key derivation root, so that defence in depth means a non-compliant device is still neutralised.
+ *
+ * @deprecated superseded by device/wipe/0.2
  */
 export interface DeviceWipePayload {
   deviceId: string;
@@ -30,6 +32,8 @@ export interface DeviceWipePayload {
 }
 /**
  * Acknowledgement from the target device. Sent only when the target executes the wipe; absent if the target was offline or compromised. The maintainer treats the absence of a response as 'not confirmed' but considers the device neutralised because of the server-side defence-in-depth.
+ *
+ * @deprecated superseded by device/wipe/0.2
  */
 export interface DeviceWipeResponsePayload {
   deviceId: string;
@@ -56,13 +60,29 @@ export type { Ext };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/device/wipe/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by device/wipe/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by device/wipe/0.2
+ */
 export type Payload = DeviceWipePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/device/wipe/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by device/wipe/0.2
+ */
 export type Response = DeviceWipeResponsePayload;
 
 /**

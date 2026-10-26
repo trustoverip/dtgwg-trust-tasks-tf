@@ -8,6 +8,8 @@ import type { Ext } from "../../../_shared/components.js";
 
 /**
  * A relying party asks a wallet (or other approval agent) to obtain user confirmation for an action. The wallet surfaces the reason to the user and returns a signed confirm/response.
+ *
+ * @deprecated retired; use task-consent/request/0.1
  */
 export interface ConfirmRequest {
   /**
@@ -38,6 +40,8 @@ export interface ConfirmRequest {
 }
 /**
  * Synchronous acknowledgement that the wallet received the request and will (or will not) deliver a confirm/response. The actual signed confirmation arrives via confirm/response out-of-band. Carried in a Trust Task document whose type is https://trusttasks.org/spec/confirm/request/0.1#response.
+ *
+ * @deprecated retired; use task-consent/request/0.1
  */
 export interface ConfirmRequestSynchronousAck {
   status: "accepted" | "refused";
@@ -54,13 +58,29 @@ export type { Ext };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/confirm/request/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "retired; use task-consent/request/0.1";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated retired; use task-consent/request/0.1
+ */
 export type Payload = ConfirmRequest;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/confirm/request/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated retired; use task-consent/request/0.1
+ */
 export type Response = ConfirmRequestSynchronousAck;
 
 /**

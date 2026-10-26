@@ -8,6 +8,8 @@ import type { Ext, RequestId } from "../../../../_shared/components.js";
 
 /**
  * The starter turns an approved out-of-band request into the outcome its purpose defines — for `login`, a session bound to the starter key. Issued and signed by the starter key; held as a long poll until the request is approved. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by auth/oob/redeem/0.2
  */
 export interface AuthOOBRedeemPayload {
   requestId: RequestId;
@@ -15,6 +17,8 @@ export interface AuthOOBRedeemPayload {
 }
 /**
  * For `login`: who is now signed in, for the starter's "Continue as …?" confirmation. Never tokens: over HTTPS the session itself is delivered as HttpOnly cookies.
+ *
+ * @deprecated superseded by auth/oob/redeem/0.2
  */
 export interface AuthOOBRedeemResponsePayload {
   /**
@@ -44,13 +48,29 @@ export type { Ext, RequestId };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/oob/redeem/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by auth/oob/redeem/0.2";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by auth/oob/redeem/0.2
+ */
 export type Payload = AuthOOBRedeemPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/oob/redeem/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by auth/oob/redeem/0.2
+ */
 export type Response = AuthOOBRedeemResponsePayload;
 
 /**

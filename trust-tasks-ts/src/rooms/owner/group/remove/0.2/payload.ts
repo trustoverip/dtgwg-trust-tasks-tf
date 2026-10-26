@@ -8,6 +8,8 @@ import type { DigestMultibase, Ext, RevocationHead } from "../../../../../_share
 
 /**
  * A room's owner asks their own agent to remove a member: withdraw every credential the room gave them, at its host at once, and then remove their leaf from the room's MLS group and advance its epoch. 0.2 adds the withdrawal, made first.
+ *
+ * @deprecated superseded by rooms/owner/group/remove/0.3
  */
 export interface RoomsOwnerGroupRemovePayload {
   /**
@@ -55,6 +57,8 @@ export interface RoomsOwnerGroupRemovePayload {
 }
 /**
  * Success response to rooms/owner/group/remove. Type https://trusttasks.org/spec/rooms/owner/group/remove/0.2#response. The revocation list in force at the host, and the room's new epoch, which the removed member holds no key for.
+ *
+ * @deprecated superseded by rooms/owner/group/remove/0.3
  */
 export interface RoomsOwnerGroupRemoveResponsePayload {
   /**
@@ -100,13 +104,29 @@ export type { DigestMultibase, Ext, RevocationHead };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/rooms/owner/group/remove/0.2" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by rooms/owner/group/remove/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by rooms/owner/group/remove/0.3
+ */
 export type Payload = RoomsOwnerGroupRemovePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/rooms/owner/group/remove/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by rooms/owner/group/remove/0.3
+ */
 export type Response = RoomsOwnerGroupRemoveResponsePayload;
 
 /**

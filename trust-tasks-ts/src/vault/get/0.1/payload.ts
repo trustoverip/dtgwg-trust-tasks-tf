@@ -8,6 +8,8 @@ import type { AndroidApp_VaultV0_1 as AndroidApp, AttachmentRef_VaultV0_1 as Att
 
 /**
  * Fetch the metadata view of a single vault entry by id. Returns the same VaultEntry shape vault/list does, but for one specific entry. Secret material is NEVER returned by this task; use vault/release/0.1 to obtain secret bytes.
+ *
+ * @deprecated superseded by vault/get/0.3
  */
 export interface VaultGetPayload {
   /**
@@ -16,6 +18,7 @@ export interface VaultGetPayload {
   id: string;
   ext?: Ext;
 }
+/** @deprecated superseded by vault/get/0.3 */
 export interface VaultGetResponsePayload {
   entry: VaultEntry;
   redactedFields?: string[];
@@ -28,13 +31,29 @@ export type { AndroidApp, AttachmentRef, Did, Ext, IosApp, SecretKind, SiteTarge
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vault/get/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vault/get/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vault/get/0.3
+ */
 export type Payload = VaultGetPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vault/get/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vault/get/0.3
+ */
 export type Response = VaultGetResponsePayload;
 
 /**

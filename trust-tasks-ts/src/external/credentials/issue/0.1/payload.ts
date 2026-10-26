@@ -8,6 +8,8 @@ import type { AccountContextId, AccountId, CredentialScope, Ext, ProviderObjectA
 
 /**
  * Obtain a short-lived, downscoped provider credential from an external account, sealed to the caller. The outer document members are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by external/credentials/issue/0.3
  */
 export interface ExternalCredentialsIssuePayload {
   context: AccountContextId;
@@ -19,6 +21,7 @@ export interface ExternalCredentialsIssuePayload {
   ttlSeconds: number;
   ext?: Ext;
 }
+/** @deprecated superseded by external/credentials/issue/0.3 */
 export interface ExternalCredentialsIssueResponsePayload {
   sealedCredential: SealedTransferBundle;
   /**
@@ -38,13 +41,29 @@ export type { AccountContextId, AccountId, CredentialScope, Ext, ProviderObjectA
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/external/credentials/issue/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by external/credentials/issue/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by external/credentials/issue/0.3
+ */
 export type Payload = ExternalCredentialsIssuePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/external/credentials/issue/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by external/credentials/issue/0.3
+ */
 export type Response = ExternalCredentialsIssueResponsePayload;
 
 /**

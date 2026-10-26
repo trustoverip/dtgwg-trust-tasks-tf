@@ -8,6 +8,8 @@ import type { Action_VtcAdminActionsV0_2 as Action, ActionId, DigestMultibase, E
 
 /**
  * An administrator acknowledges an `acknowledge`-category action — an operation that already took effect outside the approval path, such as an operator's offline or break-glass write — recording that they have seen it. There is nothing to approve or decline. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by vtc/admin/actions/acknowledge/0.3
  */
 export interface VTCAdminActionsAcknowledgePayload {
   /**
@@ -18,6 +20,8 @@ export interface VTCAdminActionsAcknowledgePayload {
 }
 /**
  * The action with the caller's acknowledgement recorded in `approvals`. When the caller was the last administrator expected to acknowledge it, `status` is `completed` and `closedReason` is `acknowledged`. Failures use trust-task-error, not this shape.
+ *
+ * @deprecated superseded by vtc/admin/actions/acknowledge/0.3
  */
 export interface VTCAdminActionsAcknowledgeResponsePayload {
   action: Action;
@@ -30,13 +34,29 @@ export type { Action, ActionId, DigestMultibase, Ext, Field, Summary };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/admin/actions/acknowledge/0.2" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vtc/admin/actions/acknowledge/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/admin/actions/acknowledge/0.3
+ */
 export type Payload = VTCAdminActionsAcknowledgePayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/admin/actions/acknowledge/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/admin/actions/acknowledge/0.3
+ */
 export type Response = VTCAdminActionsAcknowledgeResponsePayload;
 
 /**

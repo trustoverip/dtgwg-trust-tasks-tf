@@ -13,6 +13,8 @@ export type StepUpEvidence = DidSigned | WebAuthn;
 
 /**
  * The approver's signed ratification of a step-up: subject + sessionId + challenge are echoed inside a proof-bearing document so the relying party can elevate the session.
+ *
+ * @deprecated superseded by auth/step-up/approve-response/0.6
  */
 export interface AuthStepUpApproveResponse {
   /**
@@ -57,6 +59,8 @@ export interface WebAuthn {
 }
 /**
  * Acknowledgement the relying party returns after processing the approval. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/approve-response/0.1#response.
+ *
+ * @deprecated superseded by auth/step-up/approve-response/0.6
  */
 export interface AuthStepUpApproveResponseRelyingPartyAck {
   status: "elevated" | "rejected";
@@ -77,13 +81,29 @@ export type { AuthenticatorAssertionResponseLogin, Ext, Session };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/auth/step-up/approve-response/0.2" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by auth/step-up/approve-response/0.6";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by auth/step-up/approve-response/0.6
+ */
 export type Payload = AuthStepUpApproveResponse;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/auth/step-up/approve-response/0.2#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by auth/step-up/approve-response/0.6
+ */
 export type Response = AuthStepUpApproveResponseRelyingPartyAck;
 
 /**

@@ -46,6 +46,14 @@ export type { AclChangedEvent, AndroidApp, AttachmentRef, Did, Ext, IosApp, Poli
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vault/sync/0.3" as const;
 
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = null;
+
 /** Stable alias for this specification's request payload shape. */
 export type Payload = VaultSyncPayload;
 

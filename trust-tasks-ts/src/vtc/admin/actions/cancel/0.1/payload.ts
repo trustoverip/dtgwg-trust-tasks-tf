@@ -8,6 +8,8 @@ import type { Action_VtcAdminActionsV0_1 as Action, ActionId, DigestMultibase, E
 
 /**
  * The requester of an open administrative action withdraws it, so the parked operation never executes and the action leaves every administrator's list. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
+ *
+ * @deprecated superseded by vtc/admin/actions/cancel/0.3
  */
 export interface VTCAdminActionsCancelPayload {
   /**
@@ -22,6 +24,8 @@ export interface VTCAdminActionsCancelPayload {
 }
 /**
  * The action as it now stands — `status: cancelled`, `closedReason: cancelledByRequester`. Failures use trust-task-error, not this shape.
+ *
+ * @deprecated superseded by vtc/admin/actions/cancel/0.3
  */
 export interface VTCAdminActionsCancelResponsePayload {
   action: Action;
@@ -34,13 +38,29 @@ export type { Action, ActionId, DigestMultibase, Ext, Field, Summary };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/vtc/admin/actions/cancel/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "superseded by vtc/admin/actions/cancel/0.3";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated superseded by vtc/admin/actions/cancel/0.3
+ */
 export type Payload = VTCAdminActionsCancelPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/vtc/admin/actions/cancel/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated superseded by vtc/admin/actions/cancel/0.3
+ */
 export type Response = VTCAdminActionsCancelResponsePayload;
 
 /**

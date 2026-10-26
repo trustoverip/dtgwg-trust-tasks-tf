@@ -6,6 +6,7 @@
 import type { DidRecord, Ext } from "../../../../_shared/components.js";
 
 
+/** @deprecated retired; use did-management/did/register/0.1 */
 export interface DIDManagementPublishPayload {
   mnemonic: string;
   method: string;
@@ -16,6 +17,7 @@ export interface DIDManagementPublishPayload {
   domain?: string;
   ext?: Ext;
 }
+/** @deprecated retired; use did-management/did/register/0.1 */
 export interface DIDManagementPublishResponsePayload {
   record: DidRecord;
   ext?: Ext;
@@ -27,13 +29,29 @@ export type { DidRecord, Ext };
 /** Trust Task type URI. */
 export const TYPE_URI = "https://trusttasks.org/spec/did-management/did/publish/0.1" as const;
 
-/** Stable alias for this specification's request payload shape. */
+/**
+ * Why this version is deprecated, or `null` while it is current. A
+ * superseded or retired version is still supported, and is withdrawn from
+ * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
+ * Versions").
+ */
+export const DEPRECATION: string | null = "retired; use did-management/did/register/0.1";
+
+/**
+ * Stable alias for this specification's request payload shape.
+ *
+ * @deprecated retired; use did-management/did/register/0.1
+ */
 export type Payload = DIDManagementPublishPayload;
 
 /** Trust Task response type URI (request type URI + "#response"). */
 export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/did-management/did/publish/0.1#response" as const;
 
-/** Stable alias for this specification's success-response payload shape. */
+/**
+ * Stable alias for this specification's success-response payload shape.
+ *
+ * @deprecated retired; use did-management/did/register/0.1
+ */
 export type Response = DIDManagementPublishResponsePayload;
 
 /**
