@@ -9,6 +9,8 @@ import (
 )
 
 // Response Registry DID Rotate — response payload
+//
+// Deprecated: superseded by registry/did/rotate/0.2
 type Response struct {
 	// The DID whose keys were rotated.
 	DID string `json:"did"`
@@ -29,6 +31,8 @@ type Ext = map[string]json.RawMessage
 // agent-managed did:webvh in place, preserving the DID while refreshing its key material.
 // Field names are snake_case, frozen from the pre-existing deployed wire form this
 // specification documents (matching the registry/* family convention).
+//
+// Deprecated: superseded by registry/did/rotate/0.2
 type Payload struct {
 	// Override the number of pre-rotation key commitments published for the new key set.
 	// Absent: the managing agent's default.
@@ -54,7 +58,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by registry/did/rotate/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/registry/did/rotate/0.1#response"

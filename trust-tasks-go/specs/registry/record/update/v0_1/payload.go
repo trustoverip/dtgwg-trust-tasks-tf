@@ -10,7 +10,7 @@ import (
 
 // Response Registry Record Update — response payload
 //
-// Deprecated: retired; use registry/record/put/0.2
+// Deprecated: retired; use registry/record/put/0.3
 type Response struct {
 	// Whether the record was updated.
 	OK bool `json:"ok"`
@@ -55,7 +55,7 @@ const (
 // Payload An administrator asks a trust registry to update an existing trust record. The
 // record key (entity+authority+action+resource) must already exist.
 //
-// Deprecated: retired; use registry/record/put/0.2
+// Deprecated: retired; use registry/record/put/0.3
 type Payload struct {
 	Record TrustRecord `json:"record"`
 	Ext    *Ext        `json:"ext,omitempty"`
@@ -76,7 +76,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = "retired; use registry/record/put/0.2"
+const Deprecation = "retired; use registry/record/put/0.3"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/registry/record/update/0.1#response"

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/registry/_shared/0.2/registry",
+  "title": "Shared definitions for the registry/* spec family",
+  "description": "Canonical $defs referenced by every registry/* specification: the query context, the trust record, and the mutation acknowledgement. Not itself a Trust Task specification (the `_shared` folder is skipped by the registry build and the codegen). Members are lowerCamelCase per the registry naming convention. The query tuple and responses carry the same information as the ToIP Trust Registry Query Protocol (TRQP) v2.0 JSON schemas; a registry that also serves the plain HTTP TRQP binding maps the member names to TRQP's snake_case at that binding. 0.2 renames the 0.1 snake_case members and adds the optional `validFrom`/`validUntil` validity window to `TrustRecord`.",
+  "$defs": {
+    "QueryContext": {
+      "title": "QueryContext",
+      "type": "object",
+      "description": "Optional TRQP query context. `time` requests evaluation as of a given instant; `locator` is an authority-defined hint for locating records.",
+      "properties": {
+        "time": { "type": "string", "format": "date-time", "description": "Evaluate the query as of this RFC3339 (Z offset) instant. Blank/absent uses current server time." },
+        "locator": { "type": "string", "description": "Optional hint for systems that need extra information to locate the records in question (authorization queries)." }
+      },
+      "additionalProperties": { "type": "string" }
+    },
+    "RecordType": {
+      "title": "RecordType",
+      "type": "string",
+      "enum": ["authorization", "recognition"],
+      "description": "Whether the record asserts an authorization or a recognition relationship."
+    },
+    "TrustRecord": {
+      "title": "TrustRecord",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entityId", "authorityId", "action", "resource", "recordType"],
+      "properties": {
+        "entityId": { "type": "string" },
+        "authorityId": { "type": "string" },
+        "action": { "type": "string" },
+        "resource": { "type": "string" },
+        "recognized": { "type": "boolean", "description": "Present on recognition records: whether the action+resource is recognised." },
+        "authorized": { "type": "boolean", "description": "Present on authorization records: whether the action+resource authorization is confirmed." },
+        "context": { "type": "object", "description": "Opaque governance context attached to the record.", "additionalProperties": true },
+        "recordType": { "$ref": "#/$defs/RecordType" },
+        "validFrom": { "type": "string", "format": "date-time", "description": "The first instant at which the authority statement holds (inclusive). Absent: no lower bound." },
+        "validUntil": { "type": "string", "format": "date-time", "description": "The instant at which the authority statement stops holding (exclusive). Absent: no upper bound. When both bounds are present, `validFrom` MUST be earlier than `validUntil`." }
+      }
+    },
+    "RecordAck": {
+      "title": "RecordAck",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ok"],
+      "properties": {
+        "ok": { "type": "boolean", "description": "Whether the mutation was applied." },
+        "message": { "type": "string", "maxLength": 1024, "description": "Optional human-readable detail." }
+      }
+    }
+  }
+}

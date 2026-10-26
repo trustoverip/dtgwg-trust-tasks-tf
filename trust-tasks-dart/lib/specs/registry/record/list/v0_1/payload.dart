@@ -79,7 +79,7 @@ class TrustRecord {
 typedef Ext = Map<String, dynamic>;
 
 /// Registry Record List — response payload
-@Deprecated('retired; use registry/record/query/0.2')
+@Deprecated('retired; use registry/record/query/0.3')
 class Response {
   const Response({
     required this.records,
@@ -106,7 +106,7 @@ class Response {
 }
 
 /// An administrator lists all trust records held by the registry.
-@Deprecated('retired; use registry/record/query/0.2')
+@Deprecated('retired; use registry/record/query/0.3')
 class Payload {
   const Payload({
     this.ext,
@@ -132,7 +132,7 @@ class Payload {
 /// Versions"). A deprecated version is still supported; it is removed from
 /// this package once withdrawn.
 // ignore: unnecessary_nullable_for_final_variable_declarations
-const String? deprecation = 'retired; use registry/record/query/0.2';
+const String? deprecation = 'retired; use registry/record/query/0.3';
 
 /// The Trust Task type URI this library's [Payload] is carried under.
 const String typeUri = 'https://trusttasks.org/spec/registry/record/list/0.1';

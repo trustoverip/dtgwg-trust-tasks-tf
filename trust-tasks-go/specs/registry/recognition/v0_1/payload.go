@@ -9,6 +9,8 @@ import (
 )
 
 // Response Registry Recognition — response payload
+//
+// Deprecated: superseded by registry/recognition/0.2
 type Response struct {
 	EntityID    string `json:"entity_id"`
 	AuthorityID string `json:"authority_id"`
@@ -50,6 +52,8 @@ type QueryContext struct {
 // recognised by an authority for a given action+resource. Field names are verbatim from
 // the TRQP recognition request/response schemas so the same payload serves the plain HTTP
 // TRQP binding and the Trust Task binding.
+//
+// Deprecated: superseded by registry/recognition/0.2
 type Payload struct {
 	// Identifier of the entity being tested for recognition.
 	EntityID string `json:"entity_id"`
@@ -81,7 +85,7 @@ const Extends = ""
 // why this one is deprecated and what replaces it: "superseded by <slug>/<M.N>",
 // "retired; use <slug>/<M.N>" or "retired". A deprecated version is still
 // supported, but is withdrawn from this module in a later scheduled release.
-const Deprecation = ""
+const Deprecation = "superseded by registry/recognition/0.2"
 
 // ResponseTypeURI is the success-response form of TypeURI (SPEC §4.4.1).
 const ResponseTypeURI = "https://trusttasks.org/spec/registry/recognition/0.1#response"

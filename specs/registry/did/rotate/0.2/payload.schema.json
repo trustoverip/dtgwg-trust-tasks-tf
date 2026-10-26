@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://trusttasks.org/spec/registry/did/rotate/0.2",
+  "title": "Registry DID Rotate — payload",
+  "description": "An administrator asks a trust registry to rotate the keys of the registry's own agent-managed did:webvh in place, preserving the DID while refreshing its key material. Members are lowerCamelCase, as throughout the registry/* family.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "preRotationCount": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Override the number of pre-rotation key commitments published for the new key set. Absent: the managing agent's default."
+    },
+    "label": {
+      "type": "string",
+      "maxLength": 256,
+      "description": "Operator-facing audit label for the rotation."
+    },
+    "ext": {
+      "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+    }
+  },
+  "$defs": {
+    "Response": {
+      "$anchor": "response",
+      "title": "Registry DID Rotate — response payload",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "did",
+        "newScid",
+        "newVersionId"
+      ],
+      "properties": {
+        "did": {
+          "type": "string",
+          "description": "The DID whose keys were rotated."
+        },
+        "newScid": {
+          "type": "string",
+          "description": "The DID's SCID after rotation."
+        },
+        "newVersionId": {
+          "type": "string",
+          "description": "The did:webvh log's new versionId after rotation."
+        },
+        "ext": {
+          "$ref": "../../../../_framework/0.4/framework.schema.json#/$defs/Ext"
+        }
+      }
+    }
+  }
+}

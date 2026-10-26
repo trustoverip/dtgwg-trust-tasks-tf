@@ -9,12 +9,12 @@ import type { Ext, RecordType, TrustRecord } from "../../../../_shared/component
 /**
  * An administrator lists all trust records held by the registry.
  *
- * @deprecated retired; use registry/record/query/0.2
+ * @deprecated retired; use registry/record/query/0.3
  */
 export interface RegistryRecordListPayload {
   ext?: Ext;
 }
-/** @deprecated retired; use registry/record/query/0.2 */
+/** @deprecated retired; use registry/record/query/0.3 */
 export interface RegistryRecordListResponsePayload {
   /**
    * All trust records held by the registry.
@@ -43,12 +43,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "retired; use registry/record/query/0.2";
+export const DEPRECATION: string | null = "retired; use registry/record/query/0.3";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated retired; use registry/record/query/0.2
+ * @deprecated retired; use registry/record/query/0.3
  */
 export type Payload = RegistryRecordListPayload;
 
@@ -58,7 +58,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/registry/record/li
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated retired; use registry/record/query/0.2
+ * @deprecated retired; use registry/record/query/0.3
  */
 export type Response = RegistryRecordListResponsePayload;
 

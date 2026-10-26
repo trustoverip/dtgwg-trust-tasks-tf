@@ -1,0 +1,46 @@
+[
+  {
+    "note": "Empty payload omits the required members entityId, authorityId, action, resource.",
+    "payload": {}
+  },
+  {
+    "note": "Unknown top-level member is rejected (additionalProperties: false).",
+    "payload": {
+      "entityId": "did:example:entity",
+      "authorityId": "did:example:authority",
+      "action": "issue",
+      "resource": "vc",
+      "__notARealMember__": true
+    }
+  },
+  {
+    "note": "entityId must be a string.",
+    "payload": {
+      "entityId": 42,
+      "authorityId": "did:example:authority",
+      "action": "issue",
+      "resource": "vc"
+    }
+  },
+  {
+    "note": "The pre-0.2 snake_case members `entity_id` and `authority_id` are rejected (additionalProperties: false); the members are `entityId` and `authorityId`.",
+    "payload": {
+      "entity_id": "did:example:entity",
+      "authority_id": "did:example:authority",
+      "action": "issue",
+      "resource": "vc"
+    }
+  },
+  {
+    "variant": "response",
+    "note": "The pre-0.2 snake_case `time_evaluated` is rejected and `evaluatedAt` is required.",
+    "payload": {
+      "entityId": "did:example:entity",
+      "authorityId": "did:example:authority",
+      "action": "issue",
+      "resource": "vc",
+      "recognized": true,
+      "time_evaluated": "2026-07-09T00:00:00Z"
+    }
+  }
+]

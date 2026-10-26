@@ -9,7 +9,7 @@ import type { Ext, RecordType, TrustRecord } from "../../../../_shared/component
 /**
  * An administrator queries a trust registry's stored records by an optional four-part key. All four parts supplied: an exact fetch of one record (notFound on a miss). Fewer parts: a filtered, cursor-paginated enumeration — fixing the pagination gap the superseded registry/record/list conceded. Key field names are verbatim TRQP (snake_case), matching the registry/* family.
  *
- * @deprecated superseded by registry/record/query/0.2
+ * @deprecated superseded by registry/record/query/0.3
  */
 export interface RegistryRecordQueryPayload {
   /**
@@ -38,7 +38,7 @@ export interface RegistryRecordQueryPayload {
   limit?: number;
   ext?: Ext;
 }
-/** @deprecated superseded by registry/record/query/0.2 */
+/** @deprecated superseded by registry/record/query/0.3 */
 export interface RegistryRecordQueryResponsePayload {
   /**
    * The matching trust records. Exactly one entry on a fully keyed fetch; zero or more per page on an enumeration.
@@ -71,12 +71,12 @@ export const EXTENDS: string | null = null;
  * this package in a later scheduled batch (SPEC "Superseded and Withdrawn
  * Versions").
  */
-export const DEPRECATION: string | null = "superseded by registry/record/query/0.2";
+export const DEPRECATION: string | null = "superseded by registry/record/query/0.3";
 
 /**
  * Stable alias for this specification's request payload shape.
  *
- * @deprecated superseded by registry/record/query/0.2
+ * @deprecated superseded by registry/record/query/0.3
  */
 export type Payload = RegistryRecordQueryPayload;
 
@@ -86,7 +86,7 @@ export const RESPONSE_TYPE_URI = "https://trusttasks.org/spec/registry/record/qu
 /**
  * Stable alias for this specification's success-response payload shape.
  *
- * @deprecated superseded by registry/record/query/0.2
+ * @deprecated superseded by registry/record/query/0.3
  */
 export type Response = RegistryRecordQueryResponsePayload;
 
