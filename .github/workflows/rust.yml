@@ -9,6 +9,8 @@ on:
       - "trust-tasks/**"
       - "trust-tasks-rs/**"
       - "trust-tasks-codegen/**"
+      - "trust-tasks-build/**"
+      - "examples/**"
       - "trust-tasks-https/**"
       - "trust-tasks-didcomm/**"
       # These three were missing, so a change to one of them ran no Rust CI at
@@ -20,6 +22,9 @@ on:
       - "trust-tasks-ceremony/**"
       - "trust-tasks-proof/**"
       - "trust-tasks-tsp/**"
+      - "trust-tasks-cli/**"
+      # The by-digest store script the `cli` job builds its registry with.
+      - "scripts/write-by-digest-store.sh"
       - "Cargo.toml"
       - "Cargo.lock"
       - "specs/**"
@@ -155,6 +160,24 @@ jobs:
             cargo test -p trust-tasks-rs --no-default-features --features "$family" --all-targets
             echo "::endgroup::"
           done
+
+  # An application that generates its tasks at build time: three versions
+  # pinned in examples/consumer-app/trust-tasks.lock, their bundles vendored
+  # beside it, `trust-tasks-rs` with `default-features = false`. Building it
+  # runs trust-tasks-build (digest check + generation) in a real build.rs, and
+  # running it is a round trip through the generated types. The whole job is
+  # seconds where a build of the prebuilt modules is minutes — which is the
+  # point of milestone 2 (docs/design/consumer-side-generation.md).
+  consumer-app:
+    name: example application (trust-tasks-build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - name: cargo run -p trust-tasks-example-consumer-app
+        run: cargo run -p trust-tasks-example-consumer-app
+      - name: cargo test -p trust-tasks-build
+        run: cargo test -p trust-tasks-build
 
   doc:
     name: cargo doc
@@ -457,7 +480,32 @@ jobs:
           sudo apt-get install -y libdbus-1-dev pkg-config
       # `publish = false` crates are not uploaded, so they are not checked.
       - name: cargo package --workspace
-        run: cargo package --workspace --exclude trust-tasks-codegen
+        run: cargo package --workspace --exclude trust-tasks-codegen --exclude trust-tasks-example-consumer-app
+
+  # The `trust-tasks` CLI against the WHOLE registry, as deploy.yml publishes
+  # it: every bundle, the index and the by-digest store, built here by the same
+  # codegen and script. The `test` job already runs this crate's tests against
+  # its fixture registry; this adds `full_registry_round_trip`, which is
+  # skipped there because it needs `TRUST_TASKS_TEST_REGISTRY_FULL`. Light: the
+  # codegen's `--bundles` mode takes about a second, and neither crate links
+  # trust-tasks-rs.
+  cli:
+    name: cargo test (trust-tasks-cli, against the whole registry)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+      - name: Build the registry (bundles, index, by-digest store)
+        run: |
+          registry="$RUNNER_TEMP/registry"
+          cargo run -q --release -p trust-tasks-codegen -- --bundles "$registry/specs"
+          scripts/write-by-digest-store.sh "$registry/specs"
+          echo "TRUST_TASKS_TEST_REGISTRY_FULL=$registry" >> "$GITHUB_ENV"
+      - name: cargo test -p trust-tasks-cli
+        run: cargo test -p trust-tasks-cli
 
   deny:
     name: cargo deny

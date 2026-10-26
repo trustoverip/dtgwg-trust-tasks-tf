@@ -446,6 +446,23 @@ pub struct DeclaredErrorCode {
 }
 
 impl DeclaredErrorCode {
+    /// The constructor code generated outside this crate uses — by
+    /// `trust-tasks-build`, in an application, where the `#[non_exhaustive]`
+    /// struct cannot be written as a literal. Not a public API: a code built by
+    /// hand is exactly the undeclared literal this type exists to replace.
+    #[doc(hidden)]
+    pub const fn __from_declaration(
+        code: &'static str,
+        retryable: bool,
+        details_schema: Option<&'static str>,
+    ) -> Self {
+        Self {
+            code,
+            retryable,
+            details_schema,
+        }
+    }
+
     /// The namespace before the colon: the declaring specification's slug, or
     /// a family prefix of it.
     pub fn namespace(&self) -> &'static str {

@@ -165,6 +165,7 @@ therefore, by construction, what the generator generates from.
 | `policy.recipientRequired.{request,response}` | `IS_RECIPIENT_REQUIRED` per variant — the response's tracks the *issuer* party (§7.2 item 5) |
 | `policy.maxDocumentBytes.{request,response}` | `MAX_DOCUMENT_BYTES`, integer or `null` |
 | `errorCodes[]` | `{code, meaning, retryable, detailsSchema?}`, declaration order, `detailsSchema` `$ref`s inlined |
+| `propertyOrder` | (milestone 2) JSON Pointer of every schema object in `schema` / `responseSchema` that has `properties` → its member names in **authored** order, read from the file the definition was written in (the payload schema, or the shared file a `$defs` entry was spliced from). A reader of an older bundle treats it as `{}` |
 | `schema` | the request payload schema, self-contained — `Payload::PAYLOAD_SCHEMA` |
 | `responseSchema` | the response document — `Response::PAYLOAD_SCHEMA` — or `null` when there is no `$defs.Response` (then the `response` policy values carry no meaning) |
 
@@ -210,7 +211,10 @@ average, 56.8 KB largest; `index.json` 350 KB.
    harmless on the wire (proofs are over JCS) but churn in every generated file.
    Decision for milestone 2: the bundle carries the authored order, and the
    digest is defined over the JCS form of the bundle rather than the file bytes,
-   so content identity stays independent of formatting.
+   so content identity stays independent of formatting. **Done in milestone 2**
+   as `propertyOrder` (above). The digest stays `sha256` of the file bytes —
+   which *are* the JCS form, so the two definitions coincide and a reader can
+   verify without canonicalizing.
 2. **Immutability.** A `draft` may be edited in place, so the bytes at
    `/specs/<slug>/<M.N>/bundle.json` can change while a lockfile pins the old
    digest. Milestone 2 adds an append-only store, `/specs/by-digest/sha256-<hex>.json`,
@@ -220,3 +224,114 @@ average, 56.8 KB largest; `index.json` 350 KB.
 4. **Resolved fields.** `supersededBy` is raw front matter (may name a bare slug);
    resolve it to `slug/M.N` as `deprecation` already is, or drop it.
 
+## Milestone 2 — Rust build side implemented
+
+**`trust-tasks-build`** (new crate, `publish = true`) is the per-module Rust
+generator as a library. An application's `build.rs`:
+
+```rust
+trust_tasks_build::Config::new()   // ./trust-tasks.lock + ./trust-tasks/
+    .lockfile("trust-tasks.lock")
+    .compile()?;                   // $OUT_DIR/trust_tasks_generated.rs
+```
+
+and `mod tasks { include!(concat!(env!("OUT_DIR"), "/trust_tasks_generated.rs")); }`
+gives `tasks::vault::get::v0_3::{Payload, Response, error_codes, …}` — the module
+path `trust_tasks_rs::specs` uses. Every vendored bundle is checked against the
+lock's digest (and its slug/version/Type URI) before anything is generated;
+`cargo:rerun-if-changed` names the lock and every bundle. Framework specs
+(`trust-task-*`, `trust-ceremony-*`) are refused: the runtime carries them.
+`Config::generate()` returns the source without writing — what
+`trust-tasks generate --lang rs` calls.
+
+**One generator.** `trust-tasks-codegen` now generates every `trust-tasks-rs`
+module *through the bundle*: `build_bundle` → `Bundle::from_slice` →
+`trust_tasks_build::generate_module(…, Target::runtime_crate())`. The committed
+tree did not change by a byte, so each committed module is exactly what an
+application generates from that version's published bundle, apart from the
+paths below. The schema passes, typify settings, `render_module` and the
+`errorCodes` reader moved into `trust-tasks-build` (with their tests).
+
+**Paths.** A `Target` names the runtime: `crate` in the repository, `::trust_tasks_rs`
+in an application. serde, serde_json, regress and chrono — what typify's output
+names — are reached through `trust_tasks_rs::__private` (a `#[doc(hidden)]`
+re-export module), every serde derive gets `#[serde(crate = "…")]`, and
+`DeclaredErrorCode` (`#[non_exhaustive]`) is built through a hidden
+`const fn __from_declaration`. An application depends on `trust-tasks-rs`
+(`default-features = false`) and, as a build dependency, `trust-tasks-build` —
+nothing else.
+
+**Forward-minor routing.** `extension::extends_for` consults the runtime's
+generated table, then declarations an application registered with the new
+`extension::declare_extends(&'static [(&str, &str)])`. The generated file ends
+with `EXTENDS` (every locked version's `extends`) and `declare_extends()`,
+which an application calls once at start-up. Additive: no existing signature
+changed.
+
+**Example.** `examples/consumer-app` pins `acl/grant/0.2`, `keys/list/0.2` and
+`vault/get/0.3`, builds with `trust-tasks-rs` `default-features = false`, and
+runs a round trip through a `Dispatcher` (a response, a declared error code, a
+policy refusal, and an unlocked type refused). `rust.yml`'s `consumer-app` job
+builds and runs it.
+
+**Measured** (Apple M5 Max, 18 cores, 64 GB; cold target directory, sccache
+off, `RUSTC_WRAPPER= CARGO_TARGET_DIR=<fresh> /usr/bin/time -l cargo build …`):
+
+| Build | Wall | Peak RSS |
+|---|---|---|
+| `-p trust-tasks-example-consumer-app` (3 tasks generated at build time, incl. building typify/syn for the build script) | **8.1 s** | **0.41 GB** |
+| `-p trust-tasks-rs` (default features: every prebuilt module) | 140.2 s | 17.4 GB |
+| `-p trust-tasks-rs --no-default-features --features acl,keys,vault` (today's family gating) | 13.9 s | 1.8 GB |
+| `-p trust-tasks-rs --no-default-features` (the runtime alone) | 5.8 s | 0.41 GB |
+
+The generated file for the three tasks is 418 KB (8,286 lines); after a lock
+change, regenerating and recompiling the application takes 1.1 s.
+
+## Milestone 2 — the CLI
+
+### Using the CLI
+
+`trust-tasks` is the `trust-tasks-cli` crate (`cargo install trust-tasks-cli`;
+reference in [its README](../../trust-tasks-cli/README.md)). In an application:
+
+```sh
+trust-tasks add vault/upsert acl/grant@latest   # writes trust-tasks.toml, trust-tasks.lock, trust-tasks/
+git add trust-tasks.toml trust-tasks.lock trust-tasks/
+trust-tasks check                               # in CI: offline, exits 1 on any problem
+trust-tasks update                              # later: move `latest` pins, report newer versions
+```
+
+- `add <slug>` pins the latest live version exactly, `<slug>/<M.N>` that
+  version, `<slug>@latest` records the intent to follow the latest live version
+  (neither `retired` nor `withdrawn`). A withdrawn version is refused.
+- `update` moves a `latest` pin and says what the move costs: `0.5 extends 0.4:
+  no code change needed` when the newer version's `extends` chain reaches the
+  pinned one, `breaking: …` otherwise. An exact pin stays put (`--to-latest`
+  moves it) but takes new bytes if its draft changed in place. A pin whose
+  version has since been withdrawn is refused, left building, and fails the run.
+- `check` is offline: each lock entry's vendored bundle exists and hashes to the
+  locked digest, no stray bundles, manifest and lock agree.
+- `fetch` restores missing or altered vendored bundles **by the locked digest**,
+  never moving a pin — which is what the by-digest store is for: after a draft
+  changes in place, its old digest is still fetchable.
+- `list [--remote]` shows status, deprecation and, remotely, the newest version.
+- `--registry <url>` / `TRUST_TASKS_REGISTRY` select another registry: an
+  `https://` site root, a `file://` URL or a directory with the same layout.
+
+The formats are as specified for milestone 2: `trust-tasks.toml` (intent;
+additionally, a value may be an array of exact versions to pin two versions of
+one task), `trust-tasks.lock` (`version = 1`, `registry`, `[[task]]` of `slug`,
+`version`, `type_uri`, `digest`, sorted by slug then numerically by version),
+and the digest is `sha256` over the bundle file's bytes.
+
+### The by-digest store
+
+`deploy.yml` runs `scripts/write-by-digest-store.sh website/specs` after the
+bundles are built and checked, copying each bundle to
+`specs/by-digest/sha256-<hex>.json` and re-hashing it. The deploy job uploads
+that prefix **first and without `--delete`** (`--size-only`, immutable cache
+headers), then syncs the rest of the site with `--delete --exclude
+"specs/by-digest/*"`, so a published digest is never removed by a later deploy.
+Until the store has every digest a lockfile can name, the CLI falls back to
+`specs/<slug>/<M.N>/bundle.json` when the store lacks one, verifies it against
+the same digest, and says so.

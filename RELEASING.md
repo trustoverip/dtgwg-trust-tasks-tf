@@ -99,7 +99,7 @@ no hand-written entries.
 
 ## What gets published
 
-**Nine crates, one npm package, one Go module and four Dart packages.**
+**Ten crates, one npm package, one Go module and four Dart packages.**
 `trust-tasks-codegen` sets
 `publish = false` in its own `Cargo.toml` — it is the internal generator.
 
@@ -111,6 +111,8 @@ no hand-written entries.
 | `trust-tasks-proof` | crates.io — proof verification backend |
 | `trust-tasks-ceremony` | crates.io — Trust Ceremony helpers |
 | `trust-tasks-capability-client` | crates.io |
+| `trust-tasks-build` | crates.io — build-time generator: an application's `build.rs` turns the versions pinned in `trust-tasks.lock` into Rust types. Not in the `core` version group (it does not depend on `trust-tasks-rs`). **Not yet released**: `release = false` in `release-plz.toml` until its manual first publish (`cargo publish -p trust-tasks-build`, register its Trusted Publisher against `publish.yml`, then delete the line) — the same steps as `trust-tasks-cli` below |
+| `trust-tasks-cli` | crates.io — the `trust-tasks` command (pins tasks, vendors bundles by digest). **Not yet released**: `release = false` in `release-plz.toml` until its manual first publish — see below |
 | `@openvtc/trust-tasks` | npm — the TypeScript bindings |
 | `@openvtc/trust-tasks-proof` | npm — Data Integrity proof verification/signing for `@openvtc/trust-tasks`, on @noble |
 | `@openvtc/trust-tasks-tsp` | npm — the TSP transport binding, on `@openvtc/vti-tsp-js` |
@@ -162,6 +164,17 @@ no hand-written entries.
 Adding a crate to the published set means setting `publish` back to the default
 *and* checking everything it depends on is published; crates.io requires a
 published crate's whole dependency closure to be published too.
+
+> ⚠️ **A new crate's first crates.io publish is manual**, for the same reason as
+> npm's: trusted publishing cannot create a crate that does not exist. Left to
+> release-plz, the new crate would fail mid-release with the crates before it
+> already uploaded. So a new crate lands with `release = false` in its
+> `release-plz.toml` `[[package]]` entry (as `trust-tasks-cli` does), and then:
+> 1. `cargo publish -p <crate>` from `main`, with a crates.io token of your own.
+> 2. On crates.io, the crate → **Settings → Trusted Publishing → GitHub**, repo
+>    `trustoverip/dtgwg-trust-tasks-tf`, workflow filename `publish.yml`.
+> 3. Delete the `release = false` line. The next Release PR bumps it from the
+>    published version like any other crate.
 
 ---
 

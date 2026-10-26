@@ -71,12 +71,60 @@ const MAX_DEPTH: usize = 128;
 /// know"; for routing the two mean the same thing — no forward acceptance.
 /// The table is generated, not feature-gated: a build without the received
 /// version's family still knows its chain.
+///
+/// A version newer than this build's table — one an application generated
+/// with `trust-tasks-build` — is known once the application has passed its
+/// declaration to [`declare_extends`]. The generated table answers first.
 pub fn extends_for(type_uri: &str) -> Option<&'static str> {
     #[cfg(test)]
     if let Some(answer) = test_index::lookup(type_uri) {
         return answer;
     }
-    crate::extends_index::declared_extends(type_uri)
+    crate::extends_index::declared_extends(type_uri).or_else(|| application_extends(type_uri))
+}
+
+/// The declarations applications have passed to [`declare_extends`].
+static APPLICATION_EXTENDS: std::sync::RwLock<Vec<&'static [(&'static str, &'static str)]>> =
+    std::sync::RwLock::new(Vec::new());
+
+/// Teach [`extends_for`] — and through it the dispatchers' forward-minor
+/// routing, [`read_as`] and [`consume_inbound`](crate::consume_inbound) — the
+/// `extends` declarations of specification versions this build's generated
+/// table does not carry: those an application generated itself from registry
+/// bundles with `trust-tasks-build`.
+///
+/// Each entry is `(bare request Type URI, "MAJOR.MINOR" it extends)`. The file
+/// `trust-tasks-build` writes carries every locked version's declarations as
+/// `EXTENDS` and a `declare_extends()` that calls this with them, so an
+/// application calls that once at start-up:
+///
+/// ```ignore
+/// mod tasks { include!(concat!(env!("OUT_DIR"), "/trust_tasks_generated.rs")); }
+/// tasks::declare_extends();
+/// ```
+///
+/// Process-wide and additive. Declaring the same table twice is harmless, and
+/// where this build's generated table already answers for a Type URI that
+/// answer stands. A declaration is still only followed when it names a
+/// strictly earlier MINOR of the same MAJOR (SPEC §5.2).
+pub fn declare_extends(declarations: &'static [(&'static str, &'static str)]) {
+    let mut tables = APPLICATION_EXTENDS
+        .write()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    if !tables.iter().any(|t| std::ptr::eq(*t, declarations)) {
+        tables.push(declarations);
+    }
+}
+
+fn application_extends(type_uri: &str) -> Option<&'static str> {
+    let tables = APPLICATION_EXTENDS
+        .read()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    tables
+        .iter()
+        .flat_map(|t| t.iter())
+        .find(|(uri, _)| *uri == type_uri)
+        .map(|(_, target)| *target)
 }
 
 /// The versions `received`'s declared-extension chain reaches, nearest (and so
@@ -580,5 +628,34 @@ mod tests {
             &v01.with_response()
         ));
         assert!(!extension_reaches(&received.with_response(), &v01));
+    }
+
+    /// An application's declarations (what `trust-tasks-build`'s
+    /// `declare_extends()` passes) extend the generated table: the chain they
+    /// describe is walked, and declaring twice changes nothing.
+    #[test]
+    fn application_declarations_are_walked() {
+        static DECLARED: &[(&str, &str)] = &[
+            ("https://trusttasks.org/spec/test-app-ext/thing/0.3", "0.2"),
+            ("https://trusttasks.org/spec/test-app-ext/thing/0.2", "0.1"),
+        ];
+        let base = "https://trusttasks.org/spec/test-app-ext/thing";
+        assert_eq!(extends_for(&format!("{base}/0.3")), None);
+        declare_extends(DECLARED);
+        declare_extends(DECLARED);
+        assert_eq!(extends_for(&format!("{base}/0.3")), Some("0.2"));
+        assert_eq!(
+            APPLICATION_EXTENDS
+                .read()
+                .unwrap()
+                .iter()
+                .filter(|t| std::ptr::eq(**t, DECLARED))
+                .count(),
+            1
+        );
+
+        let received: TypeUri = format!("{base}/0.3").parse().unwrap();
+        let v01: TypeUri = format!("{base}/0.1").parse().unwrap();
+        assert!(extension_reaches(&received, &v01));
     }
 }

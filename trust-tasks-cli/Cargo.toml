@@ -1,0 +1,38 @@
+[package]
+name = "trust-tasks-cli"
+# A new crate's first version. From here on release-plz assigns it, as it does
+# for every other crate (RELEASING.md). The first crates.io publish is manual:
+# trusted publishing cannot create a crate that does not exist yet.
+version = "0.1.0"
+edition.workspace = true
+rust-version = "1.95"
+license.workspace = true
+repository.workspace = true
+description = "The `trust-tasks` command: pin the Trust Task specifications an application uses, vendor their registry bundles by digest, and verify them in CI."
+homepage = "https://trusttasks.org/"
+readme = "README.md"
+keywords = ["trust-tasks", "trustoverip", "cli", "lockfile", "codegen"]
+categories = ["command-line-utilities", "development-tools::build-utils"]
+publish = true
+
+[[bin]]
+name = "trust-tasks"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive", "env"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+# Reads trust-tasks.lock. The lock is written by hand (src/lock.rs), so its
+# layout is exactly the documented one.
+toml = "1"
+# Edits trust-tasks.toml in place, keeping the author's comments and layout.
+toml_edit = "0.25"
+# Small blocking HTTP client: rustls on ring with the Mozilla roots
+# (webpki-roots), no async runtime. gzip because CloudFront compresses JSON.
+ureq = { version = "3", default-features = false, features = ["rustls", "gzip"] }
+
+[dev-dependencies]
+tempfile = "3"
