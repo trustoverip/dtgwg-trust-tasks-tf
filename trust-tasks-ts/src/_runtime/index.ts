@@ -71,6 +71,7 @@ export {
 export { canonicalJson, sha256Hex } from "./canonical.js";
 
 export {
+  declareExtends,
   extendsChain,
   extendsOf,
   prunePayload,

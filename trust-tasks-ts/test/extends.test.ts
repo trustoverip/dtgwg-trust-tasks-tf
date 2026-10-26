@@ -24,6 +24,7 @@ import {
   canonicalJson,
   consequentialChecks,
   consumeInbound,
+  declareExtends,
   extendsChain,
   extendsOf,
   prunePayload,
@@ -167,6 +168,20 @@ describe("extends chain lookup", () => {
     const x = "https://trusttasks.org/spec/example/thing";
     const read = readForSpec({ ...doc03(), type: `${x}/0.2` }, { ...V01.SPEC, typeUri: `${x}/0.1` });
     assert.equal(read.kind === "refused" && read.reason.code, "unsupportedVersion");
+  });
+
+  it("walks tables an application declared, after the generated one", () => {
+    // What `declareExtends()` in a trust-tasks-gen-ts output passes: versions
+    // this package's own table knows nothing about.
+    const app = "https://trusttasks.org/spec/example/app-declared";
+    assert.deepEqual(extendsChain(`${app}/0.3`), []);
+    const table = { [`${app}/0.3`]: "0.2", [`${app}/0.2`]: "0.1" };
+    declareExtends(table);
+    declareExtends(table); // harmless twice
+    assert.equal(extendsOf(`${app}/0.3#response`), "0.2");
+    assert.deepEqual(extendsChain(`${app}/0.3`), ["0.2", "0.1"]);
+    const read = readForSpec({ ...doc03(), type: `${app}/0.3` }, { ...V01.SPEC, typeUri: `${app}/0.1` });
+    assert.equal(read.kind, "accepted");
   });
 });
 

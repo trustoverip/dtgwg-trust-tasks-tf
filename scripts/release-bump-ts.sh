@@ -61,6 +61,14 @@ case "$PKG" in
     WATCH=("$PKG_DIR")
     SCOPES="ts-capability-client"
     ;;
+  @openvtc/trust-tasks-gen)
+    # Not in release-pr.sh's TS_PACKAGES (nor publish.yml's publish-npm
+    # matrix) until its manual first publish and tag seed — RELEASING.md.
+    PKG_DIR="trust-tasks-ts-gen"
+    TAG_PREFIX="trust-tasks-ts-gen-v"
+    WATCH=("$PKG_DIR")
+    SCOPES="ts-gen"
+    ;;
   *)
     echo "::error::unknown TS package '$PKG'"
     exit 1
