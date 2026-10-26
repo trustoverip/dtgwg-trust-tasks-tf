@@ -30,7 +30,7 @@ alias and no two of them collide in one file:
 
 ```go
 import (
-    aclgrantv0_1 "github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/specs/acl/grant/v0_1"
+    aclgrantv0_2 "github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/specs/acl/grant/v0_2"
     "github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/trusttasks"
 )
 ```
@@ -56,9 +56,9 @@ per §8.1.
 guard := trusttasks.NewInMemoryReplayGuard(0)
 
 outcome, err := trusttasks.ConsumeInbound(ctx,
-    trusttasks.ConsumeOptions[aclgrantv0_1.Payload, aclgrantv0_1.Response]{
+    trusttasks.ConsumeOptions[aclgrantv0_2.Payload, aclgrantv0_2.Response]{
         Transport:     transport,
-        Spec:          aclgrantv0_1.Spec,
+        Spec:          aclgrantv0_2.Spec,
         ProofPolicy:   trusttasks.ProofPolicy{Kind: trusttasks.ProofVerify, Verifier: myVerifier},
         PayloadPolicy: trusttasks.PayloadPolicy{Kind: trusttasks.PayloadValidate, Validator: mySchemaEngine},
         // acl/grant is consequential: a replayed envelope must not grant twice.
@@ -69,15 +69,15 @@ outcome, err := trusttasks.ConsumeInbound(ctx,
         NewErrorID: func() string { return uuid.NewString() },
         Handler: func(
             ctx context.Context,
-            doc *trusttasks.Document[aclgrantv0_1.Payload],
+            doc *trusttasks.Document[aclgrantv0_2.Payload],
             parties trusttasks.ResolvedParties,
-        ) (*trusttasks.Document[aclgrantv0_1.Response], error) {
+        ) (*trusttasks.Document[aclgrantv0_2.Response], error) {
             entry, err := applyGrant(ctx, doc.Payload.Entry, parties)
             if err != nil {
                 return nil, err // aborts; or return trusttasks.Refuse(...) to answer
             }
-            return trusttasks.RespondWith[aclgrantv0_1.Payload, aclgrantv0_1.Response](
-                doc, uuid.NewString(), aclgrantv0_1.Response{Entry: entry}, nil,
+            return trusttasks.RespondWith[aclgrantv0_2.Payload, aclgrantv0_2.Response](
+                doc, uuid.NewString(), aclgrantv0_2.Response{Entry: entry}, nil,
             ), nil
         },
     })
@@ -127,11 +127,12 @@ TypeScript than to Rust here; run a validator.
 Optional members are pointers, including optional slices and maps. `*[]string` is
 awkward to hold, and it is deliberate: `omitempty` on a plain slice drops an
 empty one from the wire, collapsing "present and empty" into "absent". Several
-specifications make that distinction load-bearing — `acl`'s `allowedKeys`
-documents at length that "PRESENT-BUT-EMPTY means authorized on NO keys — the
-opposite of absent", and that collapsing the two "re-creates the
-empty-means-unrestricted class of privilege-escalation defect this family's
-conventions exist to prevent". Rust spells this `Option<Vec<T>>` and TypeScript
+specifications make that distinction load-bearing — `vta/contexts/update`'s
+`signableKeys` means "every key the context holds" when absent and "no keys" when
+present-but-empty, two opposite instructions a consumer must not collapse (the
+smoke test pins it), and `acl/grant/0.1`'s `allowedKeys` warned that collapsing
+them "re-creates the empty-means-unrestricted class of privilege-escalation
+defect this family's conventions exist to prevent". Rust spells this `Option<Vec<T>>` and TypeScript
 `scopes?: string[]`; a bare Go slice was the only one of the three that could not
 say it.
 

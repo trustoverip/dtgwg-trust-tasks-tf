@@ -31,16 +31,19 @@ npm install @openvtc/trust-tasks
 ## Usage
 
 ```ts
-import { AclGrant_v0_1, DidManagementDidRegister_v0_1 } from "@openvtc/trust-tasks";
+import { AclGrant_v0_2, DidManagementDidRegister_v0_1 } from "@openvtc/trust-tasks";
 
 // Compose a request payload, type-checked against the spec's
 // payload.schema.json. `Payload` is a stable alias every module
 // exports, so you never have to look up the title-derived interface
-// name (here, `ACLGrantPayload`).
-const grant: AclGrant_v0_1.Payload = {
+// name (here, `ACLGrant02Payload`).
+const grant: AclGrant_v0_2.Payload = {
   entry: {
     subject: "did:key:z6MkAlice",
     role: "admin",
+    act: { scope: "contexts", contexts: ["ctx/payments"] },
+    keys: { scope: "all" },
+    capabilities: { scope: "ceiling" },
   },
   reason: "onboarding",
 };
@@ -50,7 +53,7 @@ const grant: AclGrant_v0_1.Payload = {
 // Fire-and-forget specs export neither `Response` nor
 // `RESPONSE_TYPE_URI`, because SPEC.md §4.4.1 forbids emitting a
 // `#response` document for them.
-const reply: AclGrant_v0_1.Response = {
+const reply: AclGrant_v0_2.Response = {
   entry: { /* … */ },
 };
 
@@ -71,11 +74,11 @@ Each spec lands at a stable path:
 
 ```
 src/
-├── acl/grant/0.1/payload.ts           // AclGrant_v0_1
-├── auth/authenticate/0.1/payload.ts   // AuthAuthenticate_v0_1
+├── acl/grant/0.2/payload.ts           // AclGrant_v0_2
+├── auth/authenticate/0.3/payload.ts   // AuthAuthenticate_v0_3
 ├── did-management/did/register/0.1/
 │   └── payload.ts                     // DidManagementDidRegister_v0_1
-├── vault/proxy-login/0.1/payload.ts   // VaultProxyLogin_v0_1
+├── vault/proxy-login/0.2/payload.ts   // VaultProxyLogin_v0_2
 └── …
 ```
 
@@ -90,11 +93,11 @@ distinct names — there is no "latest" alias by design.
 A definition several specs `$ref` — `Ext` (the SPEC §4.5.1 extension object),
 `AclEntry`, `VaultEntry`, `DigestMultibase` — is declared **once**, in
 `src/_shared/components.ts`, and re-exported from every spec module that uses
-it under the name that module has always used. So `AclGrant_v0_1.AclEntry` and
-`AclShow_v0_1.AclEntry` are the same type, not two copies of one shape:
+it under the name that module has always used. So `AclGrant_v0_2.AclEntry` and
+`AclShow_v0_2.AclEntry` are the same type, not two copies of one shape:
 
 ```ts
-import { SharedComponents, type AclGrant_v0_1 } from "@openvtc/trust-tasks";
+import { SharedComponents, type AclGrant_v0_2 } from "@openvtc/trust-tasks";
 
 // Write a helper once, over the shared definition, and it takes any spec's.
 const namespaces = (ext: SharedComponents.Ext) => Object.keys(ext);
@@ -132,16 +135,16 @@ import {
   InMemoryReplayGuard,
   respondWith,
   StaticTransport,
-  AclGrant_v0_1,
+  AclGrant_v0_2,
 } from "@openvtc/trust-tasks";
 
 // The guard *is* the duplicate-execution record — one per consumer, held for
 // the process's lifetime. Back it with a shared store if you run replicas.
 const guard = new InMemoryReplayGuard();
 
-const outcome = await consumeInbound<AclGrant_v0_1.Payload, AclGrant_v0_1.Response>({
+const outcome = await consumeInbound<AclGrant_v0_2.Payload, AclGrant_v0_2.Response>({
   transport: new StaticTransport({ issuer: peerVid }), // what the transport authenticated
-  spec: AclGrant_v0_1.SPEC,
+  spec: AclGrant_v0_2.SPEC,
   proofPolicy: { kind: "verify", verify: myVerifier },
   payloadPolicy: { kind: "validate", validate: myValidator }, // or acceptUnvalidated
   // acl/grant is consequential: a replayed envelope must not grant twice.

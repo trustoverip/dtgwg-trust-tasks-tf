@@ -11,9 +11,9 @@ package trusttasks
 //
 //	guard := trusttasks.NewInMemoryReplayGuard(0) // one guard per consumer: it IS the record
 //
-//	outcome, err := trusttasks.ConsumeInbound(ctx, trusttasks.ConsumeOptions[aclgrantv0_1.Payload, aclgrantv0_1.Response]{
+//	outcome, err := trusttasks.ConsumeInbound(ctx, trusttasks.ConsumeOptions[aclgrantv0_2.Payload, aclgrantv0_2.Response]{
 //	    Transport:     transport,
-//	    Spec:          aclgrantv0_1.Spec,
+//	    Spec:          aclgrantv0_2.Spec,
 //	    ProofPolicy:   trusttasks.ProofPolicy{Kind: trusttasks.ProofVerify, Verifier: myVerifier},
 //	    PayloadPolicy: trusttasks.PayloadPolicy{Kind: trusttasks.PayloadValidate, Validator: myValidator},
 //	    Checks:        trusttasks.ConsequentialChecks(guard), // acl/grant is consequential
@@ -21,7 +21,7 @@ package trusttasks
 //	    MyVID:         "did:web:maintainer.example",
 //	    Now:           time.Now(),
 //	    NewErrorID:    uuid.NewString,
-//	    Handler: func(ctx context.Context, doc *trusttasks.Document[aclgrantv0_1.Payload], parties trusttasks.ResolvedParties) (*trusttasks.Document[aclgrantv0_1.Response], error) {
+//	    Handler: func(ctx context.Context, doc *trusttasks.Document[aclgrantv0_2.Payload], parties trusttasks.ResolvedParties) (*trusttasks.Document[aclgrantv0_2.Response], error) {
 //	        return trusttasks.RespondWith(doc, uuid.NewString(), buildResponse(parties), nil), nil
 //	    },
 //	})

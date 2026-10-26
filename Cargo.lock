@@ -4617,7 +4617,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "32497e9a4c7b38532efcdebeef879707aa9f794296a4f0244f6f69e9bc8574bd"
 dependencies = [
  "fastrand",
- "getrandom 0.3.4",
+ "getrandom 0.4.2",
  "once_cell",
  "rustix",
  "windows-sys 0.61.2",
@@ -4979,7 +4979,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks"
-version = "0.34.2"
+version = "0.35.0"
 dependencies = [
  "affinidi-secrets-resolver",
  "chrono",
@@ -4989,22 +4989,22 @@ dependencies = [
  "trust-tasks-didcomm",
  "trust-tasks-didcomm-v1",
  "trust-tasks-https",
- "trust-tasks-proof 0.34.2",
- "trust-tasks-rs 0.34.2",
+ "trust-tasks-proof 0.35.0",
+ "trust-tasks-rs 0.35.0",
  "trust-tasks-tsp",
  "uuid",
 ]
 
 [[package]]
 name = "trust-tasks-capability-client"
-version = "0.34.2"
+version = "0.35.0"
 dependencies = [
  "chrono",
  "serde",
  "serde_json",
  "thiserror",
  "tokio",
- "trust-tasks-rs 0.34.2",
+ "trust-tasks-rs 0.35.0",
  "uuid",
 ]
 
@@ -5033,6 +5033,7 @@ dependencies = [
  "serde",
  "serde-saphyr",
  "serde_json",
+ "sha2 0.10.9",
  "syn 2.0.117",
  "toml",
  "typify",
@@ -5041,7 +5042,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-didcomm"
-version = "0.34.2"
+version = "0.35.0"
 dependencies = [
  "affinidi-crypto",
  "affinidi-messaging-didcomm",
@@ -5057,13 +5058,13 @@ dependencies = [
  "serde_json",
  "thiserror",
  "tokio",
- "trust-tasks-rs 0.34.2",
+ "trust-tasks-rs 0.35.0",
  "uuid",
 ]
 
 [[package]]
 name = "trust-tasks-didcomm-v1"
-version = "0.34.2"
+version = "0.35.0"
 dependencies = [
  "affinidi-messaging-didcomm-v1",
  "async-trait",
@@ -5073,13 +5074,13 @@ dependencies = [
  "serde_json",
  "thiserror",
  "tokio",
- "trust-tasks-rs 0.34.2",
+ "trust-tasks-rs 0.35.0",
  "uuid",
 ]
 
 [[package]]
 name = "trust-tasks-https"
-version = "0.34.2"
+version = "0.35.0"
 dependencies = [
  "affinidi-secrets-resolver",
  "async-trait",
@@ -5092,8 +5093,8 @@ dependencies = [
  "thiserror",
  "tokio",
  "tower",
- "trust-tasks-proof 0.34.2",
- "trust-tasks-rs 0.34.2",
+ "trust-tasks-proof 0.35.0",
+ "trust-tasks-rs 0.35.0",
  "uuid",
 ]
 
@@ -5117,7 +5118,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-proof"
-version = "0.34.2"
+version = "0.35.0"
 dependencies = [
  "affinidi-crypto",
  "affinidi-data-integrity",
@@ -5132,7 +5133,7 @@ dependencies = [
  "serde_json",
  "thiserror",
  "tokio",
- "trust-tasks-rs 0.34.2",
+ "trust-tasks-rs 0.35.0",
 ]
 
 [[package]]
@@ -5152,7 +5153,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-rs"
-version = "0.34.2"
+version = "0.35.0"
 dependencies = [
  "async-trait",
  "chrono",
@@ -5168,7 +5169,7 @@ dependencies = [
 
 [[package]]
 name = "trust-tasks-tsp"
-version = "0.34.2"
+version = "0.35.0"
 dependencies = [
  "affinidi-tsp",
  "async-trait",
@@ -5177,7 +5178,7 @@ dependencies = [
  "serde_json",
  "thiserror",
  "tokio",
- "trust-tasks-rs 0.34.2",
+ "trust-tasks-rs 0.35.0",
 ]
 
 [[package]]

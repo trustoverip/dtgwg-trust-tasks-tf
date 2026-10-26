@@ -61,6 +61,27 @@ jobs:
           TT_STRICT_SECURITY_PRIVACY: '1'
         run: npm run build
 
+      # Registry bundles (docs/design/consumer-side-generation.md, milestone 1):
+      # one content-addressed `bundle.json` per specification version and an
+      # `index.json`, written into `website/specs/` — the raw asset tree the
+      # step above just copied `specs/` into, served under `/specs/` (an asset
+      # prefix in infra/cloudfront/type-uri-negotiation.js, so no routing
+      # change). Built by the Rust codegen, from the code paths that build
+      # `trust-tasks-rs`, so a bundle is what that generator generates from.
+      # After `npm run build`, which deletes and recopies `website/specs/`.
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          # Save from `main` only, as codegen.yml does: a PR restores main's
+          # entry, and its own saves would only crowd the cache quota.
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+      - name: Build registry bundles
+        run: npm run build-bundles
+      # Independent of the Rust generator: digests, canonical form, the index
+      # against the tree, and every schema against the TypeScript generator's.
+      - name: Check registry bundles
+        run: npm run check-bundles
+
       # The CloudFront function that serves schemas at their Type URIs (SPEC
       # §6.2) runs on CloudFront's own engine, so CI cannot exercise it live.
       # These cover the routing decision, where a mistake either breaks the

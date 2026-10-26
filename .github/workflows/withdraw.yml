@@ -54,6 +54,10 @@ jobs:
           set -euo pipefail
           as_of="${AS_OF:-$(date -u +%F)}"
           echo "as_of=$as_of" >> "$GITHUB_OUTPUT"
+          # Before flipping: which hand-written blocks, kept on purpose until now
+          # (`… (superseded)` … `--- end`), this batch must delete. They go in the
+          # PR body; the PR's CI fails until they are removed.
+          node scripts/check-withdrawal-readiness.mjs --as-of "$as_of" > "$RUNNER_TEMP/readiness.txt" || true
           node scripts/withdraw-due.mjs --as-of "$as_of" | tee "$RUNNER_TEMP/withdrawn.txt"
           if git diff --quiet -- specs; then
             echo "due=0" >> "$GITHUB_OUTPUT"
@@ -102,7 +106,11 @@ jobs:
           branch="withdraw/$AS_OF"
           git switch -C "$branch"
           git add -A
-          title="feat(rs, ts, go, dart)!: withdraw $DUE specification versions superseded or retired for 90 days as of $AS_OF"
+          # A sibling package whose (superseded) block this batch deletes breaks too,
+          # so its scope joins the title (the crates are sized by cargo-semver-checks).
+          scopes="rs, ts, go, dart"
+          grep -q 'trust-tasks-dart-https/' "$RUNNER_TEMP/readiness.txt" && scopes="$scopes, dart-https"
+          title="feat($scopes)!: withdraw $DUE specification versions superseded or retired for 90 days as of $AS_OF"
           {
             echo "The quarterly withdrawal batch (SPEC \"Superseded and Withdrawn Versions\")."
             echo
@@ -115,6 +123,22 @@ jobs:
             echo '```'
             grep -v '^$' "$RUNNER_TEMP/withdrawn.txt"
             echo '```'
+            if grep -q 'batch PR deletes' "$RUNNER_TEMP/readiness.txt"; then
+              echo
+              echo "**Before merging, delete the hand-written support kept for these versions** — every block"
+              echo "opened by a \`… (superseded)\` comment and closed by \`--- end\`, then \`cargo fmt --all\`"
+              echo "and \`dart format\`. This PR's CI fails until they are gone:"
+              echo
+              grep 'batch PR deletes' "$RUNNER_TEMP/readiness.txt"
+            fi
+            if grep -q '::\(warning\|error\)' "$RUNNER_TEMP/readiness.txt"; then
+              echo
+              echo "**Other hand-written code still imports a withdrawn version** — move it to the successor:"
+              echo
+              echo '```'
+              grep '::\(warning\|error\)' "$RUNNER_TEMP/readiness.txt" | sed -E 's/^::[a-z]+ //'
+              echo '```'
+            fi
           } > "$RUNNER_TEMP/body.md"
           { echo "$title"; echo; cat "$RUNNER_TEMP/body.md"; } > "$RUNNER_TEMP/message.txt"
           git commit -s -q -F "$RUNNER_TEMP/message.txt"
