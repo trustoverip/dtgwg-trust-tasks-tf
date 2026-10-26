@@ -54,7 +54,7 @@ impl Loc {
     /// The location relative refs inside this document resolve against: the
     /// file's directory, or the URL itself (its last segment is dropped when
     /// joining).
-    fn base(&self) -> Result<Loc> {
+    pub(crate) fn base(&self) -> Result<Loc> {
         Ok(match self {
             Loc::File(p) => Loc::File(
                 p.parent()
@@ -107,7 +107,7 @@ impl<'a> Resolver<'a> {
 
     /// Where `reference` (the part of a `$ref` before `#`) points, from a
     /// document whose base is `base`.
-    fn locate(&self, reference: &str, base: &Loc) -> Result<Loc> {
+    pub(crate) fn locate(&self, reference: &str, base: &Loc) -> Result<Loc> {
         if let Some((scheme, _)) = reference.split_once("://") {
             if !scheme.eq_ignore_ascii_case("https") {
                 return Err(anyhow!(
@@ -220,6 +220,11 @@ impl<'a> Resolver<'a> {
             .borrow()
             .as_ref()
             .and_then(|ids| ids.get(url).cloned()))
+    }
+
+    /// The registry checkout given to [`Resolver::with_official_specs`].
+    pub(crate) fn official_specs(&self) -> Option<&Path> {
+        self.official_specs.as_deref()
     }
 
     /// The text of the document at `loc`.
@@ -444,7 +449,7 @@ fn rewrite_external_refs_local(value: &mut Value) {
 }
 
 /// Parse `"<location>#/$defs/<name>"` into its two halves.
-fn split_external_ref(s: &str) -> Option<(&str, &str)> {
+pub(crate) fn split_external_ref(s: &str) -> Option<(&str, &str)> {
     let hash = s.find('#')?;
     let path = &s[..hash];
     let fragment = &s[hash + 1..];

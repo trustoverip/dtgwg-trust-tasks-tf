@@ -173,6 +173,36 @@ fn a_third_party_tree_builds_into_verifiable_bundles() {
         assert!(defs.contains_key("Money") && defs.contains_key("AclEntry"));
         assert!(defs.contains_key("Ext"), "AclEntry's own refs are followed");
         assert_eq!(parsed.property_order["/schema"][0], "payer");
+        // `$defs` in the order the TS, Go and Dart inliners leave them: the
+        // schema's own, then a last-in-first-out frontier — so the registry's
+        // `AclEntry` (the payload's last `$ref`) before the local `Money`.
+        let raw: Value = serde_json::from_slice(&b.bytes).unwrap();
+        let order: Vec<&str> = raw["defsOrder"]["/schema"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|n| n.as_str().unwrap())
+            .collect();
+        assert_eq!(order[..2], ["Response", "AclEntry"]);
+        assert_eq!(order.last(), Some(&"Money"));
+        assert_eq!(
+            raw["defsOrder"]["/responseSchema"],
+            raw["defsOrder"]["/schema"]
+        );
+        // Origins: the registry component by its `$id`; the local file, which
+        // has none, by its path below the Type URI prefix.
+        assert_eq!(
+            raw["defOrigins"]["AclEntry"],
+            "https://trusttasks.org/spec/acl/_shared/0.2/acl-entry#/$defs/AclEntry"
+        );
+        assert_eq!(
+            raw["defOrigins"]["Money"],
+            format!("{PREFIX}/spec/payments/_shared/1.0/money#/$defs/Money")
+        );
+        assert!(
+            raw["defOrigins"].get("Response").is_none(),
+            "own definitions have no origin"
+        );
         // The bundle generates.
         crate::generate_module(&parsed, &crate::Target::application()).unwrap();
         assert_eq!(b.digest, sha256_digest(&b.bytes));
@@ -328,5 +358,19 @@ fn third_party_refusals() {
     let root = third_party_tree(PREFIX);
     fs::remove_dir_all(root.join("specs/payments/settle/1.0")).unwrap();
     assert!(err(&root, PREFIX).contains("extends names 1.0"));
+    fs::remove_dir_all(&root).ok();
+}
+
+#[test]
+fn a_shared_file_without_an_id_is_named_below_a_urn_prefix() {
+    let prefix = "urn:example:tasks";
+    let root = third_party_tree(prefix);
+    let refs = Resolver::local().with_official_specs(official_checkout());
+    let built = build_third_party(&root.join("specs"), prefix, &refs).unwrap();
+    let raw: Value = serde_json::from_slice(&built.bundles[0].bytes).unwrap();
+    assert_eq!(
+        raw["defOrigins"]["Money"],
+        "urn:example:tasks:spec:payments:_shared:1.0:money#/$defs/Money"
+    );
     fs::remove_dir_all(&root).ok();
 }
