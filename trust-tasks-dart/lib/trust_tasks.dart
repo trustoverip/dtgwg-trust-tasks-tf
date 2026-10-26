@@ -18,7 +18,7 @@
 ///
 /// ```dart
 /// import 'package:trust_tasks/trust_tasks.dart';
-/// import 'package:trust_tasks/specs/acl/grant/v0_1/payload.dart' as acl_grant;
+/// import 'package:trust_tasks/specs/acl/grant/v0_2/payload.dart' as acl_grant;
 /// ```
 ///
 /// ## Parity

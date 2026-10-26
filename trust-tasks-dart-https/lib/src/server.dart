@@ -1,9 +1,15 @@
 import 'dart:convert';
 
+// --- trust-task-discovery 0.1 / 0.2 (superseded) -----------------------------
+// Delete these two imports, and the block marked the same way below, when the
+// withdrawal batch removes 0.1 and 0.2.
 import 'package:trust_tasks/specs/trust_task_discovery/v0_1/payload.dart'
-    as discovery;
+    as discovery_v0_1;
 import 'package:trust_tasks/specs/trust_task_discovery/v0_2/payload.dart'
     as discovery_v0_2;
+// --- end trust-task-discovery 0.1 / 0.2 -------------------------------------
+import 'package:trust_tasks/specs/trust_task_discovery/v0_3/payload.dart'
+    as discovery_v0_3;
 import 'package:trust_tasks/trust_tasks.dart';
 
 import 'binding.dart';
@@ -287,9 +293,9 @@ final class HttpsServer {
             );
   }
 
-  /// Answer `trust-task-discovery` (SPEC §10), versions 0.1 and 0.2, with
-  /// every Type URI this server has a handler for, read at request time. Each
-  /// version is answered in the version it was asked.
+  /// Answer `trust-task-discovery` (SPEC §10), versions 0.3, 0.2 and 0.1,
+  /// with every Type URI this server has a handler for, read at request time.
+  /// Each version is answered in the version it was asked.
   ///
   /// A discovery response enumerates the route table, and SPEC §12 says a
   /// responder SHOULD authenticate the discoverer. So by default a caller with
@@ -297,25 +303,72 @@ final class HttpsServer {
   /// [public] when the supported set is genuinely public.
   ///
   /// [frameworkVersion] is the framework release the server targets, three-part
-  /// per SPEC §5.1.1 (a two-part `M.N` is read as `M.N.0`). A 0.2 response
-  /// carries it in full; a 0.1 response, which admits only `MAJOR.MINOR`,
-  /// carries it without its PATCH. A value in neither form is omitted.
-  void enableDiscovery(
-      {bool public = false, String frameworkVersion = '0.6.0'}) {
+  /// per SPEC §5.1.1 (a two-part `M.N` is read as `M.N.0`). A 0.3 or 0.2
+  /// response carries it in full; a 0.1 response, which admits only
+  /// `MAJOR.MINOR`, carries it without its PATCH. A value in neither form is
+  /// omitted.
+  ///
+  /// A 0.3 response also states the acceptance window this server applies to
+  /// `issuedAt` — [freshness]'s `maxAge` and `skew`, in whole seconds rounded
+  /// down, so the advertised window is never wider than the one enforced
+  /// (trust-task-discovery/0.3, *Acceptance window*, responder rule 1). Every
+  /// route shares [freshness], so the window is stated once, at the top level.
+  /// It is omitted when [freshness] sets no `maxAge` — an unbounded window has
+  /// no 0.3 spelling — and when [advertiseAcceptanceWindow] is false, for a
+  /// deployment whose configured window would fingerprint it (the
+  /// specification's *Correlation* section).
+  void enableDiscovery({
+    bool public = false,
+    String frameworkVersion = '0.6.0',
+    bool advertiseAcceptanceWindow = true,
+  }) {
     final release = _frameworkRelease(frameworkVersion);
-    // Discovery 0.1 and 0.2 are superseded but still answered, for peers that
-    // ask in them; hence the deprecated_member_use ignores below.
+    final window = advertiseAcceptanceWindow ? _acceptanceWindow() : null;
+    on<discovery_v0_3.Payload, discovery_v0_3.Response>(
+      spec: discovery_v0_3.spec,
+      decode: discovery_v0_3.Payload.fromJson,
+      encode: (p) => p.toJson(),
+      encodeResponse: (r) => r.toJson(),
+      handler: (doc, ctx) async {
+        _refuseUnauthenticatedDiscovery(public, ctx);
+        return discovery_v0_3.Response(
+          supportedTypes: _discoverable(doc.payload.patterns),
+          frameworkVersion: release?.join('.'),
+          acceptanceWindow: window,
+        );
+      },
+    );
+    _enableSupersededDiscovery(public, release);
+  }
+
+  /// [freshness] as a 0.3 acceptance window, or null when it has none to state.
+  discovery_v0_3.AcceptanceWindow? _acceptanceWindow() {
+    final maxAge = freshness.maxAge;
+    if (maxAge == null || maxAge.inSeconds < 1 || freshness.skew.isNegative) {
+      return null;
+    }
+    return discovery_v0_3.AcceptanceWindow(
+      maxAgeSeconds: maxAge.inSeconds,
+      clockSkewSeconds: freshness.skew.inSeconds,
+    );
+  }
+
+  // --- trust-task-discovery 0.1 / 0.2 (superseded) -----------------------------
+  // Still answered, for peers that ask in them. When the withdrawal batch removes
+  // 0.1 and 0.2, delete this method, its call at the end of [enableDiscovery],
+  // and the two imports marked the same way at the top of this file.
+  void _enableSupersededDiscovery(bool public, List<int>? release) {
     // ignore: deprecated_member_use
-    on<discovery.Payload, discovery.Response>(
-      spec: discovery.spec,
+    on<discovery_v0_1.Payload, discovery_v0_1.Response>(
+      spec: discovery_v0_1.spec,
       // ignore: deprecated_member_use
-      decode: discovery.Payload.fromJson,
+      decode: discovery_v0_1.Payload.fromJson,
       encode: (p) => p.toJson(),
       encodeResponse: (r) => r.toJson(),
       handler: (doc, ctx) async {
         _refuseUnauthenticatedDiscovery(public, ctx);
         // ignore: deprecated_member_use
-        return discovery.Response(
+        return discovery_v0_1.Response(
           supportedTypes: _discoverable(doc.payload.patterns),
           frameworkVersion:
               release == null ? null : '${release[0]}.${release[1]}',
@@ -339,6 +392,7 @@ final class HttpsServer {
       },
     );
   }
+  // --- end trust-task-discovery 0.1 / 0.2 -------------------------------------
 
   void _refuseUnauthenticatedDiscovery(bool public, RequestContext ctx) {
     if (!public && ctx.authenticatedSender == null) {

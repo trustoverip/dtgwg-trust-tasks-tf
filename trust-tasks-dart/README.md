@@ -30,7 +30,7 @@ Import the specification you need directly, with a prefix:
 
 ```dart
 import 'package:trust_tasks/trust_tasks.dart';
-import 'package:trust_tasks/specs/acl/grant/v0_1/payload.dart' as acl_grant;
+import 'package:trust_tasks/specs/acl/grant/v0_2/payload.dart' as acl_grant;
 ```
 
 Each generated library exports a uniform surface:
@@ -43,7 +43,7 @@ Each generated library exports a uniform surface:
 | `spec`, `responseSpec` | `SpecPolicy` values carrying the §7.2 policy flags and the schema above |
 
 Paths are snake_cased for Dart's `file_names` lint, so the slug `acl/change-role`
-becomes `specs/acl/change_role/v0_1/payload.dart`.
+becomes `specs/acl/change_role/v0_2/payload.dart`.
 
 ## Consuming a document
 

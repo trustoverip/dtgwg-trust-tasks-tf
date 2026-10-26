@@ -1,5 +1,3 @@
-// acl/grant/0.1 is superseded; this smoke test moves to the current version before its withdrawal batch.
-// ignore_for_file: deprecated_member_use_from_same_package
 // Smoke test across the seam between the generated libraries and the
 // hand-written runtime.
 //
@@ -12,7 +10,8 @@
 import 'dart:convert';
 
 import 'package:test/test.dart';
-import 'package:trust_tasks/specs/acl/grant/v0_1/payload.dart' as acl_grant;
+import 'package:trust_tasks/specs/acl/grant/v0_2/payload.dart' as acl_grant;
+import 'package:trust_tasks/specs/acl/show/v0_2/payload.dart' as acl_show;
 import 'package:trust_tasks/trust_tasks.dart';
 
 const me = 'did:web:maintainer.example';
@@ -20,6 +19,14 @@ const peer = 'did:web:org.example';
 
 final testNow = DateTime.utc(2026, 1, 1);
 String fixedClock() => '2026-01-01T00:00:00Z';
+
+const entry = acl_grant.AclEntry(
+  subject: 'did:web:alice.example',
+  role: 'admin',
+  act: {'scope': 'all'},
+  capabilities: {'scope': 'ceiling'},
+  keys: {'scope': 'all'},
+);
 
 TrustTaskDocument<acl_grant.Payload> request() =>
     TrustTaskDocument<acl_grant.Payload>(
@@ -36,10 +43,7 @@ TrustTaskDocument<acl_grant.Payload> request() =>
         proofPurpose: 'assertionMethod',
         proofValue: 'z3kg',
       ),
-      payload: const acl_grant.Payload(
-        entry:
-            acl_grant.AclEntry(subject: 'did:web:alice.example', role: 'admin'),
-      ),
+      payload: const acl_grant.Payload(entry: entry),
     );
 
 class _Accepting implements ProofVerifier {
@@ -115,25 +119,30 @@ void main() {
     );
     expect(decoded.entry.subject, original.entry.subject);
     expect(decoded.entry.role, original.entry.role);
+    expect(decoded.entry.act, original.entry.act);
+    expect(decoded.entry.keys, original.entry.keys);
     // Absent optional members stay absent rather than becoming null members.
     expect(original.toJson().containsKey('reason'), isFalse);
   });
 
   test('absent and present-but-empty stay distinguishable on a list member',
       () {
-    // `acl`'s `allowedKeys` documents at length that "PRESENT-BUT-EMPTY means
-    // authorized on NO keys — the opposite of absent". Dart's nullable list says
-    // that natively, where Go needed a pointer-to-slice.
-    const absent =
-        acl_grant.AclEntry(subject: 'did:web:alice.example', role: 'admin');
-    expect(absent.toJson().containsKey('allowedKeys'), isFalse);
+    // A nullable list keeps "present and empty" apart from "absent" — the
+    // distinction `acl` depends on (an empty `allowedKeys` meant NO keys, the
+    // opposite of absent), and that Go needed a pointer-to-slice to say. Pinned
+    // on acl/show's `redactedFields`, where empty means "nothing redacted" and
+    // absent means "not stated".
+    const absent = acl_show.Response(entry: null);
+    expect(absent.toJson().containsKey('redactedFields'), isFalse);
 
-    const empty = acl_grant.AclEntry(
-      subject: 'did:web:alice.example',
-      role: 'admin',
-      allowedKeys: <String>[],
+    const empty = acl_show.Response(entry: null, redactedFields: <String>[]);
+    expect(empty.toJson()['redactedFields'], isEmpty);
+    expect(empty.toJson().containsKey('redactedFields'), isTrue);
+
+    final decoded = acl_show.Response.fromJson(
+      jsonDecode(jsonEncode(empty.toJson())) as Map<String, dynamic>,
     );
-    expect(empty.toJson()['allowedKeys'], isEmpty);
-    expect(empty.toJson().containsKey('allowedKeys'), isTrue);
+    expect(decoded.redactedFields, isNotNull);
+    expect(decoded.redactedFields, isEmpty);
   });
 }
