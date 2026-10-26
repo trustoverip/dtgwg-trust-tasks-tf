@@ -1,11 +1,11 @@
 //! A demo Trust Tasks client over HTTPS.
 //!
-//! Sends an `acl/grant/0.1` request to a server (default
+//! Sends an `acl/grant/0.2` request to a server (default
 //! `http://localhost:3000`, override via `TRUST_TASKS_URL`) and prints
 //! the response. Pair with the `server_demo` example for end-to-end
 //! exercise.
 //!
-//! `acl/grant/0.1` declares `proof` REQUIRED, so this example **signs**.
+//! `acl/grant/0.2` declares `proof` REQUIRED, so this example **signs**.
 //! Both demos derive the same `did:key` from a fixed seed, so they agree
 //! on the client's identity without any key exchange: the server maps the
 //! `alice` bearer token to it, and SPEC §4.8.1 cross-checks the in-band
@@ -19,14 +19,12 @@
 //! # in another terminal:
 //! cargo run -p trust-tasks-https --example client_demo
 //! ```
-// Pinned to fixed spec versions on purpose; that they are superseded is beside the point.
-#![allow(deprecated)]
 
 use affinidi_secrets_resolver::secrets::Secret;
 use trust_tasks_https::{ClientError, HttpsClient};
 use trust_tasks_proof::affinidi::SignOptions;
 use trust_tasks_proof::ProofExt;
-use trust_tasks_rs::{specs::acl::grant::v0_1 as grant, TrustTask};
+use trust_tasks_rs::{specs::acl::grant::v0_2 as grant, TrustTask};
 
 /// The demo client's identity, derived from a fixed seed so that
 /// `server_demo` can arrive at the same value independently.
@@ -70,9 +68,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Free-text members carry a `maxLength` (SPEC §7.3), so each is a
     // validating newtype rather than a bare `String` — the bound is enforced
     // at construction here rather than discovered by the server.
+    //
+    // acl/grant/0.2 states every authority axis explicitly — there is no
+    // default: Carol may act everywhere, may use no keys, and holds the full
+    // ceiling of the `moderator` role.
+    let act = grant::AuthorityScopeAll::try_from(grant::AuthorityScopeAll::builder().scope("all"))?;
+    let keys = grant::KeyScopeNone::try_from(grant::KeyScopeNone::builder().scope("none"))?;
+    let capabilities = grant::CapabilityScopeCeiling::try_from(
+        grant::CapabilityScopeCeiling::builder().scope("ceiling"),
+    )?;
     let entry: grant::AclEntry = grant::AclEntry::builder()
         .subject("did:web:carol.example")
         .role("moderator")
+        .act(act)
+        .keys(keys)
+        .capabilities(capabilities)
         .label(grant::AclEntryLabel::try_from(
             "Carol — content moderation",
         )?)
@@ -108,8 +118,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 resp.type_uri,
                 resp.id,
                 resp.thread_id.as_deref().unwrap_or("<none>"),
-                resp.payload.entry.subject,
-                &*resp.payload.entry.role,
+                resp.payload.entry.subject.as_str(),
+                resp.payload.entry.role.as_str(),
             );
         }
         Err(ClientError::TrustTaskError { http_status, error }) => {

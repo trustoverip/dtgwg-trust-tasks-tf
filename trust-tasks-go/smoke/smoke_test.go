@@ -16,10 +16,9 @@ import (
 	"testing"
 	"time"
 
-	aclgrantv0_1 "github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/specs/acl/grant/v0_1"
-	authauthenticatev0_1 "github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/specs/auth/authenticate/v0_1"
-	authauthenticatev0_2 "github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/specs/auth/authenticate/v0_2"
+	aclgrantv0_2 "github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/specs/acl/grant/v0_2"
 	authauthenticatev0_3 "github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/specs/auth/authenticate/v0_3"
+	vtacontextsupdatev1_0 "github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/specs/vta/contexts/update/v1_0"
 	tt "github.com/trustoverip/dtgwg-trust-tasks-tf/trust-tasks-go/trusttasks"
 )
 
@@ -30,10 +29,10 @@ const (
 
 func ptr[T any](v T) *T { return &v }
 
-func request() *tt.Document[aclgrantv0_1.Payload] {
-	return &tt.Document[aclgrantv0_1.Payload]{
+func request() *tt.Document[aclgrantv0_2.Payload] {
+	return &tt.Document[aclgrantv0_2.Payload]{
 		ID:        "req-1",
-		Type:      aclgrantv0_1.TypeURI,
+		Type:      aclgrantv0_2.TypeURI,
 		Issuer:    ptr(peer),
 		Recipient: ptr(me),
 		IssuedAt:  ptr("2026-01-01T00:00:00Z"),
@@ -45,8 +44,14 @@ func request() *tt.Document[aclgrantv0_1.Payload] {
 			ProofPurpose:       "assertionMethod",
 			ProofValue:         "z3kg",
 		},
-		Payload: aclgrantv0_1.Payload{
-			Entry: aclgrantv0_1.ACLEntry{Subject: "did:web:alice.example", Role: "admin"},
+		Payload: aclgrantv0_2.Payload{
+			Entry: aclgrantv0_2.ACLEntry{
+				Subject:      "did:web:alice.example",
+				Role:         "admin",
+				Act:          json.RawMessage(`{"scope":"contexts","contexts":["ctx/payments"]}`),
+				Keys:         json.RawMessage(`{"scope":"all"}`),
+				Capabilities: json.RawMessage(`{"scope":"ceiling"}`),
+			},
 		},
 	}
 }
@@ -61,13 +66,13 @@ func TestGeneratedSpecDrivesTheRuntime(t *testing.T) {
 	now := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 	clock := func() string { return "2026-01-01T00:00:00Z" }
 
-	consume := func(doc *tt.Document[aclgrantv0_1.Payload]) tt.ConsumeOutcome[aclgrantv0_1.Response] {
+	consume := func(doc *tt.Document[aclgrantv0_2.Payload]) tt.ConsumeOutcome[aclgrantv0_2.Response] {
 		t.Helper()
 		outcome, err := tt.ConsumeInbound(
 			context.Background(),
-			tt.ConsumeOptions[aclgrantv0_1.Payload, aclgrantv0_1.Response]{
+			tt.ConsumeOptions[aclgrantv0_2.Payload, aclgrantv0_2.Response]{
 				Transport:     tt.StaticTransport{Context: tt.TransportContext{Issuer: ptr(peer), Recipient: ptr(me)}},
-				Spec:          aclgrantv0_1.Spec,
+				Spec:          aclgrantv0_2.Spec,
 				ProofPolicy:   tt.ProofPolicy{Kind: tt.ProofVerify, Verifier: acceptingVerifier{}},
 				PayloadPolicy: tt.PayloadPolicy{Kind: tt.PayloadAcceptUnvalidated},
 				Checks:        tt.ConsequentialChecks(guard),
@@ -78,12 +83,12 @@ func TestGeneratedSpecDrivesTheRuntime(t *testing.T) {
 				Clock:         clock,
 				Handler: func(
 					_ context.Context,
-					accepted *tt.Document[aclgrantv0_1.Payload],
+					accepted *tt.Document[aclgrantv0_2.Payload],
 					_ tt.ResolvedParties,
-				) (*tt.Document[aclgrantv0_1.Response], error) {
-					return tt.RespondWith[aclgrantv0_1.Payload, aclgrantv0_1.Response](
+				) (*tt.Document[aclgrantv0_2.Response], error) {
+					return tt.RespondWith[aclgrantv0_2.Payload, aclgrantv0_2.Response](
 						accepted, "resp-1",
-						aclgrantv0_1.Response{Entry: accepted.Payload.Entry},
+						aclgrantv0_2.Response{Entry: accepted.Payload.Entry},
 						clock,
 					), nil
 				},
@@ -99,8 +104,8 @@ func TestGeneratedSpecDrivesTheRuntime(t *testing.T) {
 	if outcome.Kind != tt.OutcomeHandled {
 		t.Fatalf("expected handled, got %q", outcome.Kind)
 	}
-	if outcome.Response.Type != aclgrantv0_1.ResponseTypeURI {
-		t.Errorf("expected %q, got %q", aclgrantv0_1.ResponseTypeURI, outcome.Response.Type)
+	if outcome.Response.Type != aclgrantv0_2.ResponseTypeURI {
+		t.Errorf("expected %q, got %q", aclgrantv0_2.ResponseTypeURI, outcome.Response.Type)
 	}
 
 	// §7.2 item 11: the identical resend is absorbed, not executed again.
@@ -114,7 +119,7 @@ func TestGeneratedSpecDrivesTheRuntime(t *testing.T) {
 // makes SPEC §7.2 item 2 performable from the package alone.
 func TestGeneratedSchemaIsSelfContained(t *testing.T) {
 	var schema map[string]any
-	if err := json.Unmarshal([]byte(aclgrantv0_1.PayloadSchemaJSON), &schema); err != nil {
+	if err := json.Unmarshal([]byte(aclgrantv0_2.PayloadSchemaJSON), &schema); err != nil {
 		t.Fatalf("PayloadSchemaJSON is not valid JSON: %v", err)
 	}
 	if _, present := schema["$defs"]; !present {
@@ -144,61 +149,59 @@ func TestGeneratedSchemaIsSelfContained(t *testing.T) {
 	if external(schema) {
 		t.Error("the shipped schema still carries a cross-file $ref and cannot be resolved offline")
 	}
-	if aclgrantv0_1.Spec.PayloadSchema != aclgrantv0_1.PayloadSchemaJSON {
+	if aclgrantv0_2.Spec.PayloadSchema != aclgrantv0_2.PayloadSchemaJSON {
 		t.Error("Spec.PayloadSchema does not carry the package's own schema")
 	}
 }
 
 // TestOptionalArraysDistinguishAbsentFromEmpty pins the representation the
-// acl/grant schema demands of `allowedKeys`: "PRESENT-BUT-EMPTY means authorized
-// on NO keys — the opposite of absent". A plain []string with omitempty cannot
-// say that, which is why optional arrays are generated as pointers.
+// vta/contexts/update schema demands of a ContextPolicy's `signableKeys`:
+// "Absent: every key the context holds. Present-but-empty: no keys." — two
+// opposite instructions a consumer MUST NOT collapse. A plain []string with
+// omitempty cannot say that, which is why optional arrays are generated as
+// pointers.
 func TestOptionalArraysDistinguishAbsentFromEmpty(t *testing.T) {
-	encode := func(entry aclgrantv0_1.ACLEntry) string {
+	encode := func(policy vtacontextsupdatev1_0.ContextPolicy) string {
 		t.Helper()
-		encoded, err := json.Marshal(entry)
+		encoded, err := json.Marshal(policy)
 		if err != nil {
 			t.Fatalf("marshal: %v", err)
 		}
 		return string(encoded)
 	}
 
-	absent := encode(aclgrantv0_1.ACLEntry{Subject: "did:web:alice.example", Role: "admin"})
-	if strings.Contains(absent, "allowedKeys") {
+	absent := encode(vtacontextsupdatev1_0.ContextPolicy{})
+	if strings.Contains(absent, "signableKeys") {
 		t.Errorf("an absent member reached the wire: %s", absent)
 	}
 
-	empty := encode(aclgrantv0_1.ACLEntry{
-		Subject:     "did:web:alice.example",
-		Role:        "admin",
-		AllowedKeys: &[]string{},
-	})
-	if !strings.Contains(empty, `"allowedKeys":[]`) {
+	empty := encode(vtacontextsupdatev1_0.ContextPolicy{SignableKeys: &[]string{}})
+	if !strings.Contains(empty, `"signableKeys":[]`) {
 		t.Errorf("present-but-empty collapsed into absent: %s", empty)
 	}
 }
 
 // TestExtendingVersionIsReadForTheImplementedOne drives ReadForSpec against a
-// real generated package — auth/authenticate/0.1's schema and Payload — with a
-// document of 0.3, which adds `principal`, `delegationEvidence` and `sessionKey`.
+// real generated package — auth/authenticate/0.3's schema and Payload — with a
+// document of a later MINOR, 0.4, that adds a member 0.3 does not define.
 //
-// No specification declares `extends` yet, so the chain 0.3 -> 0.2 -> 0.1 is
-// supplied by a stub lookup; RegistryExtends is the same function type over the
-// generated index, and the generated constants say what each version declares.
+// 0.4 is hypothetical, so the declaration "0.4 extends 0.3" is supplied by a stub
+// lookup; RegistryExtends is the same function type over the generated index,
+// and the generated constants say what each real version declares. The test
+// implements the current version rather than an earlier, superseded one so that
+// it never names a package a withdrawal batch removes.
 func TestExtendingVersionIsReadForTheImplementedOne(t *testing.T) {
 	if authauthenticatev0_3.Extends != tt.RegistryExtends(authauthenticatev0_3.TypeURI) {
 		t.Fatalf("generated constant %q disagrees with the generated index %q",
 			authauthenticatev0_3.Extends, tt.RegistryExtends(authauthenticatev0_3.TypeURI))
 	}
-	chain := map[string]string{
-		authauthenticatev0_3.TypeURI: "0.2",
-		authauthenticatev0_2.TypeURI: "0.1",
-	}
+	const laterTypeURI = "https://trusttasks.org/spec/auth/authenticate/0.4"
+	chain := map[string]string{laterTypeURI: "0.3"}
 	lookup := func(typeURI string) string { return chain[typeURI] }
 
 	received := json.RawMessage(`{
 	  "id": "req-1",
-	  "type": "` + authauthenticatev0_3.TypeURI + `",
+	  "type": "` + laterTypeURI + `",
 	  "issuer": "` + peer + `",
 	  "recipient": "` + me + `",
 	  "payload": {
@@ -206,10 +209,11 @@ func TestExtendingVersionIsReadForTheImplementedOne(t *testing.T) {
 	    "sessionId": "s-1",
 	    "scope": ["read"],
 	    "principal": "` + peer + `",
-	    "sessionKey": "z6MkexampleSessionKey"
+	    "sessionKey": "z6MkexampleSessionKey",
+	    "laterMember": "only 0.4 defines this"
 	  }
 	}`)
-	reading, refusal, err := tt.ReadForSpecWith(received, authauthenticatev0_1.Spec, lookup)
+	reading, refusal, err := tt.ReadForSpecWith(received, authauthenticatev0_3.Spec, lookup)
 	if err != nil || refusal != nil {
 		t.Fatalf("refused: %v %+v", err, refusal)
 	}
@@ -220,29 +224,31 @@ func TestExtendingVersionIsReadForTheImplementedOne(t *testing.T) {
 	if err := json.Unmarshal(reading, &doc); err != nil {
 		t.Fatal(err)
 	}
-	if doc.Type != authauthenticatev0_3.TypeURI {
+	if doc.Type != laterTypeURI {
 		t.Errorf("type rewritten to %q", doc.Type)
 	}
 	for name := range doc.Payload {
 		switch name {
-		case "challenge", "sessionId", "scope", "ext":
+		case "challenge", "sessionId", "scope", "principal", "delegationEvidence", "sessionKey", "ext":
 		default:
-			t.Errorf("0.1's schema does not know %q, and it survived the prune", name)
+			t.Errorf("0.3's schema does not know %q, and it survived the prune", name)
 		}
 	}
-	var typed tt.Document[authauthenticatev0_1.Payload]
-	if err := json.Unmarshal(reading, &typed); err != nil || typed.Payload.SessionID != "s-1" {
+	for _, kept := range []string{"challenge", "sessionId", "scope", "principal", "sessionKey"} {
+		if _, ok := doc.Payload[kept]; !ok {
+			t.Errorf("0.3 defines %q, and the prune dropped it", kept)
+		}
+	}
+	var typed tt.Document[authauthenticatev0_3.Payload]
+	if err := json.Unmarshal(reading, &typed); err != nil || typed.Payload.SessionID != "s-1" ||
+		typed.Payload.SessionKey == nil {
 		t.Fatalf("typed decode: %v %+v", err, typed.Payload)
 	}
 
-	// Through the generated index: refused while nothing declares the chain,
-	// read exactly as above once 0.3 and 0.2 do.
-	viaIndex, refusal, _ := tt.ReadForSpec(received, authauthenticatev0_1.Spec)
-	if authauthenticatev0_3.Extends == "" {
-		if refusal == nil || refusal.Code != tt.CodeUnsupportedVersion {
-			t.Fatalf("undeclared extension accepted: %+v", refusal)
-		}
-	} else if string(viaIndex) != string(reading) {
-		t.Fatalf("the generated index reads differently from the declared chain: %s", viaIndex)
+	// Through the generated index: the registry knows no 0.4, so nothing declares
+	// that it extends 0.3, and the document is refused.
+	if _, refusal, _ := tt.ReadForSpec(received, authauthenticatev0_3.Spec); refusal == nil ||
+		refusal.Code != tt.CodeUnsupportedVersion {
+		t.Fatalf("undeclared extension accepted: %+v", refusal)
 	}
 }

@@ -1,14 +1,11 @@
 //! The Type URI → schema lookup a dispatching consumer needs.
 
 #![cfg(feature = "validate")]
-// These name pinned, now-superseded spec versions as fixed specimens; they move before
-// those versions are withdrawn (CLAUDE.md, "Superseded, retired and withdrawn versions").
-#![allow(deprecated)]
 use serde_json::json;
 use trust_tasks_rs::schema_index::schema_for;
 use trust_tasks_rs::validate::against_schema;
 
-const WEBVH_UPDATE: &str = "https://trusttasks.org/spec/vta/webvh/dids/update/1.0";
+const WEBVH_UPDATE: &str = "https://trusttasks.org/spec/vta/webvh/dids/update/2.1";
 
 #[test]
 fn a_dispatching_consumer_can_find_a_schema_by_type_uri() {
@@ -144,9 +141,9 @@ fn an_unknown_response_uri_is_none() {
 use trust_tasks_rs::schema_index::spec_policy_for;
 use trust_tasks_rs::{Payload, RejectReason, SpecPolicy, TrustTask, TypeUri};
 
-/// `auth/authenticate/0.1` — proof-REQUIRED, and the reason is the point: the
+/// `auth/authenticate/0.3` — proof-REQUIRED, and the reason is the point: the
 /// Data Integrity proof *is* the authentication.
-const AUTHENTICATE: &str = "https://trusttasks.org/spec/auth/authenticate/0.1";
+const AUTHENTICATE: &str = "https://trusttasks.org/spec/auth/authenticate/0.3";
 
 #[test]
 fn a_dispatching_consumer_can_find_a_policy_by_type_uri() {
@@ -169,7 +166,7 @@ fn a_response_uri_has_a_schema_but_no_policy() {
 /// new flag-driven rule is added.
 #[test]
 fn the_uri_keyed_policy_matches_the_typed_one() {
-    use trust_tasks_rs::specs::auth::authenticate::v0_1::Payload as Authenticate;
+    use trust_tasks_rs::specs::auth::authenticate::v0_3::Payload as Authenticate;
     assert_eq!(
         spec_policy_for(AUTHENTICATE).unwrap(),
         SpecPolicy::of::<Authenticate>(),
@@ -181,7 +178,7 @@ fn the_uri_keyed_policy_matches_the_typed_one() {
 /// through the type — on a `TrustTask<Value>`, which is the whole point.
 #[test]
 fn enforcing_by_uri_refuses_what_enforcing_by_type_refuses() {
-    use trust_tasks_rs::specs::auth::authenticate::v0_1::Payload as Authenticate;
+    use trust_tasks_rs::specs::auth::authenticate::v0_3::Payload as Authenticate;
 
     // Proofless, on a proof-REQUIRED spec. The recipient IS set: `authenticate`
     // is recipient-REQUIRED too, and that rule is checked first, so leaving it

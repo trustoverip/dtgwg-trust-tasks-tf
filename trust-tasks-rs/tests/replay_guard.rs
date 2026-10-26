@@ -8,8 +8,6 @@
 //! grant the ACL entry twice.
 //!
 //! Its specimens are `acl` payloads, so a build without that family skips it.
-// Pinned to fixed spec versions on purpose; that they are superseded is beside the point.
-#![allow(deprecated)]
 #![cfg(feature = "acl")]
 
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -17,7 +15,7 @@ use std::sync::Arc;
 
 use chrono::{DateTime, TimeDelta, Utc};
 use trust_tasks_rs::handlers::NoopHandler;
-use trust_tasks_rs::specs::acl::grant::v0_1 as grant;
+use trust_tasks_rs::specs::acl::grant::v0_2 as grant;
 use trust_tasks_rs::{
     consume_inbound, ConsumeChecks, ConsumeOutcome, ErrorResponse, FreshnessPolicy,
     InMemoryReplayGuard, NoValidator, PayloadPolicy, Proof, ProofPolicy, ProofVerifier,
@@ -47,11 +45,14 @@ fn t(s: &str) -> DateTime<Utc> {
 }
 
 fn entry(role: &str) -> grant::AclEntry {
-    grant::AclEntry::builder()
-        .subject("did:web:alice.example")
-        .role(role)
-        .try_into()
-        .expect("acl entry builder")
+    serde_json::from_value(serde_json::json!({
+        "subject": "did:web:alice.example",
+        "role": role,
+        "act": { "scope": "all" },
+        "keys": { "scope": "all" },
+        "capabilities": { "scope": "ceiling" }
+    }))
+    .expect("a valid acl/grant/0.2 entry")
 }
 
 fn response(role: &str) -> grant::Response {

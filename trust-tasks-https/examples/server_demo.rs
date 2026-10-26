@@ -1,12 +1,12 @@
 //! A demo Trust Tasks server over HTTPS.
 //!
-//! Exposes `acl/grant/0.1` and `acl/revoke/0.1` on `http://localhost:3000`.
+//! Exposes `acl/grant/0.2` and `acl/revoke/0.2` on `http://localhost:3000`.
 //! Two bearer tokens are accepted: `alice` (maps to the `did:key` the
 //! `client_demo` signs with) and `bob` (maps to `did:web:bob.example`);
 //! everything else is treated as unauthenticated.
 //!
 //! `alice` maps to a `did:key` rather than a `did:web` because
-//! `acl/grant/0.1` declares `proof` REQUIRED: the client signs, and SPEC
+//! `acl/grant/0.2` declares `proof` REQUIRED: the client signs, and SPEC
 //! §4.8.1 requires the in-band `issuer` to agree with the identity the
 //! transport authenticated. Mapping `alice` to some other DID would turn
 //! the demo's `proofRequired` into `identityMismatch` — a different
@@ -19,8 +19,6 @@
 //! ```
 //!
 //! Then point [`client_demo`] at it.
-// Pinned to fixed spec versions on purpose; that they are superseded is beside the point.
-#![allow(deprecated)]
 
 use affinidi_secrets_resolver::secrets::Secret;
 use trust_tasks_https::{BearerAuth, HttpsServer};
@@ -47,25 +45,25 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_verifier(Verifier::for_did_key())
         // Handler for acl/grant: accepts, echoes the entry back as the
         // canonical post-state. Demonstrates the typed payload + context.
-        .on::<grant::v0_1::Payload, _>(|req, ctx| {
+        .on::<grant::v0_2::Payload, _>(|req, ctx| {
             println!(
                 "acl/grant received from {} for subject {} (role {})",
                 ctx.authenticated_sender.as_deref().unwrap_or("<unauth>"),
-                req.payload.entry.subject,
-                &*req.payload.entry.role,
+                req.payload.entry.subject.as_str(),
+                req.payload.entry.role.as_str(),
             );
-            Ok(grant::v0_1::Response::builder()
+            Ok(grant::v0_2::Response::builder()
                 .entry(req.payload.entry.clone())
                 .try_into()
                 .expect("acl grant response builder"))
         })
         // Handler for acl/revoke: returns null entry meaning "removed".
         // Demonstrates RejectReason as the error path.
-        .on::<revoke::v0_1::Payload, _>(|req, ctx| {
+        .on::<revoke::v0_2::Payload, _>(|req, ctx| {
             println!(
                 "acl/revoke received from {} for subject {}",
                 ctx.authenticated_sender.as_deref().unwrap_or("<unauth>"),
-                req.payload.subject,
+                req.payload.subject.as_str(),
             );
             if !ctx
                 .authenticated_sender
@@ -77,8 +75,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     reason: "revoke requires an authenticated did:web sender".into(),
                 });
             }
-            Ok(revoke::v0_1::Response::builder()
-                .entry(Option::<revoke::v0_1::AclEntry>::None)
+            Ok(revoke::v0_2::Response::builder()
+                .entry(Option::<revoke::v0_2::AclEntry>::None)
                 .try_into()
                 .expect("acl revoke response builder"))
         })

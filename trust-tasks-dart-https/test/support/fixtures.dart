@@ -75,9 +75,11 @@ HttpsServer echoServer({
   bool replayProtection = true,
   String basePath = '',
   List<String>? calls,
+  FreshnessPolicy freshness = FreshnessPolicy.consequential,
 }) {
   return HttpsServer(
     localVid: server,
+    freshness: freshness,
     auth: StaticBearerAuth({aliceToken: alice}),
     proofVerifier: verifier,
     allowedDidMethods: allowedDidMethods,

@@ -7,11 +7,7 @@
 // it supports, then re-sends the identical document, which the server absorbs
 // as a retry rather than executing twice (bindings/https/0.2 §5.1).
 
-// trust-task-discovery 0.2 is superseded, but it is the newest version
-// HttpsServer.enableDiscovery answers.
-// ignore_for_file: deprecated_member_use
-
-import 'package:trust_tasks/specs/trust_task_discovery/v0_2/payload.dart'
+import 'package:trust_tasks/specs/trust_task_discovery/v0_3/payload.dart'
     as discovery;
 import 'package:trust_tasks/trust_tasks.dart';
 import 'package:trust_tasks_https/io.dart';
@@ -54,7 +50,14 @@ Future<void> main() async {
         encode: (p) => p.toJson(),
         decodeResponse: discovery.Response.fromJson,
       );
+      final window = response.payload.acceptanceWindow;
       print('$attempt: ${response.payload.supportedTypes}');
+      // How long this server still accepts a document after its issuedAt — what
+      // a producer holding a document needs before it re-sends (discovery 0.3).
+      if (window != null) {
+        print('  accepted for ${window.maxAgeSeconds}s '
+            '(+${window.clockSkewSeconds}s skew) after issuedAt');
+      }
     } on HttpsClientException catch (e) {
       // Sealed: a switch over it is exhaustive.
       final summary = switch (e) {
