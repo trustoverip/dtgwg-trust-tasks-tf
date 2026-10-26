@@ -357,6 +357,11 @@ a fifth time and compares:
 - Rust CI denies warnings, so a hand-written use of a superseded generated type
   needs `#[allow(deprecated)]` or a move to the current version — and must move
   before that version's withdrawal batch, or the batch PR's CI fails.
+  `Withdrawal readiness` (`scripts/check-withdrawal-readiness.mjs`) lists every
+  hand-written import of a version due in the next batch — a warning until 30
+  days before it, a failure inside that window. Move the use to the successor it
+  names; a Type URI string or a JSON fixture naming the version is fine, since a
+  withdrawn schema stays published.
 
 ## ⚠️ `extends`: routing a newer version to the version a consumer implements
 

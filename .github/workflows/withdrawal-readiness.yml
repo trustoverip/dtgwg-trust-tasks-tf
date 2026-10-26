@@ -1,0 +1,37 @@
+name: Withdrawal readiness
+# The quarterly withdrawal batch (withdraw.yml) removes every spec version
+# superseded or retired for 90 days from the generated libraries. Hand-written
+# code still importing one of those modules would stop the batch's PR from
+# building. This lists every such use ahead of time: a warning while the batch
+# is more than 30 days away, a failure inside that window
+# (scripts/check-withdrawal-readiness.mjs). Weekly as well as per PR, so the
+# countdown is visible on main even when nobody opens one.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  readiness:
+    name: next withdrawal batch builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # Full history: due dates come from when each successor was added.
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+      - name: List hand-written uses of versions due in the next batch
+        run: node scripts/check-withdrawal-readiness.mjs

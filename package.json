@@ -22,7 +22,8 @@
     "check-published-schemas": "node scripts/check-published-schemas.mjs",
     "fix-stale-references": "node scripts/fix-stale-references.mjs",
     "extends-candidates": "node scripts/extends-candidates.mjs",
-    "withdraw-due": "node scripts/withdraw-due.mjs"
+    "withdraw-due": "node scripts/withdraw-due.mjs",
+    "check-withdrawal-readiness": "node scripts/check-withdrawal-readiness.mjs"
   },
   "engines": {
     "node": ">=24"
