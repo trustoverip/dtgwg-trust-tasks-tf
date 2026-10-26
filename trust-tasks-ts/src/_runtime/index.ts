@@ -71,6 +71,18 @@ export {
 export { canonicalJson, sha256Hex } from "./canonical.js";
 
 export {
+  extendsChain,
+  extendsOf,
+  prunePayload,
+  readForSpec,
+  receivedDocumentOf,
+  type ExtendsLookup,
+  type ReadForSpecResult,
+} from "./extends.js";
+
+export { EXTENDS_BY_TYPE_URI } from "../_extends.js";
+
+export {
   CONSEQUENTIAL_FRESHNESS,
   DEFAULT_FRESHNESS,
   DEFAULT_MAX_AGE_MS,

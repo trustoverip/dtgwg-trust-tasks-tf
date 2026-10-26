@@ -78,6 +78,7 @@ import {
   validateFreshness,
   type FreshnessPolicy,
 } from "./freshness.js";
+import { receivedDocumentOf } from "./extends.js";
 import {
   documentDigest,
   type ReplayGuard,
@@ -377,6 +378,15 @@ export async function consumeInbound<P, R>(
     );
   }
 
+  // The document as it arrived. Differs from `doc` only when `doc` is a
+  // `readForSpec` re-reading of a later MINOR reached along `extends`, whose
+  // payload was pruned to the members `spec` knows. The proof (item 7) covers
+  // the members that pruning drops, and the item-11 record must tell apart two
+  // documents that differ only in an extension member, so both work on this —
+  // never on the pruned copy. Everything that reasons about the payload's
+  // meaning (item 2, the handler) gets `doc`.
+  const received = receivedDocumentOf(doc) ?? doc;
+
   // §7.2 item 2 — payload schema. Runs first, in the spec's own order, and
   // before anything that reasons about what the payload means: a payload that
   // is not the shape the specification declares should be refused as malformed
@@ -428,7 +438,7 @@ export async function consumeInbound<P, R>(
       case "verify": {
         let ok: boolean;
         try {
-          ok = await proofPolicy.verify.verify(doc);
+          ok = await proofPolicy.verify.verify(received);
         } catch (e) {
           ok = false;
         }
@@ -472,7 +482,7 @@ export async function consumeInbound<P, R>(
   let claim: { guard: ReplayGuard; digest: string } | undefined;
   if (checks.replay.kind === "guard") {
     const { guard } = checks.replay;
-    const digest = documentDigest(doc);
+    const digest = documentDigest(received);
 
     // §7.2 (*Bounding the record*): "A consumer that can establish neither an
     // `expiresAt` nor an age for a document has no window in which to place

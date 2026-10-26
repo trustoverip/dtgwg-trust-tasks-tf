@@ -195,6 +195,28 @@ The pipeline mirrors `consume_inbound` in
 a TypeScript consumer and a Rust one reach the same verdict on the same
 document.
 
+### Accepting a later version that `extends` yours
+
+A specification version may declare `extends: "<M.K>"` (SPEC §5.2): it keeps
+everything `M.K` defines and only adds. Every generated module carries its
+direct declaration as `EXTENDS`, and `EXTENDS_BY_TYPE_URI` indexes them, so a
+library upgrade alone teaches a consumer of `x/0.2` to accept `x/0.3`. Pass the
+parsed document through `readForSpec` before `consumeInbound`:
+
+```ts
+const read = readForSpec<XGet_v0_2.Payload>(parsed, XGet_v0_2.SPEC);
+if (read.kind === "refused") return emit(rejectWith(parsed, newId(), toErrorPayload(read.reason)));
+const outcome = await consumeInbound({ ...opts, spec: XGet_v0_2.SPEC, doc: read.doc });
+```
+
+The implemented version passes through unchanged. A later version whose
+`extends` chain reaches it comes back with its payload pruned to the members
+your version's schema knows and its `type` kept as received, so `respondWith`
+answers `<received type>#response`. Anything else is refused
+`unsupportedVersion`. `consumeInbound` verifies the proof and records the item-11
+digest over the document **as received**, not the pruned copy — pass `read.doc`
+itself, not a copy of it.
+
 ## Validating payloads at runtime
 
 This package does not bundle a JSON-Schema validator, so §7.2 items 1–2
