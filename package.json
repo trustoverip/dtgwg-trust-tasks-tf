@@ -14,6 +14,8 @@
     "build-ts-bindings": "node scripts/build-ts-bindings.mjs",
     "build-go-bindings": "node scripts/build-go-bindings.mjs",
     "build-dart-bindings": "node scripts/build-dart-bindings.mjs",
+    "build-bundles": "cargo run -q --release -p trust-tasks-codegen -- --bundles website/specs",
+    "check-bundles": "node scripts/check-bundles.mjs",
     "test:infra": "node --test infra/cloudfront/*.test.mjs",
     "validate-ceremonies": "node scripts/validate-ceremonies.mjs",
     "test-ceremonies": "node scripts/validate-ceremonies.mjs --test",

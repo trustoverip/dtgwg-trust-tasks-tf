@@ -130,6 +130,7 @@ defects three times.
 | `published schemas change only additively` (`scripts/check-published-schemas.mjs`, `scripts/lib/schema-compat.mjs`) | a spec file this PR changed that was in the last `trust-tasks-rs-v*` release changed only additively — no removed, renamed or newly required/optional member, no type, `title`, pattern or format change, no enum value inserted before another, no narrowed or dropped bound, no `proofRequirement` change or dropped error code | a semantic change carried only in prose, and anything already merged to main before the last release that was never compared |
 | the API compatibility jobs — `ts API compatibility`, `go API compatibility`, `Dart API compatibility` | the core npm, Go and Dart packages' public API is compatible with their last published release, or the PR title declares the break with a `!` scoped to that package (or one merged since the release already did); an appended string-union value is compatible by policy | a behavioural break that changes no signature (a spec that starts requiring a proof), and the hand-written sibling packages, which are not checked yet |
 | commit-lint's `!` rule | a `!` title scopes it only to packages (`rs`, `ts`, `go`, `dart`, `codegen`, the binding crates, `ts-…`/`go-…`/`dart-…`) | whether the package API really broke |
+| `check-bundles` (in `deploy.yml`, after `build-bundles`) | every registry bundle's digest, canonical form and index entry, and that its schemas equal the TypeScript module's | whether a consumer's generator reads the bundle the way the in-repo generators read the specs |
 | the error-URI check in `check-bindings-conformance.mjs` | `trust_task_error_type_uri()`, `TRUST_TASK_ERROR_TYPE_URI`, `TrustTaskErrorTypeURI` and `trustTaskErrorTypeUri` all name the same version | whether that version is the right one to have adopted |
 
 The fourth instance of the hand-maintained-list failure mode was binding *prose*:
@@ -338,6 +339,32 @@ Measured on the `validate` build: 63s → 23s, peak memory 9.0 GB → 4.3 GB.
 `acl`-specimen unit-test modules are `#[cfg(all(test, feature = "acl"))]`, and an
 integration test file that uses a family opens with `#![cfg(feature = "…")]`
 for each one it names.
+
+## Registry bundles — `trust-tasks-codegen --bundles`
+
+Milestone 1 of `docs/design/consumer-side-generation.md`.
+`npm run build-bundles` (`cargo run -p trust-tasks-codegen -- --bundles
+website/specs`) writes one self-contained `bundle.json` per specification
+version — schemas with `$ref`s inlined, front-matter policy, error codes,
+lifecycle — and an `index.json` naming each by `sha256:` digest. It touches
+nothing in `trust-tasks-rs`. `deploy.yml` runs it after `npm run build` (which
+recreates `website/specs/`), so the site serves `/specs/<slug>/<M.N>/bundle.json`
+and `/specs/index.json`; the bundles are not committed.
+
+- **A bundle is built from `generate_one`'s own code paths** — `spec_schemas()`
+  for the schemas and `read_spec_policy()` for the policy — so its `schema` /
+  `responseSchema` are, as parsed JSON, the module's `PAYLOAD_SCHEMA`s. Change
+  the inlining or a policy reader there and both move together; do not give
+  `bundle.rs` a reader of its own.
+- **The bytes are canonical (RFC 8785) and the digest is over them.** Any change
+  to what a bundle contains changes every digest a consumer has pinned, so a
+  shape change bumps `bundleVersion`.
+- Withdrawn versions **are** bundled (`status: "withdrawn"`); `trust-task-error`
+  is not (`SKIP_SLUGS`, listed in the index's `excluded`).
+- `npm run check-bundles` (`scripts/check-bundles.mjs`) checks them without the
+  Rust generator: digests, canonical form, the index against the tree, and every
+  schema against the **TypeScript** module's. Like `check-bindings`, keep it
+  independent — do not import from the generators.
 
 ## ⚠️ Superseded, retired and withdrawn versions in the generators
 
@@ -776,11 +803,14 @@ npm run build-ts-bindings         # regenerate TS bindings
 npm run build-go-bindings         # regenerate Go bindings (gofmts itself)
 npm run build-dart-bindings       # regenerate Dart bindings (dart formats itself)
 cargo run -p trust-tasks-codegen  # regenerate Rust bindings (then `cargo fmt --all`)
+npm run build-bundles             # registry bundles + index into website/specs/ (after `npm run build`)
+npm run check-bundles             # verify them independently of the Rust generator
 ```
 
 The website deploys to S3/CloudFront via `.github/workflows/deploy.yml` on push to
 `main`. Generated website outputs (`website/assets/tasks.generated.js`,
-`website/specs/`, `website/bindings/`) are `.gitignore`'d and rebuilt in CI — but
+`website/specs/` including its `bundle.json`s and `index.json`,
+`website/bindings/`) are `.gitignore`'d and rebuilt in CI — but
 `website/assets/data.js` is **source**, committed by hand.
 
 The libraries publish via `.github/workflows/publish.yml`, but **not on merge** —

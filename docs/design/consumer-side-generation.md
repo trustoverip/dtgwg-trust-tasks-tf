@@ -1,7 +1,8 @@
 # Consumer-side generation — compile only what you use
 
-Status: **proposed** (2026-10-26). Supersedes generating every specification
-into every library.
+Status: **proposed** (2026-10-26); milestone 1 **implemented** — see
+[Milestone 1 — implemented](#milestone-1--implemented). Supersedes generating
+every specification into every library.
 
 ## The problem
 
@@ -125,3 +126,77 @@ they use at their own build time.
 5. **Deprecate, then remove** the prebuilt modules (with a withdrawal batch).
 
 Each milestone is releasable on its own; nothing is removed before milestone 5.
+
+## Milestone 1 — implemented
+
+`cargo run -p trust-tasks-codegen -- --bundles <out-dir>` (`npm run
+build-bundles` writes into `website/specs/`) writes
+`<out-dir>/<slug>/<M.N>/bundle.json` for every specification version and
+`<out-dir>/index.json`, touching nothing in `trust-tasks-rs` (about 1.3 s for
+the registry). `deploy.yml` runs it after `npm run build`, so the site serves:
+
+- `https://trusttasks.org/specs/<slug>/<M.N>/bundle.json`
+- `https://trusttasks.org/specs/index.json`
+
+`/specs/` is the raw asset tree (an `ASSET_PREFIXES` entry in
+`infra/cloudfront/type-uri-negotiation.js`), not the `/spec/` Type URI tree, so
+no routing change was needed. Earlier drafts above say `/spec/…/bundle.json`;
+it is `/specs/`.
+
+**Built by the Rust codegen, from its own code paths.** The schemas come from
+`spec_schemas()` — the inlining and response-document wrapping `generate_one`
+uses for `PAYLOAD_SCHEMA` — and the policy from `read_spec_policy()`, the
+front-matter readers `generate_one` uses for the policy constants. A bundle is
+therefore, by construction, what the generator generates from.
+
+**Bundle** (`bundleVersion: 1`, every member always present):
+
+| Member | |
+|---|---|
+| `bundleVersion` | `1` |
+| `typeUri`, `slug`, `version` | the request Type URI and its parts |
+| `status` | front matter: `draft`, `candidate`, `standard`, `retired`, `withdrawn` |
+| `deprecation` | the lifecycle note every library carries (`superseded by …`, `retired; use …`, `retired`), or `null` |
+| `extends` | front matter `extends` (`"M.K"`), or `null` |
+| `supersededBy`, `targetFrameworkVersion` | front matter, or `null` |
+| `policy.bearer` | `IS_BEARER` |
+| `policy.proofRequired.{request,response}` | `IS_PROOF_REQUIRED` per variant |
+| `policy.issuedAtRequired.{request,response}` | `IS_ISSUED_AT_REQUIRED` per variant |
+| `policy.recipientRequired.{request,response}` | `IS_RECIPIENT_REQUIRED` per variant — the response's tracks the *issuer* party (§7.2 item 5) |
+| `policy.maxDocumentBytes.{request,response}` | `MAX_DOCUMENT_BYTES`, integer or `null` |
+| `errorCodes[]` | `{code, meaning, retryable, detailsSchema?}`, declaration order, `detailsSchema` `$ref`s inlined |
+| `schema` | the request payload schema, self-contained — `Payload::PAYLOAD_SCHEMA` |
+| `responseSchema` | the response document — `Response::PAYLOAD_SCHEMA` — or `null` when there is no `$defs.Response` (then the `response` policy values carry no meaning) |
+
+The policy is per variant rather than the single `recipient` the sketch above
+had, because the generated libraries already hold it per variant.
+
+**Canonical form and digest.** Compact, members sorted by UTF-16 code unit,
+JCS string escaping, integers only (a float that has no unambiguous JCS form
+stops the build) — i.e. RFC 8785. The digest is `sha256:<hex>` of exactly the
+bytes of `bundle.json`, no trailing newline. Two runs give identical bytes.
+
+**Index** (`indexVersion: 1`, same canonical form): `generatedFrom` (the git
+commit, or `null`), `bundleVersion`, `excluded` (slugs with no bundle and why),
+and `specs[]` of `{typeUri, slug, version, status, deprecation, extends, digest,
+path}` sorted by slug, then numerically by version; `path` is relative to the
+index.
+
+**What is bundled.** Every version, *withdrawn ones included* (`status:
+"withdrawn"`), so a pinned bundle stays fetchable and verifiable after its
+version leaves the libraries. `trust-task-error` is not: the runtimes model it
+by hand (the codegen's `SKIP_SLUGS`), and `index.json` lists it in `excluded`.
+
+**Checks.** Codegen unit tests compare five real bundles (deprecated, no
+`$defs.Response`, `maxDocumentBytes`, `errorCodes` with `detailsSchema`) against
+the module `generate_one` emits — schemas as parsed JSON, every policy constant,
+`DEPRECATION`, `EXTENDS` — and run the whole registry twice for byte-identical
+output, index-vs-disk agreement and digests. `scripts/check-bundles.mjs`
+(`npm run check-bundles`, run in `deploy.yml` after the bundles are built)
+checks independently: digests, canonical form re-derived with
+`JSON.stringify`, the index against the tree, and every non-withdrawn bundle's
+schemas against the **TypeScript** generator's `PAYLOAD_SCHEMA` /
+`RESPONSE_PAYLOAD_SCHEMA`.
+
+Measured on main, 2026-10-26: 1,121 bundles, 14.6 MB in total, 13.0 KB
+average, 56.8 KB largest; `index.json` 350 KB.
