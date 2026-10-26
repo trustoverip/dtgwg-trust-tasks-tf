@@ -17,6 +17,9 @@
 //!
 //! [`GETTING-STARTED.md`]: https://github.com/trustoverip/dtgwg-trust-tasks-tf/blob/main/GETTING-STARTED.md
 
+// These name pinned, now-superseded spec versions as fixed specimens; they move before
+// those versions are withdrawn (CLAUDE.md, "Superseded, retired and withdrawn versions").
+#![allow(deprecated)]
 // GETTING-STARTED:begin imports
 use affinidi_secrets_resolver::secrets::Secret;
 use trust_tasks::https::{BearerAuth, ClientError, HttpsClient, HttpsServer};
