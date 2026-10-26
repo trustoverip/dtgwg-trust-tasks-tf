@@ -40,8 +40,9 @@
 #   trust-tasks      the facade, `--only-explicit-features`: its dependency on
 #                    trust-tasks-rs is `default-features = false`, so this stays
 #                    as small; what it adds is re-exports and its feature list.
-#   trust-tasks-ceremony
+#   trust-tasks-ceremony, trust-tasks-build
 #                    no trust-tasks-rs dependency; cheap, always checked.
+#                    (trust-tasks-cli is a binary: it has no library API.)
 #   the bindings     (https, proof, didcomm, didcomm-v1, tsp, capability-client)
 #                    depend on trust-tasks-rs with every family, so documenting
 #                    one compiles the whole generated tree. Checked only when the
@@ -50,8 +51,8 @@
 #                    arrives through a dependency's types anyway; that is what
 #                    the `core` version group in release-plz.toml is for.
 #
-# Crates with no release tag yet (trust-tasks-build, trust-tasks-cli until their
-# first manual publish) are skipped.
+# A crate with no release tag yet (a new crate before its manual first publish)
+# is skipped.
 #
 # ── The verdict, per crate ───────────────────────────────────────────────────
 #
@@ -63,7 +64,8 @@
 #   otherwise                                      → FAIL
 #
 # The core crates release as one version group, so a `!` on any of their scopes
-# declares a break for all of them. trust-tasks-ceremony versions on its own.
+# declares a break for all of them. trust-tasks-ceremony (`ceremony`) and
+# trust-tasks-build (`build`) version on their own.
 #
 # On the Release PR itself the versions have moved, and cargo-semver-checks is
 # left to judge the change against the new version, as release-plz would have.
@@ -86,6 +88,7 @@ CRATES=(
   "trust-tasks-rs|--only-explicit-features --features acl,validate|always"
   "trust-tasks|--only-explicit-features|always"
   "trust-tasks-ceremony||always"
+  "trust-tasks-build||always"
   "trust-tasks-https||changed"
   "trust-tasks-proof||changed"
   "trust-tasks-didcomm||changed"
@@ -95,7 +98,11 @@ CRATES=(
 )
 
 scopes_for() {
-  if [ "$1" = trust-tasks-ceremony ]; then echo ceremony; else echo "$CORE_SCOPES"; fi
+  case $1 in
+    trust-tasks-ceremony) echo ceremony ;;
+    trust-tasks-build) echo build ;;
+    *) echo "$CORE_SCOPES" ;;
+  esac
 }
 
 # The scopes of the title's `!`, if it has one (commit-lint already refuses a

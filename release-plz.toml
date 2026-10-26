@@ -140,19 +140,8 @@ version_group = "core"
 name = "trust-tasks-capability-client"
 version_group = "core"
 
-# The `trust-tasks` CLI. Not in the `core` group: it does not depend on
-# trust-tasks-rs, so it versions on its own, like trust-tasks-ceremony.
-#
-# `release = false` UNTIL ITS FIRST crates.io PUBLISH, which is manual:
-# trusted publishing cannot create a crate that does not exist yet, so
-# release-plz would fail on it mid-release — with the crates before it already
-# uploaded. Publish 0.1.0 by hand, register `publish.yml` as its Trusted
-# Publisher, then delete this `release = false` (RELEASING.md).
-[[package]]
-name = "trust-tasks-cli"
-release = false
-
-# Same as trust-tasks-cli: held back until its manual first publish.
-[[package]]
-name = "trust-tasks-build"
-release = false
+# trust-tasks-cli and trust-tasks-build need no entry: neither depends on
+# trust-tasks-rs, so each versions on its own, like trust-tasks-ceremony. Both
+# were held back with `release = false` until their manual first publish
+# (0.1.0, with `publish.yml` registered as their Trusted Publisher); a new
+# crate starts the same way (RELEASING.md).
