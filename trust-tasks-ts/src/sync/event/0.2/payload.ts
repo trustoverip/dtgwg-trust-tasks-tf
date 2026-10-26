@@ -7,7 +7,7 @@ import type { AclChangedEvent_SyncV0_2 as AclChangedEvent, AndroidApp_VaultV0_2 
 
 
 /**
- * One-way push notification from the maintainer to a subscribing consumer. Carries a single SyncEvent (vault.upserted, vault.deleted, acl.changed, policy.changed). The consumer updates its cache and does NOT respond — there is no #response form. For offline catch-up the consumer uses vault/sync/0.1 to pull missed events.
+ * One-way push notification from the maintainer to a subscribing consumer. Carries a single SyncEvent (vault.upserted, vault.deleted, acl.changed, policy.changed). The consumer updates its cache and does NOT respond — there is no #response form. For offline catch-up the consumer uses vault/sync/0.3 to pull missed events.
  */
 export interface SyncEventPayload {
   event: SyncEvent;
@@ -36,7 +36,7 @@ export const PAYLOAD_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/sync/event/0.2",
   "title": "Sync Event — payload",
-  "description": "One-way push notification from the maintainer to a subscribing consumer. Carries a single SyncEvent (vault.upserted, vault.deleted, acl.changed, policy.changed). The consumer updates its cache and does NOT respond — there is no #response form. For offline catch-up the consumer uses vault/sync/0.1 to pull missed events.",
+  "description": "One-way push notification from the maintainer to a subscribing consumer. Carries a single SyncEvent (vault.upserted, vault.deleted, acl.changed, policy.changed). The consumer updates its cache and does NOT respond — there is no #response form. For offline catch-up the consumer uses vault/sync/0.3 to pull missed events.",
   "type": "object",
   "additionalProperties": false,
   "required": [

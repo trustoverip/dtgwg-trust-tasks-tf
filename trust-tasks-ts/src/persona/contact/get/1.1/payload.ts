@@ -28,7 +28,7 @@ export interface PersonaContactGetPayload {
 export interface PersonaContactGetResponsePayload {
   contactId: Ulid;
   /**
-   * The DID the contact disclosed. Absent for a contact made from a community directory entry whose DID the holder has not been shown (persona/contact/put/1.1, linking form).
+   * The DID the contact disclosed. Absent for a contact made from a community directory entry whose DID the holder has not been shown (persona/contact/put/1.1 and later, linking form).
    */
   subjectDid?: string;
   knownByPersona: string;
@@ -142,7 +142,7 @@ export const PAYLOAD_SCHEMA = {
         "subjectDid": {
           "type": "string",
           "minLength": 1,
-          "description": "The DID the contact disclosed. Absent for a contact made from a community directory entry whose DID the holder has not been shown (persona/contact/put/1.1, linking form)."
+          "description": "The DID the contact disclosed. Absent for a contact made from a community directory entry whose DID the holder has not been shown (persona/contact/put/1.1 and later, linking form)."
         },
         "knownByPersona": {
           "type": "string",
@@ -508,7 +508,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "subjectDid": {
           "type": "string",
           "minLength": 1,
-          "description": "The DID the contact disclosed. Absent for a contact made from a community directory entry whose DID the holder has not been shown (persona/contact/put/1.1, linking form)."
+          "description": "The DID the contact disclosed. Absent for a contact made from a community directory entry whose DID the holder has not been shown (persona/contact/put/1.1 and later, linking form)."
         },
         "knownByPersona": {
           "type": "string",

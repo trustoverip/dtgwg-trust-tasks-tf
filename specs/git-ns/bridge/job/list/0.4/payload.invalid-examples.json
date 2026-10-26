@@ -28,7 +28,7 @@
     }
   },
   {
-    "note": "Response variant: `kind` is not one of the eight job kinds git-ns/bridge/job/0.5 defines.",
+    "note": "Response variant: `kind` is not one of the eight job kinds git-ns/bridge/job/0.6 defines.",
     "variant": "response",
     "payload": {
       "jobs": [

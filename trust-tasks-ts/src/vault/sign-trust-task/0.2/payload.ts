@@ -7,7 +7,7 @@ import type { ConsumerContext, Ext, StepUpProof_VaultV0_2 as StepUpProof } from 
 
 
 /**
- * Consumer asks the maintainer to attach a Data Integrity proof (eddsa-jcs-2022) to a Trust Task envelope, signing as the principal DID of a `didSelfIssued` or `didcommPeer` vault entry. The long-term signing key never leaves the maintainer. This is the per-envelope signing complement to `vault/proxy-login/0.1`'s session-credential minting: proxy-login mints a session at session-start; sign-trust-task signs individual follow-up tasks during the session.
+ * Consumer asks the maintainer to attach a Data Integrity proof (eddsa-jcs-2022) to a Trust Task envelope, signing as the principal DID of a `didSelfIssued` or `didcommPeer` vault entry. The long-term signing key never leaves the maintainer. This is the per-envelope signing complement to `vault/proxy-login/0.2`'s session-credential minting: proxy-login mints a session at session-start; sign-trust-task signs individual follow-up tasks during the session.
  */
 export interface VaultSignTrustTaskPayload {
   /**
@@ -38,7 +38,7 @@ export interface UnsignedTrustTaskEnvelope {
    */
   threadId?: string;
   /**
-   * Type URI of the inner Trust Task (e.g. `https://trusttasks.org/spec/acl/grant/0.1`).
+   * Type URI of the inner Trust Task (e.g. `https://trusttasks.org/spec/acl/grant/0.2`).
    */
   type: string;
   /**
@@ -101,7 +101,7 @@ export const PAYLOAD_SCHEMA = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://trusttasks.org/spec/vault/sign-trust-task/0.2",
   "title": "Vault Sign Trust Task — payload",
-  "description": "Consumer asks the maintainer to attach a Data Integrity proof (eddsa-jcs-2022) to a Trust Task envelope, signing as the principal DID of a `didSelfIssued` or `didcommPeer` vault entry. The long-term signing key never leaves the maintainer. This is the per-envelope signing complement to `vault/proxy-login/0.1`'s session-credential minting: proxy-login mints a session at session-start; sign-trust-task signs individual follow-up tasks during the session.",
+  "description": "Consumer asks the maintainer to attach a Data Integrity proof (eddsa-jcs-2022) to a Trust Task envelope, signing as the principal DID of a `didSelfIssued` or `didcommPeer` vault entry. The long-term signing key never leaves the maintainer. This is the per-envelope signing complement to `vault/proxy-login/0.2`'s session-credential minting: proxy-login mints a session at session-start; sign-trust-task signs individual follow-up tasks during the session.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -159,7 +159,7 @@ export const PAYLOAD_SCHEMA = {
           "type": "string",
           "format": "uri",
           "minLength": 1,
-          "description": "Type URI of the inner Trust Task (e.g. `https://trusttasks.org/spec/acl/grant/0.1`)."
+          "description": "Type URI of the inner Trust Task (e.g. `https://trusttasks.org/spec/acl/grant/0.2`)."
         },
         "issuer": {
           "type": "string",
@@ -324,7 +324,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "type": "string",
           "format": "uri",
           "minLength": 1,
-          "description": "Type URI of the inner Trust Task (e.g. `https://trusttasks.org/spec/acl/grant/0.1`)."
+          "description": "Type URI of the inner Trust Task (e.g. `https://trusttasks.org/spec/acl/grant/0.2`)."
         },
         "issuer": {
           "type": "string",

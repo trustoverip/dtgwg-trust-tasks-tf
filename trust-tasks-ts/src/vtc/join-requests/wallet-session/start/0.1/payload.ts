@@ -11,7 +11,7 @@ import type { DigestMultibase, Ext } from "../../../../../_shared/components.js"
  */
 export interface VTCJoinRequestsWalletSessionStartPayload {
   /**
-   * The `requirementsDigest` of the criterion the applicant is gathering evidence for, as vtc/join-requests/manifest/0.3 published it — the same value vtc/join-requests/submit/0.3 carries as its `criterion`. Naming the version, not only the criterion, fixes the DCQL query the wallet is asked to satisfy to the one the applicant read.
+   * The `requirementsDigest` of the criterion the applicant is gathering evidence for, as vtc/join-requests/manifest (0.3 or later) published it — the same value vtc/join-requests/submit/0.3 carries as its `criterion`. Naming the version, not only the criterion, fixes the DCQL query the wallet is asked to satisfy to the one the applicant read.
    */
   criterion: DigestMultibase;
   /**
@@ -85,7 +85,7 @@ export const PAYLOAD_SCHEMA = {
   "properties": {
     "criterion": {
       "$ref": "#/$defs/DigestMultibase",
-      "description": "The `requirementsDigest` of the criterion the applicant is gathering evidence for, as vtc/join-requests/manifest/0.3 published it — the same value vtc/join-requests/submit/0.3 carries as its `criterion`. Naming the version, not only the criterion, fixes the DCQL query the wallet is asked to satisfy to the one the applicant read."
+      "description": "The `requirementsDigest` of the criterion the applicant is gathering evidence for, as vtc/join-requests/manifest (0.3 or later) published it — the same value vtc/join-requests/submit/0.3 carries as its `criterion`. Naming the version, not only the criterion, fixes the DCQL query the wallet is asked to satisfy to the one the applicant read."
     },
     "requestId": {
       "type": "string",

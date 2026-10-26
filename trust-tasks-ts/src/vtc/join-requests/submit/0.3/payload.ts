@@ -12,7 +12,7 @@ export interface VTCJoinRequestsSubmitPayload {
    */
   vp: {};
   /**
-   * The `requirementsDigest` of the criterion this submission is made under, as vtc/join-requests/manifest/0.3 published it. Absent: the community decides the submission under the first criterion, in the order it publishes them, that the submission meets.
+   * The `requirementsDigest` of the criterion this submission is made under, as vtc/join-requests/manifest (0.3 or later) published it. Absent: the community decides the submission under the first criterion, in the order it publishes them, that the submission meets.
    */
   criterion?: DigestMultibase;
   /**
@@ -96,7 +96,7 @@ export const PAYLOAD_SCHEMA = {
     },
     "criterion": {
       "$ref": "#/$defs/DigestMultibase",
-      "description": "The `requirementsDigest` of the criterion this submission is made under, as vtc/join-requests/manifest/0.3 published it. Absent: the community decides the submission under the first criterion, in the order it publishes them, that the submission meets."
+      "description": "The `requirementsDigest` of the criterion this submission is made under, as vtc/join-requests/manifest (0.3 or later) published it. Absent: the community decides the submission under the first criterion, in the order it publishes them, that the submission meets."
     },
     "registryConsent": {
       "type": "boolean",

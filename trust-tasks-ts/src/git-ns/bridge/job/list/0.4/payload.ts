@@ -11,11 +11,11 @@ import type { Did_GitNsV0_3 as Did, Ext, NamespaceId, RepoResource_GitNsV0_6 as 
  */
 export type JobState = "pending" | "accepted" | "succeeded" | "partial" | "failed" | "cancelled";
 /**
- * The VTC's identifier for the job, unique across the VTC's jobs. The same identifier git-ns/bridge/job (0.4 and 0.5) assigns and git-ns/bridge/result/0.1 reports against.
+ * The VTC's identifier for the job, unique across the VTC's jobs. The same identifier git-ns/bridge/job (0.4 to 0.6) assigns and git-ns/bridge/result (0.1 and 0.2) reports against.
  */
 export type JobId = string;
 /**
- * What the job asks the bridge to do — the same eight kinds git-ns/bridge/job/0.5 defines. Kept as its own enum here, rather than a cross-file $ref, because job/0.5 declares its `kind` inline rather than as a named $def; the two lists change together.
+ * What the job asks the bridge to do — the same eight kinds git-ns/bridge/job/0.6 defines. Kept as its own enum here, rather than a cross-file $ref, because job/0.6 declares its `kind` inline rather than as a named $def; the two lists change together.
  */
 export type JobKind =
   | "projectRoles"
@@ -157,7 +157,7 @@ export const PAYLOAD_SCHEMA = {
       "type": "string",
       "minLength": 1,
       "maxLength": 128,
-      "description": "The VTC's identifier for the job, unique across the VTC's jobs. The same identifier git-ns/bridge/job (0.4 and 0.5) assigns and git-ns/bridge/result/0.1 reports against."
+      "description": "The VTC's identifier for the job, unique across the VTC's jobs. The same identifier git-ns/bridge/job (0.4 to 0.6) assigns and git-ns/bridge/result (0.1 and 0.2) reports against."
     },
     "JobKind": {
       "title": "JobKind",
@@ -172,7 +172,7 @@ export const PAYLOAD_SCHEMA = {
         "beginAccountLink",
         "closePullRequest"
       ],
-      "description": "What the job asks the bridge to do — the same eight kinds git-ns/bridge/job/0.5 defines. Kept as its own enum here, rather than a cross-file $ref, because job/0.5 declares its `kind` inline rather than as a named $def; the two lists change together."
+      "description": "What the job asks the bridge to do — the same eight kinds git-ns/bridge/job/0.6 defines. Kept as its own enum here, rather than a cross-file $ref, because job/0.6 declares its `kind` inline rather than as a named $def; the two lists change together."
     },
     "JobState": {
       "title": "JobState",
@@ -324,7 +324,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
       "type": "string",
       "minLength": 1,
       "maxLength": 128,
-      "description": "The VTC's identifier for the job, unique across the VTC's jobs. The same identifier git-ns/bridge/job (0.4 and 0.5) assigns and git-ns/bridge/result/0.1 reports against."
+      "description": "The VTC's identifier for the job, unique across the VTC's jobs. The same identifier git-ns/bridge/job (0.4 to 0.6) assigns and git-ns/bridge/result (0.1 and 0.2) reports against."
     },
     "JobKind": {
       "title": "JobKind",
@@ -339,7 +339,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "beginAccountLink",
         "closePullRequest"
       ],
-      "description": "What the job asks the bridge to do — the same eight kinds git-ns/bridge/job/0.5 defines. Kept as its own enum here, rather than a cross-file $ref, because job/0.5 declares its `kind` inline rather than as a named $def; the two lists change together."
+      "description": "What the job asks the bridge to do — the same eight kinds git-ns/bridge/job/0.6 defines. Kept as its own enum here, rather than a cross-file $ref, because job/0.6 declares its `kind` inline rather than as a named $def; the two lists change together."
     },
     "JobState": {
       "title": "JobState",

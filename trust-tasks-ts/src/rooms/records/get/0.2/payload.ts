@@ -79,7 +79,7 @@ export interface RoomsRecordsGetResponsePayload {
    */
   trace?: RecordTrace;
   /**
-   * The stored blobs this record names, exactly as rooms/records/put/0.2 wrote them: the file's ciphertext, fetched with rooms/blobs/get. Absent when the record names none, when it is retracted, and on records written by put 0.1. Cleartext on every tier, as on the write. NOT committed: CommittedRecord predates it, so a reader removes it, with the verification members and `ext`, before hashing the leaf (see `trace`).
+   * The stored blobs this record names, exactly as rooms/records/put (0.2 and later) wrote them: the file's ciphertext, fetched with rooms/blobs/get. Absent when the record names none, when it is retracted, and on records written by put 0.1. Cleartext on every tier, as on the write. NOT committed: CommittedRecord predates it, so a reader removes it, with the verification members and `ext`, before hashing the leaf (see `trace`).
    *
    * @minItems 1
    * @maxItems 1
@@ -217,7 +217,7 @@ export const PAYLOAD_SCHEMA = {
           "items": {
             "$ref": "#/$defs/BlobRef"
           },
-          "description": "The stored blobs this record names, exactly as rooms/records/put/0.2 wrote them: the file's ciphertext, fetched with rooms/blobs/get. Absent when the record names none, when it is retracted, and on records written by put 0.1. Cleartext on every tier, as on the write. NOT committed: CommittedRecord predates it, so a reader removes it, with the verification members and `ext`, before hashing the leaf (see `trace`)."
+          "description": "The stored blobs this record names, exactly as rooms/records/put (0.2 and later) wrote them: the file's ciphertext, fetched with rooms/blobs/get. Absent when the record names none, when it is retracted, and on records written by put 0.1. Cleartext on every tier, as on the write. NOT committed: CommittedRecord predates it, so a reader removes it, with the verification members and `ext`, before hashing the leaf (see `trace`)."
         },
         "ext": {
           "$ref": "#/$defs/Ext"
@@ -445,7 +445,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
           "items": {
             "$ref": "#/$defs/BlobRef"
           },
-          "description": "The stored blobs this record names, exactly as rooms/records/put/0.2 wrote them: the file's ciphertext, fetched with rooms/blobs/get. Absent when the record names none, when it is retracted, and on records written by put 0.1. Cleartext on every tier, as on the write. NOT committed: CommittedRecord predates it, so a reader removes it, with the verification members and `ext`, before hashing the leaf (see `trace`)."
+          "description": "The stored blobs this record names, exactly as rooms/records/put (0.2 and later) wrote them: the file's ciphertext, fetched with rooms/blobs/get. Absent when the record names none, when it is retracted, and on records written by put 0.1. Cleartext on every tier, as on the write. NOT committed: CommittedRecord predates it, so a reader removes it, with the verification members and `ext`, before hashing the leaf (see `trace`)."
         },
         "ext": {
           "$ref": "#/$defs/Ext"

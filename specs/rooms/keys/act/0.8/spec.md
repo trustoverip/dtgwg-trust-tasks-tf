@@ -418,7 +418,7 @@ The record was sealed with [`rooms/keys/seal/0.2`](../../seal/0.2/spec.md) under
   "payload": {
     "document": {
       "id": "urn:uuid:00000000-0000-4000-8000-0000000000a1",
-      "type": "https://trusttasks.org/spec/rooms/records/put/0.2#request",
+      "type": "https://trusttasks.org/spec/rooms/records/put/0.3#request",
       "recipient": "did:webvh:example.com:northwind-community",
       "issuedAt": "2026-01-01T00:00:00Z",
       "payload": {
@@ -514,7 +514,7 @@ The presentation and proof are shortened for the example. Nothing in the complet
     "expiresAt": "2026-01-01T01:00:01Z",
     "document": {
       "id": "urn:uuid:00000000-0000-4000-8000-0000000000a1",
-      "type": "https://trusttasks.org/spec/rooms/records/put/0.2#request",
+      "type": "https://trusttasks.org/spec/rooms/records/put/0.3#request",
       "issuer": "did:webvh:example.com:people:alice",
       "recipient": "did:webvh:example.com:northwind-community",
       "issuedAt": "2026-01-01T00:00:00Z",

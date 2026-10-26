@@ -1,0 +1,5 @@
+[
+  { "note": "Missing sessionId.", "payload": {} },
+  { "note": "Empty sessionId.", "payload": { "sessionId": "" } },
+  { "note": "The holder does not choose the reason; the relying party writes it into the signed request.", "payload": { "sessionId": "ec5d3c89-3f49-49b2-9d7d-2a8c0a8a7b9b", "reason": "please" } }
+]
