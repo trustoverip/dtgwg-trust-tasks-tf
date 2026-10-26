@@ -32,6 +32,7 @@ import { checkDisclosureFloor } from './lib/disclosure-floor.mjs';
 import { createErrorCodeCasingLint, checkStandardErrorCodeCasing } from './lib/error-code-casing.mjs';
 import { checkMemberCasing } from './lib/member-casing.mjs';
 import { checkWireConventions } from './lib/wire-conventions.mjs';
+import { checkStaleReferences } from './lib/stale-references.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SPECS_DIR = path.join(ROOT, 'specs');
@@ -2190,6 +2191,13 @@ function main() {
   checkWireConventions({
     specsDir: SPECS_DIR,
     allowlistPath: path.join(ROOT, 'scripts', 'lib', 'wire-conventions-allowlist.json'),
+    fail,
+    warn,
+    log: console.log,
+  });
+  checkStaleReferences({
+    specsDir: SPECS_DIR,
+    allowlistPath: path.join(ROOT, 'scripts', 'lib', 'stale-references-allowlist.json'),
     fail,
     warn,
     log: console.log,

@@ -57,7 +57,7 @@ related:
 
 The **External Accounts — Create** Trust Task creates an external account in a context: a name, a provider model, and the provider-side identifiers the model needs. The custodian **generates the account's key itself** — a caller never supplies one — and returns the account with its public material.
 
-A new account can do nothing yet. It has no bindings, so no integration may use it, and its provider has not been told to trust it. The next steps are [`external/accounts/setup`](../../setup/0.1/spec.md) (what to configure at the provider), [`external/accounts/probe`](../../probe/0.1/spec.md) (prove it works), and [`external/accounts/bindings/grant`](../../bindings/grant/0.1/spec.md) (who may use it).
+A new account can do nothing yet. It has no bindings, so no integration may use it, and its provider has not been told to trust it. The next steps are [`external/accounts/setup`](../../setup/0.1/spec.md) (what to configure at the provider), [`external/accounts/probe`](../../probe/0.2/spec.md) (prove it works), and [`external/accounts/bindings/grant`](../../bindings/grant/0.2/spec.md) (who may use it).
 
 Every model pins the custodian's verification material at the provider, so creating an account never requires the custodian to be reachable from the internet ([conventions §3](../../../_shared/0.1/CONVENTIONS.md#3-network-exposure)).
 

@@ -41,7 +41,7 @@ related:
 
 ## Abstract
 
-The **VTC Directory — Entries — Show** Trust Task reads one entry, projected for the caller exactly as [`vtc/directory/entries/list`](../../list/0.1/spec.md) projects it, plus the groups the caller shares with the member. It succeeds the minimal [`vtc/directory/query/0.1`](../../../query/0.1/spec.md), which addresses a member by DID.
+The **VTC Directory — Entries — Show** Trust Task reads one entry, projected for the caller exactly as [`vtc/directory/entries/list`](../../list/0.2/spec.md) projects it, plus the groups the caller shares with the member. It succeeds the minimal [`vtc/directory/query/0.1`](../../../query/0.1/spec.md), which addresses a member by DID.
 
 Members address an entry by its `entryId` — found by browsing or search, or given to them by its member. Only administrators may address an entry by DID: a lookup by DID is exactly the membership oracle the directory is designed not to be.
 
@@ -83,7 +83,7 @@ An audience covers a viewer as [`Audience`](../../../_shared/0.1/directory-card.
 
 ## Authorization
 
-**Authority: standing in the community, and the member's own visibility choices**, exactly as for [`vtc/directory/entries/list`](../../list/0.1/spec.md). Addressing by DID additionally needs `vtc.directory.admin` or `vtc.members.manage`, because it answers "is this DID a member?" — a question only those who administer membership may ask. The proof establishes who asked, never that they may ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10).
+**Authority: standing in the community, and the member's own visibility choices**, exactly as for [`vtc/directory/entries/list`](../../list/0.2/spec.md). Addressing by DID additionally needs `vtc.directory.admin` or `vtc.members.manage`, because it answers "is this DID a member?" — a question only those who administer membership may ask. The proof establishes who asked, never that they may ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10).
 
 ## Definitions
 

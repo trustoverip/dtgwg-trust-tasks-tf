@@ -74,7 +74,7 @@ identifier on every access, and a period of access logs reconstructs the members
 **A record can carry a file.** Since [`rooms/records/put/0.2`](../../put/0.2/spec.md) a
 record may name a stored blob — the file's ciphertext, held outside the record — in its
 cleartext `blobs` member. This version returns that member, so a reader learns which blob
-to fetch with [`rooms/blobs/get`](../../../blobs/get/0.1/spec.md), and a mirror learns which
+to fetch with [`rooms/blobs/get`](../../../blobs/get/0.2/spec.md), and a mirror learns which
 blobs the record keeps alive.
 
 ## Status of this Document
@@ -97,7 +97,7 @@ and on a `private` room **MUST** include `presentation.subjectBinding`.
 
 A conforming **consumer** (the host) **MUST** apply the chain-verification, depth, and
 no-dereference rules of
-[`rooms/records/put`](../../put/0.1/spec.md), and **MUST NOT** condition service of a
+[`rooms/records/put`](../../put/0.3/spec.md), and **MUST NOT** condition service of a
 `private` room on a session of its own.
 
 A host **MUST** return `blobs` exactly as the stored version of the record names it, and
@@ -130,7 +130,7 @@ one.
 
 `dataCommitment` carries the room's record-tree root at the moment this record was
 read — the same value and the same construction as
-[`rooms/records/list`](../../list/0.2/spec.md), whose section on it governs.
+[`rooms/records/list`](../../list/0.5/spec.md), whose section on it governs.
 
 It is here, on a single-record read, for two reasons. A reader taking several
 reads can tell **whether the room moved between them**, which a per-read root
@@ -142,7 +142,7 @@ a root; not a completeness proof on its own, because a single root is the host's
 own assertion until it is compared against one the host did not choose.
 
 `recordCount` and `headVersion` travel with it and are what make that comparison
-possible at all — see [`rooms/records/list`](../../list/0.2/spec.md), whose section
+possible at all — see [`rooms/records/list`](../../list/0.5/spec.md), whose section
 on them governs. The short of it: a root without a `headVersion` names no state, so
 two of them differing is a room that moved as readily as a host that equivocated,
 and a reader **MUST NOT** compare it against another root.
@@ -165,7 +165,7 @@ with its verification members — `dataCommitment`, `recordCount`, `headVersion`
 predates it and does not commit to it; a reader hashing a payload that still held `blobs`
 would reach a leaf in no tree. What the commitment therefore does not cover, and why a file's
 integrity does not depend on it, is stated in
-[`rooms/records/put/0.2`](../../put/0.2/spec.md) under Security & Privacy. That object is `CommittedRecord` in
+[`rooms/records/put/0.3`](../../put/0.3/spec.md) under Security & Privacy. That object is `CommittedRecord` in
 the [shared schema](../../../_shared/0.1/room.schema.json), and a reader MAY validate
 what it assembles against that definition before hashing it.
 
@@ -223,7 +223,7 @@ trace binds one record to what that host committed to. Completeness needs both.
 
 A **mirror** — a second host, or a member's own replica, that keeps a copy of a room by
 reading it — learns from `blobs` which stored blobs each record keeps alive, and fetches
-each one it lacks with [`rooms/blobs/get`](../../../blobs/get/0.1/spec.md) and
+each one it lacks with [`rooms/blobs/get`](../../../blobs/get/0.2/spec.md) and
 [`rooms/blobs/chunk`](../../../blobs/chunk/0.1/spec.md), under the same `read` chain it reads
 records with. A blob is identified by its BlobRef — the digest of its ciphertext manifest —
 so a mirror verifies every chunk and the whole blob against the manifest, and stores nothing

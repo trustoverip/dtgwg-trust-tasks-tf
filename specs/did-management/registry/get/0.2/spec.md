@@ -51,7 +51,7 @@ related:
 
 A control plane keeps a registry of the service instances it drives — hosting servers it syncs DID logs to, witnesses and watchers. **Registry Get** reads one entry: what an operator console shows when an administrator opens an instance, and what a script reads before assigning a domain to it.
 
-It is the read-one half of the registry reads; [`did-management/registry/list`](../../list/0.1/spec.md) enumerates. The two are split because they fail differently: an unknown `instanceId` here is a definite `notFound`, where a list filtered to nothing is an empty, successful page.
+It is the read-one half of the registry reads; [`did-management/registry/list`](../../list/0.2/spec.md) enumerates. The two are split because they fail differently: an unknown `instanceId` here is a definite `notFound`, where a list filtered to nothing is an empty, successful page.
 
 ## Status of this Document
 
@@ -85,7 +85,7 @@ The entitlement is **administrator standing on this control plane**, read from t
 
 ## Definitions
 
-**Instance** — one service the control plane addresses by DID: a hosting server, witness or watcher, entered in the registry by self-registration ([`did-management/server/register`](../../../server/register/0.1/spec.md)) or by an administrator ([`did-management/registry/admin-register`](../../admin-register/0.1/spec.md)).
+**Instance** — one service the control plane addresses by DID: a hosting server, witness or watcher, entered in the registry by self-registration ([`did-management/server/register`](../../../server/register/0.2/spec.md)) or by an administrator ([`did-management/registry/admin-register`](../../admin-register/0.2/spec.md)).
 
 ## Request
 

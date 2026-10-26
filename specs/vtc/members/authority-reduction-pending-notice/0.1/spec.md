@@ -115,7 +115,7 @@ receiving one is not evidence of standing at the community. The community's
 authority to send it is its authority over its own access control; the subject's
 entitlement to it is being the party the pending reduction is about. The only
 authority over the reduction itself is the requester's, exercised through
-[`vtc/admin/actions/cancel/0.2`](../../../admin/actions/cancel/0.2/spec.md).
+[`vtc/admin/actions/cancel/0.3`](../../../admin/actions/cancel/0.3/spec.md).
 
 ## Definitions
 

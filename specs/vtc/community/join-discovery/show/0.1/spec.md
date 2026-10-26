@@ -41,7 +41,7 @@ related:
 
 ## Abstract
 
-The **VTC Community — Join Discovery — Show** Trust Task returns whether the community answers [`vtc/join-requests/manifest`](../../../../join-requests/manifest/0.2/spec.md) — *what do you require of people who join?* — to a caller it cannot identify.
+The **VTC Community — Join Discovery — Show** Trust Task returns whether the community answers [`vtc/join-requests/manifest`](../../../../join-requests/manifest/0.4/spec.md) — *what do you require of people who join?* — to a caller it cannot identify.
 
 `public: true` is the default and what every community did before the setting existed: the manifest is a public read by design, because an applicant has to know what is asked of them before they disclose anything. `public: false` does not make the manifest secret — an identified caller is answered either way — it makes every answer attributable, which is what a closed or invite-only community wants rather than a crawler enumerating its criteria.
 

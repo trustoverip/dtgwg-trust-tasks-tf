@@ -104,7 +104,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 A conforming **custodian** (`recipient`), before signing:
 
-1. **MUST** check the caller and the account as [`external/credentials/issue`](../../credentials/issue/0.1/spec.md) does, in its order — the caller is a binding's consumer by proof (else the same `external:notFound` for every unbound caller and unknown account), `external-auth-use`, then state and rate — with the same codes, and refuse an account whose model is not `sui-signer` with `external/sign:notSignOnly`.
+1. **MUST** check the caller and the account as [`external/credentials/issue`](../../credentials/issue/0.3/spec.md) does, in its order — the caller is a binding's consumer by proof (else the same `external:notFound` for every unbound caller and unknown account), `external-auth-use`, then state and rate — with the same codes, and refuse an account whose model is not `sui-signer` with `external/sign:notSignOnly`.
 2. **MUST** decode `txBytes` as BCS `TransactionData` and refuse anything it cannot fully decode, or that is not a programmable transaction, with `external/sign:undecodable`.
 3. **MUST** refuse with `senderMismatch` a sender or gas owner other than the account's address.
 4. **MUST** check **every** command: each `MoveCall` names a `(package, module, function)` in `allowedCalls`; only the coin-handling commands the allowed calls need (`SplitCoins`, `MergeCoins`, and `TransferObjects` back to the account's own address) appear; `Publish`, `Upgrade` and transfers to any other address do not. Else `callNotAllowed`. When `allowedObjects` is set, every shared-object input is in it. Else `objectNotAllowed`.

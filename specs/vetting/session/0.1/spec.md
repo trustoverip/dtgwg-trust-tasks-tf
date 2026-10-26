@@ -88,7 +88,7 @@ This specification is a **draft** ([SPEC §5.3](/SPEC.md#53-maturity-levels)). I
 
 ## The session's name, and the statement it produces
 
-A session is **its own exchange**, conducted inside the request exchange, and two rules follow. They mirror [`witness/session`](../../../witness/session/0.1/spec.md) for the same reasons.
+A session is **its own exchange**, conducted inside the request exchange, and two rules follow. They mirror [`witness/session`](../../../witness/session/0.2/spec.md) for the same reasons.
 
 1. **This document's `id` names the session.** Per [SPEC §4.9.1](/SPEC.md#491-naming-an-exchange-from-outside-the-framework), a citation naming an exchange as evidence names the innermost exchange that attests the event, by the `id` of the document that opened it. The vetting happened in *this* exchange, not in the request exchange, whose documents say only that a vetter agreed to meet. A Vetting Statement issued for this session **MUST** carry this document's `id` as `taskContext`, and **MUST** carry this document's *task digest* ([SPEC §4.9.3](/SPEC.md#493-binding-a-citation-to-the-document-it-names)) as `taskDigestMultibase`, so the citation is bound to this document rather than to anything that reuses its `id`. The `vetted` predicate's profile requires both.
 2. **Every document of the session carries `parentThreadId`.** A producer **MUST** set `parentThreadId` ([SPEC §4.9.2](/SPEC.md#492-the-parentthreadid-member)) to the request exchange's `threadId` on every document of this exchange, error responses included. A consumer **MUST NOT** reject a document solely for its absence.

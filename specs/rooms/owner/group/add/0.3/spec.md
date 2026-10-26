@@ -115,7 +115,7 @@ related:
 
 A room's owner asks their **key holder** to admit a member to the room's MLS group.
 
-Admitting someone to a sealed room is three things that have to happen together: the group gains a leaf for them, the room's epoch advances at its host so records from now on are sealed to the new group, and the newcomer receives the Welcome that lets their own key holder join. The first and third are the key holder's — it holds the group — and the second needs the owner's `admin` authority, which the key holder also holds. So the key holder does all of it, for the same reason [`rooms/owner/register`](../../../register/0.1/spec.md) exists: the surfaces owners act from reach their own agent and no third party.
+Admitting someone to a sealed room is three things that have to happen together: the group gains a leaf for them, the room's epoch advances at its host so records from now on are sealed to the new group, and the newcomer receives the Welcome that lets their own key holder join. The first and third are the key holder's — it holds the group — and the second needs the owner's `admin` authority, which the key holder also holds. So the key holder does all of it, for the same reason [`rooms/owner/register`](../../../register/0.2/spec.md) exists: the surfaces owners act from reach their own agent and no third party.
 
 What comes back is the **Welcome**, for the caller to deliver to the newcomer's key holder with [`rooms/keys/welcome`](../../../../keys/welcome/0.1/spec.md). It is returned rather than delivered because on a `private` room it **MUST NOT** pass through the host, and the recipient has no other channel to a stranger's agent.
 
@@ -191,7 +191,7 @@ A conforming recipient:
       - with `earlierRemovalRefused`, carrying the earlier removal's `member`, the host's `code` and whether the list was kept (`listKept`), whenever settling discards the removal or its advance.
 
       In both cases the recipient **MUST NOT** go on to this request's own work. The owner was told that the earlier removal was pending; it must not vanish inside an admission that succeeds, leaving a member they believe removed still in the group.
-   2. **Any other pending advance** — an admission, a renewal, or a removal whose list the host has confirmed or which carries none — is settled by asking the host it was sent to for the room's epoch, with [`rooms/info`](../../../../info/0.1/spec.md) under the caller's `read` authority: the recipient applies the pending advance if the host is at its epoch, or discards it if the host is still at the epoch before it. A host anywhere else has moved on without it: discard it and refuse with `epochConflict`. A host that does not answer leaves the advance pending, and the request is refused with `hostUnreachable` (`stage: advance`). Discarding a removal's advance never discards a list the host has confirmed, which is the room's.
+   2. **Any other pending advance** — an admission, a renewal, or a removal whose list the host has confirmed or which carries none — is settled by asking the host it was sent to for the room's epoch, with [`rooms/info`](../../../../info/0.3/spec.md) under the caller's `read` authority: the recipient applies the pending advance if the host is at its epoch, or discards it if the host is still at the epoch before it. A host anywhere else has moved on without it: discard it and refuse with `epochConflict`. A host that does not answer leaves the advance pending, and the request is refused with `hostUnreachable` (`stage: advance`). Discarding a removal's advance never discards a list the host has confirmed, which is the room's.
 
    This is what makes the task safe across a crash or a lost reply between the host's acceptance and the recipient's own write: a key holder cannot process its own commit from the wire, so the pending state is the only way back. A pending admission it applies becomes the room's retained admission (item 8), and when the request in hand repeats it, the recipient **MUST** answer as item 8 says rather than build another.
 7. **MUST NOT** send the Welcome to the host.
@@ -213,7 +213,7 @@ Per [SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements), verifying the VID, 
 
 **`member`** — the DID being admitted: the subject of the membership credential the room issued them, and the identity their leaf must carry.
 
-**`keyPackage`** — the newcomer's MLS KeyPackage, base64url, as [`rooms/keys/key-package`](../../../../keys/key-package/0.1/spec.md) returned it to them.
+**`keyPackage`** — the newcomer's MLS KeyPackage, base64url, as [`rooms/keys/key-package`](../../../../keys/key-package/0.2/spec.md) returned it to them.
 
 **`reason`** — why, recorded with the epoch advance at the host where it records one.
 
@@ -240,7 +240,7 @@ Only the holder of the init key's private half — the newcomer's key holder —
 Sending the same bytes again discloses nothing the first answer did not, to the caller or to
 any transport between them. And it cannot be replayed into a second join: the newcomer's key
 holder discards the private half once it processes the Welcome, or when the KeyPackage
-expires ([`rooms/keys/key-package`](../../../../keys/key-package/0.1/spec.md), *Retention*), so
+expires ([`rooms/keys/key-package`](../../../../keys/key-package/0.2/spec.md), *Retention*), so
 a copy that arrives after either opens nothing.
 
 **The match is exact, because anything looser admits a second party.** The repeat is
@@ -256,7 +256,7 @@ It is `alreadyMember`, as it was.
 the window in which a caller retries — until the recipient's next advance of the room, which
 may itself remove the member, so that a request after it is no longer a retry of anything, or
 24 hours, whichever is sooner. A caller that needs a Welcome after that has a member with a
-leaf it can no longer join with, and the remedy is the owner's: remove them ([`rooms/owner/group/remove`](../../remove/0.1/spec.md))
+leaf it can no longer join with, and the remedy is the owner's: remove them ([`rooms/owner/group/remove`](../../remove/0.3/spec.md))
 and admit them again with a fresh KeyPackage.
 
 ## Request

@@ -113,7 +113,7 @@ against that failure, not for convenience.
 Per-record results are what make either mode usable. A caller receives one
 outcome per write, in request order, and a conflicted write's outcome carries
 the maintainer's **current version and current value** — the same property
-[`vta/app-state/put`](../../put/1.0/spec.md) has, for the same reason: a bare
+[`vta/app-state/put`](../../put/1.1/spec.md) has, for the same reason: a bare
 rejection obliges a re-read, and the re-read races the next write.
 
 ## Status of this Document
@@ -164,7 +164,7 @@ A conforming **consumer** (the VTA) **MUST**:
 2. Refuse a caller that lacks write access to application state in `contextId` with the framework's standard `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-error-codes)). A maintainer whose authorization model can distinguish "no such context" from "not permitted to reach it" **MAY** answer the former with `vta/app-state:contextNotFound`; one whose ACL enumerates the contexts a caller may act in cannot, and answers `permissionDenied` to both.
 3. Refuse a batch containing two writes to the same key with `vta/app-state/put-many:duplicateKey`, naming them in the details.
 4. Refuse a batch whose aggregate size exceeds its request limit with `vta/app-state/put-many:batchTooLarge`, carrying both the limit and the actual size — a limit the caller cannot see is a limit it cannot plan around.
-5. Evaluate each write's `expectedVersion`, `mergePatch` and per-record size cap exactly as [`vta/app-state/put`](../../put/1.0/spec.md) specifies for a single write.
+5. Evaluate each write's `expectedVersion`, `mergePatch` and per-record size cap exactly as [`vta/app-state/put`](../../put/1.1/spec.md) specifies for a single write.
 6. In **`independent`** mode, apply every write that passes its own checks, and return a `#response` carrying one result per write in request order. A batch in which some or all writes conflicted is a **success**: the task did what it promised.
 7. In **`atomic`** mode, apply the batch only if every write passes. If any fails, write **nothing** and return `vta/app-state/put-many:atomicBatchRejected`, whose details carry one result per write — `skipped` for those not attempted — so the caller learns which write is actually blocking it rather than only that one did.
 8. Populate `currentVersion`, `currentValue` and `currentDeleted` on every `conflict` outcome, on the same normative terms as `vta/app-state/put`.
@@ -175,7 +175,7 @@ A conforming **consumer** (the VTA) **MUST**:
 
 Authority is **write access to application state in the named context**, held
 on the maintainer's ACL, and identical to what
-[`vta/app-state/put`](../../put/1.0/spec.md#authorization) requires. Batching
+[`vta/app-state/put`](../../put/1.1/spec.md#authorization) requires. Batching
 grants nothing extra: a caller that could not write one of these records
 individually cannot write it here, and the check is per write rather than per
 batch.

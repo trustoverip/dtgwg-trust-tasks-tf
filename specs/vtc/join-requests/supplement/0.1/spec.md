@@ -110,7 +110,7 @@ A community that cannot decide a join request on what it was given defers it and
 
 It is a Trust Task rather than an API call for the same reason the submission was — the applicant is not a member and holds no session with the community, because the relationship they are asking for does not exist yet. The only thing that identifies them is the identifier they signed the submission with, so the new evidence has to arrive with its own attributable proof.
 
-Without it, a deferral is a dead end dressed as a question. The community asks for more, and the applicant has nowhere to put it: the request stays open, the dedup rule on [`join-requests/submit`](../../submit/0.2/spec.md) refuses a second application, and the only ways out are to withdraw — discarding the vetting already gathered — or to wait for a retention sweep neither party controls.
+Without it, a deferral is a dead end dressed as a question. The community asks for more, and the applicant has nowhere to put it: the request stays open, the dedup rule on [`join-requests/submit`](../../submit/0.3/spec.md) refuses a second application, and the only ways out are to withdraw — discarding the vetting already gathered — or to wait for a retention sweep neither party controls.
 
 ## Status of this Document
 
@@ -150,7 +150,7 @@ What a consumer **MUST NOT** do is carry a superseded presentation's attestation
 
 **`requestId` (response)** — the request that was re-decided, always returned even when the request omitted it, so an applicant who used the id-less form learns which request they answered.
 
-**`verdict` (response)** — what the community decided, in the same shape [`join-requests/submit`](../../submit/0.2/spec.md) returns. Deliberately the same: a supplement has exactly the outcomes a submission has, and a client that can read one can read the other without a second code path.
+**`verdict` (response)** — what the community decided, in the same shape [`join-requests/submit`](../../submit/0.3/spec.md) returns. Deliberately the same: a supplement has exactly the outcomes a submission has, and a client that can read one can read the other without a second code path.
 
 ### Hidden-vetting challenge
 

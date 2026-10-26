@@ -63,7 +63,7 @@ related:
 
 A room's **owner** asks its **host** to drop the epoch key chain below a given epoch. Rungs below it are erased, and the history sealed under those epochs becomes unopenable — for everyone, permanently.
 
-This is the verb behind [`rooms/create`](../../../create/0.1/spec.md)'s `retentionPolicy`. A room that chose `chained` keeps its whole history readable; this is how such a room decides, later and deliberately, that some of it should stop being.
+This is the verb behind [`rooms/create`](../../../create/0.2/spec.md)'s `retentionPolicy`. A room that chose `chained` keeps its whole history readable; this is how such a room decides, later and deliberately, that some of it should stop being.
 
 Version 0.2 makes the prune **reach members**. Each member's key holder keeps its own copy of
 the chain — that is what lets it open old records without asking anybody — so erasing the
@@ -95,8 +95,8 @@ either version — the floor is a property of the room, not of the request that 
 
 0.1's sideEffects rationale said that "no member retained the outgoing keys". Members' key
 holders do retain them: every commit a key holder applies leaves it a rung, and
-[`rooms/keys/chain`](../../../keys/chain/0.1/spec.md) and
-[`rooms/keys/backfill`](../../../keys/backfill/0.1/spec.md) exist to give it the rest. Erasing
+[`rooms/keys/chain`](../../../keys/chain/0.2/spec.md) and
+[`rooms/keys/backfill`](../../../keys/backfill/0.2/spec.md) exist to give it the rest. Erasing
 the host's copy denied the history only to parties that had never derived it.
 
 0.1 also said that `beforeEpoch` at the current epoch "would drop every rung". It would drop
@@ -162,7 +162,7 @@ Pruning makes no statement about any record — it does not retract, demote or p
 
 It sits beside [`rooms/epoch/mint`](../../mint/0.1/spec.md) because it is the same class of act: a decision about the room's key material that every member lives with.
 
-A conforming consumer **MUST** apply the chain-verification, depth and no-dereference rules of [`rooms/records/put`](../../../records/put/0.1/spec.md).
+A conforming consumer **MUST** apply the chain-verification, depth and no-dereference rules of [`rooms/records/put`](../../../records/put/0.3/spec.md).
 
 ## `beforeEpoch` must be below the room's current epoch
 

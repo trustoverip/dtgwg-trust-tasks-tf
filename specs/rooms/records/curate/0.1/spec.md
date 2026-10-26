@@ -62,7 +62,7 @@ The **Rooms Records — Curate** Trust Task changes a record's **standing** in a
 demote it, retract it, restore it from demotion, pin it — without a member having to rewrite
 the record to say so.
 
-It is separate from [`rooms/records/put`](../../put/0.1/spec.md) for two reasons, and the
+It is separate from [`rooms/records/put`](../../put/0.3/spec.md) for two reasons, and the
 second is the load-bearing one.
 
 **A record's standing is not its content.** On an `attributed` or `private` room a host
@@ -98,7 +98,7 @@ and epoch. Both halves matter:
 - Retaining the key and version is what makes **incremental sync converge**. A caller
   synchronising on `sinceVersion` learns about the retraction by seeing the tombstone; a
   caller that never saw it would resurrect the record on its next full rebuild. This is why
-  [`rooms/records/list`](../../list/0.1/spec.md) returns tombstones rather than filtering
+  [`rooms/records/list`](../../list/0.5/spec.md) returns tombstones rather than filtering
   them out.
 
 A host **MUST NOT** accept `status: "active"` for a retracted record. The body is gone, and
@@ -108,7 +108,7 @@ returning success would tell a member their record was restored when it was not 
 Permanent removal of a tombstone is **out of scope for this task**, and deliberately so:
 removing it breaks convergence for every caller that has not synchronised past it. It
 belongs to a host's retention lifecycle, not to a member's curation verb. That act is
-[`rooms/records/prune`](../../prune/0.1/spec.md): a holder of `admin`, applying the room's
+[`rooms/records/prune`](../../prune/0.2/spec.md): a holder of `admin`, applying the room's
 stated record retention, which leaves a mark (`lastPrune`) from which an incremental reader
 learns to rebuild instead.
 

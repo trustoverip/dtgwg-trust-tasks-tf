@@ -61,7 +61,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 A conforming **consumer** (the host):
 
-1. **MUST** verify the presentation under the chain rules of [`rooms/records/put`](../../../records/put/0.2/spec.md) and against the list it holds, and refuse one that does not confer `admin` with the framework's standard `permissionDenied`.
+1. **MUST** verify the presentation under the chain rules of [`rooms/records/put`](../../../records/put/0.3/spec.md) and against the list it holds, and refuse one that does not confer `admin` with the framework's standard `permissionDenied`.
 2. **MUST** return the list it holds unaltered — every member, `proof` included — with the `inForceAt` it answered when accepting it, and **MUST** omit both when it holds none.
 
 A conforming **reader** of the response **MUST** verify the list as a host does before relying on it — `roomId` is this room, and the proof verifies with a key the room's DID document lists for `assertionMethod` — and **MUST NOT** adopt it in place of a list it already holds at a higher sequence. A key holder recovering its list adopts the one at the highest sequence among the hosts it asks.

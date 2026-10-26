@@ -52,7 +52,7 @@ related:
 
 ## Abstract
 
-[`git-ns/bridge/job`](../../0.5/spec.md) is the VTC's side of dispatching one piece of forge work; [`git-ns/bridge/result`](../../../result/0.1/spec.md) is the bridge's report on one. Neither gives an administrator the queue as a whole — which jobs are stuck pending, which failed and why, which repository a namespace's automation last touched. This task is that queue view: every job the VTC has dispatched or queued in the namespaces the caller administers, each with its kind, state, attempt count and last error. It is an admin console's *Jobs* table, a command-line `bridge jobs`.
+[`git-ns/bridge/job`](../../0.5/spec.md) is the VTC's side of dispatching one piece of forge work; [`git-ns/bridge/result`](../../../result/0.2/spec.md) is the bridge's report on one. Neither gives an administrator the queue as a whole — which jobs are stuck pending, which failed and why, which repository a namespace's automation last touched. This task is that queue view: every job the VTC has dispatched or queued in the namespaces the caller administers, each with its kind, state, attempt count and last error. It is an admin console's *Jobs* table, a command-line `bridge jobs`.
 
 It is a read. It changes nothing, retries nothing and cancels nothing.
 
@@ -79,7 +79,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 *Declared under [SPEC §7.3](/SPEC.md#73-specification-requirements) item 15.*
 
-Not consequential, and declared for clarity, following [`git-ns/namespace/list`](../../../../namespace/list/0.1/spec.md) and [`git-ns/repo/list`](../../../../repo/list/0.1/spec.md), whose Authorization sections this one restates for jobs. The caller is the DID the document's verified `proof` binds to its `issuer`; an unsigned document is refused with `proofRequired`.
+Not consequential, and declared for clarity, following [`git-ns/namespace/list`](../../../../namespace/list/0.2/spec.md) and [`git-ns/repo/list`](../../../../repo/list/0.2/spec.md), whose Authorization sections this one restates for jobs. The caller is the DID the document's verified `proof` binds to its `issuer`; an unsigned document is refused with `proofRequired`.
 
 The entitlement is, for each namespace, **the community-administrator capability** in the VTC's own access control, or **`git.ns.admin` on that namespace** held by explicit record and live at the instant the VTC evaluates the request, by a current member. A job belongs to the namespace it acts in (`namespace` on the job itself), so this task scopes exactly as the namespace and repository listings do: a namespace admin sees the jobs in their own namespaces, and a community administrator sees every job. A caller who administers no namespace is refused with `git-ns/bridge/job/list:notAdministrator`, and so is a caller naming, in `namespace`, one they do not administer or one the VTC does not have.
 
@@ -87,9 +87,9 @@ The capability and `git.ns.admin` are read from the VTC's own records at executi
 
 ## Definitions
 
-**Administered namespace** — as in [`git-ns/namespace/list`](../../../../namespace/list/0.1/spec.md): for a holder of the community-administrator capability, every namespace bound to the VTC; for anyone else, each namespace on which they hold a live, explicitly recorded `git.ns.admin`.
+**Administered namespace** — as in [`git-ns/namespace/list`](../../../../namespace/list/0.2/spec.md): for a holder of the community-administrator capability, every namespace bound to the VTC; for anyone else, each namespace on which they hold a live, explicitly recorded `git.ns.admin`.
 
-**Job** — one dispatch of a [`git-ns/bridge/job`](../../0.5/spec.md) to a bridge, as the VTC's own queue tracks it. `kind` is the same eight values that specification defines at `0.5`, `closePullRequest` among them; `state` is the VTC's own queue bookkeeping, driven by [`git-ns/bridge/result`](../../../result/0.1/spec.md) reports, and is not itself a Trust Task member of either.
+**Job** — one dispatch of a [`git-ns/bridge/job`](../../0.5/spec.md) to a bridge, as the VTC's own queue tracks it. `kind` is the same eight values that specification defines at `0.5`, `closePullRequest` among them; `state` is the VTC's own queue bookkeeping, driven by [`git-ns/bridge/result`](../../../result/0.2/spec.md) reports, and is not itself a Trust Task member of either.
 
 ## Request
 
@@ -173,7 +173,7 @@ The request carries at most a namespace, a state filter and a paging cursor. The
 
 ### Correlation
 
-The VTC declares `identifierScope: public`; the administrator `pairwise`, matching [`git-ns/namespace/list`](../../../../namespace/list/0.1/spec.md) and [`git-ns/repo/list`](../../../../repo/list/0.1/spec.md). `jobId` and `bridgeDid` are already visible to the namespace's administrators through [`git-ns/bridge/job`](../../0.5/spec.md) and [`git-ns/bridge/result`](../../../result/0.1/spec.md) as those exchanges happen; this task adds the enumeration and the running state, not a new identifier.
+The VTC declares `identifierScope: public`; the administrator `pairwise`, matching [`git-ns/namespace/list`](../../../../namespace/list/0.2/spec.md) and [`git-ns/repo/list`](../../../../repo/list/0.2/spec.md). `jobId` and `bridgeDid` are already visible to the namespace's administrators through [`git-ns/bridge/job`](../../0.5/spec.md) and [`git-ns/bridge/result`](../../../result/0.2/spec.md) as those exchanges happen; this task adds the enumeration and the running state, not a new identifier.
 
 ### Retention
 

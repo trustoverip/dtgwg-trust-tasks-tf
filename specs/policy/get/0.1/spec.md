@@ -38,7 +38,7 @@ errorCodes:
 
 ## Abstract
 
-The **Policy — Get** Trust Task returns one Rego policy module by its `id`, including the full `module` source. It is the read-one companion to [`policy/list`](../../list/0.2/), which has no `id` filter and so cannot address a single policy: a consumer that knows a policy id — from an earlier `policy/upsert` response, a `policy/list` page, or an audit record — fetches it here rather than paging the whole list and filtering client-side. The distinction matters for authorization and failure semantics: `get` returns `notFound` for an unknown id, where a filtered list would return an empty page.
+The **Policy — Get** Trust Task returns one Rego policy module by its `id`, including the full `module` source. It is the read-one companion to [`policy/list`](../../list/0.3/), which has no `id` filter and so cannot address a single policy: a consumer that knows a policy id — from an earlier `policy/upsert` response, a `policy/list` page, or an audit record — fetches it here rather than paging the whole list and filtering client-side. The distinction matters for authorization and failure semantics: `get` returns `notFound` for an unknown id, where a filtered list would return an empty page.
 
 ## Conformance
 

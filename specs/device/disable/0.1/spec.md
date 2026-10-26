@@ -43,11 +43,11 @@ errorCodes:
 
 ## Abstract
 
-The **Device — Disable** Trust Task revokes a registered device's access without actively wiping its cache. Use it when you want to passively neutralise a device (e.g. a stale ChromeBook you've stopped using) but don't have evidence of compromise. For active wipe, use `device/wipe/0.1`.
+The **Device — Disable** Trust Task revokes a registered device's access without actively wiping its cache. Use it when you want to passively neutralise a device (e.g. a stale ChromeBook you've stopped using) but don't have evidence of compromise. For active wipe, use `device/wipe/0.2`.
 
 ## Conformance
 
-Producer: populate `deviceId`. Consumer: verify `DeviceAdmin`, set `disabledAt = now`, revoke the device's ACL entry, expire its refresh tokens, emit `sync/event/0.1` of kind `acl.changed` with `change: "device_disabled"`, return the disabledAt time.
+Producer: populate `deviceId`. Consumer: verify `DeviceAdmin`, set `disabledAt = now`, revoke the device's ACL entry, expire its refresh tokens, emit `sync/event/0.2` of kind `acl.changed` with `change: "device_disabled"`, return the disabledAt time.
 
 Disable is idempotent; a retry on an already-disabled device returns the original `disabledAt`.
 
@@ -61,6 +61,6 @@ Disable is idempotent; a retry on an already-disabled device returns the origina
 
 ## Security & Privacy
 
-**Defense in depth.** Disabling revokes server-side access; it does NOT instruct the device to wipe. A still-connected device sees its tokens expire and is locked out from re-authentication. If you suspect compromise, use `device/wipe/0.1`.
+**Defense in depth.** Disabling revokes server-side access; it does NOT instruct the device to wipe. A still-connected device sees its tokens expire and is locked out from re-authentication. If you suspect compromise, use `device/wipe/0.2`.
 
 **Audit.** Logged with `{ who disabled, when, deviceId, reason? }`.

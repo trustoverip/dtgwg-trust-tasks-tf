@@ -47,7 +47,7 @@ related:
 
 ## Abstract
 
-The **External Accounts — Restore** Trust Task brings an `archived` account back — to `suspended`, never directly to `active`. Restoring therefore confers no use by itself: resuming it is [`external/accounts/resume`](../../resume/0.1/spec.md), which is consented. That keeps one person from turning an archived authority back on alone, without making restore itself a ceremony.
+The **External Accounts — Restore** Trust Task brings an `archived` account back — to `suspended`, never directly to `active`. Restoring therefore confers no use by itself: resuming it is [`external/accounts/resume`](../../resume/0.2/spec.md), which is consented. That keeps one person from turning an archived authority back on alone, without making restore itself a ceremony.
 
 ## Status of this Document
 

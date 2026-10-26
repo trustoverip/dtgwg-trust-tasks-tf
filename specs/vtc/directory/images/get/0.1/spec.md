@@ -70,7 +70,7 @@ A conforming **reader** (`issuer`) names the entry and field it was shown the im
 
 A conforming **community** (`recipient`) **MUST**:
 
-1. Project the entry for the caller exactly as [`vtc/directory/entries/show`](../../../entries/show/0.1/spec.md) does — a member's or administrator's standing read now, a key delegated under [`auth/oob/grant/0.2`](../../../../../auth/oob/grant/0.2/spec.md) read as its member — and answer only when that projection carries `field` with an image value.
+1. Project the entry for the caller exactly as [`vtc/directory/entries/show`](../../../entries/show/0.1/spec.md) does — a member's or administrator's standing read now, a key delegated under [`auth/oob/grant/0.3`](../../../../../auth/oob/grant/0.3/spec.md) read as its member — and answer only when that projection carries `field` with an image value.
 2. Treat a caller with no proof, or one who is neither an active member nor an administrator, as the public: answer only an image that is a value of the member's published external card ([`vtc/directory/card/publish`](../../../card/publish/0.1/spec.md)).
 3. Where `sha256` is present, answer only when the value is that image.
 4. Answer every refusal with `notFound`, whatever its reason, so a reader cannot tell a withheld picture from a missing one (VTI-DIR-110).

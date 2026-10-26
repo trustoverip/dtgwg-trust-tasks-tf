@@ -45,7 +45,7 @@ related:
 
 ## Abstract
 
-**Server Config** is the administrator's read of how a hosting service is running: the settings an operator console's configuration page shows, and the control plane's own half of its dashboard (the fleet half is [`did-management/registry/list`](../../../registry/list/0.1/spec.md), the counters [`did-management/stats/get`](../../../stats/get/0.1/spec.md)).
+**Server Config** is the administrator's read of how a hosting service is running: the settings an operator console's configuration page shows, and the control plane's own half of its dashboard (the fleet half is [`did-management/registry/list`](../../../registry/list/0.2/spec.md), the counters [`did-management/stats/get`](../../../stats/get/0.1/spec.md)).
 
 The response states both what the configuration *enables* (`transports`) and what the service's own DID document *advertises* (`advertisedServices`). They can differ — a transport enabled after the document was last published is not yet reachable — and an operator needs to see both to tell why a peer cannot reach the service.
 

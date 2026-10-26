@@ -50,7 +50,7 @@ related:
 
 ## Abstract
 
-The **External Accounts — Suspend** Trust Task is the kill switch. From the moment it is stored, the custodian refuses every [`external/credentials/issue`](../../../credentials/issue/0.1/spec.md) and [`external/sign`](../../../sign/0.1/spec.md) for the account, for every binding. Reads continue, so the account can be investigated; [`external/accounts/resume`](../../resume/0.1/spec.md) undoes it.
+The **External Accounts — Suspend** Trust Task is the kill switch. From the moment it is stored, the custodian refuses every [`external/credentials/issue`](../../../credentials/issue/0.3/spec.md) and [`external/sign`](../../../sign/0.1/spec.md) for the account, for every binding. Reads continue, so the account can be investigated; [`external/accounts/resume`](../../resume/0.2/spec.md) undoes it.
 
 Suspension cannot recall a credential already issued: it lapses at its expiry, which bindings cap at an hour and should cap at minutes. For `aws-roles-anywhere`, the setup's CRL, pushed to the trust anchor, also stops the end-entity certificate being accepted at the provider.
 

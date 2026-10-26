@@ -83,7 +83,7 @@ The rule is the room's, stated in advance and readable by every member
 ([`RecordRetention`](../../../_shared/0.2/room.schema.json), set at
 [`rooms/create`](../../../create/0.2/spec.md) and changed with
 [`rooms/records/retention/set`](../../retention/set/0.1/spec.md), served by
-[`rooms/info`](../../../info/0.2/spec.md)). The act is the administrator's, made deliberately
+[`rooms/info`](../../../info/0.3/spec.md)). The act is the administrator's, made deliberately
 with a reason. The host does neither on its own: it measures age and removes what it is asked
 to, and nothing on a timer.
 
@@ -111,7 +111,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 A conforming **host** (`recipient`):
 
-1. **MUST** verify the presentation as [`rooms/records/put`](../../put/0.2/spec.md) does —
+1. **MUST** verify the presentation as [`rooms/records/put`](../../put/0.3/spec.md) does —
    every link, at most 8, no link widening its parent, no parent dereferenced, the leaf bound
    to the party authenticated for this request, and on a `private` room a `subjectBinding` —
    and **MUST** require that it confer `admin` at this room's scope. A presentation conferring
@@ -134,15 +134,15 @@ A conforming **host** (`recipient`):
    - remove every eligible record entirely — key, version, status, body or ciphertext,
      tombstone — so that no read, listing or `sinceVersion` returns it again;
    - release every blob a removed record named, exactly as a rewrite or retraction does
-     ([`rooms/records/put`](../../put/0.2/spec.md) 0.2, consumer item 8);
+     ([`rooms/records/put`](../../put/0.3/spec.md) 0.2, consumer item 8);
    - when at least one record was removed, take the next version from the room's counter, as a
      put or a curation does, and record a [`RecordPrune`](../../../_shared/0.2/room.schema.json)
      carrying it, the time and the number removed as the room's `lastPrune`.
 
    A prune that removed nothing takes no version and leaves no mark.
 6. **MUST** return `lastPrune` thereafter wherever a response can carry it
-   ([`rooms/records/list`](../../list/0.3/spec.md) 0.3, [`rooms/keys/browse`](../../../keys/browse/0.2/spec.md)
-   0.2 through it, [`rooms/info`](../../../info/0.2/spec.md) 0.2).
+   ([`rooms/records/list`](../../list/0.5/spec.md) 0.3, [`rooms/keys/browse`](../../../keys/browse/0.3/spec.md)
+   0.2 through it, [`rooms/info`](../../../info/0.3/spec.md) 0.2).
 7. **MUST** keep the audit trail below, and **MUST NOT** keep anything else of a removed
    record.
 8. **MUST NOT** remove a record by age in any other way — on a timer, at a quota, on a
@@ -161,7 +161,7 @@ deciding, and **SHOULD NOT** offer a prune as an incidental control beside rever
 learns of it and the room's history records that judgement was exercised. A prune removes
 records — tombstones included — for every member at once, and leaves only a count. Every
 member who can write can be granted `curate`; "make the room's past disappear" must not arrive
-with it. A prune sits with [`rooms/epoch/prune`](../../../epoch/prune/0.1/spec.md) and
+with it. A prune sits with [`rooms/epoch/prune`](../../../epoch/prune/0.2/spec.md) and
 [`rooms/records/retention/set`](../../retention/set/0.1/spec.md): decisions about the room's
 retention that every member lives with.
 
@@ -216,11 +216,11 @@ the same way a short listing is.
 
 **A prune removes records from the host, not from the world.** A member who read a record has
 it; a member's agent that cached it holds it until it next synchronises, when
-[`rooms/records/list`](../../list/0.3/spec.md) 0.3's `lastPrune` tells it to rebuild and drop
+[`rooms/records/list`](../../list/0.5/spec.md) 0.3's `lastPrune` tells it to rebuild and drop
 what is gone. An export is beyond the room entirely. On the sealed tiers the ciphertext of a
 removed record may survive in a backup, a mirror or a store that publishes ciphertext; to make
 such copies unreadable, the room prunes its key chain
-([`rooms/epoch/prune`](../../../epoch/prune/0.1/spec.md)), which is the only erasure that
+([`rooms/epoch/prune`](../../../epoch/prune/0.2/spec.md)), which is the only erasure that
 reaches a copy somebody else holds. A surface **MUST NOT** describe a prune as more than this.
 
 ### Mirrors

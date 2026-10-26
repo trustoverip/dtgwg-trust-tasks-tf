@@ -132,7 +132,7 @@ Failures use `trust-task-error` ([SPEC §8](/SPEC.md#8-error-responses)).
 
 ### Data carried
 
-The request carries a role name. The response carries that role's description, ceilings with any resource qualifiers, the provenance of a custom role, and optionally a holder count. It never names the holders; a party entitled to see them uses `acl/list/0.2` filtered by role.
+The request carries a role name. The response carries that role's description, ceilings with any resource qualifiers, the provenance of a custom role, and optionally a holder count. It never names the holders; a party entitled to see them uses `acl/list/0.3` filtered by role.
 
 ### Correlation
 

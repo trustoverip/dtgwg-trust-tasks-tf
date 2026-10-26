@@ -90,7 +90,7 @@ related:
 
 ## Abstract
 
-The **Voting — Ballot Cast** Trust Task is the vote. A voter's VTA builds the cast in [`vta/pcs/vote`](../../../../vta/pcs/vote/0.1/spec.md): the ballot, and a PCS attestation made with the voter's ticket that binds this ballot, this manifest and this election, and that carries a tag the same for every cast made with that ticket in this election. The voter's client sends it to the ballot box under a `did:key` made for this one cast. The ballot box checks the cast answers the manifest and that the attestation admits it, records it on the election's board, and answers with a signed receipt the voter keeps. Nothing in the exchange says who voted. The family's shared rules are in [`CONVENTIONS.md`](../../../_shared/0.1/CONVENTIONS.md).
+The **Voting — Ballot Cast** Trust Task is the vote. A voter's VTA builds the cast in [`vta/pcs/vote`](../../../../vta/pcs/vote/0.2/spec.md): the ballot, and a PCS attestation made with the voter's ticket that binds this ballot, this manifest and this election, and that carries a tag the same for every cast made with that ticket in this election. The voter's client sends it to the ballot box under a `did:key` made for this one cast. The ballot box checks the cast answers the manifest and that the attestation admits it, records it on the election's board, and answers with a signed receipt the voter keeps. Nothing in the exchange says who voted. The family's shared rules are in [`CONVENTIONS.md`](../../../_shared/0.1/CONVENTIONS.md).
 
 ## Status of this Document
 
@@ -105,7 +105,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 A conforming **producer** (the voter's client, with the cast its VTA built) **MUST**:
 
 1. Issue and sign the document with a `did:key` generated for this cast alone (VTI-VOT-003), never with the voter's membership DID or any identifier the voter uses elsewhere, and set nothing in the document — `ext` included — that identifies the voter (VTI-VOT-002).
-2. Send `cast` exactly as [`vta/pcs/vote`](../../../../vta/pcs/vote/0.1/spec.md) returned it. The attestation binds the ballot's canonical bytes, so a changed ballot is a refused cast.
+2. Send `cast` exactly as [`vta/pcs/vote`](../../../../vta/pcs/vote/0.2/spec.md) returned it. The attestation binds the ballot's canonical bytes, so a changed ballot is a refused cast.
 3. Keep the signed response as the voter's receipt (VTI-VOT-043), and check that `head` is signed by the ballot box the manifest names and covers `leafIndex`.
 4. Resend the same document when the response is lost — the one-time key that signed it is gone once `vta/pcs/vote` returns, so no other document can carry the cast ([Retry safety](#retry-safety)); **MUST NOT** ask the VTA for a new cast of the same ballot to recover a lost response.
 
@@ -151,7 +151,7 @@ The same holds when the cast was later replaced: a cast already on the board is 
 ## Definitions
 
 - **`community`**, **`electionId`** — the election the cast is for.
-- **`cast`** — the ballot and its attestation (`Cast`), as [`vta/pcs/vote`](../../../../vta/pcs/vote/0.1/spec.md) built it.
+- **`cast`** — the ballot and its attestation (`Cast`), as [`vta/pcs/vote`](../../../../vta/pcs/vote/0.2/spec.md) built it.
 - **`outcome`** (response) — `counted`, `replaced` or `alreadyCounted`.
 - **`leafIndex`** (response) — the board index of this cast's `CastEntry`.
 - **`entryHash`** (response) — the RFC 9162 leaf hash of that entry ([conventions §3.8](../../../_shared/0.1/CONVENTIONS.md#3-cryptographic-binding)), so the voter can check an inclusion proof without fetching the entry.

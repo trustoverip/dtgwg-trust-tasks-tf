@@ -90,7 +90,7 @@ related:
 
 ## Abstract
 
-The starter opened the request with a key only it holds ([`auth/oob/request`](../../request/0.2/spec.md)). It polls this task, signing each poll with that key. Before approval the service holds the call and then answers `auth/oob/redeem:pending`, with the request's state and — once a wallet has claimed it — the two-digit number the starter shows the member. Once the member has approved ([`auth/oob/respond`](../../respond/0.1/spec.md)), the service consumes the request and creates the session the purpose defines. For `login` that is a member session whose subject is the approving DID and whose session key is the starter key; the starter then asks the person "Continue as …?" before using it.
+The starter opened the request with a key only it holds ([`auth/oob/request`](../../request/0.2/spec.md)). It polls this task, signing each poll with that key. Before approval the service holds the call and then answers `auth/oob/redeem:pending`, with the request's state and — once a wallet has claimed it — the two-digit number the starter shows the member. Once the member has approved ([`auth/oob/respond`](../../respond/0.3/spec.md)), the service consumes the request and creates the session the purpose defines. For `login` that is a member session whose subject is the approving DID and whose session key is the starter key; the starter then asks the person "Continue as …?" before using it.
 
 ## Status of this Document
 

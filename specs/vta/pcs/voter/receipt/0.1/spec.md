@@ -72,7 +72,7 @@ related:
 
 ## Abstract
 
-The **VTA PCS — Voter Receipt** Trust Task keeps the ballot box's receipt for a cast the voter's VTA built, and checks that the cast is on the board. The client passes the signed [`voting/ballot/cast`](../../../../../voting/ballot/cast/0.1/spec.md) response it received; the VTA verifies it is the ballot box's and acknowledges this voter's cast, and keeps it. Given a checkpoint — a signed [`voting/board/head`](../../../../../voting/board/head/0.1/spec.md), such as the one the community kept at close and shows in [`vtc/elections/show`](../../../../../vtc/elections/show/0.1/spec.md) — and a [`voting/board/inclusion`](../../../../../voting/board/inclusion/0.1/spec.md) proof, it answers whether the cast is in that head. The engine keeps receipts under its custody rules ([VTA conventions §2](../../../../../vta/_shared/0.4/CONVENTIONS.md#2-custody)). The family's shared rules are in [`CONVENTIONS.md`](../../../../../voting/_shared/0.1/CONVENTIONS.md).
+The **VTA PCS — Voter Receipt** Trust Task keeps the ballot box's receipt for a cast the voter's VTA built, and checks that the cast is on the board. The client passes the signed [`voting/ballot/cast`](../../../../../voting/ballot/cast/0.1/spec.md) response it received; the VTA verifies it is the ballot box's and acknowledges this voter's cast, and keeps it. Given a checkpoint — a signed [`voting/board/head`](../../../../../voting/board/head/0.1/spec.md), such as the one the community kept at close and shows in [`vtc/elections/show`](../../../../../vtc/elections/show/0.2/spec.md) — and a [`voting/board/inclusion`](../../../../../voting/board/inclusion/0.1/spec.md) proof, it answers whether the cast is in that head. The engine keeps receipts under its custody rules ([VTA conventions §2](../../../../../vta/_shared/0.4/CONVENTIONS.md#2-custody)). The family's shared rules are in [`CONVENTIONS.md`](../../../../../voting/_shared/0.1/CONVENTIONS.md).
 
 ## Status of this Document
 
@@ -98,7 +98,7 @@ A conforming **consumer** (the PCS engine) **MUST**:
 4. Refuse with `vta/pcs/voter/receipt:receiptInvalid` unless `receipt`:
    1. is a `https://trusttasks.org/spec/voting/ballot/cast/0.1#response` or `https://trusttasks.org/spec/voting/ballot/cast-encrypted/0.1#response` document whose `issuer` is the ballot box recorded at voter/register, and whose `proof` verifies, over the document as received, by a verification method of that DID;
    2. names this election in its payload's `electionId`;
-   3. names an `entryHash` the engine recorded at [`vta/pcs/vote`](../../../../../vta/pcs/vote/0.1/spec.md) for this election. That entry is a cast the engine built with the voter's ticket, so it carries the voter's tag ([CONVENTIONS §3.6](../../../../../voting/_shared/0.1/CONVENTIONS.md#3-cryptographic-binding)), and no receipt for another voter's cast can pass.
+   3. names an `entryHash` the engine recorded at [`vta/pcs/vote`](../../../../../vta/pcs/vote/0.2/spec.md) for this election. That entry is a cast the engine built with the voter's ticket, so it carries the voter's tag ([CONVENTIONS §3.6](../../../../../voting/_shared/0.1/CONVENTIONS.md#3-cryptographic-binding)), and no receipt for another voter's cast can pass.
 5. Keep the receipt whole with the election's record — beside any earlier receipt, since each revote has its own.
 6. With no `checkpoint`, answer `kept` and the receipt's leaf index.
 7. With a `checkpoint` and an `inclusion`:

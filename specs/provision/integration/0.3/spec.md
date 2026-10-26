@@ -687,7 +687,7 @@ Wire shape is **identical in semantics** but the canonical Trust Task spec is `c
 ## References
 
 * [`acl/swap-key/0.1`](../../../acl/swap-key/0.1/) — the equivalent ad-hoc rotation when the holder already has an admin entry and wants to swap to a new DID without re-provisioning.
-* [`acl/grant/0.1`](../../../acl/grant/0.1/) — the post-provisioning surface for granting additional roles to other DIDs in the same context.
+* [`acl/grant/0.2`](../../../acl/grant/0.2/) — the post-provisioning surface for granting additional roles to other DIDs in the same context.
 * [`did-management/did/register/0.1`](../../../did-management/did/register/0.1/) — the DID-lifecycle surface the rendered integration DID will be operated through.
 * W3C VC Data Model 2.0 §6.1 — VPs MAY omit `verifiableCredential`; the `BootstrapRequest` is a self-attested VP under this clause.
 * W3C Data Integrity 1.0 + `eddsa-jcs-2022` cryptosuite — the VP's proof format.

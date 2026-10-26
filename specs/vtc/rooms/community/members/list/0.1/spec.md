@@ -50,7 +50,7 @@ related:
 
 ## Abstract
 
-**VTC Rooms — Community — Members — List** returns, a page at a time, the members of one room the community owns — admitted, offered or removed — with their actions and expiry. A separate, paged read rather than part of [`vtc/rooms/community/get`](../../../../../../vtc/rooms/community/get/0.1/spec.md), because a community room may admit the whole community.
+**VTC Rooms — Community — Members — List** returns, a page at a time, the members of one room the community owns — admitted, offered or removed — with their actions and expiry. A separate, paged read rather than part of [`vtc/rooms/community/get`](../../../../../../vtc/rooms/community/get/0.3/spec.md), because a community room may admit the whole community.
 
 This is the **owner's** record, read by the owner's administrators. The community never reads it when it serves the room as host, so a list here grants nothing and gates nothing: who may act in the room is decided by the room's credential chains alone.
 
@@ -71,7 +71,7 @@ A conforming **community** (`recipient`):
 
 ## Authorization
 
-The authority this task presupposes is the **`vtc.rooms.manage` capability at the community**: the standing to run the rooms the community owns — create them, admit and remove their members. It is distinct from `vtc.rooms.admin`, the community's authority as a **host** (storage, limits, usage, over every room it stores), because a community may let someone run its board room without letting them reassign every room's storage, and the reverse; [`vtc/roles/define`](../../../../../../vtc/roles/define/0.1/spec.md) can place either in a role's ceiling. It is read from the signer's access-control entry — or, for a delegated signing key ([`auth/signing-key/enroll`](../../../../../../auth/signing-key/enroll/0.1/spec.md)), the entry of the identity it acts for — at execution time. Verifying the proof establishes who asked, never that they may ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10). The decision is the community's.
+The authority this task presupposes is the **`vtc.rooms.manage` capability at the community**: the standing to run the rooms the community owns — create them, admit and remove their members. It is distinct from `vtc.rooms.admin`, the community's authority as a **host** (storage, limits, usage, over every room it stores), because a community may let someone run its board room without letting them reassign every room's storage, and the reverse; [`vtc/roles/define`](../../../../../../vtc/roles/define/0.1/spec.md) can place either in a role's ceiling. It is read from the signer's access-control entry — or, for a delegated signing key ([`auth/signing-key/enroll`](../../../../../../auth/signing-key/enroll/0.2/spec.md)), the entry of the identity it acts for — at execution time. Verifying the proof establishes who asked, never that they may ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10). The decision is the community's.
 
 **This is the owner's authority, exercised through the owner's key holder.** The community is the room's owner, and its own VTA holds the room's signing key and, on a sealed tier, the community's place in the room's group. The community acts on the room by sending its VTA the same `rooms/owner/*` and `rooms/keys/*` tasks any owner's key holder serves, as itself; the VTA applies its own gates to each. The community holds no room key and no group secret.
 

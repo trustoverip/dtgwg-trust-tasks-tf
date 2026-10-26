@@ -85,14 +85,14 @@ related:
 
 ## Abstract
 
-[`git-ns/right/grant`](../../grant/0.3/spec.md) enforces **separation of duties** ([fixed rule 7](../../grant/0.3/spec.md#the-fixed-rules)): nobody grants themselves an *elevated* right — `git.ns.admin`, `git.repo.create` or `git.repo.own` — even when their own rights carry the authority to grant it to anyone else. Someone else must. That is the right default, and it fails exactly when it matters most: at night, during an incident, in a namespace whose other admins have left, or in a two-person community where the other person is on a plane.
+[`git-ns/right/grant`](../../grant/0.4/spec.md) enforces **separation of duties** ([fixed rule 7](../../grant/0.4/spec.md#the-fixed-rules)): nobody grants themselves an *elevated* right — `git.ns.admin`, `git.repo.create` or `git.repo.own` — even when their own rights carry the authority to grant it to anyone else. Someone else must. That is the right default, and it fails exactly when it matters most: at night, during an incident, in a namespace whose other admins have left, or in a two-person community where the other person is on a plane.
 
 This task is the escape hatch. The actor records the elevated right for themselves, explicitly and with a stated justification, and the VTC makes the act impossible to miss:
 
 - it **takes effect at once**, so it works when nobody else is there;
 - it **never expires on its own**, for the same reason — an expiry would need someone to extend it;
-- the record is **flagged** `breakGlass` until **another administrator** either ratifies it, with [`git-ns/right/ratify`](../../ratify/0.1/spec.md), which turns it into an ordinary grant, or revokes it, with [`git-ns/right/revoke`](../../revoke/0.3/spec.md) — which any community administrator may do, git rights or not;
-- the VTC records it at its **highest audit severity**, **tells every other administrator immediately** ([`git-ns/right/break-glass-notice`](../../break-glass-notice/0.1/spec.md)), and **shows it** on every surface that shows the record until it is ratified or revoked.
+- the record is **flagged** `breakGlass` until **another administrator** either ratifies it, with [`git-ns/right/ratify`](../../ratify/0.2/spec.md), which turns it into an ordinary grant, or revokes it, with [`git-ns/right/revoke`](../../revoke/0.4/spec.md) — which any community administrator may do, git rights or not;
+- the VTC records it at its **highest audit severity**, **tells every other administrator immediately** ([`git-ns/right/break-glass-notice`](../../break-glass-notice/0.2/spec.md)), and **shows it** on every surface that shows the record until it is ratified or revoked.
 
 The community's policy may disable break-glass or make it harder. It cannot make it quieter.
 
@@ -120,8 +120,8 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 Break-glass lends no authority the actor does not already have. It lifts exactly one rule — separation of duties — for exactly one grant, to the actor. The entitlement is therefore one of:
 
-1. **Grant authority over the right on the resource** — a right the actor holds, explicitly or by implication, on a resource containing the request's `resource`, whose grant authority covers `right` there, per the [grant authority table](../../grant/0.3/spec.md#grant-authority) of `git-ns/right/grant`. The typical case is a namespace admin recording an explicit `git.repo.own` on a repository in their namespace: they hold an owner's authority there by implication, but an explicit record is what the forge projection and the last-owner invariant read.
-2. **The community-administrator capability, for `git.ns.admin` on a headless namespace** — the entitlement of [`git-ns/namespace/reseat`](../../../namespace/reseat/0.2/spec.md), which is the one path by which that capability reaches a git right. A community administrator reseating a headless namespace *to themselves* is a self-grant, which `git-ns/right/grant` 0.3 routes here.
+1. **Grant authority over the right on the resource** — a right the actor holds, explicitly or by implication, on a resource containing the request's `resource`, whose grant authority covers `right` there, per the [grant authority table](../../grant/0.4/spec.md#grant-authority) of `git-ns/right/grant`. The typical case is a namespace admin recording an explicit `git.repo.own` on a repository in their namespace: they hold an owner's authority there by implication, but an explicit record is what the forge projection and the last-owner invariant read.
+2. **The community-administrator capability, for `git.ns.admin` on a headless namespace** — the entitlement of [`git-ns/namespace/reseat`](../../../namespace/reseat/0.4/spec.md), which is the one path by which that capability reaches a git right. A community administrator reseating a headless namespace *to themselves* is a self-grant, which `git-ns/right/grant` 0.3 routes here.
 
 Rights the actor holds through an unratified break-glass record count toward the first entitlement like any other live right. A community administrator who reseated a headless namespace to themselves by break-glass needs to be able to act in it, and every further break-glass is as visible as the first.
 
@@ -143,14 +143,14 @@ The actor sends the request to the VTC. See the top-level schema in [`payload.sc
 
 1. Applies the [SPEC §7.2](/SPEC.md#72-consumer-requirements) pipeline and resolves the `issuer` to the actor.
 2. Refuses a resource inside no bound namespace with `git-ns:unknownNamespace`, and one inside a `pending` namespace with `git-ns:namespaceNotBound`. For a repository resource, refuses one it does not record with `git-ns:unknownRepo`, and one that is not `active`, `orphaned` or `pendingCreate` with `git-ns:repoNotActive`.
-3. Refuses a `resource` at the wrong level for `right` with `git-ns:scopeViolation` ([fixed rule 1](../../grant/0.3/spec.md#the-fixed-rules)).
+3. Refuses a `resource` at the wrong level for `right` with `git-ns:scopeViolation` ([fixed rule 1](../../grant/0.4/spec.md#the-fixed-rules)).
 4. Checks the [authorization](#authorization) above. An actor who has neither entitlement is refused as `git-ns/right/grant` refuses them — `permissionDenied`, `git-ns:scopeViolation` or `git-ns:escalation` — except that an actor holding the community-administrator capability and asking for `git.ns.admin` on a namespace that is not headless is refused with `git-ns/right/break-glass:notHeadless`. As in `git-ns/namespace/reseat`, that refusal **MUST NOT** say who the namespace's admins are.
-5. Refuses an actor who is not a current member, holding standing in its access-control records, with `git-ns:membersOnly` ([fixed rule 5](../../grant/0.3/spec.md#the-fixed-rules)), for every elevated right.
+5. Refuses an actor who is not a current member, holding standing in its access-control records, with `git-ns:membersOnly` ([fixed rule 5](../../grant/0.4/spec.md#the-fixed-rules)), for every elevated right.
 6. Where the actor already holds a live record of `right` on `resource` — ordinary or break-glass — **MUST** return it unchanged, and does nothing else: nothing is recorded, audited as a break-glass, or announced, because nothing changed. A break-glass for a right the actor holds only by implication is not a repeat; recording it explicitly is the point.
 7. Evaluates the community's git-namespace policy ([Policy](#policy)), which may refuse with `git-ns/right/break-glass:disabled` or `git-ns:policyDenied`, or defer the right's effect.
 8. Records the right: `subject` and `grantedBy` the actor, `grantedAt` now, **no `expiresAt`**, no `reason`, and `breakGlass` carrying `by` (the actor), `recordedAt` (now), `justification`, and `effectiveAt` where policy deferred it. Steps 4, 6 and 8 **MUST** be atomic with respect to every other change to the resource's rights and, for the second entitlement, to the namespace's `git.ns.admin` records, exactly as `git-ns/namespace/reseat` requires of its own check and write.
 9. Records an audit event at the **highest severity the VTC's audit history has**, carrying the actor, the right, the resource, the `justification`, the time, the entitlement relied on (grant authority, and through which right; or the community-administrator capability on a headless namespace, with the evidence that it was headless as `git-ns/namespace/reseat` step 7 describes), the policy version, and the evidence of every authentication step the VTC required for this request — its kind, the credential that answered, and what it was bound to. The response **MUST NOT** be sent before the right and this event are durable.
-10. Tells every administrator of the namespace other than the actor, immediately, with a signed [`git-ns/right/break-glass-notice`](../../break-glass-notice/0.1/spec.md) of event `breakGlass`, over the VTC's own messaging channel to each. A notice that cannot be queued **MUST NOT** undo the break-glass, and **MUST** itself be recorded in the audit history. When there is nobody to tell, the VTC records that too: a break-glass nobody was told about is the case an audit most needs to find.
+10. Tells every administrator of the namespace other than the actor, immediately, with a signed [`git-ns/right/break-glass-notice`](../../break-glass-notice/0.2/spec.md) of event `breakGlass`, over the VTC's own messaging channel to each. A notice that cannot be queued **MUST NOT** undo the break-glass, and **MUST** itself be recorded in the audit history. When there is nobody to tell, the VTC records that too: a break-glass nobody was told about is the case an audit most needs to find.
 11. Publishes the right as a grant is published — unless it is pending, in which case it publishes nothing until `effectiveAt`, and the right confers nothing until then. The registry projection is exactly that of an ordinary grant: `breakGlass` is **never** published.
 
 A break-glass that another administrator revokes stays revoked: a replay of the same document is refused by [SPEC §7.2](/SPEC.md#72-consumer-requirements) item 11, and a new request is a new break-glass, audited and announced as the first was.
@@ -185,7 +185,7 @@ Carol is a namespace admin of `acme`. The repository's two owners are both unrea
 
 ### Policy
 
-The community's git-namespace policy is evaluated after the steps above that refuse, as for every git-ns task, and may only narrow ([fixed rule 6](../../grant/0.3/spec.md#the-fixed-rules)). For this task it **MAY**:
+The community's git-namespace policy is evaluated after the steps above that refuse, as for every git-ns task, and may only narrow ([fixed rule 6](../../grant/0.4/spec.md#the-fixed-rules)). For this task it **MAY**:
 
 - **disable** break-glass entirely, or for some rights, resources or actors — refused with `git-ns/right/break-glass:disabled`;
 - **defer** its effect by a delay, so that other administrators have a window to revoke it before it confers anything — recorded as `breakGlass.effectiveAt`;
@@ -197,7 +197,7 @@ Policy **MUST NOT** suppress, delay, narrow the audience of, or lower the severi
 
 Beyond the audit event and the notices, a VTC that implements this task:
 
-- **MUST** return every unratified break-glass record, with its `breakGlass` and `justification`, through [`git-ns/view`](../../../view/0.4/spec.md) to every administrator of its namespace and every owner of its resource, whatever else the caller may see;
+- **MUST** return every unratified break-glass record, with its `breakGlass` and `justification`, through [`git-ns/view`](../../../view/0.6/spec.md) to every administrator of its namespace and every owner of its resource, whatever else the caller may see;
 - **SHOULD** show every unratified break-glass record, persistently and to every administrator of its namespace, on every administrative surface it offers — a banner in an administrator console, say, until the record is ratified or revoked — together with a list of break-glass records, ratified ones included, and each record's flag wherever the record itself is shown;
 - **MUST** record the break-glass in whatever activity history it offers administrators of the namespace.
 

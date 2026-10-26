@@ -141,7 +141,7 @@ Failures use `trust-task-error` ([SPEC §8](/SPEC.md#8-error-responses)).
 
 ### Data carried
 
-The request carries one optional flag. The response carries the community's administrative vocabulary: role names, descriptions, capability ceilings with resource qualifiers (which can name repositories, policies and join criteria), and the identifiers of the administrators who defined custom roles. It carries no information about which subjects hold which role; that is `acl/list/0.2`, under its own access policy.
+The request carries one optional flag. The response carries the community's administrative vocabulary: role names, descriptions, capability ceilings with resource qualifiers (which can name repositories, policies and join criteria), and the identifiers of the administrators who defined custom roles. It carries no information about which subjects hold which role; that is `acl/list/0.3`, under its own access policy.
 
 ### Correlation
 

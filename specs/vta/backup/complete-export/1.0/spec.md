@@ -71,7 +71,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 ## Authorization
 
-The authority is **having created the bundle**. A recipient **MUST** refuse an acknowledgement from any party other than the one that issued the [`initiate-export`](../../initiate-export/1.0/spec.md) this bundle came from, and **MUST** answer such a request as `notFound` rather than as a refusal — see [Correlation](#correlation) for why the two are conflated.
+The authority is **having created the bundle**. A recipient **MUST** refuse an acknowledgement from any party other than the one that issued the [`initiate-export`](../../initiate-export/1.1/spec.md) this bundle came from, and **MUST** answer such a request as `notFound` rather than as a refusal — see [Correlation](#correlation) for why the two are conflated.
 
 No wider entitlement is implied and none is needed: the producer is closing something it already caused, and the operator authority that admitted the export is what admits its acknowledgement.
 

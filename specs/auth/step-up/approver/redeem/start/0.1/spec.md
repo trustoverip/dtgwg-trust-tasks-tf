@@ -74,7 +74,7 @@ related:
 
 ## Abstract
 
-The first leg of redeeming an [`auth/step-up/approver/invite`](../../../invite/0.1/spec.md). The invited subject — typically through their wallet, from the page the invite URL opened — signs this document **as their own DID**, carrying the token from the URL and the claim code they were given separately. The relying party answers with an `enrollmentId`, a fresh `challenge` and its own DID as `audience`: the values the approver will sign an enrolment statement over in [`redeem/finish`](../../finish/0.1/spec.md).
+The first leg of redeeming an [`auth/step-up/approver/invite`](../../../invite/0.2/spec.md). The invited subject — typically through their wallet, from the page the invite URL opened — signs this document **as their own DID**, carrying the token from the URL and the claim code they were given separately. The relying party answers with an `enrollmentId`, a fresh `challenge` and its own DID as `audience`: the values the approver will sign an enrolment statement over in [`redeem/finish`](../../finish/0.1/spec.md).
 
 Unlike [`auth/passkey/enroll/redeem/start`](../../../../../passkey/enroll/redeem/start/0.1/spec.md), which a browser with no trusted key sends unsigned and which therefore answers every failure with one code, this request is signed by the invited subject. The relying party knows who is asking before it looks at the code, so it can say precisely what went wrong without becoming an oracle to anyone but the subject the invite is for.
 

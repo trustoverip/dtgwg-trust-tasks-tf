@@ -46,7 +46,7 @@ related:
 
 The **ACL — Show** Trust Task lets a *querying party* ask the *ACL maintainer* whether a specific subject has an entry and, if so, what it contains. Version 0.2 returns an [AclEntry 0.2](../../_shared/0.2/acl-entry.schema.json): the role, the explicit act scope, the approve scope, the capabilities and the approvable capabilities. The response is the entry or `entry: null` — "no such entry" is a successful answer, not an error.
 
-The task is **read-only**. It is the single-record half of the split pair with [`acl/list/0.2`](../../list/0.2/spec.md): a lookup for an unknown subject is a definite `null`, where a list filtered to one subject would return an empty page indistinguishable from "filtered out".
+The task is **read-only**. It is the single-record half of the split pair with [`acl/list/0.3`](../../list/0.3/spec.md): a lookup for an unknown subject is a definite `null`, where a list filtered to one subject would return an empty page indistinguishable from "filtered out".
 
 ## Status of this Document
 

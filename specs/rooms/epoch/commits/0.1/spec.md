@@ -87,13 +87,13 @@ A host **MUST** return the commits above `sinceEpoch` in ascending epoch order. 
 
 It is deliberately **not** `sinceEpoch` plus the number of commits returned, and a consumer **MUST NOT** compute it that way.
 
-The two differ whenever the host is missing a commit or the page ended early, and **that difference is the useful part**: a member who applies everything served and finds themselves still behind knows a delivery is missing, rather than concluding their own group state is broken. That is the distinction [`rooms/keys/list`](../../../keys/list/0.1/spec.md) already draws between "a commit was not delivered" and "the key chain has not arrived", and it needs the same care.
+The two differ whenever the host is missing a commit or the page ended early, and **that difference is the useful part**: a member who applies everything served and finds themselves still behind knows a delivery is missing, rather than concluding their own group state is broken. That is the distinction [`rooms/keys/list`](../../../keys/list/0.2/spec.md) already draws between "a commit was not delivered" and "the key chain has not arrived", and it needs the same care.
 
 ## What this does not do
 
 **It does not make a commit reach an offline member.** It makes one *fetchable*, which is a different and smaller promise: a member who never comes back never catches up, and a room that removes them is doing the right thing.
 
-**It is not a substitute for the epoch key chain.** A commit moves a member forward; a rung ([`rooms/epoch/chain`](../../chain/0.1/spec.md)) lets them read backwards. A member who applies every commit and fetches no rungs can write to the room and read nothing written before they arrived.
+**It is not a substitute for the epoch key chain.** A commit moves a member forward; a rung ([`rooms/epoch/chain`](../../chain/0.2/spec.md)) lets them read backwards. A member who applies every commit and fetches no rungs can write to the room and read nothing written before they arrived.
 
 ## Definitions
 

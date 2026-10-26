@@ -38,7 +38,7 @@ errorCodes:
 
 ## Abstract
 
-The **VTC Join Requests — Submit Receipt** Trust Task is the community's answer to [`vtc/join-requests/submit`](../../submit/0.1/). It tells the applicant their request was accepted for processing and hands them the `requestId` that [`vtc/join-requests/status`](../../status/0.1/) is polled with.
+The **VTC Join Requests — Submit Receipt** Trust Task is the community's answer to [`vtc/join-requests/submit`](../../submit/0.3/). It tells the applicant their request was accepted for processing and hands them the `requestId` that [`vtc/join-requests/status`](../../status/0.1/) is polled with.
 
 It is an acknowledgement of **receipt**, not of admission. A join request may be auto-admitted, queued for an administrator, or rejected — this receipt says only that the community has it.
 

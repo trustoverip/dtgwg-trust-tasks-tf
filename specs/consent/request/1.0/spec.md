@@ -64,7 +64,7 @@ operator (over a push/wake channel, or relayed back through the bridge to the
 operator's own conversation). When the operator decides, a `consent/decision`
 records the grant and the bridge releases (or drops) the held message.
 
-This mirrors the [`auth/step-up/approve-request`](../../../auth/step-up/approve-request/0.2/spec.md)
+This mirrors the [`auth/step-up/approve-request`](../../../auth/step-up/approve-request/0.5/spec.md)
 pattern, specialized to "may this conversation reach this agent."
 
 ## Status of this Document

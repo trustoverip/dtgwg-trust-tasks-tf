@@ -83,7 +83,7 @@ A conforming **consumer** (the ballot box) **MUST**:
 7. Withhold text answers (VTI-VOT-065): for a `text` question, omit `text` and set `withheld` true unless `ballotsCounted` is at least the manifest's `textReleaseThreshold` and the result is not provisional. Provisional totals never carry text answers: released while voting is open, an answer that appeared just after a cast would point to that cast.
 8. Sign the response.
 
-A conforming **producer** that relies on a result **SHOULD** recompute it from the board up to `result.head` ([`voting/board/read`](../../../board/read/0.1/spec.md)) and the registered manifest, and **MUST NOT** treat a provisional result as the outcome.
+A conforming **producer** that relies on a result **SHOULD** recompute it from the board up to `result.head` ([`voting/board/read`](../../../board/read/0.2/spec.md)) and the registered manifest, and **MUST NOT** treat a provisional result as the outcome.
 
 ## Authorization
 

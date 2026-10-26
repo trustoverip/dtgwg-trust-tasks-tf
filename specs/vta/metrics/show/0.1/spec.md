@@ -71,7 +71,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 *Declared under [SPEC §7.3](/SPEC.md#73-specification-requirements) item 15.* Not consequential, and declared for clarity.
 
-The entitlement is **administrator standing on this VTA**, read from its own access-control records at execution time. The `proof` establishes who asked, not that they may ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10). This task deliberately requires ordinary administrator standing rather than super-admin: metrics are read-only operational data, not the sensitive control-plane actions ([`vta/attestation/mnemonic-status`](../../../attestation/mnemonic-status/0.1/spec.md), `vta/restart`) that require the stronger entitlement.
+The entitlement is **administrator standing on this VTA**, read from its own access-control records at execution time. The `proof` establishes who asked, not that they may ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10). This task deliberately requires ordinary administrator standing rather than super-admin: metrics are read-only operational data, not the sensitive control-plane actions ([`vta/attestation/mnemonic-status`](../../../attestation/mnemonic-status/0.2/spec.md), `vta/restart`) that require the stronger entitlement.
 
 ## Definitions
 

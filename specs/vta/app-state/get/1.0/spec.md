@@ -71,7 +71,7 @@ verifiable credentials, application state.
 
 A record is addressed by the triple `(contextId, namespace, key)`. Every
 response carries the record's `version`, which is the value a later
-[`vta/app-state/put`](../../put/1.0/spec.md) supplies as `expectedVersion` to
+[`vta/app-state/put`](../../put/1.1/spec.md) supplies as `expectedVersion` to
 make its write conditional on nothing having changed in between.
 
 ## Status of this Document
@@ -246,7 +246,7 @@ that block that application's next release. It stores bytes and returns them.
 
 **Reads disclose application data, and enumeration discloses shape.** A caller
 that can read a namespace learns its contents; a caller that can
-[`list`](../../list/1.0/spec.md) it learns the existence, count and change
+[`list`](../../list/1.1/spec.md) it learns the existence, count and change
 timing of every record even without values. A maintainer granting read access
 to a third-party application **SHOULD** scope the grant to a context, and
 **SHOULD** consider whether a future per-namespace grant is the boundary it

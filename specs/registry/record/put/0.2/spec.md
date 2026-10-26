@@ -53,7 +53,7 @@ related:
 
 The **Registry — Put Record** Trust Task creates or replaces a trust record — a recognition or authorization assertion — in a trust registry. The *registry administrator* declares the [`TrustRecord`](../../../_shared/0.1/registry.schema.json) to store; the *trust registry* applies its own policy and, if accepted, stores it at the record's four-part key (`entity_id`, `authority_id`, `action`, `resource`), overwriting any record already there.
 
-This task supersedes the [`registry/record/create`](../../create/0.1/spec.md) / [`registry/record/update`](../../update/0.1/spec.md) pair, which carried the identical single-`record` payload and differed only in their already-exists / not-found error codes. Following the [`vault/upsert`](../../../../vault/upsert/0.2/spec.md) precedent, those strict semantics remain available through the optional `expectedExisting` assertion — so nothing expressible before is lost, and the common case is one round trip with no prior existence check.
+This task supersedes the [`registry/record/create`](../../create/0.1/spec.md) / [`registry/record/update`](../../update/0.1/spec.md) pair, which carried the identical single-`record` payload and differed only in their already-exists / not-found error codes. Following the [`vault/upsert`](../../../../vault/upsert/0.4/spec.md) precedent, those strict semantics remain available through the optional `expectedExisting` assertion — so nothing expressible before is lost, and the common case is one round trip with no prior existence check.
 
 ## Status of this Document
 
@@ -145,4 +145,4 @@ Records are evidentiary; the registry SHOULD retain an audit trail of put/delete
 
 Only administrators authorized by the registry's own ACL may put records; the registry MUST verify the `proof` and the authenticated sender before applying the change. The record is stored so that the registry can answer recognition and authorization queries about the entity.
 
-Because a bare put silently replaces whatever is at the key, administrators racing on the same key can overwrite each other; tooling that requires lost-update protection SHOULD assert `expectedExisting` (and compare the read-back record via [`registry/record/query`](../../query/0.1/spec.md)) rather than issuing blind puts.
+Because a bare put silently replaces whatever is at the key, administrators racing on the same key can overwrite each other; tooling that requires lost-update protection SHOULD assert `expectedExisting` (and compare the read-back record via [`registry/record/query`](../../query/0.2/spec.md)) rather than issuing blind puts.

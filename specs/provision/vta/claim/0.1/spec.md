@@ -231,4 +231,4 @@ The handle is sent for one purpose: to lock a reservation to the key of the pers
 - Verifiable Trust Infrastructure, chapter *Trigger Links* (`VTI-LNK-*`): the `vta-claim` flow (VTI-LNK-110 to VTI-LNK-117), the first request (VTI-LNK-054) and the contact rule (VTI-LNK-118 to VTI-LNK-124). Under development at [trustoverip/dtgwg-vti-spec#58](https://github.com/trustoverip/dtgwg-vti-spec/pull/58).
 - [Trust Task HTTPS binding 0.2](../../../../../bindings/https/0.2/spec.md): the `TrustTaskHTTPS` service and the Trust-Task base.
 - [`trust-task-next-step/0.1`](../../../../trust-task-next-step/0.1/spec.md): the reply a successful claim receives.
-- [`auth/oob/claim`](../../../../auth/oob/claim/0.1/spec.md): the same first-request shape for `sign-in`, which this task mirrors.
+- [`auth/oob/claim`](../../../../auth/oob/claim/0.2/spec.md): the same first-request shape for `sign-in`, which this task mirrors.

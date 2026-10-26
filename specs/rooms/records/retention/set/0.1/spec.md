@@ -81,7 +81,7 @@ an epoch or it does not, how long a room keeps its meeting notes is a decision i
 revisit. This is how it does.
 
 Nothing is removed here. The record retention is the **rule**; removal is a separate, deliberate
-act by a holder of `admin` ([`rooms/records/prune`](../../../prune/0.1/spec.md)), which removes
+act by a holder of `admin` ([`rooms/records/prune`](../../../prune/0.2/spec.md)), which removes
 only what the rule in force makes eligible.
 
 ## Status of this Document
@@ -96,7 +96,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 A conforming **host** (`recipient`):
 
-1. **MUST** verify the presentation as [`rooms/records/put`](../../../put/0.2/spec.md) does and
+1. **MUST** verify the presentation as [`rooms/records/put`](../../../put/0.3/spec.md) does and
    require that it confer `admin` at this room's scope; a presentation that does not is refused
    with the standard `permissionDenied` ([SPEC §8.3](/SPEC.md#83-standard-error-codes)).
 2. **MUST** refuse with `retentionConflict` when `expectedRetention` is present and differs from
@@ -106,19 +106,19 @@ A conforming **host** (`recipient`):
    shortened is records removed under a rule nobody stated.
 4. **MUST** replace the retention in force with `recordRetention` whole. A member it leaves out
    is no longer stated; `{}` clears the retention, after which no record is eligible by age.
-5. **MUST** serve the new retention from then on in [`rooms/info`](../../../../info/0.2/spec.md)
+5. **MUST** serve the new retention from then on in [`rooms/info`](../../../../info/0.3/spec.md)
    0.2 and apply it to the next prune, and **MUST** keep in the room's audit trail the retention
    replaced, the one recorded, the `reason`, and the requester where the tier discloses one.
 6. **MUST NOT** remove any record because of this task.
 
 A conforming **producer** **SHOULD**, before shortening a retention, show whoever is deciding
-what the shorter one would make eligible — a [`rooms/records/prune`](../../../prune/0.1/spec.md)
+what the shorter one would make eligible — a [`rooms/records/prune`](../../../prune/0.2/spec.md)
 `dryRun` answers that only for the retention in force, so a surface computes it from a listing,
 which carries every record's `updatedAt` and status.
 
 ## Authorization
 
-`admin` at the room's scope, the grant [`rooms/records/prune`](../../../prune/0.1/spec.md) takes.
+`admin` at the room's scope, the grant [`rooms/records/prune`](../../../prune/0.2/spec.md) takes.
 Shortening the retention is how a prune is made to reach further, so the two must take the same
 authority; a weaker grant here would let a party who may not prune decide what the next prune
 removes. Not `curate`, which every writer can be given and which is judgement about one record.

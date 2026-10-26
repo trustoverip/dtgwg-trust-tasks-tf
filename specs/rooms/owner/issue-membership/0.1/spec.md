@@ -63,7 +63,7 @@ A room's owner mints the **Verifiable Membership Credential** that lets a member
 
 This is the credential a member presents on every subsequent operation, and it is what a host verifies to admit one. The host holds no roster — by design, because a roster would make the room unmovable and make the host part of its membership definition — so this credential *is* the membership.
 
-Membership and authority stay in different credentials. This says *you are in this room*; a [Verifiable Authority Credential](../../issue-authority/0.1/spec.md) says *what you may do*. Changing someone's access reissues one small credential and leaves the membership edge alone.
+Membership and authority stay in different credentials. This says *you are in this room*; a [Verifiable Authority Credential](../../issue-authority/0.2/spec.md) says *what you may do*. Changing someone's access reissues one small credential and leaves the membership edge alone.
 
 ## Status of this Document
 

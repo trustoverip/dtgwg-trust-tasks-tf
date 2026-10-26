@@ -79,7 +79,7 @@ related:
 
 ## Abstract
 
-An **Accepts criterion** is one way into a community. It states what an applicant must present, which may be nothing, and how a submission that presents it is decided. The community's criteria together are its join policy, and they are alternatives: an applicant meets one of them, not all. [`vtc/join-requests/manifest/0.3`](../../../../join-requests/manifest/0.3/spec.md) publishes them to applicants; [`vtc/join-requests/submit/0.3`](../../../../join-requests/submit/0.3/spec.md) names the one a submission is made under; [`vtc/join-requests/query`](../../../../join-requests/query/0.1/spec.md) sends a criterion's credential query to a holder.
+An **Accepts criterion** is one way into a community. It states what an applicant must present, which may be nothing, and how a submission that presents it is decided. The community's criteria together are its join policy, and they are alternatives: an applicant meets one of them, not all. [`vtc/join-requests/manifest/0.4`](../../../../join-requests/manifest/0.4/spec.md) publishes them to applicants; [`vtc/join-requests/submit/0.3`](../../../../join-requests/submit/0.3/spec.md) names the one a submission is made under; [`vtc/join-requests/query`](../../../../join-requests/query/0.1/spec.md) sends a criterion's credential query to a holder.
 
 A criterion's requirements are any of:
 
@@ -129,7 +129,7 @@ How a community decides a submission against a criterion — what meeting it mea
 
 ## Authorization
 
-The authority this task presupposes is **administrator standing at the community**: the signer's access-control entry — or, for a delegated signing key ([`auth/signing-key/enroll`](../../../../../auth/signing-key/enroll/0.1/spec.md)), the entry of the identity it acts for — read at execution time. Verifying the proof establishes who asked, never that they may ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10). The decision is the community's.
+The authority this task presupposes is **administrator standing at the community**: the signer's access-control entry — or, for a delegated signing key ([`auth/signing-key/enroll`](../../../../../auth/signing-key/enroll/0.2/spec.md)), the entry of the identity it acts for — read at execution time. Verifying the proof establishes who asked, never that they may ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10). The decision is the community's.
 
 ## Definitions
 

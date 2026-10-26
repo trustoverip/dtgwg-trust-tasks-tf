@@ -66,7 +66,7 @@ related:
 
 ## Abstract
 
-The **Auth — Passkey Admin List** Trust Task lets an administrator see one member's passkeys of one purpose. Its main use is the **step-up credentials** of [`auth/passkey/enroll/invite/0.2`](../../enroll/invite/0.2/spec.md) (`purpose: stepUp`): an administrator invites a member to enrol one, and may revoke it for them with [`auth/passkey/revoke/start/0.2`](../../revoke/start/0.2/spec.md), but until now had no published way to see which credentials the member holds — and so which `credentialId` to revoke.
+The **Auth — Passkey Admin List** Trust Task lets an administrator see one member's passkeys of one purpose. Its main use is the **step-up credentials** of [`auth/passkey/enroll/invite/0.3`](../../enroll/invite/0.3/spec.md) (`purpose: stepUp`): an administrator invites a member to enrol one, and may revoke it for them with [`auth/passkey/revoke/start/0.2`](../../revoke/start/0.2/spec.md), but until now had no published way to see which credentials the member holds — and so which `credentialId` to revoke.
 
 [`auth/passkey/list/0.1`](../../list/0.1/spec.md) does not cover this, on purpose: it lists the **signer's own** credentials and rejects a subject in the payload, so a filter parameter and an authorisation check can never disagree. This task is the other half: the subject is named, and the consumer authorises the administrator over that subject from its own state before it reads anything.
 
@@ -112,7 +112,7 @@ Step 3 comes before steps 4 and 5 so that neither `purposeNotSupported` nor `sub
 
 * **Administrator.** The party asking; identified by `issuer` and confirmed by the `proof`. Who counts, and over whom, is the consumer's policy, taken from its own state.
 * **Subject.** The member whose credentials are listed: `payload.subject`.
-* **Purpose.** `session` or `stepUp`, as fixed when the credential was bound ([`enroll/invite` 0.2](../../enroll/invite/0.2/spec.md)).
+* **Purpose.** `session` or `stepUp`, as fixed when the credential was bound ([`enroll/invite` 0.3](../../enroll/invite/0.3/spec.md)).
 * **ListedCredential.** The administrator's view of one credential: `credentialId`, `deviceLabel`, `registeredAt`, `lastUsedAt` and `signCount`, and nothing else.
 
 ## Payload

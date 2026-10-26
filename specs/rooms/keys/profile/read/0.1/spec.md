@@ -239,7 +239,7 @@ A member holding only `write` put a record at the current epoch's profile locati
 
 **The host cannot tell which record names the room.** On a sealed tier the profile location is derived from the epoch's storage key, which the host never holds, and has the shape of any random record key; the record is sealed and padded like any other ([`RoomProfileStatement`](../../../../_shared/0.1/room.schema.json), *Size*). What the host can still observe is **pattern**, not content: a read of a key that holds nothing, repeated at each epoch, and — at every epoch advance — a record written by the room's owner shortly after the advance. A host watching for that can guess which record is the profile. It cannot read it, cannot learn the name from it, and gains nothing it could act on that it could not already do to any record — withhold or roll it back, which `verification` exists to make visible.
 
-**A profile is never anywhere a host reads.** Not in a credential, not in a host's record of the room, not in `rooms/create` or [`rooms/owner/register`](../../../../owner/register/0.1/spec.md), not in any cleartext member of a request. On an `open` room it is cleartext, as everything there is.
+**A profile is never anywhere a host reads.** Not in a credential, not in a host's record of the room, not in `rooms/create` or [`rooms/owner/register`](../../../../owner/register/0.2/spec.md), not in any cleartext member of a request. On an `open` room it is cleartext, as everything there is.
 
 **Whoever names the room is checked by the reader, not the host.** See *Authorization*. Treating a host-stored record as authoritative because the host accepted it would hand the room's name to every member holding `write`.
 
@@ -249,7 +249,7 @@ The request carries two identifiers. The response carries the room's profile —
 
 ### Correlation
 
-To the host, this is a member reading, which is what the presentation says; on an `attributed` room it learns which member, as with any read. The informative part is frequency: a surface that fetches the profile on every display turns an access pattern into a timeline. A producer **SHOULD** cache the answer for the life of a view and **SHOULD NOT** poll; the profile changes rarely, and an epoch advance — which [`rooms/keys/list`](../../../list/0.1/spec.md) shows — is the signal that it may have.
+To the host, this is a member reading, which is what the presentation says; on an `attributed` room it learns which member, as with any read. The informative part is frequency: a surface that fetches the profile on every display turns an access pattern into a timeline. A producer **SHOULD** cache the answer for the life of a view and **SHOULD NOT** poll; the profile changes rarely, and an epoch advance — which [`rooms/keys/list`](../../../list/0.2/spec.md) shows — is the signal that it may have.
 
 ### Retention
 

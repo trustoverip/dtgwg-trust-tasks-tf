@@ -40,7 +40,7 @@ errorCodes:
 
 The **Vault — Get** Trust Task returns the metadata view of one entry. Consumers use it to refresh a single row after a `sync/event` notification, or to fetch detail for a UI panel after a list result.
 
-Like `vault/list/0.1`, this task **never returns secret material**. Use `vault/release/0.1` to obtain secret bytes.
+Like `vault/list/0.4`, this task **never returns secret material**. Use `vault/release/0.2` to obtain secret bytes.
 
 ## Changes from 0.2
 
@@ -91,4 +91,4 @@ Maintainers MAY return `permissionDenied` ([SPEC.md §8.3](/SPEC.md#83-standard-
 
 **Enumeration resistance.** Conflating `notFound` and `permissionDenied` is the default for a reason: a consumer that can distinguish them can probe id space to map who has what. Maintainers operating in lower-trust environments (e.g. publicly-listed vaults) MUST keep them conflated.
 
-Other guidance: see the Security & Privacy section of `vault/list/0.1`. The same secret-leakage, timing-data, and audit considerations apply here, scoped to a single entry.
+Other guidance: see the Security & Privacy section of `vault/list/0.4`. The same secret-leakage, timing-data, and audit considerations apply here, scoped to a single entry.

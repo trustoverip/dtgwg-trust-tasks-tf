@@ -68,9 +68,9 @@ related:
 
 A member asks their **key holder** — the agent that holds their room keys — to read one record from the room's host: mint the presentation, make the request, check what came back, and open it.
 
-Four acts, and today they belong to three parties. The presentation only the agent can mint ([`rooms/keys/present`](../../present/0.2/spec.md)); the request anyone with a channel to the host can make; the checking anyone can do *who has the room's state*; and the opening **only** the agent, because the epoch key never leaves it ([`rooms/keys/open`](../../open/0.1/spec.md)). The fourth decides where the other three go.
+Four acts, and today they belong to three parties. The presentation only the agent can mint ([`rooms/keys/present`](../../present/0.2/spec.md)); the request anyone with a channel to the host can make; the checking anyone can do *who has the room's state*; and the opening **only** the agent, because the epoch key never leaves it ([`rooms/keys/open`](../../open/0.2/spec.md)). The fourth decides where the other three go.
 
-It exists for the same reason [`rooms/keys/backfill`](../../backfill/0.1/spec.md) does: the surfaces a person actually uses — a browser extension, a phone — hold a channel to their own agent and to nothing else. The alternative is a member who mints a presentation at their agent, carries it to the host, carries ciphertext back, and hands it to the same agent to open, holding a half-verified record in between.
+It exists for the same reason [`rooms/keys/backfill`](../../backfill/0.2/spec.md) does: the surfaces a person actually uses — a browser extension, a phone — hold a channel to their own agent and to nothing else. The alternative is a member who mints a presentation at their agent, carries it to the host, carries ciphertext back, and hands it to the same agent to open, holding a half-verified record in between.
 
 ## Status of this Document
 
@@ -124,7 +124,7 @@ The recipient opens the record with the epoch key for the epoch it was sealed un
 **The recipient repairs before it refuses.** It is the only party that can: the member's surface reaches their agent and nothing else, and a member shown a record that will not open has no move of their own. So, before answering `cannotOpen`:
 
 1. **The record's epoch is later than any it holds**, and its principal was not removed from the group at or before it: the recipient **SHOULD** fetch, from the same host and as the same principal under the same `read` grant, the commits the host relays above the epoch it holds ([`rooms/epoch/commits`](../../../epoch/commits/0.1/spec.md)), apply them in order under the rules of [`rooms/keys/commit`](../../commit/0.1/spec.md), and open the record again.
-2. **The record's epoch is earlier than its chain reaches**: the recipient **SHOULD** fetch the room's epoch links from the same host, as [`rooms/keys/backfill`](../../backfill/0.1/spec.md) does, retain them, and open the record again.
+2. **The record's epoch is earlier than its chain reaches**: the recipient **SHOULD** fetch the room's epoch links from the same host, as [`rooms/keys/backfill`](../../backfill/0.2/spec.md) does, retain them, and open the record again.
 3. **Its principal was removed** at or before the record's epoch: the recipient **MUST NOT** fetch anything. No commit and no link will open the record.
 
 A recipient **MUST** attempt each repair at most once per request, and **MUST** open the record only with the key for the epoch it was sealed under, never another epoch's. Repairs for one member of one room **SHOULD** be serialised, so that a surface opening several records at once fetches each commit once rather than once per record. A repair is the same act as reading — the same host, the same principal, the same `read` grant — so it discloses nothing a read did not, and it changes no state but the recipient's own.

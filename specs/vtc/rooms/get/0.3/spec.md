@@ -80,12 +80,12 @@ A conforming **community** (`recipient`):
 2. **MUST** compute every member of the response at the time of the read.
 3. **MUST** report in `limits` the limits it actually enforces, with the source of each scope's, bounded by its host-wide ceiling.
 4. **MUST** count in `storage.earlierConfigs` every config other than the assigned one that still holds a blob of this room that is not yet deleted.
-5. **MUST** report in `storage.migration` the room's migration while it is `queued`, `running` or `paused`, as [`vtc/rooms/storage/migrate/0.2`](../../../../vtc/rooms/storage/migrate/0.2/spec.md) would answer for it, and **MAY** keep reporting the most recent one once it is `complete` or `failed`.
+5. **MUST** report in `storage.migration` the room's migration while it is `queued`, `running` or `paused`, as [`vtc/rooms/storage/migrate/0.3`](../../../../vtc/rooms/storage/migrate/0.3/spec.md) would answer for it, and **MAY** keep reporting the most recent one once it is `complete` or `failed`.
 6. **MUST NOT** return a record, a record key, a file name or anything else derived from a room's contents, and **MUST NOT** return member DIDs. On an `attributed` room it **MAY** return `membersWithUsage`, a count; per-member figures are [`vtc/rooms/usage`](../../../../vtc/rooms/usage/0.1/spec.md)'s, where the disclosure is stated. On a `private` room it **MUST** omit `membersWithUsage`: the host cannot tell members apart.
 
 ## Authorization
 
-The authority this task presupposes is the **`vtc.rooms.admin` capability at the community**, a capability introduced with the files-in-data-rooms work so that a community can hand room hosting — storage, limits and usage — to someone who is not a full administrator ([`vtc/roles/define`](../../../../vtc/roles/define/0.1/spec.md) can place it in a role's ceiling). It is read from the signer's access-control entry — or, for a delegated signing key ([`auth/signing-key/enroll`](../../../../auth/signing-key/enroll/0.1/spec.md)), the entry of the identity it acts for — at execution time. Verifying the proof establishes who asked, never that they may ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10). The decision is the community's.
+The authority this task presupposes is the **`vtc.rooms.admin` capability at the community**, a capability introduced with the files-in-data-rooms work so that a community can hand room hosting — storage, limits and usage — to someone who is not a full administrator ([`vtc/roles/define`](../../../../vtc/roles/define/0.1/spec.md) can place it in a role's ceiling). It is read from the signer's access-control entry — or, for a delegated signing key ([`auth/signing-key/enroll`](../../../../auth/signing-key/enroll/0.2/spec.md)), the entry of the identity it acts for — at execution time. Verifying the proof establishes who asked, never that they may ([SPEC §7.2](/SPEC.md#72-consumer-requirements) item 10). The decision is the community's.
 
 This is the **host's** authority, not a room's. Like [`vtc/rooms/list`](../../../../vtc/rooms/list/0.2/spec.md), and for the reason that specification gives, it lives under `vtc/` rather than `rooms/`: every `rooms/*` task is authorized by credentials the room issued and never by the host's access control, and this one is the opposite. No room-issued authority is required or accepted, and nothing here needs, or could use, a room key.
 
@@ -93,7 +93,7 @@ This is the **host's** authority, not a room's. Like [`vtc/rooms/list`](../../..
 
 - **Host record** — what a community stores about a room it hosts; see `HostedRoom` in [`vtc/_shared/0.3/room-storage.schema.json`](../../../../vtc/_shared/0.3/room-storage.schema.json).
 - **Assigned config** — the storage config that receives the room's new uploads.
-- **Earlier config** — a config the room was assigned to before, which still holds some of its blobs. Each blob remembers the config it was written to, so a reassignment strands nothing; [`vtc/rooms/storage/migrate`](../../../../vtc/rooms/storage/migrate/0.2/spec.md) moves them.
+- **Earlier config** — a config the room was assigned to before, which still holds some of its blobs. Each blob remembers the config it was written to, so a reassignment strands nothing; [`vtc/rooms/storage/migrate`](../../../../vtc/rooms/storage/migrate/0.3/spec.md) moves them.
 - **Orphan** — a blob no record names any more. It stopped counting against the room's and members' usage when it was orphaned, and is deleted from its store after a grace window.
 - `Usage`, `RoomLimits` — as [`rooms/_shared/0.1/blobs.schema.json`](../../../../rooms/_shared/0.1/blobs.schema.json) defines them. Sizes are ciphertext bytes throughout.
 

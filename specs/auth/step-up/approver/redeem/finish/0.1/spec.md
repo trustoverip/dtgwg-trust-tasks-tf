@@ -78,7 +78,7 @@ related:
 
 ## Abstract
 
-The second leg of redeeming an [`auth/step-up/approver/invite`](../../../invite/0.1/spec.md). The invited subject signs this document **as their own DID**, naming the approver to bind and carrying the approver's [`auth/step-up/approver/attest/0.1`](../../../attest/0.1/spec.md) statement with `purpose: enrol`, made over the `challenge` the [`start`](../../start/0.1/spec.md) issued and bound to its `enrollmentId`. The relying party verifies both signatures, checks the approver is distinct from every key the subject already holds, binds it to the subject with `enrolledVia: invite` (or `offline`, for an invite the operator minted from the host), and consumes the invite.
+The second leg of redeeming an [`auth/step-up/approver/invite`](../../../invite/0.2/spec.md). The invited subject signs this document **as their own DID**, naming the approver to bind and carrying the approver's [`auth/step-up/approver/attest/0.1`](../../../attest/0.1/spec.md) statement with `purpose: enrol`, made over the `challenge` the [`start`](../../start/0.1/spec.md) issued and bound to its `enrollmentId`. The relying party verifies both signatures, checks the approver is distinct from every key the subject already holds, binds it to the subject with `enrolledVia: invite` (or `offline`, for an invite the operator minted from the host), and consumes the invite.
 
 ## Status of this Document
 

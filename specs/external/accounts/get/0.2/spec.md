@@ -40,7 +40,7 @@ related:
 
 ## Abstract
 
-The **External Accounts — Get** Trust Task returns one external account as [`external/accounts/list`](../../list/0.1/spec.md) would show it. It is the read behind an account's page in a console: its model and settings, the public key or certificate its provider pins, who is bound to it and how far, whether it needs provider setup, and the last probe.
+The **External Accounts — Get** Trust Task returns one external account as [`external/accounts/list`](../../list/0.2/spec.md) would show it. It is the read behind an account's page in a console: its model and settings, the public key or certificate its provider pins, who is bound to it and how far, whether it needs provider setup, and the last probe.
 
 ## Status of this Document
 

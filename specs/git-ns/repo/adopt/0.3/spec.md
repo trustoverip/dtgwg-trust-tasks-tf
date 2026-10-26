@@ -65,7 +65,7 @@ related:
 Brings a repository that already exists on the forge under the VTC's governance, and names its owners. Two cases use it:
 
 - a repository created outside the VTC — before the namespace was bound, or by someone clicking *New repository* on the forge — which the bridge reports as `unmanaged`;
-- a repository reserved by [`git-ns/repo/create`](../../../../git-ns/repo/create/0.2/spec.md) in a namespace where a person had to create it, once they have.
+- a repository reserved by [`git-ns/repo/create`](../../../../git-ns/repo/create/0.4/spec.md) in a namespace where a person had to create it, once they have.
 
 In bridge mode the VTC then has the bridge inspect the repository and run whatever bootstrap steps are missing. In manual mode the steps are the adopter's to have done, typically with `vgi repo init`.
 
@@ -90,7 +90,7 @@ A conforming producer and consumer satisfy [SPEC §7.1 and §7.2](/SPEC.md#7-min
 
 *Declared under [SPEC §7.3](/SPEC.md#73-specification-requirements) item 15.*
 
-The entitlement is **`git.ns.admin` on the namespace**, or, for a `pendingCreate` repository only, **an explicit `git.repo.own` record on it** — the reservation its creator holds, which lets the person who ran the manual steps finish the job. Anyone else is refused with `permissionDenied`. Naming owners is a grant of `git.repo.own` to each, and is subject to the same [fixed rules](../../../../git-ns/right/grant/0.2/spec.md#the-fixed-rules) and policy as [`git-ns/right/grant`](../../../../git-ns/right/grant/0.2/spec.md).
+The entitlement is **`git.ns.admin` on the namespace**, or, for a `pendingCreate` repository only, **an explicit `git.repo.own` record on it** — the reservation its creator holds, which lets the person who ran the manual steps finish the job. Anyone else is refused with `permissionDenied`. Naming owners is a grant of `git.repo.own` to each, and is subject to the same [fixed rules](../../../../git-ns/right/grant/0.4/spec.md#the-fixed-rules) and policy as [`git-ns/right/grant`](../../../../git-ns/right/grant/0.4/spec.md).
 
 ## Definitions
 
@@ -106,7 +106,7 @@ The actor sends the request to the VTC. See the top-level schema in [`payload.sc
 2. Refuses a repository it records as `active`, `orphaned` or `archived` with `git-ns/repo/adopt:alreadyManaged`. A `detached` repository — one whose namespace was unbound and bound again, or which moved back into the namespace — **MAY** be adopted again, and gets no rights back beyond `owners`.
 3. Checks the authorization above, then policy for each owner, which may refuse with `git-ns:policyDenied`.
 4. Records the repository as `active` and each owner's `git.repo.own`, with `grantedBy` set to the actor, and publishes them.
-5. In bridge mode, sends the bridge an `inspect` job, then a `bootstrap` job for whatever the inspection finds missing ([`git-ns/bridge/job`](../../../../git-ns/bridge/job/0.3/spec.md)), and projects roles. Until the inspection's result arrives the repository has no `forgeId` and its sync state is `pending`. If the inspection finds no such repository, the VTC sets it `detached`.
+5. In bridge mode, sends the bridge an `inspect` job, then a `bootstrap` job for whatever the inspection finds missing ([`git-ns/bridge/job`](../../../../git-ns/bridge/job/0.6/spec.md)), and projects roles. Until the inspection's result arrives the repository has no `forgeId` and its sync state is `pending`. If the inspection finds no such repository, the VTC sets it `detached`.
 
 ### Adopting a repository created before the namespace was bound
 
@@ -223,7 +223,7 @@ The VTC declares `identifierScope: public`, as the registry authority; the actor
 
 ### Retention
 
-Durable, as for [`git-ns/repo/create`](../../../../git-ns/repo/create/0.2/spec.md).
+Durable, as for [`git-ns/repo/create`](../../../../git-ns/repo/create/0.4/spec.md).
 
 ### Consent/purpose
 

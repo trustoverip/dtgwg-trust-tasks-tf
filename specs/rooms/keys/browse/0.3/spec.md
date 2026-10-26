@@ -65,7 +65,7 @@ related:
 
 A member asks their **key holder** to list a room's records at its host, and to check the listing against what the host committed to.
 
-It is [`rooms/records/list`](../../../records/list/0.1/spec.md) made from the party that can both present and check. The presentation only the agent can mint; the checking needs the room's state and, for the part that matters most, a memory of what this host has said before — which a tab does not have and a CLI does not keep.
+It is [`rooms/records/list`](../../../records/list/0.5/spec.md) made from the party that can both present and check. The presentation only the agent can mint; the checking needs the room's state and, for the part that matters most, a memory of what this host has said before — which a tab does not have and a CLI does not keep.
 
 Bodies are never returned. That is a property of this task rather than of the tier: [`rooms/keys/read`](../../read/0.1/spec.md) is how a member opens something, and it is also the only shape a trace can be produced for. Browsing and reading are two tasks so that looking at a room's shelf does not decrypt the room.
 
@@ -117,7 +117,7 @@ Everything [`rooms/keys/read`](../../read/0.1/spec.md) says about a caller-named
 A recipient serving `0.2` **MUST** list with `rooms/records/list` `0.3` where the host serves
 it, and **MUST** return `lastPrune` exactly as the host served it, omitting it when the host
 did. A caller that keeps its own copy of the room **MUST** apply the reader rules of
-[`rooms/records/list`](../../../records/list/0.3/spec.md) `0.3` (*After a prune*) to it: a
+[`rooms/records/list`](../../../records/list/0.5/spec.md) `0.3` (*After a prune*) to it: a
 `lastPrune.version` above its watermark means rebuild from a browse with no `sinceVersion`,
 and drop what that no longer holds.
 

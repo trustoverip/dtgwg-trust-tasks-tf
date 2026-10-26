@@ -55,7 +55,7 @@ related:
 
 A room's owner asks their **key holder** to register the room with a host.
 
-This is [`rooms/create`](../../../create/0.1/spec.md) performed by the agent rather than by the owner directly, and it exists for the same reason as [`rooms/keys/backfill`](../../../keys/backfill/0.1/spec.md): **the surfaces people create rooms from cannot reach a host.** A browser extension or a phone holds a channel to its own agent; a room host is a third party it has no session with.
+This is [`rooms/create`](../../../create/0.2/spec.md) performed by the agent rather than by the owner directly, and it exists for the same reason as [`rooms/keys/backfill`](../../../keys/backfill/0.2/spec.md): **the surfaces people create rooms from cannot reach a host.** A browser extension or a phone holds a channel to its own agent; a room host is a third party it has no session with.
 
 Without it, creating a room from such a surface stops halfway. The room's identity gets minted — that is the agent's own work — and then the registration cannot be sent, leaving an owner holding a DID and a signing key for a room that exists nowhere. The identity is real and cannot be re-derived, so the half-finished state is not merely inconvenient; it is a thing the owner must now keep safe by hand.
 
@@ -87,7 +87,7 @@ Note what it deliberately does **not** check. It does not verify that the caller
 
 Per [SPEC §7.2 item 10](/SPEC.md#72-consumer-requirements), verifying the VID, `issuer`, `recipient` or `proof` establishes *who sent this* and *that it is unaltered* — never that they were entitled to the outcome.
 
-**The recipient speaks as the owner, and so signs as the owner.** [`rooms/create`](../../../create/0.1/spec.md) names the Owner as the document's issuer, and a host that runs a creation policy decides it against that party — a community admits rooms for its own members, and checks that the party asking is the `ownerDid` it names. So a conforming recipient:
+**The recipient speaks as the owner, and so signs as the owner.** [`rooms/create`](../../../create/0.2/spec.md) names the Owner as the document's issuer, and a host that runs a creation policy decides it against that party — a community admits rooms for its own members, and checks that the party asking is the `ownerDid` it names. So a conforming recipient:
 
 1. **MUST** send the `rooms/create` document with `ownerDid` as its `issuer`, signed with a key of `ownerDid` that the recipient holds, and **MUST NOT** sign it as itself. A document issued by the recipient while naming another party as owner is one no host can tell from somebody registering rooms in a stranger's name, and a host that checks is right to refuse it.
 2. **MUST** refuse, with the framework's standard `permissionDenied` and before contacting the host, when it holds no signing key for `ownerDid` that its caller may use. Absent `ownerDid` means the caller, so a caller whose own key the recipient does not hold names an `ownerDid` it does.
@@ -102,7 +102,7 @@ The owner is therefore normally a DID the recipient minted for its principal —
 
 **`host`** — the host to register with, as a DID.
 
-**`visibility`**, **`retentionPolicy`**, **`retentionDays`** — passed through to [`rooms/create`](../../../create/0.1/spec.md), whose descriptions of each govern. `retentionPolicy` is immutable once set, so omitting it takes the host's default for the life of the room.
+**`visibility`**, **`retentionPolicy`**, **`retentionDays`** — passed through to [`rooms/create`](../../../create/0.2/spec.md), whose descriptions of each govern. `retentionPolicy` is immutable once set, so omitting it takes the host's default for the life of the room.
 
 **`ownerDid`** — the accountable party, and the `issuer` of the `rooms/create` document the recipient sends. Absent means the caller. The recipient must hold a signing key for it.
 

@@ -39,7 +39,7 @@ The **VTC Members — Removed** Trust Task enumerates the community's membership
 
 Each entry carries the DID, when removal happened, and the `statusListIndex` of the member's revoked credential, so an operator can correlate a departure with the published status list a verifier would consult.
 
-Live members come from [`vtc/members/list`](../../list/0.1/); [`vtc/members/purge`](../../purge/0.1/) erases a tombstone entirely.
+Live members come from [`vtc/members/list`](../../list/0.2/); [`vtc/members/purge`](../../purge/0.1/) erases a tombstone entirely.
 
 ## Conformance
 

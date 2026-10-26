@@ -69,7 +69,7 @@ rebuilds N records, and issuing N [`vta/app-state/get`](../../get/1.0/spec.md)
 requests over a DIDComm or TSP round trip each is the difference between a
 usable reconnect and an unusable one. Where the keys are known in advance this
 is the right shape; where they are not,
-[`vta/app-state/list`](../../list/1.0/spec.md) with `includeValues` covers the
+[`vta/app-state/list`](../../list/1.1/spec.md) with `includeValues` covers the
 same ground by prefix.
 
 Every requested key is accounted for in the response — in `records`, in
@@ -242,7 +242,7 @@ of its keys are absent is the point of the task, but it also means a caller can
 probe for keys it did not write, one batch of 256 at a time. Where a namespace
 is shared between mutually distrusting applications this is a real disclosure —
 and the answer is separate contexts, since 1.0 specifies no namespace-level
-grant. See [`vta/app-state/put`](../../put/1.0/spec.md#authorization).
+grant. See [`vta/app-state/put`](../../put/1.1/spec.md#authorization).
 
 **Not a secret store.** Values are returned as stored, with no sealing and no
 release policy. Secret material belongs in `vault/*`.

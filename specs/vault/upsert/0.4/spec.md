@@ -118,7 +118,7 @@ A conforming **consumer** **MUST**:
 2. On create: assign or accept an entry id, set `version = 1`, set `createdAt = createdBy = updatedAt = updatedBy = now / issuer`. Unseal `sealedSecret`, validate its inner `VaultSecret` against the `vault-secret.schema.json` schema for the declared `secretKind`. Persist.
 3. On update: verify `expectedVersion` matches the stored version (atomic check-and-set); reject with `versionConflict` on mismatch with `details.currentVersion`. Apply field changes. Apply `clearFields`. If `sealedSecret` is populated, unseal, validate, replace stored secret, set `passwordChangedAt = now` (for `password` kind) or `lastRotatedAt` equivalent. Increment `version`.
 4. Return the resulting `entry` (metadata view) and `wasCreated: bool`.
-5. Emit a `sync/event/0.1` of kind `vaultUpserted` to all other registered consumers in the maintainer's ACL with VaultRead on the entry's context. The triggering consumer SHOULD also receive the event for echo, so its local cache merges via the same code path.
+5. Emit a `sync/event/0.2` of kind `vaultUpserted` to all other registered consumers in the maintainer's ACL with VaultRead on the entry's context. The triggering consumer SHOULD also receive the event for echo, so its local cache merges via the same code path.
 6. **MUST NOT** persist or log the cleartext `VaultSecret` outside the encrypted vault store.
 
 ## Payload
@@ -252,7 +252,7 @@ for it, before any login ever happens.
 
 Across entries, `tags` and `label` are user-authored and habitually consistent, so
 they cluster reliably even where `targets` do not overlap. And because
-[`vault/get`](../../get/0.1/spec.md) and [`vault/list`](../../list/0.1/spec.md) return
+[`vault/get`](../../get/0.3/spec.md) and [`vault/list`](../../list/0.4/spec.md) return
 this metadata without releasing secrets, the correlation surface is reachable by any
 consumer holding read scope — a strictly larger set than those holding
 `FillRelease`.

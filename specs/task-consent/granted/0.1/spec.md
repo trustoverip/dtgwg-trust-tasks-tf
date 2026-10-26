@@ -45,7 +45,7 @@ delegated-execution consent flow. A
 [`task-consent/request/0.1`](../../request/0.1/spec.md) puts a human in the
 loop, which makes the approval window minutes wide; the requester holds a
 rejected task and, without this notice, discovers the eventual grant only by
-polling. When the final [`task-consent/decision/0.1`](../../decision/0.1/spec.md)
+polling. When the final [`task-consent/decision/0.2`](../../decision/0.2/spec.md)
 crosses the approval threshold and the executor mints its single-use grant, it
 sends this notice to the requester so the re-submit happens the moment the
 approval lands.

@@ -7,7 +7,7 @@ import type { Did_GitNsV0_3 as Did, Ext, NamespaceId, RepoResource_GitNsV0_6 as 
 
 
 /**
- * The VTC's own queue state for the job, driven by git-ns/bridge/result/0.1 reports. `pending` — queued, not yet accepted. `accepted` — the bridge has taken it and not yet reported an outcome. `succeeded` — every step completed. `partial` — some steps completed and at least one did not. `failed` — no step completed. `cancelled` — withdrawn before the bridge accepted it.
+ * The VTC's own queue state for the job, driven by git-ns/bridge/result/0.2 reports. `pending` — queued, not yet accepted. `accepted` — the bridge has taken it and not yet reported an outcome. `succeeded` — every step completed. `partial` — some steps completed and at least one did not. `failed` — no step completed. `cancelled` — withdrawn before the bridge accepted it.
  */
 export type JobState = "pending" | "accepted" | "succeeded" | "partial" | "failed" | "cancelled";
 /**
@@ -185,7 +185,7 @@ export const PAYLOAD_SCHEMA = {
         "failed",
         "cancelled"
       ],
-      "description": "The VTC's own queue state for the job, driven by git-ns/bridge/result/0.1 reports. `pending` — queued, not yet accepted. `accepted` — the bridge has taken it and not yet reported an outcome. `succeeded` — every step completed. `partial` — some steps completed and at least one did not. `failed` — no step completed. `cancelled` — withdrawn before the bridge accepted it."
+      "description": "The VTC's own queue state for the job, driven by git-ns/bridge/result/0.2 reports. `pending` — queued, not yet accepted. `accepted` — the bridge has taken it and not yet reported an outcome. `succeeded` — every step completed. `partial` — some steps completed and at least one did not. `failed` — no step completed. `cancelled` — withdrawn before the bridge accepted it."
     },
     "JobRow": {
       "title": "JobRow",
@@ -352,7 +352,7 @@ export const RESPONSE_PAYLOAD_SCHEMA = {
         "failed",
         "cancelled"
       ],
-      "description": "The VTC's own queue state for the job, driven by git-ns/bridge/result/0.1 reports. `pending` — queued, not yet accepted. `accepted` — the bridge has taken it and not yet reported an outcome. `succeeded` — every step completed. `partial` — some steps completed and at least one did not. `failed` — no step completed. `cancelled` — withdrawn before the bridge accepted it."
+      "description": "The VTC's own queue state for the job, driven by git-ns/bridge/result/0.2 reports. `pending` — queued, not yet accepted. `accepted` — the bridge has taken it and not yet reported an outcome. `succeeded` — every step completed. `partial` — some steps completed and at least one did not. `failed` — no step completed. `cancelled` — withdrawn before the bridge accepted it."
     },
     "JobRow": {
       "title": "JobRow",

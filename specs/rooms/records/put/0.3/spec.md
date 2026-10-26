@@ -108,7 +108,7 @@ single credential being reissued.
 Version 0.2 let a record **carry a file**. A file is a record plus a blob: the record is an
 ordinary record, versioned, curated and sealed as before, whose sealed body describes the
 file ([`FileManifest`](../../../_shared/0.1/blobs.schema.json)); the blob is the file's
-ciphertext, uploaded beforehand with [`rooms/blobs/upload/*`](../../../blobs/upload/begin/0.1/spec.md)
+ciphertext, uploaded beforehand with [`rooms/blobs/upload/*`](../../../blobs/upload/begin/0.2/spec.md)
 and named on the record by its `blobRef`. The record is what members see, curate and sync;
 the blob is what the host stores and counts.
 
