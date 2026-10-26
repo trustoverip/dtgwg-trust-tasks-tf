@@ -13,6 +13,8 @@
 //! * The security regressions this crate has had to fix: the attribution
 //!   gate, the route-before-verify ordering, request/response binding on
 //!   the client, discovery privacy, the status table, and `Content-Type`.
+// Pinned to fixed spec versions on purpose; that they are superseded is beside the point.
+#![allow(deprecated)]
 
 use std::net::SocketAddr;
 use std::sync::atomic::{AtomicUsize, Ordering as AtomicOrdering};

@@ -10,6 +10,8 @@
 //! ```sh
 //! cargo run -p trust-tasks-didcomm --example local_roundtrip
 //! ```
+// Pinned to fixed spec versions on purpose; that they are superseded is beside the point.
+#![allow(deprecated)]
 
 use affinidi_messaging_didcomm::{identity::PrivateIdentity, DIDCommAgent};
 use trust_tasks_didcomm::{pack_trust_task, unpack_trust_task};

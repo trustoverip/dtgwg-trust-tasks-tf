@@ -19,6 +19,8 @@
 //! # in another terminal:
 //! cargo run -p trust-tasks-https --example client_demo
 //! ```
+// Pinned to fixed spec versions on purpose; that they are superseded is beside the point.
+#![allow(deprecated)]
 
 use affinidi_secrets_resolver::secrets::Secret;
 use trust_tasks_https::{ClientError, HttpsClient};

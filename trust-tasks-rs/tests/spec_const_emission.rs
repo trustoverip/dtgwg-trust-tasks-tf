@@ -21,6 +21,8 @@
 //! compile time. No runtime harness needed.
 //!
 //! Its specimens are `acl` payloads, so a build without that family skips it.
+// Pinned to fixed spec versions on purpose; that they are superseded is beside the point.
+#![allow(deprecated)]
 #![cfg(feature = "acl")]
 
 use trust_tasks_rs::{
