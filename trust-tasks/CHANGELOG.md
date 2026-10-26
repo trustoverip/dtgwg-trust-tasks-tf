@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.35.0](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-v0.34.2...trust-tasks-v0.35.0) — 2026-10-26
+
+
+### Added
+
+- **codegen**: Superseded and retired spec versions are deprecated in every library, and withdrawn ones leave them in a quarterly batch ([#921](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/921))
+
+* feat(go): mark superseded and retired spec versions deprecated, and omit withdrawn ones
+
+  Every generated request package now exports `const Deprecation` (empty for a
+  current version, otherwise "superseded by <slug>/<M.N>", "retired; use
+  <slug>/<M.N>" or "retired"), and a deprecated version's Payload and Response
+  types carry a `// Deprecated:` paragraph. A version with `status: withdrawn`
+  gets no package at all. The rule is derived independently from front matter,
+  per SPEC "Superseded and Withdrawn Versions".
+
+
+
 ## [0.34.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-v0.34.1...trust-tasks-v0.34.2) — 2026-10-24
 
 

@@ -37,9 +37,29 @@ fn repo_root() -> PathBuf {
         .to_path_buf()
 }
 
-/// Every top-level family under `specs/` that has at least one spec, minus the
-/// hand-modelled `trust-task-error` and minus the reserved slugs.
+/// Every top-level family under `specs/` that has at least one generated spec,
+/// minus the hand-modelled `trust-task-error` and minus the reserved slugs.
+///
+/// A `status: withdrawn` version is generated nowhere (SPEC "Superseded and
+/// Withdrawn Versions"), so a family whose every version is withdrawn has no
+/// module and no feature — `confirm` became the first such family in the
+/// withdrawal batch of 2027-01-01.
 fn families_on_disk(specs_dir: &Path) -> BTreeSet<String> {
+    fn is_withdrawn(version_dir: &Path) -> bool {
+        let Ok(spec) = std::fs::read_to_string(version_dir.join("spec.md")) else {
+            return false;
+        };
+        // The front matter is the block between the first two `---` lines.
+        spec.lines()
+            .skip_while(|l| l.trim() != "---")
+            .skip(1)
+            .take_while(|l| l.trim() != "---")
+            .any(|l| {
+                l.strip_prefix("status:")
+                    .is_some_and(|v| v.trim().trim_matches(['"', '\'']) == "withdrawn")
+            })
+    }
+
     fn has_spec(dir: &Path) -> bool {
         let Ok(entries) = std::fs::read_dir(dir) else {
             return false;
@@ -49,7 +69,7 @@ fn families_on_disk(specs_dir: &Path) -> BTreeSet<String> {
             if path.is_dir() && has_spec(&path) {
                 return true;
             }
-            if path.file_name().is_some_and(|n| n == "payload.schema.json") {
+            if path.file_name().is_some_and(|n| n == "payload.schema.json") && !is_withdrawn(dir) {
                 return true;
             }
         }
