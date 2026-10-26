@@ -21,8 +21,6 @@
 //! compile time. No runtime harness needed.
 //!
 //! Its specimens are `acl` payloads, so a build without that family skips it.
-// Pinned to fixed spec versions on purpose; that they are superseded is beside the point.
-#![allow(deprecated)]
 #![cfg(feature = "acl")]
 
 use trust_tasks_rs::{
@@ -41,28 +39,29 @@ use trust_tasks_rs::{
 // generic-context inspection.
 
 // REQUIRED specs.
-const _: () = assert!(<grant::v0_1::Payload as Payload>::IS_PROOF_REQUIRED);
-const _: () = assert!(<grant::v0_1::Response as Payload>::IS_PROOF_REQUIRED);
-const _: () = assert!(<revoke::v0_1::Payload as Payload>::IS_PROOF_REQUIRED);
-const _: () = assert!(<revoke::v0_1::Response as Payload>::IS_PROOF_REQUIRED);
-const _: () = assert!(<change_role::v0_1::Payload as Payload>::IS_PROOF_REQUIRED);
-const _: () = assert!(<change_role::v0_1::Response as Payload>::IS_PROOF_REQUIRED);
+const _: () = assert!(<grant::v0_2::Payload as Payload>::IS_PROOF_REQUIRED);
+const _: () = assert!(<grant::v0_2::Response as Payload>::IS_PROOF_REQUIRED);
+const _: () = assert!(<revoke::v0_2::Payload as Payload>::IS_PROOF_REQUIRED);
+const _: () = assert!(<revoke::v0_2::Response as Payload>::IS_PROOF_REQUIRED);
+const _: () = assert!(<change_role::v0_2::Payload as Payload>::IS_PROOF_REQUIRED);
+const _: () = assert!(<change_role::v0_2::Response as Payload>::IS_PROOF_REQUIRED);
 
 // RECOMMENDED specs — MUST NOT have the const set.
-const _: () = assert!(!<list::v0_1::Payload as Payload>::IS_PROOF_REQUIRED);
-const _: () = assert!(!<list::v0_1::Response as Payload>::IS_PROOF_REQUIRED);
-const _: () = assert!(!<show::v0_1::Payload as Payload>::IS_PROOF_REQUIRED);
-const _: () = assert!(!<show::v0_1::Response as Payload>::IS_PROOF_REQUIRED);
+const _: () = assert!(!<list::v0_3::Payload as Payload>::IS_PROOF_REQUIRED);
+const _: () = assert!(!<list::v0_3::Response as Payload>::IS_PROOF_REQUIRED);
+const _: () = assert!(!<show::v0_2::Payload as Payload>::IS_PROOF_REQUIRED);
+const _: () = assert!(!<show::v0_2::Response as Payload>::IS_PROOF_REQUIRED);
 
-// OPTIONAL specs — MUST NOT have the const set.
-const _: () = assert!(!<trust_task_discovery::v0_1::Payload as Payload>::IS_PROOF_REQUIRED);
-const _: () = assert!(!<trust_task_discovery::v0_1::Response as Payload>::IS_PROOF_REQUIRED);
+// trust-task-discovery/0.3 is RECOMMENDED too (0.1 was OPTIONAL) — MUST NOT
+// have the const set.
+const _: () = assert!(!<trust_task_discovery::v0_3::Payload as Payload>::IS_PROOF_REQUIRED);
+const _: () = assert!(!<trust_task_discovery::v0_3::Response as Payload>::IS_PROOF_REQUIRED);
 
 // ─── IS_RECIPIENT_REQUIRED ─────────────────────────────────────────────
 // acl/grant declares both parties REQUIRED, so request and response both set
 // the const (the response's recipient is the request's issuer — also REQUIRED).
-const _: () = assert!(<grant::v0_1::Payload as Payload>::IS_RECIPIENT_REQUIRED);
-const _: () = assert!(<grant::v0_1::Response as Payload>::IS_RECIPIENT_REQUIRED);
+const _: () = assert!(<grant::v0_2::Payload as Payload>::IS_RECIPIENT_REQUIRED);
+const _: () = assert!(<grant::v0_2::Response as Payload>::IS_RECIPIENT_REQUIRED);
 
 // ─── IS_BEARER ─────────────────────────────────────────────────────────
 //
@@ -71,12 +70,12 @@ const _: () = assert!(<grant::v0_1::Response as Payload>::IS_RECIPIENT_REQUIRED)
 // prevents a future codegen regression from silently bypassing the
 // audience-binding check (SPEC §4.8.2 / §7.2 item 8).
 
-const _: () = assert!(!<grant::v0_1::Payload as Payload>::IS_BEARER);
-const _: () = assert!(!<revoke::v0_1::Payload as Payload>::IS_BEARER);
-const _: () = assert!(!<change_role::v0_1::Payload as Payload>::IS_BEARER);
-const _: () = assert!(!<list::v0_1::Payload as Payload>::IS_BEARER);
-const _: () = assert!(!<show::v0_1::Payload as Payload>::IS_BEARER);
-const _: () = assert!(!<trust_task_discovery::v0_1::Payload as Payload>::IS_BEARER);
+const _: () = assert!(!<grant::v0_2::Payload as Payload>::IS_BEARER);
+const _: () = assert!(!<revoke::v0_2::Payload as Payload>::IS_BEARER);
+const _: () = assert!(!<change_role::v0_2::Payload as Payload>::IS_BEARER);
+const _: () = assert!(!<list::v0_3::Payload as Payload>::IS_BEARER);
+const _: () = assert!(!<show::v0_2::Payload as Payload>::IS_BEARER);
+const _: () = assert!(!<trust_task_discovery::v0_3::Payload as Payload>::IS_BEARER);
 
 #[test]
 fn const_assertions_are_reachable() {

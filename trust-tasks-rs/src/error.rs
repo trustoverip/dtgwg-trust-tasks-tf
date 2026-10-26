@@ -411,7 +411,7 @@ impl TrustTaskCode {
 /// drew is lost without a trace.
 ///
 /// ```rust,ignore
-/// use trust_tasks_rs::specs::acl::grant::v0_1 as grant;
+/// use trust_tasks_rs::specs::acl::grant::v0_2 as grant;
 ///
 /// // Emit it — `retryable` comes from the declaration, not a guess.
 /// let payload: ErrorPayload = grant::error_codes::ROLE_NOT_RECOGNIZED.into();

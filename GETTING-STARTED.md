@@ -56,7 +56,7 @@ Pick one row per thing you want to do; features combine.
 | use JWT bearer auth on the HTTPS server | `https-jwt` | `trust_tasks::https::JwtBearerAuth` | `trust-tasks-https` |
 
 **You almost certainly want a transport plus `proof-affinidi`.** A task whose
-specification declares `proof` REQUIRED — `acl/grant/0.1` is one — cannot be
+specification declares `proof` REQUIRED — `acl/grant/0.2` is one — cannot be
 produced or consumed without a signer and a verifier.
 
 ### When *not* to use the facade
@@ -97,7 +97,7 @@ use affinidi_secrets_resolver::secrets::Secret;
 use trust_tasks::https::{BearerAuth, ClientError, HttpsClient, HttpsServer};
 use trust_tasks::proof::affinidi::{SignOptions, Verifier};
 use trust_tasks::proof::ProofExt;
-use trust_tasks::specs::acl::grant::v0_1 as grant;
+use trust_tasks::specs::acl::grant::v0_2 as grant;
 use trust_tasks::TrustTask;
 ```
 
@@ -146,8 +146,8 @@ async fn receiver(alice_did: String) -> std::io::Result<()> {
             println!(
                 "  [server] acl/grant from {} → subject={} role={}",
                 ctx.authenticated_sender.as_deref().unwrap_or("<unauth>"),
-                req.payload.entry.subject,
-                &*req.payload.entry.role,
+                req.payload.entry.subject.as_str(),
+                req.payload.entry.role.as_str(),
             );
             // Generated types are `#[non_exhaustive]`: build with `builder()`.
             Ok(grant::Response::builder()
@@ -183,9 +183,21 @@ async fn sender(secret: &Secret, my_did: &str) -> Result<(), Box<dyn std::error:
     // A free-text member declaring a `maxLength` (SPEC §7.3) generates a
     // validating newtype rather than a bare `String`, so the bound is checked
     // where the value is authored instead of at the far end of the wire.
+    //
+    // acl/grant/0.2 states every authority axis explicitly — there is no
+    // default and no implicit form. Carol may act everywhere, may use no
+    // keys, and holds the full ceiling of the `moderator` role.
+    let act = grant::AuthorityScopeAll::try_from(grant::AuthorityScopeAll::builder().scope("all"))?;
+    let keys = grant::KeyScopeNone::try_from(grant::KeyScopeNone::builder().scope("none"))?;
+    let capabilities = grant::CapabilityScopeCeiling::try_from(
+        grant::CapabilityScopeCeiling::builder().scope("ceiling"),
+    )?;
     let entry: grant::AclEntry = grant::AclEntry::builder()
         .subject("did:web:carol.example")
         .role("moderator")
+        .act(act)
+        .keys(keys)
+        .capabilities(capabilities)
         .label(grant::AclEntryLabel::try_from(
             "Carol — content moderation",
         )?)
@@ -215,8 +227,8 @@ async fn sender(secret: &Secret, my_did: &str) -> Result<(), Box<dyn std::error:
             "  [client] ← {}\n           threadId={} entry: subject={} role={}",
             resp.type_uri,
             resp.thread_id.as_deref().unwrap_or("<none>"),
-            resp.payload.entry.subject,
-            &*resp.payload.entry.role,
+            resp.payload.entry.subject.as_str(),
+            resp.payload.entry.role.as_str(),
         ),
         Err(ClientError::TrustTaskError { http_status, error }) => println!(
             "  [client] ← HTTP {} trust-task-error: code={} retryable={}",
@@ -236,7 +248,7 @@ Real output, from the command above:
   [server] listening on http://127.0.0.1:3000/trust-tasks (vid did:web:maintainer.example)
   [client] POST /trust-tasks  id=urn:uuid:335c52fd-3f48-4f06-8886-c469f57ef284
   [server] acl/grant from did:key:z6MkvDqGT54cXesYGvABpF1UapVNwjCqRcafi4Px6Thv5T3Z → subject=did:web:carol.example role=moderator
-  [client] ← https://trusttasks.org/spec/acl/grant/0.1#response
+  [client] ← https://trusttasks.org/spec/acl/grant/0.2#response
            threadId=urn:uuid:335c52fd-3f48-4f06-8886-c469f57ef284 entry: subject=did:web:carol.example role=moderator
 ```
 
