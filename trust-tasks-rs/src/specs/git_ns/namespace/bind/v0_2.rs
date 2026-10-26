@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,19 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, `gitlab.com`, or a self-hosted Forgejo or GitLab instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ForgeHost",
-///  "description": "The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, `gitlab.com`, or a self-hosted Forgejo or GitLab instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.",
-///  "type": "string",
-///  "maxLength": 253,
-///  "minLength": 3,
-///  "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ForgeHost(::std::string::String);
@@ -230,60 +193,6 @@ impl<'de> ::serde::Deserialize<'de> for ForgeHost {
 }
 ///The VTC's binding to one owner on one forge.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "GitNamespace",
-///  "description": "The VTC's binding to one owner on one forge.",
-///  "type": "object",
-///  "required": [
-///    "forge",
-///    "id",
-///    "mode",
-///    "owner",
-///    "state"
-///  ],
-///  "properties": {
-///    "forge": {
-///      "$ref": "#/definitions/ForgeHost"
-///    },
-///    "id": {
-///      "$ref": "#/definitions/NamespaceId"
-///    },
-///    "kind": {
-///      "description": "Whether the owner is an organisation or a personal account, as the forge reports it; a GitLab top-level group is an `organization`. Present once known: a bridge-mode namespace learns it when binding completes, and a manual-mode namespace MAY never learn it.",
-///      "type": "string",
-///      "enum": [
-///        "organization",
-///        "user"
-///      ]
-///    },
-///    "mode": {
-///      "description": "`bridge` — a bridge service acts on the forge for this namespace (creates repositories, projects roles, reports drift). `manual` — no automation; people with forge access carry out the steps the VTC names, and the VTC governs the rights alone.",
-///      "type": "string",
-///      "enum": [
-///        "bridge",
-///        "manual"
-///      ]
-///    },
-///    "owner": {
-///      "description": "The organisation or user on the forge, lowercased.",
-///      "$ref": "#/definitions/Segment"
-///    },
-///    "state": {
-///      "description": "`pending` — binding has started and the forge-side proof has not arrived yet. `bound` — the VTC governs rights under this namespace.",
-///      "type": "string",
-///      "enum": [
-///        "pending",
-///        "bound"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -307,19 +216,6 @@ impl GitNamespace {
 }
 ///Whether the owner is an organisation or a personal account, as the forge reports it; a GitLab top-level group is an `organization`. Present once known: a bridge-mode namespace learns it when binding completes, and a manual-mode namespace MAY never learn it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Whether the owner is an organisation or a personal account, as the forge reports it; a GitLab top-level group is an `organization`. Present once known: a bridge-mode namespace learns it when binding completes, and a manual-mode namespace MAY never learn it.",
-///  "type": "string",
-///  "enum": [
-///    "organization",
-///    "user"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -381,19 +277,6 @@ impl ::std::convert::TryFrom<::std::string::String> for GitNamespaceKind {
 }
 ///`bridge` — a bridge service acts on the forge for this namespace (creates repositories, projects roles, reports drift). `manual` — no automation; people with forge access carry out the steps the VTC names, and the VTC governs the rights alone.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`bridge` — a bridge service acts on the forge for this namespace (creates repositories, projects roles, reports drift). `manual` — no automation; people with forge access carry out the steps the VTC names, and the VTC governs the rights alone.",
-///  "type": "string",
-///  "enum": [
-///    "bridge",
-///    "manual"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -455,19 +338,6 @@ impl ::std::convert::TryFrom<::std::string::String> for GitNamespaceMode {
 }
 ///`pending` — binding has started and the forge-side proof has not arrived yet. `bound` — the VTC governs rights under this namespace.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`pending` — binding has started and the forge-side proof has not arrived yet. `bound` — the VTC governs rights under this namespace.",
-///  "type": "string",
-///  "enum": [
-///    "pending",
-///    "bound"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -529,18 +399,6 @@ impl ::std::convert::TryFrom<::std::string::String> for GitNamespaceState {
 }
 ///The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "NamespaceId",
-///  "description": "The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct NamespaceId(::std::string::String);
@@ -603,44 +461,6 @@ impl<'de> ::serde::Deserialize<'de> for NamespaceId {
 }
 ///A VTC administrator binds the VTC to one owner on one forge, so that the VTC governs who may create, own, maintain and commit to repositories under it. In bridge mode the response says where to send the forge owner to prove control; the namespace stays `pending` until that proof arrives.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/git-ns/namespace/bind/0.2",
-///  "title": "Payload",
-///  "description": "A VTC administrator binds the VTC to one owner on one forge, so that the VTC governs who may create, own, maintain and commit to repositories under it. In bridge mode the response says where to send the forge owner to prove control; the namespace stays `pending` until that proof arrives.",
-///  "type": "object",
-///  "required": [
-///    "forge",
-///    "mode",
-///    "owner"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "forge": {
-///      "description": "The forge's host, lowercased.",
-///      "$ref": "#/definitions/ForgeHost"
-///    },
-///    "mode": {
-///      "description": "`bridge` — a bridge service serving this forge proves control and then acts on the forge. `manual` — no automation; the binding admin declares the namespace and people with forge access carry out the forge-side steps.",
-///      "type": "string",
-///      "enum": [
-///        "bridge",
-///        "manual"
-///      ]
-///    },
-///    "owner": {
-///      "description": "The organisation or user on that forge, lowercased.",
-///      "$ref": "#/definitions/Segment"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -661,19 +481,6 @@ impl Payload {
 }
 ///`bridge` — a bridge service serving this forge proves control and then acts on the forge. `manual` — no automation; the binding admin declares the namespace and people with forge access carry out the forge-side steps.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`bridge` — a bridge service serving this forge proves control and then acts on the forge. `manual` — no automation; the binding admin declares the namespace and people with forge access carry out the forge-side steps.",
-///  "type": "string",
-///  "enum": [
-///    "bridge",
-///    "manual"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -735,46 +542,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadMode {
 }
 ///The namespace as recorded, and where to go next if it is still pending.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The namespace as recorded, and where to go next if it is still pending.",
-///  "type": "object",
-///  "required": [
-///    "namespace"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "namespace": {
-///      "$ref": "#/definitions/GitNamespace"
-///    },
-///    "next": {
-///      "description": "Present when the namespace is `pending`: where the administrator goes to prove control of the forge owner (install the community's forge app, or sign in to the forge and authorise the bridge).",
-///      "type": "object",
-///      "required": [
-///        "url"
-///      ],
-///      "properties": {
-///        "url": {
-///          "description": "An https URL, single-use, carrying the bridge's binding nonce.",
-///          "type": "string",
-///          "format": "uri",
-///          "maxLength": 2048,
-///          "pattern": "^https://"
-///        }
-///      },
-///      "additionalProperties": false
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -792,28 +559,6 @@ impl Response {
 }
 ///Present when the namespace is `pending`: where the administrator goes to prove control of the forge owner (install the community's forge app, or sign in to the forge and authorise the bridge).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Present when the namespace is `pending`: where the administrator goes to prove control of the forge owner (install the community's forge app, or sign in to the forge and authorise the bridge).",
-///  "type": "object",
-///  "required": [
-///    "url"
-///  ],
-///  "properties": {
-///    "url": {
-///      "description": "An https URL, single-use, carrying the bridge's binding nonce.",
-///      "type": "string",
-///      "format": "uri",
-///      "maxLength": 2048,
-///      "pattern": "^https://"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -828,19 +573,6 @@ impl ResponseNext {
 }
 ///One lowercased owner, group or repository name. Forges compare these case-insensitively, so the wire form is always lowercase and a producer lowercases before sending. A leading `.` is refused, which rules out `.` and `..`. Up to 255 characters, the longest name GitLab allows; GitHub and Forgejo names are shorter.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Segment",
-///  "description": "One lowercased owner, group or repository name. Forges compare these case-insensitively, so the wire form is always lowercase and a producer lowercases before sending. A leading `.` is refused, which rules out `.` and `..`. Up to 255 characters, the longest name GitLab allows; GitHub and Forgejo names are shorter.",
-///  "type": "string",
-///  "maxLength": 255,
-///  "minLength": 1,
-///  "pattern": "^[a-z0-9_-][a-z0-9._-]*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Segment(::std::string::String);
@@ -1215,7 +947,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ForgeHost\": {\n      \"description\": \"The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, `gitlab.com`, or a self-hosted Forgejo or GitLab instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.\",\n      \"maxLength\": 253,\n      \"minLength\": 3,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$\",\n      \"title\": \"ForgeHost\",\n      \"type\": \"string\"\n    },\n    \"GitNamespace\": {\n      \"additionalProperties\": false,\n      \"description\": \"The VTC's binding to one owner on one forge.\",\n      \"properties\": {\n        \"forge\": {\n          \"$ref\": \"#/$defs/ForgeHost\"\n        },\n        \"id\": {\n          \"$ref\": \"#/$defs/NamespaceId\"\n        },\n        \"kind\": {\n          \"description\": \"Whether the owner is an organisation or a personal account, as the forge reports it; a GitLab top-level group is an `organization`. Present once known: a bridge-mode namespace learns it when binding completes, and a manual-mode namespace MAY never learn it.\",\n          \"enum\": [\n            \"organization\",\n            \"user\"\n          ],\n          \"type\": \"string\"\n        },\n        \"mode\": {\n          \"description\": \"`bridge` — a bridge service acts on the forge for this namespace (creates repositories, projects roles, reports drift). `manual` — no automation; people with forge access carry out the steps the VTC names, and the VTC governs the rights alone.\",\n          \"enum\": [\n            \"bridge\",\n            \"manual\"\n          ],\n          \"type\": \"string\"\n        },\n        \"owner\": {\n          \"$ref\": \"#/$defs/Segment\",\n          \"description\": \"The organisation or user on the forge, lowercased.\"\n        },\n        \"state\": {\n          \"description\": \"`pending` — binding has started and the forge-side proof has not arrived yet. `bound` — the VTC governs rights under this namespace.\",\n          \"enum\": [\n            \"pending\",\n            \"bound\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"forge\",\n        \"owner\",\n        \"mode\",\n        \"state\"\n      ],\n      \"title\": \"GitNamespace\",\n      \"type\": \"object\"\n    },\n    \"NamespaceId\": {\n      \"description\": \"The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"title\": \"NamespaceId\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The namespace as recorded, and where to go next if it is still pending.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"namespace\": {\n          \"$ref\": \"#/$defs/GitNamespace\"\n        },\n        \"next\": {\n          \"additionalProperties\": false,\n          \"description\": \"Present when the namespace is `pending`: where the administrator goes to prove control of the forge owner (install the community's forge app, or sign in to the forge and authorise the bridge).\",\n          \"properties\": {\n            \"url\": {\n              \"description\": \"An https URL, single-use, carrying the bridge's binding nonce.\",\n              \"format\": \"uri\",\n              \"maxLength\": 2048,\n              \"pattern\": \"^https://\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"url\"\n          ],\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"namespace\"\n      ],\n      \"title\": \"Git Namespaces — Bind Namespace — response payload\",\n      \"type\": \"object\"\n    },\n    \"Segment\": {\n      \"description\": \"One lowercased owner, group or repository name. Forges compare these case-insensitively, so the wire form is always lowercase and a producer lowercases before sending. A leading `.` is refused, which rules out `.` and `..`. Up to 255 characters, the longest name GitLab allows; GitHub and Forgejo names are shorter.\",\n      \"maxLength\": 255,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9_-][a-z0-9._-]*$\",\n      \"title\": \"Segment\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/git-ns/namespace/bind/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A VTC administrator binds the VTC to one owner on one forge, so that the VTC governs who may create, own, maintain and commit to repositories under it. In bridge mode the response says where to send the forge owner to prove control; the namespace stays `pending` until that proof arrives.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"forge\": {\n      \"$ref\": \"#/$defs/ForgeHost\",\n      \"description\": \"The forge's host, lowercased.\"\n    },\n    \"mode\": {\n      \"description\": \"`bridge` — a bridge service serving this forge proves control and then acts on the forge. `manual` — no automation; the binding admin declares the namespace and people with forge access carry out the forge-side steps.\",\n      \"enum\": [\n        \"bridge\",\n        \"manual\"\n      ],\n      \"type\": \"string\"\n    },\n    \"owner\": {\n      \"$ref\": \"#/$defs/Segment\",\n      \"description\": \"The organisation or user on that forge, lowercased.\"\n    }\n  },\n  \"required\": [\n    \"forge\",\n    \"owner\",\n    \"mode\"\n  ],\n  \"title\": \"Git Namespaces — Bind Namespace — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ForgeHost\":{\"description\":\"The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, `gitlab.com`, or a self-hosted Forgejo or GitLab instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.\",\"maxLength\":253,\"minLength\":3,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$\",\"title\":\"ForgeHost\",\"type\":\"string\"},\"GitNamespace\":{\"additionalProperties\":false,\"description\":\"The VTC's binding to one owner on one forge.\",\"properties\":{\"forge\":{\"$ref\":\"#/$defs/ForgeHost\"},\"id\":{\"$ref\":\"#/$defs/NamespaceId\"},\"kind\":{\"description\":\"Whether the owner is an organisation or a personal account, as the forge reports it; a GitLab top-level group is an `organization`. Present once known: a bridge-mode namespace learns it when binding completes, and a manual-mode namespace MAY never learn it.\",\"enum\":[\"organization\",\"user\"],\"type\":\"string\"},\"mode\":{\"description\":\"`bridge` — a bridge service acts on the forge for this namespace (creates repositories, projects roles, reports drift). `manual` — no automation; people with forge access carry out the steps the VTC names, and the VTC governs the rights alone.\",\"enum\":[\"bridge\",\"manual\"],\"type\":\"string\"},\"owner\":{\"$ref\":\"#/$defs/Segment\",\"description\":\"The organisation or user on the forge, lowercased.\"},\"state\":{\"description\":\"`pending` — binding has started and the forge-side proof has not arrived yet. `bound` — the VTC governs rights under this namespace.\",\"enum\":[\"pending\",\"bound\"],\"type\":\"string\"}},\"required\":[\"id\",\"forge\",\"owner\",\"mode\",\"state\"],\"title\":\"GitNamespace\",\"type\":\"object\"},\"NamespaceId\":{\"description\":\"The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.\",\"maxLength\":128,\"minLength\":1,\"title\":\"NamespaceId\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The namespace as recorded, and where to go next if it is still pending.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"namespace\":{\"$ref\":\"#/$defs/GitNamespace\"},\"next\":{\"additionalProperties\":false,\"description\":\"Present when the namespace is `pending`: where the administrator goes to prove control of the forge owner (install the community's forge app, or sign in to the forge and authorise the bridge).\",\"properties\":{\"url\":{\"description\":\"An https URL, single-use, carrying the bridge's binding nonce.\",\"format\":\"uri\",\"maxLength\":2048,\"pattern\":\"^https://\",\"type\":\"string\"}},\"required\":[\"url\"],\"type\":\"object\"}},\"required\":[\"namespace\"],\"title\":\"Git Namespaces — Bind Namespace — response payload\",\"type\":\"object\"},\"Segment\":{\"description\":\"One lowercased owner, group or repository name. Forges compare these case-insensitively, so the wire form is always lowercase and a producer lowercases before sending. A leading `.` is refused, which rules out `.` and `..`. Up to 255 characters, the longest name GitLab allows; GitHub and Forgejo names are shorter.\",\"maxLength\":255,\"minLength\":1,\"pattern\":\"^[a-z0-9_-][a-z0-9._-]*$\",\"title\":\"Segment\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/git-ns/namespace/bind/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A VTC administrator binds the VTC to one owner on one forge, so that the VTC governs who may create, own, maintain and commit to repositories under it. In bridge mode the response says where to send the forge owner to prove control; the namespace stays `pending` until that proof arrives.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"forge\":{\"$ref\":\"#/$defs/ForgeHost\",\"description\":\"The forge's host, lowercased.\"},\"mode\":{\"description\":\"`bridge` — a bridge service serving this forge proves control and then acts on the forge. `manual` — no automation; the binding admin declares the namespace and people with forge access carry out the forge-side steps.\",\"enum\":[\"bridge\",\"manual\"],\"type\":\"string\"},\"owner\":{\"$ref\":\"#/$defs/Segment\",\"description\":\"The organisation or user on that forge, lowercased.\"}},\"required\":[\"forge\",\"owner\",\"mode\"],\"title\":\"Git Namespaces — Bind Namespace — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1224,7 +956,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ForgeHost\": {\n      \"description\": \"The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, `gitlab.com`, or a self-hosted Forgejo or GitLab instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.\",\n      \"maxLength\": 253,\n      \"minLength\": 3,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$\",\n      \"title\": \"ForgeHost\",\n      \"type\": \"string\"\n    },\n    \"GitNamespace\": {\n      \"additionalProperties\": false,\n      \"description\": \"The VTC's binding to one owner on one forge.\",\n      \"properties\": {\n        \"forge\": {\n          \"$ref\": \"#/$defs/ForgeHost\"\n        },\n        \"id\": {\n          \"$ref\": \"#/$defs/NamespaceId\"\n        },\n        \"kind\": {\n          \"description\": \"Whether the owner is an organisation or a personal account, as the forge reports it; a GitLab top-level group is an `organization`. Present once known: a bridge-mode namespace learns it when binding completes, and a manual-mode namespace MAY never learn it.\",\n          \"enum\": [\n            \"organization\",\n            \"user\"\n          ],\n          \"type\": \"string\"\n        },\n        \"mode\": {\n          \"description\": \"`bridge` — a bridge service acts on the forge for this namespace (creates repositories, projects roles, reports drift). `manual` — no automation; people with forge access carry out the steps the VTC names, and the VTC governs the rights alone.\",\n          \"enum\": [\n            \"bridge\",\n            \"manual\"\n          ],\n          \"type\": \"string\"\n        },\n        \"owner\": {\n          \"$ref\": \"#/$defs/Segment\",\n          \"description\": \"The organisation or user on the forge, lowercased.\"\n        },\n        \"state\": {\n          \"description\": \"`pending` — binding has started and the forge-side proof has not arrived yet. `bound` — the VTC governs rights under this namespace.\",\n          \"enum\": [\n            \"pending\",\n            \"bound\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"forge\",\n        \"owner\",\n        \"mode\",\n        \"state\"\n      ],\n      \"title\": \"GitNamespace\",\n      \"type\": \"object\"\n    },\n    \"NamespaceId\": {\n      \"description\": \"The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"title\": \"NamespaceId\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The namespace as recorded, and where to go next if it is still pending.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"namespace\": {\n          \"$ref\": \"#/$defs/GitNamespace\"\n        },\n        \"next\": {\n          \"additionalProperties\": false,\n          \"description\": \"Present when the namespace is `pending`: where the administrator goes to prove control of the forge owner (install the community's forge app, or sign in to the forge and authorise the bridge).\",\n          \"properties\": {\n            \"url\": {\n              \"description\": \"An https URL, single-use, carrying the bridge's binding nonce.\",\n              \"format\": \"uri\",\n              \"maxLength\": 2048,\n              \"pattern\": \"^https://\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"url\"\n          ],\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"namespace\"\n      ],\n      \"title\": \"Git Namespaces — Bind Namespace — response payload\",\n      \"type\": \"object\"\n    },\n    \"Segment\": {\n      \"description\": \"One lowercased owner, group or repository name. Forges compare these case-insensitively, so the wire form is always lowercase and a producer lowercases before sending. A leading `.` is refused, which rules out `.` and `..`. Up to 255 characters, the longest name GitLab allows; GitHub and Forgejo names are shorter.\",\n      \"maxLength\": 255,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9_-][a-z0-9._-]*$\",\n      \"title\": \"Segment\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ForgeHost\":{\"description\":\"The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, `gitlab.com`, or a self-hosted Forgejo or GitLab instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.\",\"maxLength\":253,\"minLength\":3,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$\",\"title\":\"ForgeHost\",\"type\":\"string\"},\"GitNamespace\":{\"additionalProperties\":false,\"description\":\"The VTC's binding to one owner on one forge.\",\"properties\":{\"forge\":{\"$ref\":\"#/$defs/ForgeHost\"},\"id\":{\"$ref\":\"#/$defs/NamespaceId\"},\"kind\":{\"description\":\"Whether the owner is an organisation or a personal account, as the forge reports it; a GitLab top-level group is an `organization`. Present once known: a bridge-mode namespace learns it when binding completes, and a manual-mode namespace MAY never learn it.\",\"enum\":[\"organization\",\"user\"],\"type\":\"string\"},\"mode\":{\"description\":\"`bridge` — a bridge service acts on the forge for this namespace (creates repositories, projects roles, reports drift). `manual` — no automation; people with forge access carry out the steps the VTC names, and the VTC governs the rights alone.\",\"enum\":[\"bridge\",\"manual\"],\"type\":\"string\"},\"owner\":{\"$ref\":\"#/$defs/Segment\",\"description\":\"The organisation or user on the forge, lowercased.\"},\"state\":{\"description\":\"`pending` — binding has started and the forge-side proof has not arrived yet. `bound` — the VTC governs rights under this namespace.\",\"enum\":[\"pending\",\"bound\"],\"type\":\"string\"}},\"required\":[\"id\",\"forge\",\"owner\",\"mode\",\"state\"],\"title\":\"GitNamespace\",\"type\":\"object\"},\"NamespaceId\":{\"description\":\"The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.\",\"maxLength\":128,\"minLength\":1,\"title\":\"NamespaceId\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The namespace as recorded, and where to go next if it is still pending.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"namespace\":{\"$ref\":\"#/$defs/GitNamespace\"},\"next\":{\"additionalProperties\":false,\"description\":\"Present when the namespace is `pending`: where the administrator goes to prove control of the forge owner (install the community's forge app, or sign in to the forge and authorise the bridge).\",\"properties\":{\"url\":{\"description\":\"An https URL, single-use, carrying the bridge's binding nonce.\",\"format\":\"uri\",\"maxLength\":2048,\"pattern\":\"^https://\",\"type\":\"string\"}},\"required\":[\"url\"],\"type\":\"object\"}},\"required\":[\"namespace\"],\"title\":\"Git Namespaces — Bind Namespace — response payload\",\"type\":\"object\"},\"Segment\":{\"description\":\"One lowercased owner, group or repository name. Forges compare these case-insensitively, so the wire form is always lowercase and a producer lowercases before sending. A leading `.` is refused, which rules out `.` and `..`. Up to 255 characters, the longest name GitLab allows; GitHub and Forgejo names are shorter.\",\"maxLength\":255,\"minLength\":1,\"pattern\":\"^[a-z0-9_-][a-z0-9._-]*$\",\"title\":\"Segment\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

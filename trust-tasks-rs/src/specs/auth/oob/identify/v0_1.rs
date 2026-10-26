@@ -34,17 +34,6 @@ pub mod error {
 }
 ///The two-digit number the service chooses at claim, shows only to the starter (through redeem), and the approver types from the starter's screen. A string so that a leading zero survives.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "MatchNumber",
-///  "description": "The two-digit number the service chooses at claim, shows only to the starter (through redeem), and the approver types from the starter's screen. A string so that a leading zero survives.",
-///  "type": "string",
-///  "pattern": "^[0-9]{2}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct MatchNumber(::std::string::String);
@@ -106,19 +95,6 @@ impl<'de> ::serde::Deserialize<'de> for MatchNumber {
 }
 ///A starter key (`K_b`) or an approver lock key (`K_a`), as an Ed25519 `did:key` (`z6Mk…`) generated for this one request and used nowhere else. Ed25519 only: a service refuses any other key type with `auth/oob:keyUnsupported` before parsing beyond the multicodec prefix.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "OobKey",
-///  "description": "A starter key (`K_b`) or an approver lock key (`K_a`), as an Ed25519 `did:key` (`z6Mk…`) generated for this one request and used nowhere else. Ed25519 only: a service refuses any other key type with `auth/oob:keyUnsupported` before parsing beyond the multicodec prefix.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 48,
-///  "pattern": "^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct OobKey(::std::string::String);
@@ -188,37 +164,6 @@ impl<'de> ::serde::Deserialize<'de> for OobKey {
 }
 ///A member's DID states that it holds the lock on one out-of-band request and can see the starter's screen. Issued by the approving DID and signed by its VTA for `authentication`; never sent on its own, only carried inside auth/oob/prove. Closed: additionalProperties false and no `ext`, so a VTA that signs it without user verification signs exactly these three members and nothing else. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/auth/oob/identify/0.1",
-///  "title": "Payload",
-///  "description": "A member's DID states that it holds the lock on one out-of-band request and can see the starter's screen. Issued by the approving DID and signed by its VTA for `authentication`; never sent on its own, only carried inside auth/oob/prove. Closed: additionalProperties false and no `ext`, so a VTA that signs it without user verification signs exactly these three members and nothing else. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "approverKey",
-///    "enteredNumber",
-///    "requestId"
-///  ],
-///  "properties": {
-///    "approverKey": {
-///      "description": "The lock key `K_a`. MUST equal the issuer of the prove that carries this document, so the document cannot be re-wrapped by another device.",
-///      "$ref": "#/definitions/OobKey"
-///    },
-///    "enteredNumber": {
-///      "description": "The two digits the member typed from the starter's screen.",
-///      "$ref": "#/definitions/MatchNumber"
-///    },
-///    "requestId": {
-///      "description": "The request being proved for. MUST equal the requestId of the prove that carries this document.",
-///      "$ref": "#/definitions/RequestId"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -240,19 +185,6 @@ impl Payload {
 }
 ///The service-generated handle of one request: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is RECOMMENDED). It is also the nonce of the exchange, so the family needs no separate challenge, and it is the `_id` of the trigger link (VTI-LNK-033). Compared as a string. It confers no authority on its holder.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RequestId",
-///  "description": "The service-generated handle of one request: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is RECOMMENDED). It is also the nonce of the exchange, so the family needs no separate challenge, and it is the `_id` of the trigger link (VTI-LNK-033). Compared as a string. It confers no authority on its holder.",
-///  "type": "string",
-///  "maxLength": 43,
-///  "minLength": 22,
-///  "pattern": "^[A-Za-z0-9_-]{22,43}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RequestId(::std::string::String);
@@ -393,7 +325,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"MatchNumber\": {\n      \"description\": \"The two-digit number the service chooses at claim, shows only to the starter (through redeem), and the approver types from the starter's screen. A string so that a leading zero survives.\",\n      \"pattern\": \"^[0-9]{2}$\",\n      \"title\": \"MatchNumber\",\n      \"type\": \"string\"\n    },\n    \"OobKey\": {\n      \"description\": \"A starter key (`K_b`) or an approver lock key (`K_a`), as an Ed25519 `did:key` (`z6Mk…`) generated for this one request and used nowhere else. Ed25519 only: a service refuses any other key type with `auth/oob:keyUnsupported` before parsing beyond the multicodec prefix.\",\n      \"maxLength\": 64,\n      \"minLength\": 48,\n      \"pattern\": \"^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"OobKey\",\n      \"type\": \"string\"\n    },\n    \"RequestId\": {\n      \"description\": \"The service-generated handle of one request: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is RECOMMENDED). It is also the nonce of the exchange, so the family needs no separate challenge, and it is the `_id` of the trigger link (VTI-LNK-033). Compared as a string. It confers no authority on its holder.\",\n      \"maxLength\": 43,\n      \"minLength\": 22,\n      \"pattern\": \"^[A-Za-z0-9_-]{22,43}$\",\n      \"title\": \"RequestId\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/oob/identify/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A member's DID states that it holds the lock on one out-of-band request and can see the starter's screen. Issued by the approving DID and signed by its VTA for `authentication`; never sent on its own, only carried inside auth/oob/prove. Closed: additionalProperties false and no `ext`, so a VTA that signs it without user verification signs exactly these three members and nothing else. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"approverKey\": {\n      \"$ref\": \"#/$defs/OobKey\",\n      \"description\": \"The lock key `K_a`. MUST equal the issuer of the prove that carries this document, so the document cannot be re-wrapped by another device.\"\n    },\n    \"enteredNumber\": {\n      \"$ref\": \"#/$defs/MatchNumber\",\n      \"description\": \"The two digits the member typed from the starter's screen.\"\n    },\n    \"requestId\": {\n      \"$ref\": \"#/$defs/RequestId\",\n      \"description\": \"The request being proved for. MUST equal the requestId of the prove that carries this document.\"\n    }\n  },\n  \"required\": [\n    \"requestId\",\n    \"approverKey\",\n    \"enteredNumber\"\n  ],\n  \"title\": \"Auth — OOB Identify — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"MatchNumber\":{\"description\":\"The two-digit number the service chooses at claim, shows only to the starter (through redeem), and the approver types from the starter's screen. A string so that a leading zero survives.\",\"pattern\":\"^[0-9]{2}$\",\"title\":\"MatchNumber\",\"type\":\"string\"},\"OobKey\":{\"description\":\"A starter key (`K_b`) or an approver lock key (`K_a`), as an Ed25519 `did:key` (`z6Mk…`) generated for this one request and used nowhere else. Ed25519 only: a service refuses any other key type with `auth/oob:keyUnsupported` before parsing beyond the multicodec prefix.\",\"maxLength\":64,\"minLength\":48,\"pattern\":\"^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"OobKey\",\"type\":\"string\"},\"RequestId\":{\"description\":\"The service-generated handle of one request: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is RECOMMENDED). It is also the nonce of the exchange, so the family needs no separate challenge, and it is the `_id` of the trigger link (VTI-LNK-033). Compared as a string. It confers no authority on its holder.\",\"maxLength\":43,\"minLength\":22,\"pattern\":\"^[A-Za-z0-9_-]{22,43}$\",\"title\":\"RequestId\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/auth/oob/identify/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A member's DID states that it holds the lock on one out-of-band request and can see the starter's screen. Issued by the approving DID and signed by its VTA for `authentication`; never sent on its own, only carried inside auth/oob/prove. Closed: additionalProperties false and no `ext`, so a VTA that signs it without user verification signs exactly these three members and nothing else. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"approverKey\":{\"$ref\":\"#/$defs/OobKey\",\"description\":\"The lock key `K_a`. MUST equal the issuer of the prove that carries this document, so the document cannot be re-wrapped by another device.\"},\"enteredNumber\":{\"$ref\":\"#/$defs/MatchNumber\",\"description\":\"The two digits the member typed from the starter's screen.\"},\"requestId\":{\"$ref\":\"#/$defs/RequestId\",\"description\":\"The request being proved for. MUST equal the requestId of the prove that carries this document.\"}},\"required\":[\"requestId\",\"approverKey\",\"enteredNumber\"],\"title\":\"Auth — OOB Identify — payload\",\"type\":\"object\"}\n",
     );
 }
 /// The earlier `MAJOR.MINOR` of this slug that this version declares it

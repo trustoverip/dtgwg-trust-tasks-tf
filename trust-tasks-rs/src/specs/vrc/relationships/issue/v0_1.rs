@@ -41,21 +41,6 @@ This definition constrains the *encoding only*. What the digest is computed over
 
 Restricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that "interoperability is not guaranteed between implementations using such values", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DigestMultibase",
-///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-///  "examples": [
-///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-///  ],
-///  "type": "string",
-///  "minLength": 16,
-///  "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DigestMultibase(::std::string::String);
@@ -124,21 +109,6 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -160,15 +130,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -232,34 +193,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Delivers one party's signed Verifiable Relationship Credential to the other within an accepted relationship exchange. Performed once in each direction; the response is a delivery receipt naming what was stored, and does not echo the credential back.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vrc/relationships/issue/0.1",
-///  "title": "Payload",
-///  "description": "Delivers one party's signed Verifiable Relationship Credential to the other within an accepted relationship exchange. Performed once in each direction; the response is a delivery receipt naming what was stored, and does not echo the credential back.",
-///  "type": "object",
-///  "required": [
-///    "vrc"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "vrc": {
-///      "description": "A signed W3C Verifiable Relationship Credential (opaque here). Its issuer MUST be the issuing party's relationship DID and its credential subject MUST name the receiving party's relationship DID — the values the accepted proposal exchanged.",
-///      "type": "object"
-///    },
-///    "vrcDigestMultibase": {
-///      "description": "Digest over the RFC 8785 canonicalization of the credential, so the delivery can be tied to later references to it without re-hashing. A producer SHOULD set it; the receipt's own digest is what makes the round trip checkable, so a producer that omits it can still verify the delivery against the credential it holds.",
-///      "$ref": "#/definitions/DigestMultibase"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -286,30 +219,6 @@ The delivery receipt: the receiving party accepted and stored the credential, an
 
 The receipt names the stored artifact rather than merely asserting that something arrived, following the delivery idiom of vtc/members/vmc and vtc/join-requests/accept. It has to: both directions of this exchange share one threadId, and a #response carries no inResponseTo, so the digest is what tells a party which of its two deliveries a receipt answers.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The delivery receipt: the receiving party accepted and stored the credential, and names which one. A refusal is a trust-task-error, never a receipt reporting failure.\n\nThe receipt names the stored artifact rather than merely asserting that something arrived, following the delivery idiom of vtc/members/vmc and vtc/join-requests/accept. It has to: both directions of this exchange share one threadId, and a #response carries no inResponseTo, so the digest is what tells a party which of its two deliveries a receipt answers.",
-///  "type": "object",
-///  "required": [
-///    "vrcDigestMultibase"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "vrcDigestMultibase": {
-///      "description": "Digest over the RFC 8785 canonicalization of the credential AS STORED, computed by the receiving party rather than copied from the request. Computing it is the point: a copied value attests nothing, while a recomputed one makes a mismatch between what was sent and what was stored detectable in-band, and identifies which delivery this receipt answers.",
-///      "$ref": "#/definitions/DigestMultibase"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -460,7 +369,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The delivery receipt: the receiving party accepted and stored the credential, and names which one. A refusal is a trust-task-error, never a receipt reporting failure.\\n\\nThe receipt names the stored artifact rather than merely asserting that something arrived, following the delivery idiom of vtc/members/vmc and vtc/join-requests/accept. It has to: both directions of this exchange share one threadId, and a #response carries no inResponseTo, so the digest is what tells a party which of its two deliveries a receipt answers.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"vrcDigestMultibase\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"Digest over the RFC 8785 canonicalization of the credential AS STORED, computed by the receiving party rather than copied from the request. Computing it is the point: a copied value attests nothing, while a recomputed one makes a mismatch between what was sent and what was stored detectable in-band, and identifies which delivery this receipt answers.\"\n        }\n      },\n      \"required\": [\n        \"vrcDigestMultibase\"\n      ],\n      \"title\": \"VRC Relationships Issue — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vrc/relationships/issue/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Delivers one party's signed Verifiable Relationship Credential to the other within an accepted relationship exchange. Performed once in each direction; the response is a delivery receipt naming what was stored, and does not echo the credential back.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"vrc\": {\n      \"description\": \"A signed W3C Verifiable Relationship Credential (opaque here). Its issuer MUST be the issuing party's relationship DID and its credential subject MUST name the receiving party's relationship DID — the values the accepted proposal exchanged.\",\n      \"type\": \"object\"\n    },\n    \"vrcDigestMultibase\": {\n      \"$ref\": \"#/$defs/DigestMultibase\",\n      \"description\": \"Digest over the RFC 8785 canonicalization of the credential, so the delivery can be tied to later references to it without re-hashing. A producer SHOULD set it; the receipt's own digest is what makes the round trip checkable, so a producer that omits it can still verify the delivery against the credential it holds.\"\n    }\n  },\n  \"required\": [\n    \"vrc\"\n  ],\n  \"title\": \"VRC Relationships Issue — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The delivery receipt: the receiving party accepted and stored the credential, and names which one. A refusal is a trust-task-error, never a receipt reporting failure.\\n\\nThe receipt names the stored artifact rather than merely asserting that something arrived, following the delivery idiom of vtc/members/vmc and vtc/join-requests/accept. It has to: both directions of this exchange share one threadId, and a #response carries no inResponseTo, so the digest is what tells a party which of its two deliveries a receipt answers.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"vrcDigestMultibase\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Digest over the RFC 8785 canonicalization of the credential AS STORED, computed by the receiving party rather than copied from the request. Computing it is the point: a copied value attests nothing, while a recomputed one makes a mismatch between what was sent and what was stored detectable in-band, and identifies which delivery this receipt answers.\"}},\"required\":[\"vrcDigestMultibase\"],\"title\":\"VRC Relationships Issue — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vrc/relationships/issue/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Delivers one party's signed Verifiable Relationship Credential to the other within an accepted relationship exchange. Performed once in each direction; the response is a delivery receipt naming what was stored, and does not echo the credential back.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"vrc\":{\"description\":\"A signed W3C Verifiable Relationship Credential (opaque here). Its issuer MUST be the issuing party's relationship DID and its credential subject MUST name the receiving party's relationship DID — the values the accepted proposal exchanged.\",\"type\":\"object\"},\"vrcDigestMultibase\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Digest over the RFC 8785 canonicalization of the credential, so the delivery can be tied to later references to it without re-hashing. A producer SHOULD set it; the receipt's own digest is what makes the round trip checkable, so a producer that omits it can still verify the delivery against the credential it holds.\"}},\"required\":[\"vrc\"],\"title\":\"VRC Relationships Issue — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -469,7 +378,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The delivery receipt: the receiving party accepted and stored the credential, and names which one. A refusal is a trust-task-error, never a receipt reporting failure.\\n\\nThe receipt names the stored artifact rather than merely asserting that something arrived, following the delivery idiom of vtc/members/vmc and vtc/join-requests/accept. It has to: both directions of this exchange share one threadId, and a #response carries no inResponseTo, so the digest is what tells a party which of its two deliveries a receipt answers.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"vrcDigestMultibase\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"Digest over the RFC 8785 canonicalization of the credential AS STORED, computed by the receiving party rather than copied from the request. Computing it is the point: a copied value attests nothing, while a recomputed one makes a mismatch between what was sent and what was stored detectable in-band, and identifies which delivery this receipt answers.\"\n        }\n      },\n      \"required\": [\n        \"vrcDigestMultibase\"\n      ],\n      \"title\": \"VRC Relationships Issue — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The delivery receipt: the receiving party accepted and stored the credential, and names which one. A refusal is a trust-task-error, never a receipt reporting failure.\\n\\nThe receipt names the stored artifact rather than merely asserting that something arrived, following the delivery idiom of vtc/members/vmc and vtc/join-requests/accept. It has to: both directions of this exchange share one threadId, and a #response carries no inResponseTo, so the digest is what tells a party which of its two deliveries a receipt answers.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"vrcDigestMultibase\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Digest over the RFC 8785 canonicalization of the credential AS STORED, computed by the receiving party rather than copied from the request. Computing it is the point: a copied value attests nothing, while a recomputed one makes a mismatch between what was sent and what was stored detectable in-band, and identifies which delivery this receipt answers.\"}},\"required\":[\"vrcDigestMultibase\"],\"title\":\"VRC Relationships Issue — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

@@ -35,37 +35,6 @@ pub mod error {
 }
 ///One rung of a room's epoch key chain: the storage key of epoch `epoch - 1`, sealed under the storage key of `epoch`. A group key schedule offers no way to derive an earlier epoch's key from a later one — that property is what makes removing a member mean something — so without a chain the first membership change makes every record already in the room unopenable by everyone, including whoever wrote it. The chain is the one-way street run deliberately the other way: a member holding the current key walks it backwards to any retained epoch, and a member holding an earlier key still derives nothing later. Removal stays forward-only; reading stays possible. What a chain costs is stated where it is chosen, in the room's retention policy.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "EpochLink",
-///  "description": "One rung of a room's epoch key chain: the storage key of epoch `epoch - 1`, sealed under the storage key of `epoch`. A group key schedule offers no way to derive an earlier epoch's key from a later one — that property is what makes removing a member mean something — so without a chain the first membership change makes every record already in the room unopenable by everyone, including whoever wrote it. The chain is the one-way street run deliberately the other way: a member holding the current key walks it backwards to any retained epoch, and a member holding an earlier key still derives nothing later. Removal stays forward-only; reading stays possible. What a chain costs is stated where it is chosen, in the room's retention policy.",
-///  "type": "object",
-///  "required": [
-///    "epoch",
-///    "nonce",
-///    "wrapped"
-///  ],
-///  "properties": {
-///    "epoch": {
-///      "description": "The epoch whose storage key opens this link; it wraps the storage key of `epoch - 1`. Never 1: a room's first epoch has no predecessor, so a link claiming one wraps something that is not an earlier epoch's key.",
-///      "type": "integer",
-///      "minimum": 2.0
-///    },
-///    "nonce": {
-///      "description": "AEAD nonce, base64url.",
-///      "type": "string"
-///    },
-///    "wrapped": {
-///      "description": "The wrapped predecessor key, base64url. Bound by AEAD associated data to `roomId` and to this link's own position in the chain, so a link lifted to another rung, or served under another room, fails to open rather than yielding a key that is wrong. The binding is load-bearing rather than decorative: every rung is a fixed-length key sealed under a fixed-length key, so nothing about the ciphertext itself says where it belongs.",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -84,21 +53,6 @@ impl EpochLink {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -120,15 +74,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -192,39 +137,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/rooms/keys/chain/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "links",
-///    "roomId"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "links": {
-///      "description": "The rungs, in any order. A recipient stores them and reports how far back it can now reach — see the response's `earliestReadableEpoch`.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/EpochLink"
-///      },
-///      "minItems": 1
-///    },
-///    "roomId": {
-///      "description": "The room whose chain these rungs belong to. The recipient MUST hold group state for it, and MUST NOT create any on the strength of this request: rungs are inert without an epoch key, so accepting them for a room one is not in would retain key material for nothing.",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -246,40 +158,6 @@ impl Payload {
 }
 ///Success response to rooms/keys/chain. Type https://trusttasks.org/spec/rooms/keys/chain/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to rooms/keys/chain. Type https://trusttasks.org/spec/rooms/keys/chain/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "earliestReadableEpoch",
-///    "roomId"
-///  ],
-///  "properties": {
-///    "earliestReadableEpoch": {
-///      "description": "The earliest epoch the recipient can now derive a key for, having walked the chain it holds. **This is the answer worth having**, and it is not a restatement of what was sent: a rung only extends reach if every rung above it is present too, so a caller that supplied a set with a gap in it learns that here rather than at the first record that will not open. `1` means the room's whole history is reachable.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "roomId": {
-///      "type": "string"
-///    },
-///    "stored": {
-///      "description": "How many rungs the recipient did not already hold. Zero is a success, not a no-op: it means the caller's chain was already delivered, which is what a retry looks like.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -527,7 +405,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"EpochLink\": {\n      \"additionalProperties\": false,\n      \"description\": \"One rung of a room's epoch key chain: the storage key of epoch `epoch - 1`, sealed under the storage key of `epoch`. A group key schedule offers no way to derive an earlier epoch's key from a later one — that property is what makes removing a member mean something — so without a chain the first membership change makes every record already in the room unopenable by everyone, including whoever wrote it. The chain is the one-way street run deliberately the other way: a member holding the current key walks it backwards to any retained epoch, and a member holding an earlier key still derives nothing later. Removal stays forward-only; reading stays possible. What a chain costs is stated where it is chosen, in the room's retention policy.\",\n      \"properties\": {\n        \"epoch\": {\n          \"description\": \"The epoch whose storage key opens this link; it wraps the storage key of `epoch - 1`. Never 1: a room's first epoch has no predecessor, so a link claiming one wraps something that is not an earlier epoch's key.\",\n          \"minimum\": 2,\n          \"type\": \"integer\"\n        },\n        \"nonce\": {\n          \"description\": \"AEAD nonce, base64url.\",\n          \"type\": \"string\"\n        },\n        \"wrapped\": {\n          \"description\": \"The wrapped predecessor key, base64url. Bound by AEAD associated data to `roomId` and to this link's own position in the chain, so a link lifted to another rung, or served under another room, fails to open rather than yielding a key that is wrong. The binding is load-bearing rather than decorative: every rung is a fixed-length key sealed under a fixed-length key, so nothing about the ciphertext itself says where it belongs.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"epoch\",\n        \"wrapped\",\n        \"nonce\"\n      ],\n      \"title\": \"EpochLink\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/keys/chain. Type https://trusttasks.org/spec/rooms/keys/chain/0.1#response.\",\n      \"properties\": {\n        \"earliestReadableEpoch\": {\n          \"description\": \"The earliest epoch the recipient can now derive a key for, having walked the chain it holds. **This is the answer worth having**, and it is not a restatement of what was sent: a rung only extends reach if every rung above it is present too, so a caller that supplied a set with a gap in it learns that here rather than at the first record that will not open. `1` means the room's whole history is reachable.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"roomId\": {\n          \"type\": \"string\"\n        },\n        \"stored\": {\n          \"description\": \"How many rungs the recipient did not already hold. Zero is a success, not a no-op: it means the caller's chain was already delivered, which is what a retry looks like.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"earliestReadableEpoch\"\n      ],\n      \"title\": \"Rooms Keys Chain — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/rooms/keys/chain/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"links\": {\n      \"description\": \"The rungs, in any order. A recipient stores them and reports how far back it can now reach — see the response's `earliestReadableEpoch`.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/EpochLink\"\n      },\n      \"minItems\": 1,\n      \"type\": \"array\"\n    },\n    \"roomId\": {\n      \"description\": \"The room whose chain these rungs belong to. The recipient MUST hold group state for it, and MUST NOT create any on the strength of this request: rungs are inert without an epoch key, so accepting them for a room one is not in would retain key material for nothing.\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"roomId\",\n    \"links\"\n  ],\n  \"title\": \"Rooms Keys Chain — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"EpochLink\":{\"additionalProperties\":false,\"description\":\"One rung of a room's epoch key chain: the storage key of epoch `epoch - 1`, sealed under the storage key of `epoch`. A group key schedule offers no way to derive an earlier epoch's key from a later one — that property is what makes removing a member mean something — so without a chain the first membership change makes every record already in the room unopenable by everyone, including whoever wrote it. The chain is the one-way street run deliberately the other way: a member holding the current key walks it backwards to any retained epoch, and a member holding an earlier key still derives nothing later. Removal stays forward-only; reading stays possible. What a chain costs is stated where it is chosen, in the room's retention policy.\",\"properties\":{\"epoch\":{\"description\":\"The epoch whose storage key opens this link; it wraps the storage key of `epoch - 1`. Never 1: a room's first epoch has no predecessor, so a link claiming one wraps something that is not an earlier epoch's key.\",\"minimum\":2,\"type\":\"integer\"},\"nonce\":{\"description\":\"AEAD nonce, base64url.\",\"type\":\"string\"},\"wrapped\":{\"description\":\"The wrapped predecessor key, base64url. Bound by AEAD associated data to `roomId` and to this link's own position in the chain, so a link lifted to another rung, or served under another room, fails to open rather than yielding a key that is wrong. The binding is load-bearing rather than decorative: every rung is a fixed-length key sealed under a fixed-length key, so nothing about the ciphertext itself says where it belongs.\",\"type\":\"string\"}},\"required\":[\"epoch\",\"wrapped\",\"nonce\"],\"title\":\"EpochLink\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/keys/chain. Type https://trusttasks.org/spec/rooms/keys/chain/0.1#response.\",\"properties\":{\"earliestReadableEpoch\":{\"description\":\"The earliest epoch the recipient can now derive a key for, having walked the chain it holds. **This is the answer worth having**, and it is not a restatement of what was sent: a rung only extends reach if every rung above it is present too, so a caller that supplied a set with a gap in it learns that here rather than at the first record that will not open. `1` means the room's whole history is reachable.\",\"minimum\":1,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"roomId\":{\"type\":\"string\"},\"stored\":{\"description\":\"How many rungs the recipient did not already hold. Zero is a success, not a no-op: it means the caller's chain was already delivered, which is what a retry looks like.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"roomId\",\"earliestReadableEpoch\"],\"title\":\"Rooms Keys Chain — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/rooms/keys/chain/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"links\":{\"description\":\"The rungs, in any order. A recipient stores them and reports how far back it can now reach — see the response's `earliestReadableEpoch`.\",\"items\":{\"$ref\":\"#/$defs/EpochLink\"},\"minItems\":1,\"type\":\"array\"},\"roomId\":{\"description\":\"The room whose chain these rungs belong to. The recipient MUST hold group state for it, and MUST NOT create any on the strength of this request: rungs are inert without an epoch key, so accepting them for a room one is not in would retain key material for nothing.\",\"type\":\"string\"}},\"required\":[\"roomId\",\"links\"],\"title\":\"Rooms Keys Chain — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -536,7 +414,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"EpochLink\": {\n      \"additionalProperties\": false,\n      \"description\": \"One rung of a room's epoch key chain: the storage key of epoch `epoch - 1`, sealed under the storage key of `epoch`. A group key schedule offers no way to derive an earlier epoch's key from a later one — that property is what makes removing a member mean something — so without a chain the first membership change makes every record already in the room unopenable by everyone, including whoever wrote it. The chain is the one-way street run deliberately the other way: a member holding the current key walks it backwards to any retained epoch, and a member holding an earlier key still derives nothing later. Removal stays forward-only; reading stays possible. What a chain costs is stated where it is chosen, in the room's retention policy.\",\n      \"properties\": {\n        \"epoch\": {\n          \"description\": \"The epoch whose storage key opens this link; it wraps the storage key of `epoch - 1`. Never 1: a room's first epoch has no predecessor, so a link claiming one wraps something that is not an earlier epoch's key.\",\n          \"minimum\": 2,\n          \"type\": \"integer\"\n        },\n        \"nonce\": {\n          \"description\": \"AEAD nonce, base64url.\",\n          \"type\": \"string\"\n        },\n        \"wrapped\": {\n          \"description\": \"The wrapped predecessor key, base64url. Bound by AEAD associated data to `roomId` and to this link's own position in the chain, so a link lifted to another rung, or served under another room, fails to open rather than yielding a key that is wrong. The binding is load-bearing rather than decorative: every rung is a fixed-length key sealed under a fixed-length key, so nothing about the ciphertext itself says where it belongs.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"epoch\",\n        \"wrapped\",\n        \"nonce\"\n      ],\n      \"title\": \"EpochLink\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/keys/chain. Type https://trusttasks.org/spec/rooms/keys/chain/0.1#response.\",\n      \"properties\": {\n        \"earliestReadableEpoch\": {\n          \"description\": \"The earliest epoch the recipient can now derive a key for, having walked the chain it holds. **This is the answer worth having**, and it is not a restatement of what was sent: a rung only extends reach if every rung above it is present too, so a caller that supplied a set with a gap in it learns that here rather than at the first record that will not open. `1` means the room's whole history is reachable.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"roomId\": {\n          \"type\": \"string\"\n        },\n        \"stored\": {\n          \"description\": \"How many rungs the recipient did not already hold. Zero is a success, not a no-op: it means the caller's chain was already delivered, which is what a retry looks like.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"earliestReadableEpoch\"\n      ],\n      \"title\": \"Rooms Keys Chain — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"EpochLink\":{\"additionalProperties\":false,\"description\":\"One rung of a room's epoch key chain: the storage key of epoch `epoch - 1`, sealed under the storage key of `epoch`. A group key schedule offers no way to derive an earlier epoch's key from a later one — that property is what makes removing a member mean something — so without a chain the first membership change makes every record already in the room unopenable by everyone, including whoever wrote it. The chain is the one-way street run deliberately the other way: a member holding the current key walks it backwards to any retained epoch, and a member holding an earlier key still derives nothing later. Removal stays forward-only; reading stays possible. What a chain costs is stated where it is chosen, in the room's retention policy.\",\"properties\":{\"epoch\":{\"description\":\"The epoch whose storage key opens this link; it wraps the storage key of `epoch - 1`. Never 1: a room's first epoch has no predecessor, so a link claiming one wraps something that is not an earlier epoch's key.\",\"minimum\":2,\"type\":\"integer\"},\"nonce\":{\"description\":\"AEAD nonce, base64url.\",\"type\":\"string\"},\"wrapped\":{\"description\":\"The wrapped predecessor key, base64url. Bound by AEAD associated data to `roomId` and to this link's own position in the chain, so a link lifted to another rung, or served under another room, fails to open rather than yielding a key that is wrong. The binding is load-bearing rather than decorative: every rung is a fixed-length key sealed under a fixed-length key, so nothing about the ciphertext itself says where it belongs.\",\"type\":\"string\"}},\"required\":[\"epoch\",\"wrapped\",\"nonce\"],\"title\":\"EpochLink\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/keys/chain. Type https://trusttasks.org/spec/rooms/keys/chain/0.1#response.\",\"properties\":{\"earliestReadableEpoch\":{\"description\":\"The earliest epoch the recipient can now derive a key for, having walked the chain it holds. **This is the answer worth having**, and it is not a restatement of what was sent: a rung only extends reach if every rung above it is present too, so a caller that supplied a set with a gap in it learns that here rather than at the first record that will not open. `1` means the room's whole history is reachable.\",\"minimum\":1,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"roomId\":{\"type\":\"string\"},\"stored\":{\"description\":\"How many rungs the recipient did not already hold. Zero is a success, not a no-op: it means the caller's chain was already delivered, which is what a retry looks like.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"roomId\",\"earliestReadableEpoch\"],\"title\":\"Rooms Keys Chain — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

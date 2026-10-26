@@ -35,21 +35,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -71,15 +56,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -143,40 +119,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Open an administrator console's live channel of hint-only events. The success response is the first document on a stream that then carries vtc/admin/events/event/0.4 documents; over HTTPS that stream is the streamed response of bindings/https/0.3 §2.1. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/admin/events/subscribe/0.5",
-///  "title": "Payload",
-///  "description": "Open an administrator console's live channel of hint-only events. The success response is the first document on a stream that then carries vtc/admin/events/event/0.4 documents; over HTTPS that stream is the streamed response of bindings/https/0.3 §2.1. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "topics"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "resumeToken": {
-///      "description": "The last `resumeToken` the console received on an earlier stream, to resume from (named `since` before 0.5). A token the community does not recognise, has expired, or minted for another caller is not an error: the stream starts fresh and the response says `resumed: false`.",
-///      "$ref": "#/definitions/ResumeToken"
-///    },
-///    "topics": {
-///      "description": "The topics the console renders. The community narrows this to the topics the caller may read and reports the result as the response's `topics`.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Topic"
-///      },
-///      "maxItems": 10,
-///      "minItems": 1,
-///      "uniqueItems": true
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -201,53 +143,6 @@ impl Payload {
 }
 ///The subscription as granted, sent as the first document on the stream. Failures use trust-task-error and open no stream.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The subscription as granted, sent as the first document on the stream. Failures use trust-task-error and open no stream.",
-///  "type": "object",
-///  "required": [
-///    "heartbeatSeconds",
-///    "resumeToken",
-///    "resumed",
-///    "topics"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "heartbeatSeconds": {
-///      "description": "The longest the community lets the stream go without sending anything. Over HTTPS the heartbeat is an SSE comment. A console that receives nothing for twice this interval MUST treat the stream as dead.",
-///      "type": "integer",
-///      "maximum": 60.0,
-///      "minimum": 5.0
-///    },
-///    "resumeToken": {
-///      "description": "The stream position as of this response, so that a console that disconnects before its first event still has a token to resume from.",
-///      "$ref": "#/definitions/ResumeToken"
-///    },
-///    "resumed": {
-///      "description": "`true` when the community recognised the request's `resumeToken` and will send a hint for every effective topic that changed after it. `false` when no `resumeToken` was given or it could not be honoured; the console MUST then re-fetch every effective topic, because it may have missed changes.",
-///      "type": "boolean"
-///    },
-///    "topics": {
-///      "description": "The effective topics: those requested that the caller may read. The community sends events for these and no others. A requested topic missing here is one the caller may not read, and the console MUST NOT present it as live.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Topic"
-///      },
-///      "maxItems": 10,
-///      "minItems": 1,
-///      "uniqueItems": true
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -273,19 +168,6 @@ impl Response {
 }
 ///Opaque, community-minted position in one caller's event stream. A console MUST NOT parse, construct or order it; it only hands the latest one back as `since` when it re-subscribes. A community binds it to the caller it was minted for and treats a token minted for anyone else as unknown.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ResumeToken",
-///  "description": "Opaque, community-minted position in one caller's event stream. A console MUST NOT parse, construct or order it; it only hands the latest one back as `since` when it re-subscribes. A community binds it to the caller it was minted for and treats a token minted for anyone else as unknown.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1,
-///  "pattern": "^[A-Za-z0-9._~-]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResumeToken(::std::string::String);
@@ -353,28 +235,6 @@ impl<'de> ::serde::Deserialize<'de> for ResumeToken {
 }
 ///One kind of change a console can be told about. A closed set: a topic not listed here is a new MINOR version of this component, not an `ext` member, because each topic is bound to the read that authorizes it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Topic",
-///  "description": "One kind of change a console can be told about. A closed set: a topic not listed here is a new MINOR version of this component, not an `ext` member, because each topic is bound to the read that authorizes it.",
-///  "type": "string",
-///  "enum": [
-///    "actions",
-///    "acknowledgements",
-///    "joinRequests",
-///    "members",
-///    "singleAdminMode",
-///    "config",
-///    "rooms",
-///    "directory",
-///    "groups",
-///    "communityRooms"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -636,7 +496,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The subscription as granted, sent as the first document on the stream. Failures use trust-task-error and open no stream.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"heartbeatSeconds\": {\n          \"description\": \"The longest the community lets the stream go without sending anything. Over HTTPS the heartbeat is an SSE comment. A console that receives nothing for twice this interval MUST treat the stream as dead.\",\n          \"maximum\": 60,\n          \"minimum\": 5,\n          \"type\": \"integer\"\n        },\n        \"resumeToken\": {\n          \"$ref\": \"#/$defs/ResumeToken\",\n          \"description\": \"The stream position as of this response, so that a console that disconnects before its first event still has a token to resume from.\"\n        },\n        \"resumed\": {\n          \"description\": \"`true` when the community recognised the request's `resumeToken` and will send a hint for every effective topic that changed after it. `false` when no `resumeToken` was given or it could not be honoured; the console MUST then re-fetch every effective topic, because it may have missed changes.\",\n          \"type\": \"boolean\"\n        },\n        \"topics\": {\n          \"description\": \"The effective topics: those requested that the caller may read. The community sends events for these and no others. A requested topic missing here is one the caller may not read, and the console MUST NOT present it as live.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Topic\"\n          },\n          \"maxItems\": 10,\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        }\n      },\n      \"required\": [\n        \"topics\",\n        \"heartbeatSeconds\",\n        \"resumed\",\n        \"resumeToken\"\n      ],\n      \"title\": \"VTC Admin Events — Subscribe — response payload\",\n      \"type\": \"object\"\n    },\n    \"ResumeToken\": {\n      \"description\": \"Opaque, community-minted position in one caller's event stream. A console MUST NOT parse, construct or order it; it only hands the latest one back as `since` when it re-subscribes. A community binds it to the caller it was minted for and treats a token minted for anyone else as unknown.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"pattern\": \"^[A-Za-z0-9._~-]+$\",\n      \"title\": \"ResumeToken\",\n      \"type\": \"string\"\n    },\n    \"Topic\": {\n      \"description\": \"One kind of change a console can be told about. A closed set: a topic not listed here is a new MINOR version of this component, not an `ext` member, because each topic is bound to the read that authorizes it.\",\n      \"enum\": [\n        \"actions\",\n        \"acknowledgements\",\n        \"joinRequests\",\n        \"members\",\n        \"singleAdminMode\",\n        \"config\",\n        \"rooms\",\n        \"directory\",\n        \"groups\",\n        \"communityRooms\"\n      ],\n      \"title\": \"Topic\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/admin/events/subscribe/0.5\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Open an administrator console's live channel of hint-only events. The success response is the first document on a stream that then carries vtc/admin/events/event/0.4 documents; over HTTPS that stream is the streamed response of bindings/https/0.3 §2.1. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"resumeToken\": {\n      \"$ref\": \"#/$defs/ResumeToken\",\n      \"description\": \"The last `resumeToken` the console received on an earlier stream, to resume from (named `since` before 0.5). A token the community does not recognise, has expired, or minted for another caller is not an error: the stream starts fresh and the response says `resumed: false`.\"\n    },\n    \"topics\": {\n      \"description\": \"The topics the console renders. The community narrows this to the topics the caller may read and reports the result as the response's `topics`.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/Topic\"\n      },\n      \"maxItems\": 10,\n      \"minItems\": 1,\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    }\n  },\n  \"required\": [\n    \"topics\"\n  ],\n  \"title\": \"VTC Admin Events — Subscribe — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The subscription as granted, sent as the first document on the stream. Failures use trust-task-error and open no stream.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"heartbeatSeconds\":{\"description\":\"The longest the community lets the stream go without sending anything. Over HTTPS the heartbeat is an SSE comment. A console that receives nothing for twice this interval MUST treat the stream as dead.\",\"maximum\":60,\"minimum\":5,\"type\":\"integer\"},\"resumeToken\":{\"$ref\":\"#/$defs/ResumeToken\",\"description\":\"The stream position as of this response, so that a console that disconnects before its first event still has a token to resume from.\"},\"resumed\":{\"description\":\"`true` when the community recognised the request's `resumeToken` and will send a hint for every effective topic that changed after it. `false` when no `resumeToken` was given or it could not be honoured; the console MUST then re-fetch every effective topic, because it may have missed changes.\",\"type\":\"boolean\"},\"topics\":{\"description\":\"The effective topics: those requested that the caller may read. The community sends events for these and no others. A requested topic missing here is one the caller may not read, and the console MUST NOT present it as live.\",\"items\":{\"$ref\":\"#/$defs/Topic\"},\"maxItems\":10,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"topics\",\"heartbeatSeconds\",\"resumed\",\"resumeToken\"],\"title\":\"VTC Admin Events — Subscribe — response payload\",\"type\":\"object\"},\"ResumeToken\":{\"description\":\"Opaque, community-minted position in one caller's event stream. A console MUST NOT parse, construct or order it; it only hands the latest one back as `since` when it re-subscribes. A community binds it to the caller it was minted for and treats a token minted for anyone else as unknown.\",\"maxLength\":256,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9._~-]+$\",\"title\":\"ResumeToken\",\"type\":\"string\"},\"Topic\":{\"description\":\"One kind of change a console can be told about. A closed set: a topic not listed here is a new MINOR version of this component, not an `ext` member, because each topic is bound to the read that authorizes it.\",\"enum\":[\"actions\",\"acknowledgements\",\"joinRequests\",\"members\",\"singleAdminMode\",\"config\",\"rooms\",\"directory\",\"groups\",\"communityRooms\"],\"title\":\"Topic\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/vtc/admin/events/subscribe/0.5\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Open an administrator console's live channel of hint-only events. The success response is the first document on a stream that then carries vtc/admin/events/event/0.4 documents; over HTTPS that stream is the streamed response of bindings/https/0.3 §2.1. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"resumeToken\":{\"$ref\":\"#/$defs/ResumeToken\",\"description\":\"The last `resumeToken` the console received on an earlier stream, to resume from (named `since` before 0.5). A token the community does not recognise, has expired, or minted for another caller is not an error: the stream starts fresh and the response says `resumed: false`.\"},\"topics\":{\"description\":\"The topics the console renders. The community narrows this to the topics the caller may read and reports the result as the response's `topics`.\",\"items\":{\"$ref\":\"#/$defs/Topic\"},\"maxItems\":10,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"topics\"],\"title\":\"VTC Admin Events — Subscribe — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -645,7 +505,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The subscription as granted, sent as the first document on the stream. Failures use trust-task-error and open no stream.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"heartbeatSeconds\": {\n          \"description\": \"The longest the community lets the stream go without sending anything. Over HTTPS the heartbeat is an SSE comment. A console that receives nothing for twice this interval MUST treat the stream as dead.\",\n          \"maximum\": 60,\n          \"minimum\": 5,\n          \"type\": \"integer\"\n        },\n        \"resumeToken\": {\n          \"$ref\": \"#/$defs/ResumeToken\",\n          \"description\": \"The stream position as of this response, so that a console that disconnects before its first event still has a token to resume from.\"\n        },\n        \"resumed\": {\n          \"description\": \"`true` when the community recognised the request's `resumeToken` and will send a hint for every effective topic that changed after it. `false` when no `resumeToken` was given or it could not be honoured; the console MUST then re-fetch every effective topic, because it may have missed changes.\",\n          \"type\": \"boolean\"\n        },\n        \"topics\": {\n          \"description\": \"The effective topics: those requested that the caller may read. The community sends events for these and no others. A requested topic missing here is one the caller may not read, and the console MUST NOT present it as live.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Topic\"\n          },\n          \"maxItems\": 10,\n          \"minItems\": 1,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        }\n      },\n      \"required\": [\n        \"topics\",\n        \"heartbeatSeconds\",\n        \"resumed\",\n        \"resumeToken\"\n      ],\n      \"title\": \"VTC Admin Events — Subscribe — response payload\",\n      \"type\": \"object\"\n    },\n    \"ResumeToken\": {\n      \"description\": \"Opaque, community-minted position in one caller's event stream. A console MUST NOT parse, construct or order it; it only hands the latest one back as `since` when it re-subscribes. A community binds it to the caller it was minted for and treats a token minted for anyone else as unknown.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"pattern\": \"^[A-Za-z0-9._~-]+$\",\n      \"title\": \"ResumeToken\",\n      \"type\": \"string\"\n    },\n    \"Topic\": {\n      \"description\": \"One kind of change a console can be told about. A closed set: a topic not listed here is a new MINOR version of this component, not an `ext` member, because each topic is bound to the read that authorizes it.\",\n      \"enum\": [\n        \"actions\",\n        \"acknowledgements\",\n        \"joinRequests\",\n        \"members\",\n        \"singleAdminMode\",\n        \"config\",\n        \"rooms\",\n        \"directory\",\n        \"groups\",\n        \"communityRooms\"\n      ],\n      \"title\": \"Topic\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The subscription as granted, sent as the first document on the stream. Failures use trust-task-error and open no stream.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"heartbeatSeconds\":{\"description\":\"The longest the community lets the stream go without sending anything. Over HTTPS the heartbeat is an SSE comment. A console that receives nothing for twice this interval MUST treat the stream as dead.\",\"maximum\":60,\"minimum\":5,\"type\":\"integer\"},\"resumeToken\":{\"$ref\":\"#/$defs/ResumeToken\",\"description\":\"The stream position as of this response, so that a console that disconnects before its first event still has a token to resume from.\"},\"resumed\":{\"description\":\"`true` when the community recognised the request's `resumeToken` and will send a hint for every effective topic that changed after it. `false` when no `resumeToken` was given or it could not be honoured; the console MUST then re-fetch every effective topic, because it may have missed changes.\",\"type\":\"boolean\"},\"topics\":{\"description\":\"The effective topics: those requested that the caller may read. The community sends events for these and no others. A requested topic missing here is one the caller may not read, and the console MUST NOT present it as live.\",\"items\":{\"$ref\":\"#/$defs/Topic\"},\"maxItems\":10,\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"topics\",\"heartbeatSeconds\",\"resumed\",\"resumeToken\"],\"title\":\"VTC Admin Events — Subscribe — response payload\",\"type\":\"object\"},\"ResumeToken\":{\"description\":\"Opaque, community-minted position in one caller's event stream. A console MUST NOT parse, construct or order it; it only hands the latest one back as `since` when it re-subscribes. A community binds it to the caller it was minted for and treats a token minted for anyone else as unknown.\",\"maxLength\":256,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9._~-]+$\",\"title\":\"ResumeToken\",\"type\":\"string\"},\"Topic\":{\"description\":\"One kind of change a console can be told about. A closed set: a topic not listed here is a new MINOR version of this component, not an `ext` member, because each topic is bound to the read that authorizes it.\",\"enum\":[\"actions\",\"acknowledgements\",\"joinRequests\",\"members\",\"singleAdminMode\",\"config\",\"rooms\",\"directory\",\"groups\",\"communityRooms\"],\"title\":\"Topic\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

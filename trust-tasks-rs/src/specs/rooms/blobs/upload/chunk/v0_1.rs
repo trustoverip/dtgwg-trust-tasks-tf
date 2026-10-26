@@ -35,19 +35,6 @@ pub mod error {
 }
 ///The chunk's bytes, base64url-encoded without padding (RFC 4648 §5). Bounded at 349526 characters, the unpadded encoding of a 262144-byte chunk. These are bytes of the encrypted bundle, so a chunk read in isolation reveals nothing of the agent's state — but a complete set of chunks is the export, and is to be handled as such.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ChunkData",
-///  "description": "The chunk's bytes, base64url-encoded without padding (RFC 4648 §5). Bounded at 349526 characters, the unpadded encoding of a 262144-byte chunk. These are bytes of the encrypted bundle, so a chunk read in isolation reveals nothing of the agent's state — but a complete set of chunks is the export, and is to be handled as such.",
-///  "type": "string",
-///  "maxLength": 349526,
-///  "minLength": 2,
-///  "pattern": "^[A-Za-z0-9_-]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ChunkData(::std::string::String);
@@ -115,18 +102,6 @@ impl<'de> ::serde::Deserialize<'de> for ChunkData {
 }
 ///Zero-based position of a chunk within its bundle. Valid values are 0 to chunkCount − 1; an index outside that range is refused with chunkOutOfRange rather than validated here, because the bound depends on the bundle.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ChunkIndex",
-///  "description": "Zero-based position of a chunk within its bundle. Valid values are 0 to chunkCount − 1; an index outside that range is refused with chunkOutOfRange rather than validated here, because the bound depends on the bundle.",
-///  "type": "integer",
-///  "maximum": 4095.0,
-///  "minimum": 0.0
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct ChunkIndex(pub i64);
@@ -178,21 +153,6 @@ This definition constrains the *encoding only*. What the digest is computed over
 
 Restricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that "interoperability is not guaranteed between implementations using such values", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DigestMultibase",
-///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-///  "examples": [
-///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-///  ],
-///  "type": "string",
-///  "minLength": 16,
-///  "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DigestMultibase(::std::string::String);
@@ -261,17 +221,6 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
 }
 ///After which the bundle is collected: staged bytes discarded, tokens and chunk requests refused. Short by design. For a chunked transfer a recipient may move it later as chunks are exchanged, never past its own ceiling — each chunk response reports the current value.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ExpiresAt",
-///  "description": "After which the bundle is collected: staged bytes discarded, tokens and chunk requests refused. Short by design. For a chunked transfer a recipient may move it later as chunks are exchanged, never past its own ceiling — each chunk response reports the current value.",
-///  "type": "string",
-///  "format": "date-time"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct ExpiresAt(pub ::chrono::DateTime<::chrono::offset::Utc>);
@@ -316,21 +265,6 @@ impl ::std::fmt::Display for ExpiresAt {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -352,15 +286,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -424,42 +349,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///One chunk of an open blob upload. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/rooms/blobs/upload/chunk/0.1",
-///  "title": "Payload",
-///  "description": "One chunk of an open blob upload. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "data",
-///    "digestMultibase",
-///    "index",
-///    "uploadId"
-///  ],
-///  "properties": {
-///    "data": {
-///      "$ref": "#/definitions/ChunkData"
-///    },
-///    "digestMultibase": {
-///      "description": "The digest of this chunk's raw bytes, restated from the manifest, so a chunk sent to the wrong index is refused on arrival.",
-///      "$ref": "#/definitions/DigestMultibase"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "index": {
-///      "$ref": "#/definitions/ChunkIndex"
-///    },
-///    "uploadId": {
-///      "$ref": "#/definitions/TransferId"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -482,49 +371,6 @@ impl Payload {
 }
 ///Success response to rooms/blobs/upload/chunk. Type https://trusttasks.org/spec/rooms/blobs/upload/chunk/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to rooms/blobs/upload/chunk. Type https://trusttasks.org/spec/rooms/blobs/upload/chunk/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "expiresAt",
-///    "index",
-///    "remainingCount",
-///    "stored",
-///    "uploadId"
-///  ],
-///  "properties": {
-///    "expiresAt": {
-///      "$ref": "#/definitions/ExpiresAt"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "index": {
-///      "$ref": "#/definitions/ChunkIndex"
-///    },
-///    "remainingCount": {
-///      "description": "Indices still missing after this write.",
-///      "type": "integer",
-///      "maximum": 4095.0,
-///      "minimum": 0.0
-///    },
-///    "stored": {
-///      "description": "Whether this request is what stored the chunk. False means identical bytes were already staged at this index — a success, and why a chunk can be re-sent safely.",
-///      "type": "boolean"
-///    },
-///    "uploadId": {
-///      "$ref": "#/definitions/TransferId"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -550,17 +396,6 @@ impl Response {
 }
 ///Handle for one upload (begin → chunk → commit or abort) or one download (get → chunk). Host-generated and unguessable, which is what lets a reference to another party's transfer be answered as not-found without confirming that it exists. Bound at creation to the party that opened it: the subject the host authenticated for the opening request. Opaque: a producer quotes what it was given.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "TransferId",
-///  "description": "Handle for one upload (begin → chunk → commit or abort) or one download (get → chunk). Host-generated and unguessable, which is what lets a reference to another party's transfer be answered as not-found without confirming that it exists. Bound at creation to the party that opened it: the subject the host authenticated for the opening request. Opaque: a producer quotes what it was given.",
-///  "type": "string",
-///  "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct TransferId(::std::string::String);
@@ -840,7 +675,7 @@ impl crate::Payload for Payload {
     const MAX_DOCUMENT_BYTES: Option<usize> = Some(360448usize);
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ChunkData\": {\n      \"description\": \"The chunk's bytes, base64url-encoded without padding (RFC 4648 §5). Bounded at 349526 characters, the unpadded encoding of a 262144-byte chunk. These are bytes of the encrypted bundle, so a chunk read in isolation reveals nothing of the agent's state — but a complete set of chunks is the export, and is to be handled as such.\",\n      \"maxLength\": 349526,\n      \"minLength\": 2,\n      \"pattern\": \"^[A-Za-z0-9_-]+$\",\n      \"title\": \"ChunkData\",\n      \"type\": \"string\"\n    },\n    \"ChunkIndex\": {\n      \"description\": \"Zero-based position of a chunk within its bundle. Valid values are 0 to chunkCount − 1; an index outside that range is refused with chunkOutOfRange rather than validated here, because the bound depends on the bundle.\",\n      \"maximum\": 4095,\n      \"minimum\": 0,\n      \"title\": \"ChunkIndex\",\n      \"type\": \"integer\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"ExpiresAt\": {\n      \"description\": \"After which the bundle is collected: staged bytes discarded, tokens and chunk requests refused. Short by design. For a chunked transfer a recipient may move it later as chunks are exchanged, never past its own ceiling — each chunk response reports the current value.\",\n      \"format\": \"date-time\",\n      \"title\": \"ExpiresAt\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/blobs/upload/chunk. Type https://trusttasks.org/spec/rooms/blobs/upload/chunk/0.1#response.\",\n      \"properties\": {\n        \"expiresAt\": {\n          \"$ref\": \"#/$defs/ExpiresAt\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"index\": {\n          \"$ref\": \"#/$defs/ChunkIndex\"\n        },\n        \"remainingCount\": {\n          \"description\": \"Indices still missing after this write.\",\n          \"maximum\": 4095,\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"stored\": {\n          \"description\": \"Whether this request is what stored the chunk. False means identical bytes were already staged at this index — a success, and why a chunk can be re-sent safely.\",\n          \"type\": \"boolean\"\n        },\n        \"uploadId\": {\n          \"$ref\": \"#/$defs/TransferId\"\n        }\n      },\n      \"required\": [\n        \"uploadId\",\n        \"index\",\n        \"stored\",\n        \"remainingCount\",\n        \"expiresAt\"\n      ],\n      \"title\": \"Rooms Blobs — Upload — Chunk — response payload\",\n      \"type\": \"object\"\n    },\n    \"TransferId\": {\n      \"description\": \"Handle for one upload (begin → chunk → commit or abort) or one download (get → chunk). Host-generated and unguessable, which is what lets a reference to another party's transfer be answered as not-found without confirming that it exists. Bound at creation to the party that opened it: the subject the host authenticated for the opening request. Opaque: a producer quotes what it was given.\",\n      \"pattern\": \"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\n      \"title\": \"TransferId\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/rooms/blobs/upload/chunk/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"One chunk of an open blob upload. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"data\": {\n      \"$ref\": \"#/$defs/ChunkData\"\n    },\n    \"digestMultibase\": {\n      \"$ref\": \"#/$defs/DigestMultibase\",\n      \"description\": \"The digest of this chunk's raw bytes, restated from the manifest, so a chunk sent to the wrong index is refused on arrival.\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"index\": {\n      \"$ref\": \"#/$defs/ChunkIndex\"\n    },\n    \"uploadId\": {\n      \"$ref\": \"#/$defs/TransferId\"\n    }\n  },\n  \"required\": [\n    \"uploadId\",\n    \"index\",\n    \"digestMultibase\",\n    \"data\"\n  ],\n  \"title\": \"Rooms Blobs — Upload — Chunk — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"ChunkData\":{\"description\":\"The chunk's bytes, base64url-encoded without padding (RFC 4648 §5). Bounded at 349526 characters, the unpadded encoding of a 262144-byte chunk. These are bytes of the encrypted bundle, so a chunk read in isolation reveals nothing of the agent's state — but a complete set of chunks is the export, and is to be handled as such.\",\"maxLength\":349526,\"minLength\":2,\"pattern\":\"^[A-Za-z0-9_-]+$\",\"title\":\"ChunkData\",\"type\":\"string\"},\"ChunkIndex\":{\"description\":\"Zero-based position of a chunk within its bundle. Valid values are 0 to chunkCount − 1; an index outside that range is refused with chunkOutOfRange rather than validated here, because the bound depends on the bundle.\",\"maximum\":4095,\"minimum\":0,\"title\":\"ChunkIndex\",\"type\":\"integer\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"ExpiresAt\":{\"description\":\"After which the bundle is collected: staged bytes discarded, tokens and chunk requests refused. Short by design. For a chunked transfer a recipient may move it later as chunks are exchanged, never past its own ceiling — each chunk response reports the current value.\",\"format\":\"date-time\",\"title\":\"ExpiresAt\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/blobs/upload/chunk. Type https://trusttasks.org/spec/rooms/blobs/upload/chunk/0.1#response.\",\"properties\":{\"expiresAt\":{\"$ref\":\"#/$defs/ExpiresAt\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"index\":{\"$ref\":\"#/$defs/ChunkIndex\"},\"remainingCount\":{\"description\":\"Indices still missing after this write.\",\"maximum\":4095,\"minimum\":0,\"type\":\"integer\"},\"stored\":{\"description\":\"Whether this request is what stored the chunk. False means identical bytes were already staged at this index — a success, and why a chunk can be re-sent safely.\",\"type\":\"boolean\"},\"uploadId\":{\"$ref\":\"#/$defs/TransferId\"}},\"required\":[\"uploadId\",\"index\",\"stored\",\"remainingCount\",\"expiresAt\"],\"title\":\"Rooms Blobs — Upload — Chunk — response payload\",\"type\":\"object\"},\"TransferId\":{\"description\":\"Handle for one upload (begin → chunk → commit or abort) or one download (get → chunk). Host-generated and unguessable, which is what lets a reference to another party's transfer be answered as not-found without confirming that it exists. Bound at creation to the party that opened it: the subject the host authenticated for the opening request. Opaque: a producer quotes what it was given.\",\"pattern\":\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"title\":\"TransferId\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/rooms/blobs/upload/chunk/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"One chunk of an open blob upload. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"data\":{\"$ref\":\"#/$defs/ChunkData\"},\"digestMultibase\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The digest of this chunk's raw bytes, restated from the manifest, so a chunk sent to the wrong index is refused on arrival.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"index\":{\"$ref\":\"#/$defs/ChunkIndex\"},\"uploadId\":{\"$ref\":\"#/$defs/TransferId\"}},\"required\":[\"uploadId\",\"index\",\"digestMultibase\",\"data\"],\"title\":\"Rooms Blobs — Upload — Chunk — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -849,7 +684,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ChunkData\": {\n      \"description\": \"The chunk's bytes, base64url-encoded without padding (RFC 4648 §5). Bounded at 349526 characters, the unpadded encoding of a 262144-byte chunk. These are bytes of the encrypted bundle, so a chunk read in isolation reveals nothing of the agent's state — but a complete set of chunks is the export, and is to be handled as such.\",\n      \"maxLength\": 349526,\n      \"minLength\": 2,\n      \"pattern\": \"^[A-Za-z0-9_-]+$\",\n      \"title\": \"ChunkData\",\n      \"type\": \"string\"\n    },\n    \"ChunkIndex\": {\n      \"description\": \"Zero-based position of a chunk within its bundle. Valid values are 0 to chunkCount − 1; an index outside that range is refused with chunkOutOfRange rather than validated here, because the bound depends on the bundle.\",\n      \"maximum\": 4095,\n      \"minimum\": 0,\n      \"title\": \"ChunkIndex\",\n      \"type\": \"integer\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"ExpiresAt\": {\n      \"description\": \"After which the bundle is collected: staged bytes discarded, tokens and chunk requests refused. Short by design. For a chunked transfer a recipient may move it later as chunks are exchanged, never past its own ceiling — each chunk response reports the current value.\",\n      \"format\": \"date-time\",\n      \"title\": \"ExpiresAt\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/blobs/upload/chunk. Type https://trusttasks.org/spec/rooms/blobs/upload/chunk/0.1#response.\",\n      \"properties\": {\n        \"expiresAt\": {\n          \"$ref\": \"#/$defs/ExpiresAt\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"index\": {\n          \"$ref\": \"#/$defs/ChunkIndex\"\n        },\n        \"remainingCount\": {\n          \"description\": \"Indices still missing after this write.\",\n          \"maximum\": 4095,\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"stored\": {\n          \"description\": \"Whether this request is what stored the chunk. False means identical bytes were already staged at this index — a success, and why a chunk can be re-sent safely.\",\n          \"type\": \"boolean\"\n        },\n        \"uploadId\": {\n          \"$ref\": \"#/$defs/TransferId\"\n        }\n      },\n      \"required\": [\n        \"uploadId\",\n        \"index\",\n        \"stored\",\n        \"remainingCount\",\n        \"expiresAt\"\n      ],\n      \"title\": \"Rooms Blobs — Upload — Chunk — response payload\",\n      \"type\": \"object\"\n    },\n    \"TransferId\": {\n      \"description\": \"Handle for one upload (begin → chunk → commit or abort) or one download (get → chunk). Host-generated and unguessable, which is what lets a reference to another party's transfer be answered as not-found without confirming that it exists. Bound at creation to the party that opened it: the subject the host authenticated for the opening request. Opaque: a producer quotes what it was given.\",\n      \"pattern\": \"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\n      \"title\": \"TransferId\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"ChunkData\":{\"description\":\"The chunk's bytes, base64url-encoded without padding (RFC 4648 §5). Bounded at 349526 characters, the unpadded encoding of a 262144-byte chunk. These are bytes of the encrypted bundle, so a chunk read in isolation reveals nothing of the agent's state — but a complete set of chunks is the export, and is to be handled as such.\",\"maxLength\":349526,\"minLength\":2,\"pattern\":\"^[A-Za-z0-9_-]+$\",\"title\":\"ChunkData\",\"type\":\"string\"},\"ChunkIndex\":{\"description\":\"Zero-based position of a chunk within its bundle. Valid values are 0 to chunkCount − 1; an index outside that range is refused with chunkOutOfRange rather than validated here, because the bound depends on the bundle.\",\"maximum\":4095,\"minimum\":0,\"title\":\"ChunkIndex\",\"type\":\"integer\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"ExpiresAt\":{\"description\":\"After which the bundle is collected: staged bytes discarded, tokens and chunk requests refused. Short by design. For a chunked transfer a recipient may move it later as chunks are exchanged, never past its own ceiling — each chunk response reports the current value.\",\"format\":\"date-time\",\"title\":\"ExpiresAt\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/blobs/upload/chunk. Type https://trusttasks.org/spec/rooms/blobs/upload/chunk/0.1#response.\",\"properties\":{\"expiresAt\":{\"$ref\":\"#/$defs/ExpiresAt\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"index\":{\"$ref\":\"#/$defs/ChunkIndex\"},\"remainingCount\":{\"description\":\"Indices still missing after this write.\",\"maximum\":4095,\"minimum\":0,\"type\":\"integer\"},\"stored\":{\"description\":\"Whether this request is what stored the chunk. False means identical bytes were already staged at this index — a success, and why a chunk can be re-sent safely.\",\"type\":\"boolean\"},\"uploadId\":{\"$ref\":\"#/$defs/TransferId\"}},\"required\":[\"uploadId\",\"index\",\"stored\",\"remainingCount\",\"expiresAt\"],\"title\":\"Rooms Blobs — Upload — Chunk — response payload\",\"type\":\"object\"},\"TransferId\":{\"description\":\"Handle for one upload (begin → chunk → commit or abort) or one download (get → chunk). Host-generated and unguessable, which is what lets a reference to another party's transfer be answered as not-found without confirming that it exists. Bound at creation to the party that opened it: the subject the host authenticated for the opening request. Opaque: a producer quotes what it was given.\",\"pattern\":\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"title\":\"TransferId\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

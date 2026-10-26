@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,40 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Floor`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "StepUpFloor",
-///  "type": "object",
-///  "required": [
-///    "mode",
-///    "operation"
-///  ],
-///  "properties": {
-///    "allowAal1IfNonEscalating": {
-///      "description": "Carve-out for non-escalating self-service operations (notably acl/swap-key key-rotation and method-enrolment). When `true` and the maintainer verifies the request does not escalate (its resulting AclEntry's role and scopes are a subset of the caller's existing entry, and the caller acts on its own entry), the operation is admitted at AAL1 even though `mode` requires AAL2 — so a holder with no authenticator yet can still bootstrap/rotate. Omitted is equivalent to `false` (the correct default for escalating operations such as acl/grant, change-role, revoke, context/delete, key/revoke): a caller lacking a usable step-up method is denied (fail-closed) rather than silently downgraded to AAL1.",
-///      "type": "boolean"
-///    },
-///    "mode": {
-///      "description": "Minimum mode required to perform the operation. `none` = AAL1 permitted (no step-up). `self` = the caller must elevate its own session (AAL2 via its own authenticator). `delegated` = a separate approver named on the caller's AclEntry (`stepUp.approver`) MUST ratify (AAL2 via auth/step-up/approve-request). `delegatedAny` = any VID satisfying the maintainer's approver criterion MAY ratify. Strictness order for floor/override resolution: none < self < delegated-any < delegated.",
-///      "type": "string",
-///      "enum": [
-///        "none",
-///        "self",
-///        "delegated",
-///        "delegatedAny"
-///      ]
-///    },
-///    "operation": {
-///      "description": "The operation-class this floor governs: a Trust Task type URI or slug (e.g. `acl/grant`, `acl/swap-key`, `context/delete`, `key/revoke`, `vault/release`), or `*` for the catch-all default applied when no more-specific floor matches.",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -199,21 +141,6 @@ impl Floor {
 }
 ///Minimum mode required to perform the operation. `none` = AAL1 permitted (no step-up). `self` = the caller must elevate its own session (AAL2 via its own authenticator). `delegated` = a separate approver named on the caller's AclEntry (`stepUp.approver`) MUST ratify (AAL2 via auth/step-up/approve-request). `delegatedAny` = any VID satisfying the maintainer's approver criterion MAY ratify. Strictness order for floor/override resolution: none < self < delegated-any < delegated.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Minimum mode required to perform the operation. `none` = AAL1 permitted (no step-up). `self` = the caller must elevate its own session (AAL2 via its own authenticator). `delegated` = a separate approver named on the caller's AclEntry (`stepUp.approver`) MUST ratify (AAL2 via auth/step-up/approve-request). `delegatedAny` = any VID satisfying the maintainer's approver criterion MAY ratify. Strictness order for floor/override resolution: none < self < delegated-any < delegated.",
-///  "type": "string",
-///  "enum": [
-///    "none",
-///    "self",
-///    "delegated",
-///    "delegatedAny"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -283,39 +210,6 @@ impl ::std::convert::TryFrom<::std::string::String> for FloorMode {
 }
 ///The relying party's (ACL maintainer's) system-wide step-up policy: the per-operation-class floor that decides whether — and how — a step-up to a higher assurance level is required before a gated operation proceeds. Set by an administrator; resolved per request against per-entry overrides (see acl/_shared AclEntry.stepUp).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/auth/step-up/policy/0.2",
-///  "title": "Payload",
-///  "description": "The relying party's (ACL maintainer's) system-wide step-up policy: the per-operation-class floor that decides whether — and how — a step-up to a higher assurance level is required before a gated operation proceeds. Set by an administrator; resolved per request against per-entry overrides (see acl/_shared AclEntry.stepUp).",
-///  "type": "object",
-///  "required": [
-///    "enabled",
-///    "floors"
-///  ],
-///  "properties": {
-///    "enabled": {
-///      "description": "Master switch. `false` (the shipping default) ⇒ step-up is NOT enforced anywhere; every operation proceeds at AAL1 regardless of `floors`, because a freshly-provisioned maintainer has no registered approver and could not otherwise be administered (chicken-and-egg). The maintainer SHOULD surface this 'not enforced' state prominently. `true` ⇒ the `floors` are enforced.",
-///      "type": "boolean"
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "floors": {
-///      "description": "The system-wide minimum step-up requirement per operation-class — the maintainer-owned floor. Per-entry `stepUp` settings on an AclEntry MAY raise the requirement for a given subject but MUST NOT lower it (additive-only). The effective requirement for a request is the strictest of (matching floor, caller's per-entry setting).",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Floor"
-///      }
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -335,38 +229,6 @@ impl Payload {
 }
 ///The policy the maintainer now holds after applying the request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/policy/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The policy the maintainer now holds after applying the request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/policy/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "enabled",
-///    "floors"
-///  ],
-///  "properties": {
-///    "enabled": {
-///      "description": "The effective master switch the maintainer now holds.",
-///      "type": "boolean"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "floors": {
-///      "description": "The effective floors the maintainer now holds (canonicalized: deduplicated by `operation`, defaults materialized).",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Floor"
-///      }
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -591,7 +453,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Floor\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"allowAal1IfNonEscalating\": {\n          \"description\": \"Carve-out for non-escalating self-service operations (notably acl/swap-key key-rotation and method-enrolment). When `true` and the maintainer verifies the request does not escalate (its resulting AclEntry's role and scopes are a subset of the caller's existing entry, and the caller acts on its own entry), the operation is admitted at AAL1 even though `mode` requires AAL2 — so a holder with no authenticator yet can still bootstrap/rotate. Omitted is equivalent to `false` (the correct default for escalating operations such as acl/grant, change-role, revoke, context/delete, key/revoke): a caller lacking a usable step-up method is denied (fail-closed) rather than silently downgraded to AAL1.\",\n          \"type\": \"boolean\"\n        },\n        \"mode\": {\n          \"description\": \"Minimum mode required to perform the operation. `none` = AAL1 permitted (no step-up). `self` = the caller must elevate its own session (AAL2 via its own authenticator). `delegated` = a separate approver named on the caller's AclEntry (`stepUp.approver`) MUST ratify (AAL2 via auth/step-up/approve-request). `delegatedAny` = any VID satisfying the maintainer's approver criterion MAY ratify. Strictness order for floor/override resolution: none < self < delegated-any < delegated.\",\n          \"enum\": [\n            \"none\",\n            \"self\",\n            \"delegated\",\n            \"delegatedAny\"\n          ],\n          \"type\": \"string\"\n        },\n        \"operation\": {\n          \"description\": \"The operation-class this floor governs: a Trust Task type URI or slug (e.g. `acl/grant`, `acl/swap-key`, `context/delete`, `key/revoke`, `vault/release`), or `*` for the catch-all default applied when no more-specific floor matches.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"operation\",\n        \"mode\"\n      ],\n      \"title\": \"StepUpFloor\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The policy the maintainer now holds after applying the request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/policy/0.1#response.\",\n      \"properties\": {\n        \"enabled\": {\n          \"description\": \"The effective master switch the maintainer now holds.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"floors\": {\n          \"description\": \"The effective floors the maintainer now holds (canonicalized: deduplicated by `operation`, defaults materialized).\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Floor\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"enabled\",\n        \"floors\"\n      ],\n      \"title\": \"Auth — Step-up Policy — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/step-up/policy/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"The relying party's (ACL maintainer's) system-wide step-up policy: the per-operation-class floor that decides whether — and how — a step-up to a higher assurance level is required before a gated operation proceeds. Set by an administrator; resolved per request against per-entry overrides (see acl/_shared AclEntry.stepUp).\",\n  \"properties\": {\n    \"enabled\": {\n      \"description\": \"Master switch. `false` (the shipping default) ⇒ step-up is NOT enforced anywhere; every operation proceeds at AAL1 regardless of `floors`, because a freshly-provisioned maintainer has no registered approver and could not otherwise be administered (chicken-and-egg). The maintainer SHOULD surface this 'not enforced' state prominently. `true` ⇒ the `floors` are enforced.\",\n      \"type\": \"boolean\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"floors\": {\n      \"description\": \"The system-wide minimum step-up requirement per operation-class — the maintainer-owned floor. Per-entry `stepUp` settings on an AclEntry MAY raise the requirement for a given subject but MUST NOT lower it (additive-only). The effective requirement for a request is the strictest of (matching floor, caller's per-entry setting).\",\n      \"items\": {\n        \"$ref\": \"#/$defs/Floor\"\n      },\n      \"type\": \"array\"\n    }\n  },\n  \"required\": [\n    \"enabled\",\n    \"floors\"\n  ],\n  \"title\": \"Auth — Step-up Policy — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Floor\":{\"additionalProperties\":false,\"properties\":{\"allowAal1IfNonEscalating\":{\"description\":\"Carve-out for non-escalating self-service operations (notably acl/swap-key key-rotation and method-enrolment). When `true` and the maintainer verifies the request does not escalate (its resulting AclEntry's role and scopes are a subset of the caller's existing entry, and the caller acts on its own entry), the operation is admitted at AAL1 even though `mode` requires AAL2 — so a holder with no authenticator yet can still bootstrap/rotate. Omitted is equivalent to `false` (the correct default for escalating operations such as acl/grant, change-role, revoke, context/delete, key/revoke): a caller lacking a usable step-up method is denied (fail-closed) rather than silently downgraded to AAL1.\",\"type\":\"boolean\"},\"mode\":{\"description\":\"Minimum mode required to perform the operation. `none` = AAL1 permitted (no step-up). `self` = the caller must elevate its own session (AAL2 via its own authenticator). `delegated` = a separate approver named on the caller's AclEntry (`stepUp.approver`) MUST ratify (AAL2 via auth/step-up/approve-request). `delegatedAny` = any VID satisfying the maintainer's approver criterion MAY ratify. Strictness order for floor/override resolution: none < self < delegated-any < delegated.\",\"enum\":[\"none\",\"self\",\"delegated\",\"delegatedAny\"],\"type\":\"string\"},\"operation\":{\"description\":\"The operation-class this floor governs: a Trust Task type URI or slug (e.g. `acl/grant`, `acl/swap-key`, `context/delete`, `key/revoke`, `vault/release`), or `*` for the catch-all default applied when no more-specific floor matches.\",\"type\":\"string\"}},\"required\":[\"operation\",\"mode\"],\"title\":\"StepUpFloor\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The policy the maintainer now holds after applying the request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/policy/0.1#response.\",\"properties\":{\"enabled\":{\"description\":\"The effective master switch the maintainer now holds.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"floors\":{\"description\":\"The effective floors the maintainer now holds (canonicalized: deduplicated by `operation`, defaults materialized).\",\"items\":{\"$ref\":\"#/$defs/Floor\"},\"type\":\"array\"}},\"required\":[\"enabled\",\"floors\"],\"title\":\"Auth — Step-up Policy — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/auth/step-up/policy/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The relying party's (ACL maintainer's) system-wide step-up policy: the per-operation-class floor that decides whether — and how — a step-up to a higher assurance level is required before a gated operation proceeds. Set by an administrator; resolved per request against per-entry overrides (see acl/_shared AclEntry.stepUp).\",\"properties\":{\"enabled\":{\"description\":\"Master switch. `false` (the shipping default) ⇒ step-up is NOT enforced anywhere; every operation proceeds at AAL1 regardless of `floors`, because a freshly-provisioned maintainer has no registered approver and could not otherwise be administered (chicken-and-egg). The maintainer SHOULD surface this 'not enforced' state prominently. `true` ⇒ the `floors` are enforced.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"floors\":{\"description\":\"The system-wide minimum step-up requirement per operation-class — the maintainer-owned floor. Per-entry `stepUp` settings on an AclEntry MAY raise the requirement for a given subject but MUST NOT lower it (additive-only). The effective requirement for a request is the strictest of (matching floor, caller's per-entry setting).\",\"items\":{\"$ref\":\"#/$defs/Floor\"},\"type\":\"array\"}},\"required\":[\"enabled\",\"floors\"],\"title\":\"Auth — Step-up Policy — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -600,7 +462,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Floor\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"allowAal1IfNonEscalating\": {\n          \"description\": \"Carve-out for non-escalating self-service operations (notably acl/swap-key key-rotation and method-enrolment). When `true` and the maintainer verifies the request does not escalate (its resulting AclEntry's role and scopes are a subset of the caller's existing entry, and the caller acts on its own entry), the operation is admitted at AAL1 even though `mode` requires AAL2 — so a holder with no authenticator yet can still bootstrap/rotate. Omitted is equivalent to `false` (the correct default for escalating operations such as acl/grant, change-role, revoke, context/delete, key/revoke): a caller lacking a usable step-up method is denied (fail-closed) rather than silently downgraded to AAL1.\",\n          \"type\": \"boolean\"\n        },\n        \"mode\": {\n          \"description\": \"Minimum mode required to perform the operation. `none` = AAL1 permitted (no step-up). `self` = the caller must elevate its own session (AAL2 via its own authenticator). `delegated` = a separate approver named on the caller's AclEntry (`stepUp.approver`) MUST ratify (AAL2 via auth/step-up/approve-request). `delegatedAny` = any VID satisfying the maintainer's approver criterion MAY ratify. Strictness order for floor/override resolution: none < self < delegated-any < delegated.\",\n          \"enum\": [\n            \"none\",\n            \"self\",\n            \"delegated\",\n            \"delegatedAny\"\n          ],\n          \"type\": \"string\"\n        },\n        \"operation\": {\n          \"description\": \"The operation-class this floor governs: a Trust Task type URI or slug (e.g. `acl/grant`, `acl/swap-key`, `context/delete`, `key/revoke`, `vault/release`), or `*` for the catch-all default applied when no more-specific floor matches.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"operation\",\n        \"mode\"\n      ],\n      \"title\": \"StepUpFloor\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The policy the maintainer now holds after applying the request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/policy/0.1#response.\",\n      \"properties\": {\n        \"enabled\": {\n          \"description\": \"The effective master switch the maintainer now holds.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"floors\": {\n          \"description\": \"The effective floors the maintainer now holds (canonicalized: deduplicated by `operation`, defaults materialized).\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Floor\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"enabled\",\n        \"floors\"\n      ],\n      \"title\": \"Auth — Step-up Policy — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Floor\":{\"additionalProperties\":false,\"properties\":{\"allowAal1IfNonEscalating\":{\"description\":\"Carve-out for non-escalating self-service operations (notably acl/swap-key key-rotation and method-enrolment). When `true` and the maintainer verifies the request does not escalate (its resulting AclEntry's role and scopes are a subset of the caller's existing entry, and the caller acts on its own entry), the operation is admitted at AAL1 even though `mode` requires AAL2 — so a holder with no authenticator yet can still bootstrap/rotate. Omitted is equivalent to `false` (the correct default for escalating operations such as acl/grant, change-role, revoke, context/delete, key/revoke): a caller lacking a usable step-up method is denied (fail-closed) rather than silently downgraded to AAL1.\",\"type\":\"boolean\"},\"mode\":{\"description\":\"Minimum mode required to perform the operation. `none` = AAL1 permitted (no step-up). `self` = the caller must elevate its own session (AAL2 via its own authenticator). `delegated` = a separate approver named on the caller's AclEntry (`stepUp.approver`) MUST ratify (AAL2 via auth/step-up/approve-request). `delegatedAny` = any VID satisfying the maintainer's approver criterion MAY ratify. Strictness order for floor/override resolution: none < self < delegated-any < delegated.\",\"enum\":[\"none\",\"self\",\"delegated\",\"delegatedAny\"],\"type\":\"string\"},\"operation\":{\"description\":\"The operation-class this floor governs: a Trust Task type URI or slug (e.g. `acl/grant`, `acl/swap-key`, `context/delete`, `key/revoke`, `vault/release`), or `*` for the catch-all default applied when no more-specific floor matches.\",\"type\":\"string\"}},\"required\":[\"operation\",\"mode\"],\"title\":\"StepUpFloor\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The policy the maintainer now holds after applying the request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/policy/0.1#response.\",\"properties\":{\"enabled\":{\"description\":\"The effective master switch the maintainer now holds.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"floors\":{\"description\":\"The effective floors the maintainer now holds (canonicalized: deduplicated by `operation`, defaults materialized).\",\"items\":{\"$ref\":\"#/$defs/Floor\"},\"type\":\"array\"}},\"required\":[\"enabled\",\"floors\"],\"title\":\"Auth — Step-up Policy — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

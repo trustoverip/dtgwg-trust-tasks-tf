@@ -34,75 +34,6 @@ pub mod error {
 }
 ///A body-free projection of a stored credential. Carries no claim content by construction.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Credential descriptor",
-///  "description": "A body-free projection of a stored credential. Carries no claim content by construction.",
-///  "type": "object",
-///  "required": [
-///    "id",
-///    "status",
-///    "types"
-///  ],
-///  "properties": {
-///    "archivedAt": {
-///      "description": "Present iff `lifecycle` is `archived`.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "deletedAt": {
-///      "description": "Present iff `lifecycle` is `deleted`.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "graceUntil": {
-///      "description": "Present iff `lifecycle` is `deleted`. Restorable while now < graceUntil.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "id": {
-///      "description": "Local handle. Opaque to the consumer; the id `get`, `archive`, `delete` and the rest are keyed on.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "issuerDid": {
-///      "$ref": "#/definitions/Did"
-///    },
-///    "lifecycle": {
-///      "description": "Omitted for active credentials, so an active-only result is unchanged by this member's existence.",
-///      "$ref": "#/definitions/VaultLifecycle"
-///    },
-///    "purpose": {
-///      "$ref": "#/definitions/CredentialPurpose"
-///    },
-///    "status": {
-///      "$ref": "#/definitions/CredentialStatus"
-///    },
-///    "types": {
-///      "description": "VC `type` tags carried by the credential.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 256,
-///        "minLength": 1
-///      }
-///    },
-///    "validFrom": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "validUntil": {
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -164,17 +95,6 @@ impl CredentialDescriptor {
 }
 ///Local handle. Opaque to the consumer; the id `get`, `archive`, `delete` and the rest are keyed on.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Local handle. Opaque to the consumer; the id `get`, `archive`, `delete` and the rest are keyed on.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CredentialDescriptorId(::std::string::String);
@@ -237,16 +157,6 @@ impl<'de> ::serde::Deserialize<'de> for CredentialDescriptorId {
 }
 ///`CredentialDescriptorTypesItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CredentialDescriptorTypesItem(::std::string::String);
@@ -309,17 +219,6 @@ impl<'de> ::serde::Deserialize<'de> for CredentialDescriptorTypesItem {
 }
 ///Semantic classification. `invite`, `membership`, `role`, `endorsement` and `personhood` are defined; a maintainer MAY use another token.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Semantic classification. `invite`, `membership`, `role`, `endorsement` and `personhood` are defined; a maintainer MAY use another token.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CredentialPurpose(::std::string::String);
@@ -382,21 +281,6 @@ impl<'de> ::serde::Deserialize<'de> for CredentialPurpose {
 }
 ///Validity, driven by the credential's own window and by status-list checks. Orthogonal to lifecycle.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Validity, driven by the credential's own window and by status-list checks. Orthogonal to lifecycle.",
-///  "type": "string",
-///  "enum": [
-///    "valid",
-///    "expired",
-///    "revoked",
-///    "unknown"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -466,16 +350,6 @@ impl ::std::convert::TryFrom<::std::string::String> for CredentialStatus {
 }
 ///`Did`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:[a-z0-9]+:.+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Did(::std::string::String);
@@ -540,21 +414,6 @@ impl<'de> ::serde::Deserialize<'de> for Did {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -576,15 +435,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -648,58 +498,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A filtered, body-free search over stored credentials. At least one of `type`, `communityDid`, `issuerDid`, `purpose` or `status` MUST be present — see the specification; `includeArchived` and `includeDeleted` are modifiers and do not satisfy that requirement.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vault/credentials/query/0.1",
-///  "title": "Payload",
-///  "description": "A filtered, body-free search over stored credentials. At least one of `type`, `communityDid`, `issuerDid`, `purpose` or `status` MUST be present — see the specification; `includeArchived` and `includeDeleted` are modifiers and do not satisfy that requirement.",
-///  "type": "object",
-///  "properties": {
-///    "communityDid": {
-///      "description": "Match credentials held for this community or context DID.",
-///      "$ref": "#/definitions/Did"
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "includeArchived": {
-///      "description": "Modifier, not a filter: also return archived credentials matching the other constraints. Absent means false.",
-///      "type": "boolean"
-///    },
-///    "includeDeleted": {
-///      "description": "Modifier, not a filter: also return soft-deleted tombstones matching the other constraints. Absent means false.",
-///      "type": "boolean"
-///    },
-///    "issuerDid": {
-///      "description": "Match credentials issued by this DID.",
-///      "$ref": "#/definitions/Did"
-///    },
-///    "purpose": {
-///      "description": "Match the maintainer's semantic classification of the credential.",
-///      "$ref": "#/definitions/CredentialPurpose"
-///    },
-///    "status": {
-///      "description": "Match the validity dimension.",
-///      "$ref": "#/definitions/CredentialStatus"
-///    },
-///    "subjectDid": {
-///      "description": "Narrow the other constraints to credentials whose subject — the DID a presentation of the credential is made as — is this DID. Narrows only: it does not satisfy the at-least-one-filter requirement on its own.",
-///      "$ref": "#/definitions/Did"
-///    },
-///    "type": {
-///      "description": "Match credentials carrying this VC `type` tag.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -778,17 +576,6 @@ impl Payload {
 }
 ///Match credentials carrying this VC `type` tag.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Match credentials carrying this VC `type` tag.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadType(::std::string::String);
@@ -851,33 +638,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadType {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "credentials"
-///  ],
-///  "properties": {
-///    "credentials": {
-///      "description": "Matching descriptors. Empty when nothing matched — a successful answer, not an error.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/CredentialDescriptor"
-///      }
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -895,20 +655,6 @@ impl Response {
 }
 ///Archival state, chosen through this family. Orthogonal to validity.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Archival state, chosen through this family. Orthogonal to validity.",
-///  "type": "string",
-///  "enum": [
-///    "active",
-///    "archived",
-///    "deleted"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1407,7 +1153,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vault/credentials/query/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CredentialDescriptor\": {\n      \"additionalProperties\": false,\n      \"description\": \"A body-free projection of a stored credential. Carries no claim content by construction.\",\n      \"properties\": {\n        \"archivedAt\": {\n          \"description\": \"Present iff `lifecycle` is `archived`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"deletedAt\": {\n          \"description\": \"Present iff `lifecycle` is `deleted`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"graceUntil\": {\n          \"description\": \"Present iff `lifecycle` is `deleted`. Restorable while now < graceUntil.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"description\": \"Local handle. Opaque to the consumer; the id `get`, `archive`, `delete` and the rest are keyed on.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issuerDid\": {\n          \"$ref\": \"#/$defs/Did\"\n        },\n        \"lifecycle\": {\n          \"$ref\": \"#/$defs/VaultLifecycle\",\n          \"description\": \"Omitted for active credentials, so an active-only result is unchanged by this member's existence.\"\n        },\n        \"purpose\": {\n          \"$ref\": \"#/$defs/CredentialPurpose\"\n        },\n        \"status\": {\n          \"$ref\": \"#/$defs/CredentialStatus\"\n        },\n        \"types\": {\n          \"description\": \"VC `type` tags carried by the credential.\",\n          \"items\": {\n            \"maxLength\": 256,\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"validFrom\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"validUntil\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"types\",\n        \"status\"\n      ],\n      \"title\": \"Credential descriptor\",\n      \"type\": \"object\"\n    },\n    \"CredentialPurpose\": {\n      \"description\": \"Semantic classification. `invite`, `membership`, `role`, `endorsement` and `personhood` are defined; a maintainer MAY use another token.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"CredentialStatus\": {\n      \"description\": \"Validity, driven by the credential's own window and by status-list checks. Orthogonal to lifecycle.\",\n      \"enum\": [\n        \"valid\",\n        \"expired\",\n        \"revoked\",\n        \"unknown\"\n      ],\n      \"type\": \"string\"\n    },\n    \"Did\": {\n      \"maxLength\": 2048,\n      \"pattern\": \"^did:[a-z0-9]+:.+$\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"credentials\": {\n          \"description\": \"Matching descriptors. Empty when nothing matched — a successful answer, not an error.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/CredentialDescriptor\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        }\n      },\n      \"required\": [\n        \"credentials\"\n      ],\n      \"title\": \"Vault Credentials Query — response payload\",\n      \"type\": \"object\"\n    },\n    \"VaultLifecycle\": {\n      \"description\": \"Archival state, chosen through this family. Orthogonal to validity.\",\n      \"enum\": [\n        \"active\",\n        \"archived\",\n        \"deleted\"\n      ],\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vault/credentials/query/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A filtered, body-free search over stored credentials. At least one of `type`, `communityDid`, `issuerDid`, `purpose` or `status` MUST be present — see the specification; `includeArchived` and `includeDeleted` are modifiers and do not satisfy that requirement.\",\n  \"properties\": {\n    \"communityDid\": {\n      \"$ref\": \"#/$defs/Did\",\n      \"description\": \"Match credentials held for this community or context DID.\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"includeArchived\": {\n      \"description\": \"Modifier, not a filter: also return archived credentials matching the other constraints. Absent means false.\",\n      \"type\": \"boolean\"\n    },\n    \"includeDeleted\": {\n      \"description\": \"Modifier, not a filter: also return soft-deleted tombstones matching the other constraints. Absent means false.\",\n      \"type\": \"boolean\"\n    },\n    \"issuerDid\": {\n      \"$ref\": \"#/$defs/Did\",\n      \"description\": \"Match credentials issued by this DID.\"\n    },\n    \"purpose\": {\n      \"$ref\": \"#/$defs/CredentialPurpose\",\n      \"description\": \"Match the maintainer's semantic classification of the credential.\"\n    },\n    \"status\": {\n      \"$ref\": \"#/$defs/CredentialStatus\",\n      \"description\": \"Match the validity dimension.\"\n    },\n    \"subjectDid\": {\n      \"$ref\": \"#/$defs/Did\",\n      \"description\": \"Narrow the other constraints to credentials whose subject — the DID a presentation of the credential is made as — is this DID. Narrows only: it does not satisfy the at-least-one-filter requirement on its own.\"\n    },\n    \"type\": {\n      \"description\": \"Match credentials carrying this VC `type` tag.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"title\": \"Vault Credentials — Query\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"CredentialDescriptor\":{\"additionalProperties\":false,\"description\":\"A body-free projection of a stored credential. Carries no claim content by construction.\",\"properties\":{\"archivedAt\":{\"description\":\"Present iff `lifecycle` is `archived`.\",\"format\":\"date-time\",\"type\":\"string\"},\"deletedAt\":{\"description\":\"Present iff `lifecycle` is `deleted`.\",\"format\":\"date-time\",\"type\":\"string\"},\"graceUntil\":{\"description\":\"Present iff `lifecycle` is `deleted`. Restorable while now < graceUntil.\",\"format\":\"date-time\",\"type\":\"string\"},\"id\":{\"description\":\"Local handle. Opaque to the consumer; the id `get`, `archive`, `delete` and the rest are keyed on.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"issuerDid\":{\"$ref\":\"#/$defs/Did\"},\"lifecycle\":{\"$ref\":\"#/$defs/VaultLifecycle\",\"description\":\"Omitted for active credentials, so an active-only result is unchanged by this member's existence.\"},\"purpose\":{\"$ref\":\"#/$defs/CredentialPurpose\"},\"status\":{\"$ref\":\"#/$defs/CredentialStatus\"},\"types\":{\"description\":\"VC `type` tags carried by the credential.\",\"items\":{\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"},\"validFrom\":{\"format\":\"date-time\",\"type\":\"string\"},\"validUntil\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"id\",\"types\",\"status\"],\"title\":\"Credential descriptor\",\"type\":\"object\"},\"CredentialPurpose\":{\"description\":\"Semantic classification. `invite`, `membership`, `role`, `endorsement` and `personhood` are defined; a maintainer MAY use another token.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"CredentialStatus\":{\"description\":\"Validity, driven by the credential's own window and by status-list checks. Orthogonal to lifecycle.\",\"enum\":[\"valid\",\"expired\",\"revoked\",\"unknown\"],\"type\":\"string\"},\"Did\":{\"maxLength\":2048,\"pattern\":\"^did:[a-z0-9]+:.+$\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"credentials\":{\"description\":\"Matching descriptors. Empty when nothing matched — a successful answer, not an error.\",\"items\":{\"$ref\":\"#/$defs/CredentialDescriptor\"},\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"required\":[\"credentials\"],\"title\":\"Vault Credentials Query — response payload\",\"type\":\"object\"},\"VaultLifecycle\":{\"description\":\"Archival state, chosen through this family. Orthogonal to validity.\",\"enum\":[\"active\",\"archived\",\"deleted\"],\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/vault/credentials/query/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A filtered, body-free search over stored credentials. At least one of `type`, `communityDid`, `issuerDid`, `purpose` or `status` MUST be present — see the specification; `includeArchived` and `includeDeleted` are modifiers and do not satisfy that requirement.\",\"properties\":{\"communityDid\":{\"$ref\":\"#/$defs/Did\",\"description\":\"Match credentials held for this community or context DID.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"includeArchived\":{\"description\":\"Modifier, not a filter: also return archived credentials matching the other constraints. Absent means false.\",\"type\":\"boolean\"},\"includeDeleted\":{\"description\":\"Modifier, not a filter: also return soft-deleted tombstones matching the other constraints. Absent means false.\",\"type\":\"boolean\"},\"issuerDid\":{\"$ref\":\"#/$defs/Did\",\"description\":\"Match credentials issued by this DID.\"},\"purpose\":{\"$ref\":\"#/$defs/CredentialPurpose\",\"description\":\"Match the maintainer's semantic classification of the credential.\"},\"status\":{\"$ref\":\"#/$defs/CredentialStatus\",\"description\":\"Match the validity dimension.\"},\"subjectDid\":{\"$ref\":\"#/$defs/Did\",\"description\":\"Narrow the other constraints to credentials whose subject — the DID a presentation of the credential is made as — is this DID. Narrows only: it does not satisfy the at-least-one-filter requirement on its own.\"},\"type\":{\"description\":\"Match credentials carrying this VC `type` tag.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"}},\"title\":\"Vault Credentials — Query\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1415,7 +1161,7 @@ impl crate::Payload for Response {
         "https://trusttasks.org/spec/vault/credentials/query/0.1#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CredentialDescriptor\": {\n      \"additionalProperties\": false,\n      \"description\": \"A body-free projection of a stored credential. Carries no claim content by construction.\",\n      \"properties\": {\n        \"archivedAt\": {\n          \"description\": \"Present iff `lifecycle` is `archived`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"deletedAt\": {\n          \"description\": \"Present iff `lifecycle` is `deleted`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"graceUntil\": {\n          \"description\": \"Present iff `lifecycle` is `deleted`. Restorable while now < graceUntil.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"description\": \"Local handle. Opaque to the consumer; the id `get`, `archive`, `delete` and the rest are keyed on.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issuerDid\": {\n          \"$ref\": \"#/$defs/Did\"\n        },\n        \"lifecycle\": {\n          \"$ref\": \"#/$defs/VaultLifecycle\",\n          \"description\": \"Omitted for active credentials, so an active-only result is unchanged by this member's existence.\"\n        },\n        \"purpose\": {\n          \"$ref\": \"#/$defs/CredentialPurpose\"\n        },\n        \"status\": {\n          \"$ref\": \"#/$defs/CredentialStatus\"\n        },\n        \"types\": {\n          \"description\": \"VC `type` tags carried by the credential.\",\n          \"items\": {\n            \"maxLength\": 256,\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"validFrom\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"validUntil\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"types\",\n        \"status\"\n      ],\n      \"title\": \"Credential descriptor\",\n      \"type\": \"object\"\n    },\n    \"CredentialPurpose\": {\n      \"description\": \"Semantic classification. `invite`, `membership`, `role`, `endorsement` and `personhood` are defined; a maintainer MAY use another token.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"CredentialStatus\": {\n      \"description\": \"Validity, driven by the credential's own window and by status-list checks. Orthogonal to lifecycle.\",\n      \"enum\": [\n        \"valid\",\n        \"expired\",\n        \"revoked\",\n        \"unknown\"\n      ],\n      \"type\": \"string\"\n    },\n    \"Did\": {\n      \"maxLength\": 2048,\n      \"pattern\": \"^did:[a-z0-9]+:.+$\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"credentials\": {\n          \"description\": \"Matching descriptors. Empty when nothing matched — a successful answer, not an error.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/CredentialDescriptor\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        }\n      },\n      \"required\": [\n        \"credentials\"\n      ],\n      \"title\": \"Vault Credentials Query — response payload\",\n      \"type\": \"object\"\n    },\n    \"VaultLifecycle\": {\n      \"description\": \"Archival state, chosen through this family. Orthogonal to validity.\",\n      \"enum\": [\n        \"active\",\n        \"archived\",\n        \"deleted\"\n      ],\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"CredentialDescriptor\":{\"additionalProperties\":false,\"description\":\"A body-free projection of a stored credential. Carries no claim content by construction.\",\"properties\":{\"archivedAt\":{\"description\":\"Present iff `lifecycle` is `archived`.\",\"format\":\"date-time\",\"type\":\"string\"},\"deletedAt\":{\"description\":\"Present iff `lifecycle` is `deleted`.\",\"format\":\"date-time\",\"type\":\"string\"},\"graceUntil\":{\"description\":\"Present iff `lifecycle` is `deleted`. Restorable while now < graceUntil.\",\"format\":\"date-time\",\"type\":\"string\"},\"id\":{\"description\":\"Local handle. Opaque to the consumer; the id `get`, `archive`, `delete` and the rest are keyed on.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"issuerDid\":{\"$ref\":\"#/$defs/Did\"},\"lifecycle\":{\"$ref\":\"#/$defs/VaultLifecycle\",\"description\":\"Omitted for active credentials, so an active-only result is unchanged by this member's existence.\"},\"purpose\":{\"$ref\":\"#/$defs/CredentialPurpose\"},\"status\":{\"$ref\":\"#/$defs/CredentialStatus\"},\"types\":{\"description\":\"VC `type` tags carried by the credential.\",\"items\":{\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"},\"validFrom\":{\"format\":\"date-time\",\"type\":\"string\"},\"validUntil\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"id\",\"types\",\"status\"],\"title\":\"Credential descriptor\",\"type\":\"object\"},\"CredentialPurpose\":{\"description\":\"Semantic classification. `invite`, `membership`, `role`, `endorsement` and `personhood` are defined; a maintainer MAY use another token.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"CredentialStatus\":{\"description\":\"Validity, driven by the credential's own window and by status-list checks. Orthogonal to lifecycle.\",\"enum\":[\"valid\",\"expired\",\"revoked\",\"unknown\"],\"type\":\"string\"},\"Did\":{\"maxLength\":2048,\"pattern\":\"^did:[a-z0-9]+:.+$\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"credentials\":{\"description\":\"Matching descriptors. Empty when nothing matched — a successful answer, not an error.\",\"items\":{\"$ref\":\"#/$defs/CredentialDescriptor\"},\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"required\":[\"credentials\"],\"title\":\"Vault Credentials Query — response payload\",\"type\":\"object\"},\"VaultLifecycle\":{\"description\":\"Archival state, chosen through this family. Orthogonal to validity.\",\"enum\":[\"active\",\"archived\",\"deleted\"],\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

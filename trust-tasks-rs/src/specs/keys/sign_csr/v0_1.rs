@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,86 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A request for a PKCS#10 certificate signing request (RFC 2986) for a key the custodian holds. The producer names the subject as structured attributes and optionally the subject alternative names; the custodian builds the CertificationRequestInfo itself from those and the key's own public key, and signs it. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/keys/sign-csr/0.1",
-///  "title": "Payload",
-///  "description": "A request for a PKCS#10 certificate signing request (RFC 2986) for a key the custodian holds. The producer names the subject as structured attributes and optionally the subject alternative names; the custodian builds the CertificationRequestInfo itself from those and the key's own public key, and signs it. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "keyId",
-///    "subject"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "keyId": {
-///      "description": "Identifier of the key the request is for, as `keys/show` describes it. Its public half becomes the request's subjectPublicKeyInfo and its private half signs the request. The key MUST be `active`, and `p256` or `ed25519`.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "subject": {
-///      "description": "The subject distinguished name, one attribute per relative distinguished name, in the order of the encoded RDNSequence: element 0 is the first RDN in the DER, conventionally the country. That is the reverse of the RFC 4514 string form (`CN=…,O=…,C=…`). Never a raw DER or DN string.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/RdnAttribute"
-///      },
-///      "maxItems": 16,
-///      "minItems": 1
-///    },
-///    "subjectAltNames": {
-///      "description": "Subject alternative names to request. When present, the custodian adds a non-critical subjectAltName extension to the request's extensionRequest attribute — the only extension this task ever requests.",
-///      "type": "object",
-///      "minProperties": 1,
-///      "properties": {
-///        "dns": {
-///          "description": "dNSName entries: host names in LDH form (an internationalised name as its A-label). No wildcards.",
-///          "type": "array",
-///          "items": {
-///            "type": "string",
-///            "maxLength": 253,
-///            "minLength": 1,
-///            "pattern": "^([A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?\\.)*[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?$"
-///          },
-///          "maxItems": 16,
-///          "minItems": 1
-///        },
-///        "email": {
-///          "description": "rfc822Name entries: ASCII mailbox addresses.",
-///          "type": "array",
-///          "items": {
-///            "type": "string",
-///            "maxLength": 255,
-///            "minLength": 3,
-///            "pattern": "^[!-?A-~]+@[A-Za-z0-9.-]+$"
-///          },
-///          "maxItems": 16,
-///          "minItems": 1
-///        },
-///        "uri": {
-///          "description": "uniformResourceIdentifier entries: absolute URIs, printable ASCII without spaces.",
-///          "type": "array",
-///          "items": {
-///            "type": "string",
-///            "maxLength": 2048,
-///            "minLength": 3,
-///            "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[!-~]+$"
-///          },
-///          "maxItems": 16,
-///          "minItems": 1
-///        }
-///      },
-///      "additionalProperties": false
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -248,16 +144,6 @@ impl Payload {
 }
 ///Identifier of the key the request is for, as `keys/show` describes it. Its public half becomes the request's subjectPublicKeyInfo and its private half signs the request. The key MUST be `active`, and `p256` or `ed25519`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Identifier of the key the request is for, as `keys/show` describes it. Its public half becomes the request's subjectPublicKeyInfo and its private half signs the request. The key MUST be `active`, and `p256` or `ed25519`.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadKeyId(::std::string::String);
@@ -317,55 +203,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadKeyId {
 }
 ///Subject alternative names to request. When present, the custodian adds a non-critical subjectAltName extension to the request's extensionRequest attribute — the only extension this task ever requests.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Subject alternative names to request. When present, the custodian adds a non-critical subjectAltName extension to the request's extensionRequest attribute — the only extension this task ever requests.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "properties": {
-///    "dns": {
-///      "description": "dNSName entries: host names in LDH form (an internationalised name as its A-label). No wildcards.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 253,
-///        "minLength": 1,
-///        "pattern": "^([A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?\\.)*[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?$"
-///      },
-///      "maxItems": 16,
-///      "minItems": 1
-///    },
-///    "email": {
-///      "description": "rfc822Name entries: ASCII mailbox addresses.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 255,
-///        "minLength": 3,
-///        "pattern": "^[!-?A-~]+@[A-Za-z0-9.-]+$"
-///      },
-///      "maxItems": 16,
-///      "minItems": 1
-///    },
-///    "uri": {
-///      "description": "uniformResourceIdentifier entries: absolute URIs, printable ASCII without spaces.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 2048,
-///        "minLength": 3,
-///        "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[!-~]+$"
-///      },
-///      "maxItems": 16,
-///      "minItems": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -396,17 +233,6 @@ impl PayloadSubjectAltNames {
 }
 ///`PayloadSubjectAltNamesDnsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 253,
-///  "minLength": 1,
-///  "pattern": "^([A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?\\.)*[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadSubjectAltNamesDnsItem(::std::string::String);
@@ -483,17 +309,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubjectAltNamesDnsItem {
 }
 ///`PayloadSubjectAltNamesEmailItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 255,
-///  "minLength": 3,
-///  "pattern": "^[!-?A-~]+@[A-Za-z0-9.-]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadSubjectAltNamesEmailItem(::std::string::String);
@@ -563,17 +378,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubjectAltNamesEmailItem {
 }
 ///`PayloadSubjectAltNamesUriItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 3,
-///  "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:[!-~]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadSubjectAltNamesUriItem(::std::string::String);
@@ -643,44 +447,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubjectAltNamesUriItem {
 }
 ///One attribute of the subject distinguished name, encoded as a single-valued RDN.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RdnAttribute",
-///  "description": "One attribute of the subject distinguished name, encoded as a single-valued RDN.",
-///  "type": "object",
-///  "required": [
-///    "type",
-///    "value"
-///  ],
-///  "properties": {
-///    "type": {
-///      "description": "The attribute type, by its X.520 / PKCS #9 short name (externally owned, carried verbatim): `CN` commonName (2.5.4.3), `O` organizationName (2.5.4.10), `OU` organizationalUnitName (2.5.4.11), `C` countryName (2.5.4.6), `L` localityName (2.5.4.7), `ST` stateOrProvinceName (2.5.4.8), `organizationIdentifier` (2.5.4.97), `serialNumber` (2.5.4.5), `emailAddress` (1.2.840.113549.1.9.1). Closed: an attribute outside the set is refused, never passed through by OID.",
-///      "type": "string",
-///      "enum": [
-///        "CN",
-///        "O",
-///        "OU",
-///        "C",
-///        "L",
-///        "ST",
-///        "organizationIdentifier",
-///        "serialNumber",
-///        "emailAddress"
-///      ]
-///    },
-///    "value": {
-///      "description": "The attribute value as text. The custodian encodes it without normalising, trimming or re-casing it, and checks the per-type rules of the specification (character set and length), refusing a value that breaks them with `keys/sign-csr:subjectInvalid`.",
-///      "type": "string",
-///      "maxLength": 255,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -698,26 +464,6 @@ impl RdnAttribute {
 }
 ///The attribute type, by its X.520 / PKCS #9 short name (externally owned, carried verbatim): `CN` commonName (2.5.4.3), `O` organizationName (2.5.4.10), `OU` organizationalUnitName (2.5.4.11), `C` countryName (2.5.4.6), `L` localityName (2.5.4.7), `ST` stateOrProvinceName (2.5.4.8), `organizationIdentifier` (2.5.4.97), `serialNumber` (2.5.4.5), `emailAddress` (1.2.840.113549.1.9.1). Closed: an attribute outside the set is refused, never passed through by OID.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The attribute type, by its X.520 / PKCS #9 short name (externally owned, carried verbatim): `CN` commonName (2.5.4.3), `O` organizationName (2.5.4.10), `OU` organizationalUnitName (2.5.4.11), `C` countryName (2.5.4.6), `L` localityName (2.5.4.7), `ST` stateOrProvinceName (2.5.4.8), `organizationIdentifier` (2.5.4.97), `serialNumber` (2.5.4.5), `emailAddress` (1.2.840.113549.1.9.1). Closed: an attribute outside the set is refused, never passed through by OID.",
-///  "type": "string",
-///  "enum": [
-///    "CN",
-///    "O",
-///    "OU",
-///    "C",
-///    "L",
-///    "ST",
-///    "organizationIdentifier",
-///    "serialNumber",
-///    "emailAddress"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -804,17 +550,6 @@ impl ::std::convert::TryFrom<::std::string::String> for RdnAttributeType {
 }
 ///The attribute value as text. The custodian encodes it without normalising, trimming or re-casing it, and checks the per-type rules of the specification (character set and length), refusing a value that breaks them with `keys/sign-csr:subjectInvalid`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The attribute value as text. The custodian encodes it without normalising, trimming or re-casing it, and checks the per-type rules of the specification (character set and length), refusing a value that breaks them with `keys/sign-csr:subjectInvalid`.",
-///  "type": "string",
-///  "maxLength": 255,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RdnAttributeValue(::std::string::String);
@@ -877,43 +612,6 @@ impl<'de> ::serde::Deserialize<'de> for RdnAttributeValue {
 }
 ///The success response to a keys/sign-csr request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/sign-csr/0.1#response. Failures use trust-task-error, not this shape.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The success response to a keys/sign-csr request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/sign-csr/0.1#response. Failures use trust-task-error, not this shape.",
-///  "type": "object",
-///  "required": [
-///    "csr",
-///    "keyId",
-///    "publicKey"
-///  ],
-///  "properties": {
-///    "csr": {
-///      "description": "The PKCS#10 CertificationRequest, DER-encoded and armoured as RFC 7468 `CERTIFICATE REQUEST` text: base64 in lines of 64 characters, LF line endings.",
-///      "type": "string",
-///      "maxLength": 16384,
-///      "pattern": "^-----BEGIN CERTIFICATE REQUEST-----\\n[A-Za-z0-9+/=\\n]+-----END CERTIFICATE REQUEST-----\\n?$"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "keyId": {
-///      "description": "The key the request is for. Echoed so a response separated from its request is still attributable.",
-///      "type": "string"
-///    },
-///    "publicKey": {
-///      "description": "The key's public half, multibase-encoded exactly as `KeyRecord.publicKey` carries it, so the producer can confirm the request is for the key it meant without parsing the DER.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -936,17 +634,6 @@ impl Response {
 }
 ///The PKCS#10 CertificationRequest, DER-encoded and armoured as RFC 7468 `CERTIFICATE REQUEST` text: base64 in lines of 64 characters, LF line endings.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The PKCS#10 CertificationRequest, DER-encoded and armoured as RFC 7468 `CERTIFICATE REQUEST` text: base64 in lines of 64 characters, LF line endings.",
-///  "type": "string",
-///  "maxLength": 16384,
-///  "pattern": "^-----BEGIN CERTIFICATE REQUEST-----\\n[A-Za-z0-9+/=\\n]+-----END CERTIFICATE REQUEST-----\\n?$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseCsr(::std::string::String);
@@ -1020,16 +707,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseCsr {
 }
 ///The key's public half, multibase-encoded exactly as `KeyRecord.publicKey` carries it, so the producer can confirm the request is for the key it meant without parsing the DER.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The key's public half, multibase-encoded exactly as `KeyRecord.publicKey` carries it, so the producer can confirm the request is for the key it meant without parsing the DER.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponsePublicKey(::std::string::String);
@@ -1390,7 +1067,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"RdnAttribute\": {\n      \"additionalProperties\": false,\n      \"description\": \"One attribute of the subject distinguished name, encoded as a single-valued RDN.\",\n      \"properties\": {\n        \"type\": {\n          \"description\": \"The attribute type, by its X.520 / PKCS #9 short name (externally owned, carried verbatim): `CN` commonName (2.5.4.3), `O` organizationName (2.5.4.10), `OU` organizationalUnitName (2.5.4.11), `C` countryName (2.5.4.6), `L` localityName (2.5.4.7), `ST` stateOrProvinceName (2.5.4.8), `organizationIdentifier` (2.5.4.97), `serialNumber` (2.5.4.5), `emailAddress` (1.2.840.113549.1.9.1). Closed: an attribute outside the set is refused, never passed through by OID.\",\n          \"enum\": [\n            \"CN\",\n            \"O\",\n            \"OU\",\n            \"C\",\n            \"L\",\n            \"ST\",\n            \"organizationIdentifier\",\n            \"serialNumber\",\n            \"emailAddress\"\n          ],\n          \"type\": \"string\"\n        },\n        \"value\": {\n          \"description\": \"The attribute value as text. The custodian encodes it without normalising, trimming or re-casing it, and checks the per-type rules of the specification (character set and length), refusing a value that breaks them with `keys/sign-csr:subjectInvalid`.\",\n          \"maxLength\": 255,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"type\",\n        \"value\"\n      ],\n      \"title\": \"RdnAttribute\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a keys/sign-csr request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/sign-csr/0.1#response. Failures use trust-task-error, not this shape.\",\n      \"properties\": {\n        \"csr\": {\n          \"description\": \"The PKCS#10 CertificationRequest, DER-encoded and armoured as RFC 7468 `CERTIFICATE REQUEST` text: base64 in lines of 64 characters, LF line endings.\",\n          \"maxLength\": 16384,\n          \"pattern\": \"^-----BEGIN CERTIFICATE REQUEST-----\\\\n[A-Za-z0-9+/=\\\\n]+-----END CERTIFICATE REQUEST-----\\\\n?$\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"keyId\": {\n          \"description\": \"The key the request is for. Echoed so a response separated from its request is still attributable.\",\n          \"type\": \"string\"\n        },\n        \"publicKey\": {\n          \"description\": \"The key's public half, multibase-encoded exactly as `KeyRecord.publicKey` carries it, so the producer can confirm the request is for the key it meant without parsing the DER.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"keyId\",\n        \"csr\",\n        \"publicKey\"\n      ],\n      \"title\": \"Keys — Sign CSR — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/keys/sign-csr/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A request for a PKCS#10 certificate signing request (RFC 2986) for a key the custodian holds. The producer names the subject as structured attributes and optionally the subject alternative names; the custodian builds the CertificationRequestInfo itself from those and the key's own public key, and signs it. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"keyId\": {\n      \"description\": \"Identifier of the key the request is for, as `keys/show` describes it. Its public half becomes the request's subjectPublicKeyInfo and its private half signs the request. The key MUST be `active`, and `p256` or `ed25519`.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"subject\": {\n      \"description\": \"The subject distinguished name, one attribute per relative distinguished name, in the order of the encoded RDNSequence: element 0 is the first RDN in the DER, conventionally the country. That is the reverse of the RFC 4514 string form (`CN=…,O=…,C=…`). Never a raw DER or DN string.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/RdnAttribute\"\n      },\n      \"maxItems\": 16,\n      \"minItems\": 1,\n      \"type\": \"array\"\n    },\n    \"subjectAltNames\": {\n      \"additionalProperties\": false,\n      \"description\": \"Subject alternative names to request. When present, the custodian adds a non-critical subjectAltName extension to the request's extensionRequest attribute — the only extension this task ever requests.\",\n      \"minProperties\": 1,\n      \"properties\": {\n        \"dns\": {\n          \"description\": \"dNSName entries: host names in LDH form (an internationalised name as its A-label). No wildcards.\",\n          \"items\": {\n            \"maxLength\": 253,\n            \"minLength\": 1,\n            \"pattern\": \"^([A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?\\\\.)*[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?$\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 16,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"email\": {\n          \"description\": \"rfc822Name entries: ASCII mailbox addresses.\",\n          \"items\": {\n            \"maxLength\": 255,\n            \"minLength\": 3,\n            \"pattern\": \"^[!-?A-~]+@[A-Za-z0-9.-]+$\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 16,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"uri\": {\n          \"description\": \"uniformResourceIdentifier entries: absolute URIs, printable ASCII without spaces.\",\n          \"items\": {\n            \"maxLength\": 2048,\n            \"minLength\": 3,\n            \"pattern\": \"^[A-Za-z][A-Za-z0-9+.-]*:[!-~]+$\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 16,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        }\n      },\n      \"type\": \"object\"\n    }\n  },\n  \"required\": [\n    \"keyId\",\n    \"subject\"\n  ],\n  \"title\": \"Keys — Sign CSR — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"RdnAttribute\":{\"additionalProperties\":false,\"description\":\"One attribute of the subject distinguished name, encoded as a single-valued RDN.\",\"properties\":{\"type\":{\"description\":\"The attribute type, by its X.520 / PKCS #9 short name (externally owned, carried verbatim): `CN` commonName (2.5.4.3), `O` organizationName (2.5.4.10), `OU` organizationalUnitName (2.5.4.11), `C` countryName (2.5.4.6), `L` localityName (2.5.4.7), `ST` stateOrProvinceName (2.5.4.8), `organizationIdentifier` (2.5.4.97), `serialNumber` (2.5.4.5), `emailAddress` (1.2.840.113549.1.9.1). Closed: an attribute outside the set is refused, never passed through by OID.\",\"enum\":[\"CN\",\"O\",\"OU\",\"C\",\"L\",\"ST\",\"organizationIdentifier\",\"serialNumber\",\"emailAddress\"],\"type\":\"string\"},\"value\":{\"description\":\"The attribute value as text. The custodian encodes it without normalising, trimming or re-casing it, and checks the per-type rules of the specification (character set and length), refusing a value that breaks them with `keys/sign-csr:subjectInvalid`.\",\"maxLength\":255,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"type\",\"value\"],\"title\":\"RdnAttribute\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a keys/sign-csr request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/sign-csr/0.1#response. Failures use trust-task-error, not this shape.\",\"properties\":{\"csr\":{\"description\":\"The PKCS#10 CertificationRequest, DER-encoded and armoured as RFC 7468 `CERTIFICATE REQUEST` text: base64 in lines of 64 characters, LF line endings.\",\"maxLength\":16384,\"pattern\":\"^-----BEGIN CERTIFICATE REQUEST-----\\\\n[A-Za-z0-9+/=\\\\n]+-----END CERTIFICATE REQUEST-----\\\\n?$\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keyId\":{\"description\":\"The key the request is for. Echoed so a response separated from its request is still attributable.\",\"type\":\"string\"},\"publicKey\":{\"description\":\"The key's public half, multibase-encoded exactly as `KeyRecord.publicKey` carries it, so the producer can confirm the request is for the key it meant without parsing the DER.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"keyId\",\"csr\",\"publicKey\"],\"title\":\"Keys — Sign CSR — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/keys/sign-csr/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A request for a PKCS#10 certificate signing request (RFC 2986) for a key the custodian holds. The producer names the subject as structured attributes and optionally the subject alternative names; the custodian builds the CertificationRequestInfo itself from those and the key's own public key, and signs it. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"keyId\":{\"description\":\"Identifier of the key the request is for, as `keys/show` describes it. Its public half becomes the request's subjectPublicKeyInfo and its private half signs the request. The key MUST be `active`, and `p256` or `ed25519`.\",\"minLength\":1,\"type\":\"string\"},\"subject\":{\"description\":\"The subject distinguished name, one attribute per relative distinguished name, in the order of the encoded RDNSequence: element 0 is the first RDN in the DER, conventionally the country. That is the reverse of the RFC 4514 string form (`CN=…,O=…,C=…`). Never a raw DER or DN string.\",\"items\":{\"$ref\":\"#/$defs/RdnAttribute\"},\"maxItems\":16,\"minItems\":1,\"type\":\"array\"},\"subjectAltNames\":{\"additionalProperties\":false,\"description\":\"Subject alternative names to request. When present, the custodian adds a non-critical subjectAltName extension to the request's extensionRequest attribute — the only extension this task ever requests.\",\"minProperties\":1,\"properties\":{\"dns\":{\"description\":\"dNSName entries: host names in LDH form (an internationalised name as its A-label). No wildcards.\",\"items\":{\"maxLength\":253,\"minLength\":1,\"pattern\":\"^([A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?\\\\.)*[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?$\",\"type\":\"string\"},\"maxItems\":16,\"minItems\":1,\"type\":\"array\"},\"email\":{\"description\":\"rfc822Name entries: ASCII mailbox addresses.\",\"items\":{\"maxLength\":255,\"minLength\":3,\"pattern\":\"^[!-?A-~]+@[A-Za-z0-9.-]+$\",\"type\":\"string\"},\"maxItems\":16,\"minItems\":1,\"type\":\"array\"},\"uri\":{\"description\":\"uniformResourceIdentifier entries: absolute URIs, printable ASCII without spaces.\",\"items\":{\"maxLength\":2048,\"minLength\":3,\"pattern\":\"^[A-Za-z][A-Za-z0-9+.-]*:[!-~]+$\",\"type\":\"string\"},\"maxItems\":16,\"minItems\":1,\"type\":\"array\"}},\"type\":\"object\"}},\"required\":[\"keyId\",\"subject\"],\"title\":\"Keys — Sign CSR — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1398,7 +1075,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"RdnAttribute\": {\n      \"additionalProperties\": false,\n      \"description\": \"One attribute of the subject distinguished name, encoded as a single-valued RDN.\",\n      \"properties\": {\n        \"type\": {\n          \"description\": \"The attribute type, by its X.520 / PKCS #9 short name (externally owned, carried verbatim): `CN` commonName (2.5.4.3), `O` organizationName (2.5.4.10), `OU` organizationalUnitName (2.5.4.11), `C` countryName (2.5.4.6), `L` localityName (2.5.4.7), `ST` stateOrProvinceName (2.5.4.8), `organizationIdentifier` (2.5.4.97), `serialNumber` (2.5.4.5), `emailAddress` (1.2.840.113549.1.9.1). Closed: an attribute outside the set is refused, never passed through by OID.\",\n          \"enum\": [\n            \"CN\",\n            \"O\",\n            \"OU\",\n            \"C\",\n            \"L\",\n            \"ST\",\n            \"organizationIdentifier\",\n            \"serialNumber\",\n            \"emailAddress\"\n          ],\n          \"type\": \"string\"\n        },\n        \"value\": {\n          \"description\": \"The attribute value as text. The custodian encodes it without normalising, trimming or re-casing it, and checks the per-type rules of the specification (character set and length), refusing a value that breaks them with `keys/sign-csr:subjectInvalid`.\",\n          \"maxLength\": 255,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"type\",\n        \"value\"\n      ],\n      \"title\": \"RdnAttribute\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a keys/sign-csr request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/sign-csr/0.1#response. Failures use trust-task-error, not this shape.\",\n      \"properties\": {\n        \"csr\": {\n          \"description\": \"The PKCS#10 CertificationRequest, DER-encoded and armoured as RFC 7468 `CERTIFICATE REQUEST` text: base64 in lines of 64 characters, LF line endings.\",\n          \"maxLength\": 16384,\n          \"pattern\": \"^-----BEGIN CERTIFICATE REQUEST-----\\\\n[A-Za-z0-9+/=\\\\n]+-----END CERTIFICATE REQUEST-----\\\\n?$\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"keyId\": {\n          \"description\": \"The key the request is for. Echoed so a response separated from its request is still attributable.\",\n          \"type\": \"string\"\n        },\n        \"publicKey\": {\n          \"description\": \"The key's public half, multibase-encoded exactly as `KeyRecord.publicKey` carries it, so the producer can confirm the request is for the key it meant without parsing the DER.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"keyId\",\n        \"csr\",\n        \"publicKey\"\n      ],\n      \"title\": \"Keys — Sign CSR — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"RdnAttribute\":{\"additionalProperties\":false,\"description\":\"One attribute of the subject distinguished name, encoded as a single-valued RDN.\",\"properties\":{\"type\":{\"description\":\"The attribute type, by its X.520 / PKCS #9 short name (externally owned, carried verbatim): `CN` commonName (2.5.4.3), `O` organizationName (2.5.4.10), `OU` organizationalUnitName (2.5.4.11), `C` countryName (2.5.4.6), `L` localityName (2.5.4.7), `ST` stateOrProvinceName (2.5.4.8), `organizationIdentifier` (2.5.4.97), `serialNumber` (2.5.4.5), `emailAddress` (1.2.840.113549.1.9.1). Closed: an attribute outside the set is refused, never passed through by OID.\",\"enum\":[\"CN\",\"O\",\"OU\",\"C\",\"L\",\"ST\",\"organizationIdentifier\",\"serialNumber\",\"emailAddress\"],\"type\":\"string\"},\"value\":{\"description\":\"The attribute value as text. The custodian encodes it without normalising, trimming or re-casing it, and checks the per-type rules of the specification (character set and length), refusing a value that breaks them with `keys/sign-csr:subjectInvalid`.\",\"maxLength\":255,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"type\",\"value\"],\"title\":\"RdnAttribute\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a keys/sign-csr request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/keys/sign-csr/0.1#response. Failures use trust-task-error, not this shape.\",\"properties\":{\"csr\":{\"description\":\"The PKCS#10 CertificationRequest, DER-encoded and armoured as RFC 7468 `CERTIFICATE REQUEST` text: base64 in lines of 64 characters, LF line endings.\",\"maxLength\":16384,\"pattern\":\"^-----BEGIN CERTIFICATE REQUEST-----\\\\n[A-Za-z0-9+/=\\\\n]+-----END CERTIFICATE REQUEST-----\\\\n?$\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keyId\":{\"description\":\"The key the request is for. Echoed so a response separated from its request is still attributable.\",\"type\":\"string\"},\"publicKey\":{\"description\":\"The key's public half, multibase-encoded exactly as `KeyRecord.publicKey` carries it, so the producer can confirm the request is for the key it meant without parsing the DER.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"keyId\",\"csr\",\"publicKey\"],\"title\":\"Keys — Sign CSR — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

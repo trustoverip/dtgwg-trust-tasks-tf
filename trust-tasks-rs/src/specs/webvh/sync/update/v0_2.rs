@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,59 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///The same shape as webvh/_shared/0.1 SyncUpdate (the element of webvh/sync/batch/0.1), inlined because a top-level $ref payload does not survive every binding generator. The two MUST stay identical.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/webvh/sync/update/0.2",
-///  "title": "Payload",
-///  "description": "The same shape as webvh/_shared/0.1 SyncUpdate (the element of webvh/sync/batch/0.1), inlined because a top-level $ref payload does not survive every binding generator. The two MUST stay identical.",
-///  "type": "object",
-///  "required": [
-///    "didId",
-///    "disabled",
-///    "logContent",
-///    "mnemonic",
-///    "versionCount"
-///  ],
-///  "properties": {
-///    "didId": {
-///      "description": "The DID the log establishes. A replica MUST refuse a log that does not establish exactly this DID.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "disabled": {
-///      "description": "Whether the source has disabled the slot. A replica MUST stop serving a disabled slot and MUST resume only on an update carrying `false`.",
-///      "type": "boolean"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "logContent": {
-///      "description": "The slot's complete did.jsonl — one log entry per line — not a delta.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "mnemonic": {
-///      "description": "The slot path on its hosting domain (e.g. `alice`, `people/alice`, or `.well-known` for a root DID).",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "versionCount": {
-///      "description": "Number of entries in `logContent`, as the source counts them. A replica MUST refuse an update whose `logContent` does not contain exactly this many entries.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "witnessContent": {
-///      "description": "The slot's did-witness.json. ABSENT means the slot holds no witness proofs: the replica MUST drop any witness proofs it holds for the slot. Absence never means \"unchanged\".",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -229,16 +152,6 @@ impl Payload {
 }
 ///The DID the log establishes. A replica MUST refuse a log that does not establish exactly this DID.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The DID the log establishes. A replica MUST refuse a log that does not establish exactly this DID.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadDidId(::std::string::String);
@@ -298,16 +211,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDidId {
 }
 ///The slot's complete did.jsonl — one log entry per line — not a delta.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The slot's complete did.jsonl — one log entry per line — not a delta.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadLogContent(::std::string::String);
@@ -367,16 +270,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadLogContent {
 }
 ///The slot path on its hosting domain (e.g. `alice`, `people/alice`, or `.well-known` for a root DID).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The slot path on its hosting domain (e.g. `alice`, `people/alice`, or `.well-known` for a root DID).",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadMnemonic(::std::string::String);
@@ -436,16 +329,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadMnemonic {
 }
 ///The slot's did-witness.json. ABSENT means the slot holds no witness proofs: the replica MUST drop any witness proofs it holds for the slot. Absence never means "unchanged".
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The slot's did-witness.json. ABSENT means the slot holds no witness proofs: the replica MUST drop any witness proofs it holds for the slot. Absence never means \"unchanged\".",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadWitnessContent(::std::string::String);
@@ -505,38 +388,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadWitnessContent {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "mnemonic",
-///    "status"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "mnemonic": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "status": {
-///      "description": "`applied` — the replica now holds and serves exactly the submitted state. `unchanged` — it already held that state (or a newer version with identical content), and nothing was written.",
-///      "type": "string",
-///      "enum": [
-///        "applied",
-///        "unchanged"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -554,15 +405,6 @@ impl Response {
 }
 ///`ResponseMnemonic`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseMnemonic(::std::string::String);
@@ -622,19 +464,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseMnemonic {
 }
 ///`applied` — the replica now holds and serves exactly the submitted state. `unchanged` — it already held that state (or a newer version with identical content), and nothing was written.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`applied` — the replica now holds and serves exactly the submitted state. `unchanged` — it already held that state (or a newer version with identical content), and nothing was written.",
-///  "type": "string",
-///  "enum": [
-///    "applied",
-///    "unchanged"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -894,7 +723,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"mnemonic\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"`applied` — the replica now holds and serves exactly the submitted state. `unchanged` — it already held that state (or a newer version with identical content), and nothing was written.\",\n          \"enum\": [\n            \"applied\",\n            \"unchanged\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"mnemonic\",\n        \"status\"\n      ],\n      \"title\": \"WebVH Sync Update — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/webvh/sync/update/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"The same shape as webvh/_shared/0.1 SyncUpdate (the element of webvh/sync/batch/0.1), inlined because a top-level $ref payload does not survive every binding generator. The two MUST stay identical.\",\n  \"properties\": {\n    \"didId\": {\n      \"description\": \"The DID the log establishes. A replica MUST refuse a log that does not establish exactly this DID.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"disabled\": {\n      \"description\": \"Whether the source has disabled the slot. A replica MUST stop serving a disabled slot and MUST resume only on an update carrying `false`.\",\n      \"type\": \"boolean\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"logContent\": {\n      \"description\": \"The slot's complete did.jsonl — one log entry per line — not a delta.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"mnemonic\": {\n      \"description\": \"The slot path on its hosting domain (e.g. `alice`, `people/alice`, or `.well-known` for a root DID).\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"versionCount\": {\n      \"description\": \"Number of entries in `logContent`, as the source counts them. A replica MUST refuse an update whose `logContent` does not contain exactly this many entries.\",\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"witnessContent\": {\n      \"description\": \"The slot's did-witness.json. ABSENT means the slot holds no witness proofs: the replica MUST drop any witness proofs it holds for the slot. Absence never means \\\"unchanged\\\".\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"mnemonic\",\n    \"didId\",\n    \"logContent\",\n    \"versionCount\",\n    \"disabled\"\n  ],\n  \"title\": \"WebVH Sync Update — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"mnemonic\":{\"minLength\":1,\"type\":\"string\"},\"status\":{\"description\":\"`applied` — the replica now holds and serves exactly the submitted state. `unchanged` — it already held that state (or a newer version with identical content), and nothing was written.\",\"enum\":[\"applied\",\"unchanged\"],\"type\":\"string\"}},\"required\":[\"mnemonic\",\"status\"],\"title\":\"WebVH Sync Update — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/webvh/sync/update/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The same shape as webvh/_shared/0.1 SyncUpdate (the element of webvh/sync/batch/0.1), inlined because a top-level $ref payload does not survive every binding generator. The two MUST stay identical.\",\"properties\":{\"didId\":{\"description\":\"The DID the log establishes. A replica MUST refuse a log that does not establish exactly this DID.\",\"minLength\":1,\"type\":\"string\"},\"disabled\":{\"description\":\"Whether the source has disabled the slot. A replica MUST stop serving a disabled slot and MUST resume only on an update carrying `false`.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"logContent\":{\"description\":\"The slot's complete did.jsonl — one log entry per line — not a delta.\",\"minLength\":1,\"type\":\"string\"},\"mnemonic\":{\"description\":\"The slot path on its hosting domain (e.g. `alice`, `people/alice`, or `.well-known` for a root DID).\",\"minLength\":1,\"type\":\"string\"},\"versionCount\":{\"description\":\"Number of entries in `logContent`, as the source counts them. A replica MUST refuse an update whose `logContent` does not contain exactly this many entries.\",\"minimum\":1,\"type\":\"integer\"},\"witnessContent\":{\"description\":\"The slot's did-witness.json. ABSENT means the slot holds no witness proofs: the replica MUST drop any witness proofs it holds for the slot. Absence never means \\\"unchanged\\\".\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"mnemonic\",\"didId\",\"logContent\",\"versionCount\",\"disabled\"],\"title\":\"WebVH Sync Update — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -903,7 +732,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"mnemonic\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"`applied` — the replica now holds and serves exactly the submitted state. `unchanged` — it already held that state (or a newer version with identical content), and nothing was written.\",\n          \"enum\": [\n            \"applied\",\n            \"unchanged\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"mnemonic\",\n        \"status\"\n      ],\n      \"title\": \"WebVH Sync Update — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"mnemonic\":{\"minLength\":1,\"type\":\"string\"},\"status\":{\"description\":\"`applied` — the replica now holds and serves exactly the submitted state. `unchanged` — it already held that state (or a newer version with identical content), and nothing was written.\",\"enum\":[\"applied\",\"unchanged\"],\"type\":\"string\"}},\"required\":[\"mnemonic\",\"status\"],\"title\":\"WebVH Sync Update — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

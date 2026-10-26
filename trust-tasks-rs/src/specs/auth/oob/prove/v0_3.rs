@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,19 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A starter key (`K_b`) or an approver lock key (`K_a`), as an Ed25519 `did:key` (`z6Mk…`) generated for this one request and used nowhere else. Ed25519 only: a service refuses any other key type with `auth/oob:keyUnsupported` before parsing beyond the multicodec prefix.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "OobKey",
-///  "description": "A starter key (`K_b`) or an approver lock key (`K_a`), as an Ed25519 `did:key` (`z6Mk…`) generated for this one request and used nowhere else. Ed25519 only: a service refuses any other key type with `auth/oob:keyUnsupported` before parsing beyond the multicodec prefix.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 48,
-///  "pattern": "^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct OobKey(::std::string::String);
@@ -224,19 +187,6 @@ impl<'de> ::serde::Deserialize<'de> for OobKey {
 }
 ///A web origin (`https://host[:port]`, no path, no trailing slash) — for `login`, the origin of the portal where the starter runs, which is the origin of the `serviceEndpoint` of the service's `SignInPortal` service in its DID document.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Origin",
-///  "description": "A web origin (`https://host[:port]`, no path, no trailing slash) — for `login`, the origin of the portal where the starter runs, which is the origin of the `serviceEndpoint` of the service's `SignInPortal` service in its DID document.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 9,
-///  "pattern": "^https://[^/?#\\s]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Origin(::std::string::String);
@@ -304,30 +254,6 @@ impl<'de> ::serde::Deserialize<'de> for Origin {
 }
 ///The lock holder proves membership and the number on the starter's screen by carrying a signed auth/oob/identify document, and gets back the service-signed step 2. Issued and signed by the lock key `K_a`. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, parentThreadId, proof) are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/auth/oob/prove/0.3",
-///  "title": "Payload",
-///  "description": "The lock holder proves membership and the number on the starter's screen by carrying a signed auth/oob/identify document, and gets back the service-signed step 2. Issued and signed by the lock key `K_a`. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, parentThreadId, proof) are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "identify"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "identify": {
-///      "description": "A complete, signed auth/oob/identify/0.1 Trust Task document, issued by the approving DID and signed by its VTA for `authentication`. The service verifies it as a document in its own right — envelope, proof and payload against that specification's schema — over the members exactly as received: its proof covers every member, so it is deliberately an open object here rather than a typed one a binding could narrow.",
-///      "type": "object"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -344,19 +270,6 @@ impl Payload {
 }
 ///What the request is for. A CLOSED list: each purpose has a fixed row in CONVENTIONS.md §3 stating what is revealed at each step, what the grant contains, what redeem returns and the window lengths. Version 0.1 defines `login` only. `stepUp` and `deviceEnrol` are reserved names; adding one is a new version of this component and of every task that references it, never an in-place edit.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Purpose",
-///  "description": "What the request is for. A CLOSED list: each purpose has a fixed row in CONVENTIONS.md §3 stating what is revealed at each step, what the grant contains, what redeem returns and the window lengths. Version 0.1 defines `login` only. `stepUp` and `deviceEnrol` are reserved names; adding one is a new version of this component and of every task that references it, never an in-place edit.",
-///  "type": "string",
-///  "enum": [
-///    "login"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -414,19 +327,6 @@ impl ::std::convert::TryFrom<::std::string::String> for Purpose {
 }
 ///The service-generated handle of one request: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is RECOMMENDED). It is also the nonce of the exchange, so the family needs no separate challenge, and it is the `_id` of the trigger link (VTI-LNK-033). Compared as a string. It confers no authority on its holder.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RequestId",
-///  "description": "The service-generated handle of one request: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is RECOMMENDED). It is also the nonce of the exchange, so the family needs no separate challenge, and it is the `_id` of the trigger link (VTI-LNK-033). Compared as a string. It confers no authority on its holder.",
-///  "type": "string",
-///  "maxLength": 43,
-///  "minLength": 22,
-///  "pattern": "^[A-Za-z0-9_-]{22,43}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RequestId(::std::string::String);
@@ -494,52 +394,6 @@ impl<'de> ::serde::Deserialize<'de> for RequestId {
 }
 ///What the service reports about where the request came from. Revealed only in the step 2 response, to the lock holder, after a membership and number proof. Reported by the service, signed by it, and a heuristic: a relaying attacker controls what is observed.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Requester",
-///  "description": "What the service reports about where the request came from. Revealed only in the step 2 response, to the lock holder, after a membership and number proof. Reported by the service, signed by it, and a heuristic: a relaying attacker controls what is observed.",
-///  "type": "object",
-///  "required": [
-///    "browser",
-///    "createdAt",
-///    "location",
-///    "os",
-///    "sameNetwork"
-///  ],
-///  "properties": {
-///    "browser": {
-///      "description": "Browser family of the starter (e.g. `Chrome`), never the full User-Agent; `unknown` when it cannot be told.",
-///      "type": "string",
-///      "maxLength": 64,
-///      "minLength": 1
-///    },
-///    "createdAt": {
-///      "description": "When the service accepted the starter's auth/oob/request.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "location": {
-///      "description": "City and country of the starter's connection, from a local lookup with no third-party call, or the literal `unknown`. Never an IP address.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "os": {
-///      "description": "Operating system family of the starter (e.g. `macOS`); `unknown` when it cannot be told.",
-///      "type": "string",
-///      "maxLength": 64,
-///      "minLength": 1
-///    },
-///    "sameNetwork": {
-///      "$ref": "#/definitions/SameNetwork"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -563,17 +417,6 @@ impl Requester {
 }
 ///Browser family of the starter (e.g. `Chrome`), never the full User-Agent; `unknown` when it cannot be told.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Browser family of the starter (e.g. `Chrome`), never the full User-Agent; `unknown` when it cannot be told.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RequesterBrowser(::std::string::String);
@@ -636,17 +479,6 @@ impl<'de> ::serde::Deserialize<'de> for RequesterBrowser {
 }
 ///City and country of the starter's connection, from a local lookup with no third-party call, or the literal `unknown`. Never an IP address.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "City and country of the starter's connection, from a local lookup with no third-party call, or the literal `unknown`. Never an IP address.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RequesterLocation(::std::string::String);
@@ -709,17 +541,6 @@ impl<'de> ::serde::Deserialize<'de> for RequesterLocation {
 }
 ///Operating system family of the starter (e.g. `macOS`); `unknown` when it cannot be told.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Operating system family of the starter (e.g. `macOS`); `unknown` when it cannot be told.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RequesterOs(::std::string::String);
@@ -782,68 +603,6 @@ impl<'de> ::serde::Deserialize<'de> for RequesterOs {
 }
 ///Step 2 of the disclosure ladder, signed by the service's assertionMethod key: the step 1 members unchanged, plus the starter's key, where the request came from, which DID was identified and, optionally, the task families the starter key would sign for. The SHA-256 of its JCS canonical form, proof included, is the grant's `contextDigest`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Step 2 of the disclosure ladder, signed by the service's assertionMethod key: the step 1 members unchanged, plus the starter's key, where the request came from, which DID was identified and, optionally, the task families the starter key would sign for. The SHA-256 of its JCS canonical form, proof included, is the grant's `contextDigest`.",
-///  "type": "object",
-///  "required": [
-///    "decisionClosesAt",
-///    "identifiedAs",
-///    "origin",
-///    "purpose",
-///    "requestId",
-///    "requester",
-///    "service",
-///    "sessionKey"
-///  ],
-///  "properties": {
-///    "decisionClosesAt": {
-///      "description": "Unchanged from step 1 (auth/oob/claim/0.2): when the decision window closes, as an RFC 3339 date-time.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "identifiedAs": {
-///      "description": "The DID that issued the verified identify document. A grant must come from this DID.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 5,
-///      "pattern": "^did:"
-///    },
-///    "origin": {
-///      "$ref": "#/definitions/Origin"
-///    },
-///    "purpose": {
-///      "$ref": "#/definitions/Purpose"
-///    },
-///    "requestId": {
-///      "$ref": "#/definitions/RequestId"
-///    },
-///    "requester": {
-///      "$ref": "#/definitions/Requester"
-///    },
-///    "service": {
-///      "$ref": "#/definitions/Service"
-///    },
-///    "sessionKey": {
-///      "description": "The starter key `K_b`: the key a grant would let act as the identified DID.",
-///      "$ref": "#/definitions/OobKey"
-///    },
-///    "signingScope": {
-///      "description": "The task families the service offers to let the starter key sign for, as `identifiedAs`, for the session a grant would arm (auth/oob/grant/0.3). Fixed by the service for the surface at `origin`. Absent: the grant delegates no signing.",
-///      "$ref": "#/definitions/SigningScope"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -880,18 +639,6 @@ impl Response {
 }
 ///The DID that issued the verified identify document. A grant must come from this DID.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The DID that issued the verified identify document. A grant must come from this DID.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 5,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseIdentifiedAs(::std::string::String);
@@ -959,24 +706,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseIdentifiedAs {
 }
 ///Whether the starter's request and the approver's prove came from the same egress network, as the service saw them: `true`, `false`, or the string `unknown` when the service cannot tell. The service compares addresses; it never discloses them.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "SameNetwork",
-///  "description": "Whether the starter's request and the approver's prove came from the same egress network, as the service saw them: `true`, `false`, or the string `unknown` when the service cannot tell. The service compares addresses; it never discloses them.",
-///  "oneOf": [
-///    {
-///      "type": "boolean"
-///    },
-///    {
-///      "type": "string",
-///      "const": "unknown"
-///    }
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged)]
 #[non_exhaustive]
@@ -999,36 +728,6 @@ impl ::std::convert::From<bool> for SameNetwork {
 }
 ///Who the service says it is.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Service",
-///  "description": "Who the service says it is.",
-///  "type": "object",
-///  "required": [
-///    "did",
-///    "name"
-///  ],
-///  "properties": {
-///    "did": {
-///      "description": "The service's DID: the `recipient` of every request in the family, and the `_from` of the trigger link.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 5,
-///      "pattern": "^did:"
-///    },
-///    "name": {
-///      "description": "The name the service calls itself. Supplied by the service: an approver shows the name from its OWN records and flags a difference from this one (VTI-LNK-104); it never shows this value as the community's name on its own authority.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1045,18 +744,6 @@ impl Service {
 }
 ///The service's DID: the `recipient` of every request in the family, and the `_from` of the trigger link.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The service's DID: the `recipient` of every request in the family, and the `_from` of the trigger link.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 5,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ServiceDid(::std::string::String);
@@ -1124,17 +811,6 @@ impl<'de> ::serde::Deserialize<'de> for ServiceDid {
 }
 ///The name the service calls itself. Supplied by the service: an approver shows the name from its OWN records and flags a difference from this one (VTI-LNK-104); it never shows this value as the community's name on its own authority.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The name the service calls itself. Supplied by the service: an approver shows the name from its OWN records and flags a difference from this one (VTI-LNK-104); it never shows this value as the community's name on its own authority.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ServiceName(::std::string::String);
@@ -1197,22 +873,6 @@ impl<'de> ::serde::Deserialize<'de> for ServiceName {
 }
 ///The task families a `login` grant lets the starter key sign documents for, as the approving DID, for the session the grant arms (auth/oob/grant/0.2). Offered by the service in step 2, copied unchanged into the grant, and bounded further by the exclusions auth/oob/grant/0.2 states. Absent means the starter key signs nothing beyond the family's own tasks.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "SigningScope",
-///  "description": "The task families a `login` grant lets the starter key sign documents for, as the approving DID, for the session the grant arms (auth/oob/grant/0.2). Offered by the service in step 2, copied unchanged into the grant, and bounded further by the exclusions auth/oob/grant/0.2 states. Absent means the starter key signs nothing beyond the family's own tasks.",
-///  "type": "array",
-///  "items": {
-///    "$ref": "#/definitions/TaskFamily"
-///  },
-///  "maxItems": 8,
-///  "minItems": 1,
-///  "uniqueItems": true
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct SigningScope(pub Vec<TaskFamily>);
@@ -1234,19 +894,6 @@ impl ::std::convert::From<Vec<TaskFamily>> for SigningScope {
 }
 ///A family of Trust Tasks, named by a slug prefix of whole segments (SPEC §6.1 grammar): `vtc/directory` names every task whose slug is `vtc/directory` or begins `vtc/directory/`, at any version. A prefix matches on segment boundaries only, so `vtc/dir` names nothing under `vtc/directory`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "TaskFamily",
-///  "description": "A family of Trust Tasks, named by a slug prefix of whole segments (SPEC §6.1 grammar): `vtc/directory` names every task whose slug is `vtc/directory` or begins `vtc/directory/`, at any version. A prefix matches on segment boundaries only, so `vtc/dir` names nothing under `vtc/directory`.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1,
-///  "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct TaskFamily(::std::string::String);
@@ -1703,7 +1350,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"OobKey\": {\n      \"description\": \"A starter key (`K_b`) or an approver lock key (`K_a`), as an Ed25519 `did:key` (`z6Mk…`) generated for this one request and used nowhere else. Ed25519 only: a service refuses any other key type with `auth/oob:keyUnsupported` before parsing beyond the multicodec prefix.\",\n      \"maxLength\": 64,\n      \"minLength\": 48,\n      \"pattern\": \"^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"OobKey\",\n      \"type\": \"string\"\n    },\n    \"Origin\": {\n      \"description\": \"A web origin (`https://host[:port]`, no path, no trailing slash) — for `login`, the origin of the portal where the starter runs, which is the origin of the `serviceEndpoint` of the service's `SignInPortal` service in its DID document.\",\n      \"maxLength\": 2048,\n      \"minLength\": 9,\n      \"pattern\": \"^https://[^/?#\\\\s]+$\",\n      \"title\": \"Origin\",\n      \"type\": \"string\"\n    },\n    \"Purpose\": {\n      \"description\": \"What the request is for. A CLOSED list: each purpose has a fixed row in CONVENTIONS.md §3 stating what is revealed at each step, what the grant contains, what redeem returns and the window lengths. Version 0.1 defines `login` only. `stepUp` and `deviceEnrol` are reserved names; adding one is a new version of this component and of every task that references it, never an in-place edit.\",\n      \"enum\": [\n        \"login\"\n      ],\n      \"title\": \"Purpose\",\n      \"type\": \"string\"\n    },\n    \"RequestId\": {\n      \"description\": \"The service-generated handle of one request: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is RECOMMENDED). It is also the nonce of the exchange, so the family needs no separate challenge, and it is the `_id` of the trigger link (VTI-LNK-033). Compared as a string. It confers no authority on its holder.\",\n      \"maxLength\": 43,\n      \"minLength\": 22,\n      \"pattern\": \"^[A-Za-z0-9_-]{22,43}$\",\n      \"title\": \"RequestId\",\n      \"type\": \"string\"\n    },\n    \"Requester\": {\n      \"additionalProperties\": false,\n      \"description\": \"What the service reports about where the request came from. Revealed only in the step 2 response, to the lock holder, after a membership and number proof. Reported by the service, signed by it, and a heuristic: a relaying attacker controls what is observed.\",\n      \"properties\": {\n        \"browser\": {\n          \"description\": \"Browser family of the starter (e.g. `Chrome`), never the full User-Agent; `unknown` when it cannot be told.\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"createdAt\": {\n          \"description\": \"When the service accepted the starter's auth/oob/request.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"location\": {\n          \"description\": \"City and country of the starter's connection, from a local lookup with no third-party call, or the literal `unknown`. Never an IP address.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"os\": {\n          \"description\": \"Operating system family of the starter (e.g. `macOS`); `unknown` when it cannot be told.\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"sameNetwork\": {\n          \"$ref\": \"#/$defs/SameNetwork\"\n        }\n      },\n      \"required\": [\n        \"location\",\n        \"browser\",\n        \"os\",\n        \"createdAt\",\n        \"sameNetwork\"\n      ],\n      \"title\": \"Requester\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Step 2 of the disclosure ladder, signed by the service's assertionMethod key: the step 1 members unchanged, plus the starter's key, where the request came from, which DID was identified and, optionally, the task families the starter key would sign for. The SHA-256 of its JCS canonical form, proof included, is the grant's `contextDigest`.\",\n      \"properties\": {\n        \"decisionClosesAt\": {\n          \"description\": \"Unchanged from step 1 (auth/oob/claim/0.2): when the decision window closes, as an RFC 3339 date-time.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"identifiedAs\": {\n          \"description\": \"The DID that issued the verified identify document. A grant must come from this DID.\",\n          \"maxLength\": 2048,\n          \"minLength\": 5,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"origin\": {\n          \"$ref\": \"#/$defs/Origin\"\n        },\n        \"purpose\": {\n          \"$ref\": \"#/$defs/Purpose\"\n        },\n        \"requestId\": {\n          \"$ref\": \"#/$defs/RequestId\"\n        },\n        \"requester\": {\n          \"$ref\": \"#/$defs/Requester\"\n        },\n        \"service\": {\n          \"$ref\": \"#/$defs/Service\"\n        },\n        \"sessionKey\": {\n          \"$ref\": \"#/$defs/OobKey\",\n          \"description\": \"The starter key `K_b`: the key a grant would let act as the identified DID.\"\n        },\n        \"signingScope\": {\n          \"$ref\": \"#/$defs/SigningScope\",\n          \"description\": \"The task families the service offers to let the starter key sign for, as `identifiedAs`, for the session a grant would arm (auth/oob/grant/0.3). Fixed by the service for the surface at `origin`. Absent: the grant delegates no signing.\"\n        }\n      },\n      \"required\": [\n        \"requestId\",\n        \"service\",\n        \"origin\",\n        \"purpose\",\n        \"decisionClosesAt\",\n        \"sessionKey\",\n        \"requester\",\n        \"identifiedAs\"\n      ],\n      \"title\": \"Auth — OOB Prove — response payload (step 2)\",\n      \"type\": \"object\"\n    },\n    \"SameNetwork\": {\n      \"description\": \"Whether the starter's request and the approver's prove came from the same egress network, as the service saw them: `true`, `false`, or the string `unknown` when the service cannot tell. The service compares addresses; it never discloses them.\",\n      \"oneOf\": [\n        {\n          \"type\": \"boolean\"\n        },\n        {\n          \"const\": \"unknown\",\n          \"type\": \"string\"\n        }\n      ],\n      \"title\": \"SameNetwork\"\n    },\n    \"Service\": {\n      \"additionalProperties\": false,\n      \"description\": \"Who the service says it is.\",\n      \"properties\": {\n        \"did\": {\n          \"description\": \"The service's DID: the `recipient` of every request in the family, and the `_from` of the trigger link.\",\n          \"maxLength\": 2048,\n          \"minLength\": 5,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"name\": {\n          \"description\": \"The name the service calls itself. Supplied by the service: an approver shows the name from its OWN records and flags a difference from this one (VTI-LNK-104); it never shows this value as the community's name on its own authority.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"name\"\n      ],\n      \"title\": \"Service\",\n      \"type\": \"object\"\n    },\n    \"SigningScope\": {\n      \"description\": \"The task families a `login` grant lets the starter key sign documents for, as the approving DID, for the session the grant arms (auth/oob/grant/0.2). Offered by the service in step 2, copied unchanged into the grant, and bounded further by the exclusions auth/oob/grant/0.2 states. Absent means the starter key signs nothing beyond the family's own tasks.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/TaskFamily\"\n      },\n      \"maxItems\": 8,\n      \"minItems\": 1,\n      \"title\": \"SigningScope\",\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    },\n    \"TaskFamily\": {\n      \"description\": \"A family of Trust Tasks, named by a slug prefix of whole segments (SPEC §6.1 grammar): `vtc/directory` names every task whose slug is `vtc/directory` or begins `vtc/directory/`, at any version. A prefix matches on segment boundaries only, so `vtc/dir` names nothing under `vtc/directory`.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*$\",\n      \"title\": \"TaskFamily\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/oob/prove/0.3\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"The lock holder proves membership and the number on the starter's screen by carrying a signed auth/oob/identify document, and gets back the service-signed step 2. Issued and signed by the lock key `K_a`. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, parentThreadId, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"identify\": {\n      \"description\": \"A complete, signed auth/oob/identify/0.1 Trust Task document, issued by the approving DID and signed by its VTA for `authentication`. The service verifies it as a document in its own right — envelope, proof and payload against that specification's schema — over the members exactly as received: its proof covers every member, so it is deliberately an open object here rather than a typed one a binding could narrow.\",\n      \"type\": \"object\"\n    }\n  },\n  \"required\": [\n    \"identify\"\n  ],\n  \"title\": \"Auth — OOB Prove — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"OobKey\":{\"description\":\"A starter key (`K_b`) or an approver lock key (`K_a`), as an Ed25519 `did:key` (`z6Mk…`) generated for this one request and used nowhere else. Ed25519 only: a service refuses any other key type with `auth/oob:keyUnsupported` before parsing beyond the multicodec prefix.\",\"maxLength\":64,\"minLength\":48,\"pattern\":\"^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"OobKey\",\"type\":\"string\"},\"Origin\":{\"description\":\"A web origin (`https://host[:port]`, no path, no trailing slash) — for `login`, the origin of the portal where the starter runs, which is the origin of the `serviceEndpoint` of the service's `SignInPortal` service in its DID document.\",\"maxLength\":2048,\"minLength\":9,\"pattern\":\"^https://[^/?#\\\\s]+$\",\"title\":\"Origin\",\"type\":\"string\"},\"Purpose\":{\"description\":\"What the request is for. A CLOSED list: each purpose has a fixed row in CONVENTIONS.md §3 stating what is revealed at each step, what the grant contains, what redeem returns and the window lengths. Version 0.1 defines `login` only. `stepUp` and `deviceEnrol` are reserved names; adding one is a new version of this component and of every task that references it, never an in-place edit.\",\"enum\":[\"login\"],\"title\":\"Purpose\",\"type\":\"string\"},\"RequestId\":{\"description\":\"The service-generated handle of one request: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is RECOMMENDED). It is also the nonce of the exchange, so the family needs no separate challenge, and it is the `_id` of the trigger link (VTI-LNK-033). Compared as a string. It confers no authority on its holder.\",\"maxLength\":43,\"minLength\":22,\"pattern\":\"^[A-Za-z0-9_-]{22,43}$\",\"title\":\"RequestId\",\"type\":\"string\"},\"Requester\":{\"additionalProperties\":false,\"description\":\"What the service reports about where the request came from. Revealed only in the step 2 response, to the lock holder, after a membership and number proof. Reported by the service, signed by it, and a heuristic: a relaying attacker controls what is observed.\",\"properties\":{\"browser\":{\"description\":\"Browser family of the starter (e.g. `Chrome`), never the full User-Agent; `unknown` when it cannot be told.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"createdAt\":{\"description\":\"When the service accepted the starter's auth/oob/request.\",\"format\":\"date-time\",\"type\":\"string\"},\"location\":{\"description\":\"City and country of the starter's connection, from a local lookup with no third-party call, or the literal `unknown`. Never an IP address.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"os\":{\"description\":\"Operating system family of the starter (e.g. `macOS`); `unknown` when it cannot be told.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"sameNetwork\":{\"$ref\":\"#/$defs/SameNetwork\"}},\"required\":[\"location\",\"browser\",\"os\",\"createdAt\",\"sameNetwork\"],\"title\":\"Requester\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Step 2 of the disclosure ladder, signed by the service's assertionMethod key: the step 1 members unchanged, plus the starter's key, where the request came from, which DID was identified and, optionally, the task families the starter key would sign for. The SHA-256 of its JCS canonical form, proof included, is the grant's `contextDigest`.\",\"properties\":{\"decisionClosesAt\":{\"description\":\"Unchanged from step 1 (auth/oob/claim/0.2): when the decision window closes, as an RFC 3339 date-time.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"identifiedAs\":{\"description\":\"The DID that issued the verified identify document. A grant must come from this DID.\",\"maxLength\":2048,\"minLength\":5,\"pattern\":\"^did:\",\"type\":\"string\"},\"origin\":{\"$ref\":\"#/$defs/Origin\"},\"purpose\":{\"$ref\":\"#/$defs/Purpose\"},\"requestId\":{\"$ref\":\"#/$defs/RequestId\"},\"requester\":{\"$ref\":\"#/$defs/Requester\"},\"service\":{\"$ref\":\"#/$defs/Service\"},\"sessionKey\":{\"$ref\":\"#/$defs/OobKey\",\"description\":\"The starter key `K_b`: the key a grant would let act as the identified DID.\"},\"signingScope\":{\"$ref\":\"#/$defs/SigningScope\",\"description\":\"The task families the service offers to let the starter key sign for, as `identifiedAs`, for the session a grant would arm (auth/oob/grant/0.3). Fixed by the service for the surface at `origin`. Absent: the grant delegates no signing.\"}},\"required\":[\"requestId\",\"service\",\"origin\",\"purpose\",\"decisionClosesAt\",\"sessionKey\",\"requester\",\"identifiedAs\"],\"title\":\"Auth — OOB Prove — response payload (step 2)\",\"type\":\"object\"},\"SameNetwork\":{\"description\":\"Whether the starter's request and the approver's prove came from the same egress network, as the service saw them: `true`, `false`, or the string `unknown` when the service cannot tell. The service compares addresses; it never discloses them.\",\"oneOf\":[{\"type\":\"boolean\"},{\"const\":\"unknown\",\"type\":\"string\"}],\"title\":\"SameNetwork\"},\"Service\":{\"additionalProperties\":false,\"description\":\"Who the service says it is.\",\"properties\":{\"did\":{\"description\":\"The service's DID: the `recipient` of every request in the family, and the `_from` of the trigger link.\",\"maxLength\":2048,\"minLength\":5,\"pattern\":\"^did:\",\"type\":\"string\"},\"name\":{\"description\":\"The name the service calls itself. Supplied by the service: an approver shows the name from its OWN records and flags a difference from this one (VTI-LNK-104); it never shows this value as the community's name on its own authority.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"did\",\"name\"],\"title\":\"Service\",\"type\":\"object\"},\"SigningScope\":{\"description\":\"The task families a `login` grant lets the starter key sign documents for, as the approving DID, for the session the grant arms (auth/oob/grant/0.2). Offered by the service in step 2, copied unchanged into the grant, and bounded further by the exclusions auth/oob/grant/0.2 states. Absent means the starter key signs nothing beyond the family's own tasks.\",\"items\":{\"$ref\":\"#/$defs/TaskFamily\"},\"maxItems\":8,\"minItems\":1,\"title\":\"SigningScope\",\"type\":\"array\",\"uniqueItems\":true},\"TaskFamily\":{\"description\":\"A family of Trust Tasks, named by a slug prefix of whole segments (SPEC §6.1 grammar): `vtc/directory` names every task whose slug is `vtc/directory` or begins `vtc/directory/`, at any version. A prefix matches on segment boundaries only, so `vtc/dir` names nothing under `vtc/directory`.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*$\",\"title\":\"TaskFamily\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/auth/oob/prove/0.3\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The lock holder proves membership and the number on the starter's screen by carrying a signed auth/oob/identify document, and gets back the service-signed step 2. Issued and signed by the lock key `K_a`. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, parentThreadId, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"identify\":{\"description\":\"A complete, signed auth/oob/identify/0.1 Trust Task document, issued by the approving DID and signed by its VTA for `authentication`. The service verifies it as a document in its own right — envelope, proof and payload against that specification's schema — over the members exactly as received: its proof covers every member, so it is deliberately an open object here rather than a typed one a binding could narrow.\",\"type\":\"object\"}},\"required\":[\"identify\"],\"title\":\"Auth — OOB Prove — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1712,7 +1359,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"OobKey\": {\n      \"description\": \"A starter key (`K_b`) or an approver lock key (`K_a`), as an Ed25519 `did:key` (`z6Mk…`) generated for this one request and used nowhere else. Ed25519 only: a service refuses any other key type with `auth/oob:keyUnsupported` before parsing beyond the multicodec prefix.\",\n      \"maxLength\": 64,\n      \"minLength\": 48,\n      \"pattern\": \"^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"OobKey\",\n      \"type\": \"string\"\n    },\n    \"Origin\": {\n      \"description\": \"A web origin (`https://host[:port]`, no path, no trailing slash) — for `login`, the origin of the portal where the starter runs, which is the origin of the `serviceEndpoint` of the service's `SignInPortal` service in its DID document.\",\n      \"maxLength\": 2048,\n      \"minLength\": 9,\n      \"pattern\": \"^https://[^/?#\\\\s]+$\",\n      \"title\": \"Origin\",\n      \"type\": \"string\"\n    },\n    \"Purpose\": {\n      \"description\": \"What the request is for. A CLOSED list: each purpose has a fixed row in CONVENTIONS.md §3 stating what is revealed at each step, what the grant contains, what redeem returns and the window lengths. Version 0.1 defines `login` only. `stepUp` and `deviceEnrol` are reserved names; adding one is a new version of this component and of every task that references it, never an in-place edit.\",\n      \"enum\": [\n        \"login\"\n      ],\n      \"title\": \"Purpose\",\n      \"type\": \"string\"\n    },\n    \"RequestId\": {\n      \"description\": \"The service-generated handle of one request: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is RECOMMENDED). It is also the nonce of the exchange, so the family needs no separate challenge, and it is the `_id` of the trigger link (VTI-LNK-033). Compared as a string. It confers no authority on its holder.\",\n      \"maxLength\": 43,\n      \"minLength\": 22,\n      \"pattern\": \"^[A-Za-z0-9_-]{22,43}$\",\n      \"title\": \"RequestId\",\n      \"type\": \"string\"\n    },\n    \"Requester\": {\n      \"additionalProperties\": false,\n      \"description\": \"What the service reports about where the request came from. Revealed only in the step 2 response, to the lock holder, after a membership and number proof. Reported by the service, signed by it, and a heuristic: a relaying attacker controls what is observed.\",\n      \"properties\": {\n        \"browser\": {\n          \"description\": \"Browser family of the starter (e.g. `Chrome`), never the full User-Agent; `unknown` when it cannot be told.\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"createdAt\": {\n          \"description\": \"When the service accepted the starter's auth/oob/request.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"location\": {\n          \"description\": \"City and country of the starter's connection, from a local lookup with no third-party call, or the literal `unknown`. Never an IP address.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"os\": {\n          \"description\": \"Operating system family of the starter (e.g. `macOS`); `unknown` when it cannot be told.\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"sameNetwork\": {\n          \"$ref\": \"#/$defs/SameNetwork\"\n        }\n      },\n      \"required\": [\n        \"location\",\n        \"browser\",\n        \"os\",\n        \"createdAt\",\n        \"sameNetwork\"\n      ],\n      \"title\": \"Requester\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Step 2 of the disclosure ladder, signed by the service's assertionMethod key: the step 1 members unchanged, plus the starter's key, where the request came from, which DID was identified and, optionally, the task families the starter key would sign for. The SHA-256 of its JCS canonical form, proof included, is the grant's `contextDigest`.\",\n      \"properties\": {\n        \"decisionClosesAt\": {\n          \"description\": \"Unchanged from step 1 (auth/oob/claim/0.2): when the decision window closes, as an RFC 3339 date-time.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"identifiedAs\": {\n          \"description\": \"The DID that issued the verified identify document. A grant must come from this DID.\",\n          \"maxLength\": 2048,\n          \"minLength\": 5,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"origin\": {\n          \"$ref\": \"#/$defs/Origin\"\n        },\n        \"purpose\": {\n          \"$ref\": \"#/$defs/Purpose\"\n        },\n        \"requestId\": {\n          \"$ref\": \"#/$defs/RequestId\"\n        },\n        \"requester\": {\n          \"$ref\": \"#/$defs/Requester\"\n        },\n        \"service\": {\n          \"$ref\": \"#/$defs/Service\"\n        },\n        \"sessionKey\": {\n          \"$ref\": \"#/$defs/OobKey\",\n          \"description\": \"The starter key `K_b`: the key a grant would let act as the identified DID.\"\n        },\n        \"signingScope\": {\n          \"$ref\": \"#/$defs/SigningScope\",\n          \"description\": \"The task families the service offers to let the starter key sign for, as `identifiedAs`, for the session a grant would arm (auth/oob/grant/0.3). Fixed by the service for the surface at `origin`. Absent: the grant delegates no signing.\"\n        }\n      },\n      \"required\": [\n        \"requestId\",\n        \"service\",\n        \"origin\",\n        \"purpose\",\n        \"decisionClosesAt\",\n        \"sessionKey\",\n        \"requester\",\n        \"identifiedAs\"\n      ],\n      \"title\": \"Auth — OOB Prove — response payload (step 2)\",\n      \"type\": \"object\"\n    },\n    \"SameNetwork\": {\n      \"description\": \"Whether the starter's request and the approver's prove came from the same egress network, as the service saw them: `true`, `false`, or the string `unknown` when the service cannot tell. The service compares addresses; it never discloses them.\",\n      \"oneOf\": [\n        {\n          \"type\": \"boolean\"\n        },\n        {\n          \"const\": \"unknown\",\n          \"type\": \"string\"\n        }\n      ],\n      \"title\": \"SameNetwork\"\n    },\n    \"Service\": {\n      \"additionalProperties\": false,\n      \"description\": \"Who the service says it is.\",\n      \"properties\": {\n        \"did\": {\n          \"description\": \"The service's DID: the `recipient` of every request in the family, and the `_from` of the trigger link.\",\n          \"maxLength\": 2048,\n          \"minLength\": 5,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"name\": {\n          \"description\": \"The name the service calls itself. Supplied by the service: an approver shows the name from its OWN records and flags a difference from this one (VTI-LNK-104); it never shows this value as the community's name on its own authority.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"name\"\n      ],\n      \"title\": \"Service\",\n      \"type\": \"object\"\n    },\n    \"SigningScope\": {\n      \"description\": \"The task families a `login` grant lets the starter key sign documents for, as the approving DID, for the session the grant arms (auth/oob/grant/0.2). Offered by the service in step 2, copied unchanged into the grant, and bounded further by the exclusions auth/oob/grant/0.2 states. Absent means the starter key signs nothing beyond the family's own tasks.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/TaskFamily\"\n      },\n      \"maxItems\": 8,\n      \"minItems\": 1,\n      \"title\": \"SigningScope\",\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    },\n    \"TaskFamily\": {\n      \"description\": \"A family of Trust Tasks, named by a slug prefix of whole segments (SPEC §6.1 grammar): `vtc/directory` names every task whose slug is `vtc/directory` or begins `vtc/directory/`, at any version. A prefix matches on segment boundaries only, so `vtc/dir` names nothing under `vtc/directory`.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*$\",\n      \"title\": \"TaskFamily\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"OobKey\":{\"description\":\"A starter key (`K_b`) or an approver lock key (`K_a`), as an Ed25519 `did:key` (`z6Mk…`) generated for this one request and used nowhere else. Ed25519 only: a service refuses any other key type with `auth/oob:keyUnsupported` before parsing beyond the multicodec prefix.\",\"maxLength\":64,\"minLength\":48,\"pattern\":\"^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"OobKey\",\"type\":\"string\"},\"Origin\":{\"description\":\"A web origin (`https://host[:port]`, no path, no trailing slash) — for `login`, the origin of the portal where the starter runs, which is the origin of the `serviceEndpoint` of the service's `SignInPortal` service in its DID document.\",\"maxLength\":2048,\"minLength\":9,\"pattern\":\"^https://[^/?#\\\\s]+$\",\"title\":\"Origin\",\"type\":\"string\"},\"Purpose\":{\"description\":\"What the request is for. A CLOSED list: each purpose has a fixed row in CONVENTIONS.md §3 stating what is revealed at each step, what the grant contains, what redeem returns and the window lengths. Version 0.1 defines `login` only. `stepUp` and `deviceEnrol` are reserved names; adding one is a new version of this component and of every task that references it, never an in-place edit.\",\"enum\":[\"login\"],\"title\":\"Purpose\",\"type\":\"string\"},\"RequestId\":{\"description\":\"The service-generated handle of one request: 16 to 32 bytes from a cryptographically secure random source, written as unpadded base64url (22 to 43 characters; 16 bytes, 22 characters, is RECOMMENDED). It is also the nonce of the exchange, so the family needs no separate challenge, and it is the `_id` of the trigger link (VTI-LNK-033). Compared as a string. It confers no authority on its holder.\",\"maxLength\":43,\"minLength\":22,\"pattern\":\"^[A-Za-z0-9_-]{22,43}$\",\"title\":\"RequestId\",\"type\":\"string\"},\"Requester\":{\"additionalProperties\":false,\"description\":\"What the service reports about where the request came from. Revealed only in the step 2 response, to the lock holder, after a membership and number proof. Reported by the service, signed by it, and a heuristic: a relaying attacker controls what is observed.\",\"properties\":{\"browser\":{\"description\":\"Browser family of the starter (e.g. `Chrome`), never the full User-Agent; `unknown` when it cannot be told.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"createdAt\":{\"description\":\"When the service accepted the starter's auth/oob/request.\",\"format\":\"date-time\",\"type\":\"string\"},\"location\":{\"description\":\"City and country of the starter's connection, from a local lookup with no third-party call, or the literal `unknown`. Never an IP address.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"os\":{\"description\":\"Operating system family of the starter (e.g. `macOS`); `unknown` when it cannot be told.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"sameNetwork\":{\"$ref\":\"#/$defs/SameNetwork\"}},\"required\":[\"location\",\"browser\",\"os\",\"createdAt\",\"sameNetwork\"],\"title\":\"Requester\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Step 2 of the disclosure ladder, signed by the service's assertionMethod key: the step 1 members unchanged, plus the starter's key, where the request came from, which DID was identified and, optionally, the task families the starter key would sign for. The SHA-256 of its JCS canonical form, proof included, is the grant's `contextDigest`.\",\"properties\":{\"decisionClosesAt\":{\"description\":\"Unchanged from step 1 (auth/oob/claim/0.2): when the decision window closes, as an RFC 3339 date-time.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"identifiedAs\":{\"description\":\"The DID that issued the verified identify document. A grant must come from this DID.\",\"maxLength\":2048,\"minLength\":5,\"pattern\":\"^did:\",\"type\":\"string\"},\"origin\":{\"$ref\":\"#/$defs/Origin\"},\"purpose\":{\"$ref\":\"#/$defs/Purpose\"},\"requestId\":{\"$ref\":\"#/$defs/RequestId\"},\"requester\":{\"$ref\":\"#/$defs/Requester\"},\"service\":{\"$ref\":\"#/$defs/Service\"},\"sessionKey\":{\"$ref\":\"#/$defs/OobKey\",\"description\":\"The starter key `K_b`: the key a grant would let act as the identified DID.\"},\"signingScope\":{\"$ref\":\"#/$defs/SigningScope\",\"description\":\"The task families the service offers to let the starter key sign for, as `identifiedAs`, for the session a grant would arm (auth/oob/grant/0.3). Fixed by the service for the surface at `origin`. Absent: the grant delegates no signing.\"}},\"required\":[\"requestId\",\"service\",\"origin\",\"purpose\",\"decisionClosesAt\",\"sessionKey\",\"requester\",\"identifiedAs\"],\"title\":\"Auth — OOB Prove — response payload (step 2)\",\"type\":\"object\"},\"SameNetwork\":{\"description\":\"Whether the starter's request and the approver's prove came from the same egress network, as the service saw them: `true`, `false`, or the string `unknown` when the service cannot tell. The service compares addresses; it never discloses them.\",\"oneOf\":[{\"type\":\"boolean\"},{\"const\":\"unknown\",\"type\":\"string\"}],\"title\":\"SameNetwork\"},\"Service\":{\"additionalProperties\":false,\"description\":\"Who the service says it is.\",\"properties\":{\"did\":{\"description\":\"The service's DID: the `recipient` of every request in the family, and the `_from` of the trigger link.\",\"maxLength\":2048,\"minLength\":5,\"pattern\":\"^did:\",\"type\":\"string\"},\"name\":{\"description\":\"The name the service calls itself. Supplied by the service: an approver shows the name from its OWN records and flags a difference from this one (VTI-LNK-104); it never shows this value as the community's name on its own authority.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"did\",\"name\"],\"title\":\"Service\",\"type\":\"object\"},\"SigningScope\":{\"description\":\"The task families a `login` grant lets the starter key sign documents for, as the approving DID, for the session the grant arms (auth/oob/grant/0.2). Offered by the service in step 2, copied unchanged into the grant, and bounded further by the exclusions auth/oob/grant/0.2 states. Absent means the starter key signs nothing beyond the family's own tasks.\",\"items\":{\"$ref\":\"#/$defs/TaskFamily\"},\"maxItems\":8,\"minItems\":1,\"title\":\"SigningScope\",\"type\":\"array\",\"uniqueItems\":true},\"TaskFamily\":{\"description\":\"A family of Trust Tasks, named by a slug prefix of whole segments (SPEC §6.1 grammar): `vtc/directory` names every task whose slug is `vtc/directory` or begins `vtc/directory/`, at any version. A prefix matches on segment boundaries only, so `vtc/dir` names nothing under `vtc/directory`.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*)*$\",\"title\":\"TaskFamily\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

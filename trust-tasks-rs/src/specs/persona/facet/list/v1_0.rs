@@ -35,21 +35,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -71,15 +56,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -143,73 +119,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///One named part of the holder's life, and what belongs to it. Agent-scoped, like the attribute pool and the profiles it groups — a facet names records that sit above every trust context, so it cannot itself live inside one.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Facet",
-///  "description": "One named part of the holder's life, and what belongs to it. Agent-scoped, like the attribute pool and the profiles it groups — a facet names records that sit above every trust context, so it cannot itself live inside one.",
-///  "type": "object",
-///  "required": [
-///    "attributeIds",
-///    "colour",
-///    "faceIds",
-///    "facetId",
-///    "name",
-///    "updatedAt",
-///    "version"
-///  ],
-///  "properties": {
-///    "attributeIds": {
-///      "description": "Attributes belonging to this facet, with the same rule about dangling ids as `faceIds`.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Ulid"
-///      },
-///      "maxItems": 1024,
-///      "uniqueItems": true
-///    },
-///    "colour": {
-///      "$ref": "#/definitions/FacetColour"
-///    },
-///    "createdAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "faceIds": {
-///      "description": "Profiles belonging to this facet. A maintainer MUST NOT prune an id whose profile has been deleted: a dangling member is how a consumer can offer to tidy, and silently dropping it turns a deletion the holder may not have intended into one they cannot see.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Ulid"
-///      },
-///      "maxItems": 256,
-///      "uniqueItems": true
-///    },
-///    "facetId": {
-///      "$ref": "#/definitions/Ulid"
-///    },
-///    "icon": {
-///      "type": "string",
-///      "maxLength": 8,
-///      "minLength": 1
-///    },
-///    "name": {
-///      "type": "string",
-///      "maxLength": 64,
-///      "minLength": 1
-///    },
-///    "updatedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "version": {
-///      "$ref": "#/definitions/Version"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -243,26 +152,6 @@ impl Facet {
 }
 ///**Superseded by `WorldColour`** — the same set, under the name the rest of the family now uses. Retained because `persona/facet/*` is retired in favour of `persona/world/*`, and a retired specification's schema is frozen, so the definition it references has to stay. New work references `WorldColour`. A colour **name**, resolved by each consumer against its own palette — never a hex value or any other literal. Two reasons, and both are about the consumer rather than the holder. A literal cannot be legible in a terminal, in a light theme and in a dark one at once, so a stored `#8B0000` is a colour that is wrong somewhere and the holder has no way to know where. And a consumer that reserves colours to mean something — an error, a warning, an irreversible act — must be able to keep a holder's decorative choice out of that channel; it cannot do that with an arbitrary value, and it can do it trivially with a closed set it maps itself. The eight members are chosen to be distinguishable from one another and deliberately carry no status connotation: none is named for success, warning or danger.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "FacetColour",
-///  "description": "**Superseded by `WorldColour`** — the same set, under the name the rest of the family now uses. Retained because `persona/facet/*` is retired in favour of `persona/world/*`, and a retired specification's schema is frozen, so the definition it references has to stay. New work references `WorldColour`. A colour **name**, resolved by each consumer against its own palette — never a hex value or any other literal. Two reasons, and both are about the consumer rather than the holder. A literal cannot be legible in a terminal, in a light theme and in a dark one at once, so a stored `#8B0000` is a colour that is wrong somewhere and the holder has no way to know where. And a consumer that reserves colours to mean something — an error, a warning, an irreversible act — must be able to keep a holder's decorative choice out of that channel; it cannot do that with an arbitrary value, and it can do it trivially with a closed set it maps itself. The eight members are chosen to be distinguishable from one another and deliberately carry no status connotation: none is named for success, warning or danger.",
-///  "type": "string",
-///  "enum": [
-///    "slate",
-///    "indigo",
-///    "teal",
-///    "moss",
-///    "sand",
-///    "clay",
-///    "rose",
-///    "plum"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -348,16 +237,6 @@ impl ::std::convert::TryFrom<::std::string::String> for FacetColour {
 }
 ///`FacetIcon`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 8,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct FacetIcon(::std::string::String);
@@ -420,16 +299,6 @@ impl<'de> ::serde::Deserialize<'de> for FacetIcon {
 }
 ///`FacetName`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct FacetName(::std::string::String);
@@ -492,35 +361,6 @@ impl<'de> ::serde::Deserialize<'de> for FacetName {
 }
 ///List the holder's facets, with their membership. Cursor-paginated like every other persona listing.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/persona/facet/list/1.0",
-///  "title": "Payload",
-///  "description": "List the holder's facets, with their membership. Cursor-paginated like every other persona listing.",
-///  "type": "object",
-///  "properties": {
-///    "cursor": {
-///      "description": "Continue a prior listing. Opaque: a producer echoes what it was given and MUST NOT construct one.",
-///      "type": "string",
-///      "maxLength": 4096
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "limit": {
-///      "description": "The page size to ask for — never a cap on the result. A consumer that wants every facet follows `nextCursor` to the end; one that treats this as a limit will silently draw a partial picture.",
-///      "default": 100,
-///      "type": "integer",
-///      "maximum": 250.0,
-///      "minimum": 1.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -551,16 +391,6 @@ impl Payload {
 }
 ///Continue a prior listing. Opaque: a producer echoes what it was given and MUST NOT construct one.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Continue a prior listing. Opaque: a producer echoes what it was given and MUST NOT construct one.",
-///  "type": "string",
-///  "maxLength": 4096
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCursor(::std::string::String);
@@ -620,38 +450,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCursor {
 }
 ///Success response to persona/facet/list. Type https://trusttasks.org/spec/persona/facet/list/1.0#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to persona/facet/list. Type https://trusttasks.org/spec/persona/facet/list/1.0#response.",
-///  "type": "object",
-///  "required": [
-///    "facets"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "facets": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Facet"
-///      },
-///      "maxItems": 250
-///    },
-///    "nextCursor": {
-///      "description": "Present when more facets remain. **Its absence is the only signal that a listing is complete** — a consumer MUST NOT infer exhaustion from a short page, because a maintainer may return fewer than `limit` for reasons of its own.",
-///      "type": "string",
-///      "maxLength": 4096
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -675,16 +473,6 @@ impl Response {
 }
 ///Present when more facets remain. **Its absence is the only signal that a listing is complete** — a consumer MUST NOT infer exhaustion from a short page, because a maintainer may return fewer than `limit` for reasons of its own.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Present when more facets remain. **Its absence is the only signal that a listing is complete** — a consumer MUST NOT infer exhaustion from a short page, because a maintainer may return fewer than `limit` for reasons of its own.",
-///  "type": "string",
-///  "maxLength": 4096
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseNextCursor(::std::string::String);
@@ -744,17 +532,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseNextCursor {
 }
 ///A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ulid",
-///  "description": "A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.",
-///  "type": "string",
-///  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Ulid(::std::string::String);
@@ -818,17 +595,6 @@ impl<'de> ::serde::Deserialize<'de> for Ulid {
 }
 ///A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Version",
-///  "description": "A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.",
-///  "type": "integer",
-///  "minimum": 1.0
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Version(pub ::std::num::NonZeroU64);
@@ -1184,7 +950,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Facet\": {\n      \"additionalProperties\": false,\n      \"description\": \"One named part of the holder's life, and what belongs to it. Agent-scoped, like the attribute pool and the profiles it groups — a facet names records that sit above every trust context, so it cannot itself live inside one.\",\n      \"properties\": {\n        \"attributeIds\": {\n          \"description\": \"Attributes belonging to this facet, with the same rule about dangling ids as `faceIds`.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Ulid\"\n          },\n          \"maxItems\": 1024,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"colour\": {\n          \"$ref\": \"#/$defs/FacetColour\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"faceIds\": {\n          \"description\": \"Profiles belonging to this facet. A maintainer MUST NOT prune an id whose profile has been deleted: a dangling member is how a consumer can offer to tidy, and silently dropping it turns a deletion the holder may not have intended into one they cannot see.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Ulid\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"facetId\": {\n          \"$ref\": \"#/$defs/Ulid\"\n        },\n        \"icon\": {\n          \"maxLength\": 8,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"name\": {\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"$ref\": \"#/$defs/Version\"\n        }\n      },\n      \"required\": [\n        \"facetId\",\n        \"name\",\n        \"colour\",\n        \"faceIds\",\n        \"attributeIds\",\n        \"version\",\n        \"updatedAt\"\n      ],\n      \"title\": \"Facet\",\n      \"type\": \"object\"\n    },\n    \"FacetColour\": {\n      \"description\": \"**Superseded by `WorldColour`** — the same set, under the name the rest of the family now uses. Retained because `persona/facet/*` is retired in favour of `persona/world/*`, and a retired specification's schema is frozen, so the definition it references has to stay. New work references `WorldColour`. A colour **name**, resolved by each consumer against its own palette — never a hex value or any other literal. Two reasons, and both are about the consumer rather than the holder. A literal cannot be legible in a terminal, in a light theme and in a dark one at once, so a stored `#8B0000` is a colour that is wrong somewhere and the holder has no way to know where. And a consumer that reserves colours to mean something — an error, a warning, an irreversible act — must be able to keep a holder's decorative choice out of that channel; it cannot do that with an arbitrary value, and it can do it trivially with a closed set it maps itself. The eight members are chosen to be distinguishable from one another and deliberately carry no status connotation: none is named for success, warning or danger.\",\n      \"enum\": [\n        \"slate\",\n        \"indigo\",\n        \"teal\",\n        \"moss\",\n        \"sand\",\n        \"clay\",\n        \"rose\",\n        \"plum\"\n      ],\n      \"title\": \"FacetColour\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/facet/list. Type https://trusttasks.org/spec/persona/facet/list/1.0#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"facets\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Facet\"\n          },\n          \"maxItems\": 250,\n          \"type\": \"array\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Present when more facets remain. **Its absence is the only signal that a listing is complete** — a consumer MUST NOT infer exhaustion from a short page, because a maintainer may return fewer than `limit` for reasons of its own.\",\n          \"maxLength\": 4096,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"facets\"\n      ],\n      \"title\": \"Persona Facet List — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    },\n    \"Version\": {\n      \"description\": \"A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.\",\n      \"minimum\": 1,\n      \"title\": \"Version\",\n      \"type\": \"integer\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/persona/facet/list/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"List the holder's facets, with their membership. Cursor-paginated like every other persona listing.\",\n  \"properties\": {\n    \"cursor\": {\n      \"description\": \"Continue a prior listing. Opaque: a producer echoes what it was given and MUST NOT construct one.\",\n      \"maxLength\": 4096,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"limit\": {\n      \"default\": 100,\n      \"description\": \"The page size to ask for — never a cap on the result. A consumer that wants every facet follows `nextCursor` to the end; one that treats this as a limit will silently draw a partial picture.\",\n      \"maximum\": 250,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [],\n  \"title\": \"Persona — Facet List — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Facet\":{\"additionalProperties\":false,\"description\":\"One named part of the holder's life, and what belongs to it. Agent-scoped, like the attribute pool and the profiles it groups — a facet names records that sit above every trust context, so it cannot itself live inside one.\",\"properties\":{\"attributeIds\":{\"description\":\"Attributes belonging to this facet, with the same rule about dangling ids as `faceIds`.\",\"items\":{\"$ref\":\"#/$defs/Ulid\"},\"maxItems\":1024,\"type\":\"array\",\"uniqueItems\":true},\"colour\":{\"$ref\":\"#/$defs/FacetColour\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"faceIds\":{\"description\":\"Profiles belonging to this facet. A maintainer MUST NOT prune an id whose profile has been deleted: a dangling member is how a consumer can offer to tidy, and silently dropping it turns a deletion the holder may not have intended into one they cannot see.\",\"items\":{\"$ref\":\"#/$defs/Ulid\"},\"maxItems\":256,\"type\":\"array\",\"uniqueItems\":true},\"facetId\":{\"$ref\":\"#/$defs/Ulid\"},\"icon\":{\"maxLength\":8,\"minLength\":1,\"type\":\"string\"},\"name\":{\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"version\":{\"$ref\":\"#/$defs/Version\"}},\"required\":[\"facetId\",\"name\",\"colour\",\"faceIds\",\"attributeIds\",\"version\",\"updatedAt\"],\"title\":\"Facet\",\"type\":\"object\"},\"FacetColour\":{\"description\":\"**Superseded by `WorldColour`** — the same set, under the name the rest of the family now uses. Retained because `persona/facet/*` is retired in favour of `persona/world/*`, and a retired specification's schema is frozen, so the definition it references has to stay. New work references `WorldColour`. A colour **name**, resolved by each consumer against its own palette — never a hex value or any other literal. Two reasons, and both are about the consumer rather than the holder. A literal cannot be legible in a terminal, in a light theme and in a dark one at once, so a stored `#8B0000` is a colour that is wrong somewhere and the holder has no way to know where. And a consumer that reserves colours to mean something — an error, a warning, an irreversible act — must be able to keep a holder's decorative choice out of that channel; it cannot do that with an arbitrary value, and it can do it trivially with a closed set it maps itself. The eight members are chosen to be distinguishable from one another and deliberately carry no status connotation: none is named for success, warning or danger.\",\"enum\":[\"slate\",\"indigo\",\"teal\",\"moss\",\"sand\",\"clay\",\"rose\",\"plum\"],\"title\":\"FacetColour\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to persona/facet/list. Type https://trusttasks.org/spec/persona/facet/list/1.0#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"facets\":{\"items\":{\"$ref\":\"#/$defs/Facet\"},\"maxItems\":250,\"type\":\"array\"},\"nextCursor\":{\"description\":\"Present when more facets remain. **Its absence is the only signal that a listing is complete** — a consumer MUST NOT infer exhaustion from a short page, because a maintainer may return fewer than `limit` for reasons of its own.\",\"maxLength\":4096,\"type\":\"string\"}},\"required\":[\"facets\"],\"title\":\"Persona Facet List — response payload\",\"type\":\"object\"},\"Ulid\":{\"description\":\"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\"pattern\":\"^[0-9A-HJKMNP-TV-Z]{26}$\",\"title\":\"Ulid\",\"type\":\"string\"},\"Version\":{\"description\":\"A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.\",\"minimum\":1,\"title\":\"Version\",\"type\":\"integer\"}},\"$id\":\"https://trusttasks.org/spec/persona/facet/list/1.0\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"List the holder's facets, with their membership. Cursor-paginated like every other persona listing.\",\"properties\":{\"cursor\":{\"description\":\"Continue a prior listing. Opaque: a producer echoes what it was given and MUST NOT construct one.\",\"maxLength\":4096,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"limit\":{\"default\":100,\"description\":\"The page size to ask for — never a cap on the result. A consumer that wants every facet follows `nextCursor` to the end; one that treats this as a limit will silently draw a partial picture.\",\"maximum\":250,\"minimum\":1,\"type\":\"integer\"}},\"required\":[],\"title\":\"Persona — Facet List — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1193,7 +959,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Facet\": {\n      \"additionalProperties\": false,\n      \"description\": \"One named part of the holder's life, and what belongs to it. Agent-scoped, like the attribute pool and the profiles it groups — a facet names records that sit above every trust context, so it cannot itself live inside one.\",\n      \"properties\": {\n        \"attributeIds\": {\n          \"description\": \"Attributes belonging to this facet, with the same rule about dangling ids as `faceIds`.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Ulid\"\n          },\n          \"maxItems\": 1024,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"colour\": {\n          \"$ref\": \"#/$defs/FacetColour\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"faceIds\": {\n          \"description\": \"Profiles belonging to this facet. A maintainer MUST NOT prune an id whose profile has been deleted: a dangling member is how a consumer can offer to tidy, and silently dropping it turns a deletion the holder may not have intended into one they cannot see.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Ulid\"\n          },\n          \"maxItems\": 256,\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"facetId\": {\n          \"$ref\": \"#/$defs/Ulid\"\n        },\n        \"icon\": {\n          \"maxLength\": 8,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"name\": {\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"$ref\": \"#/$defs/Version\"\n        }\n      },\n      \"required\": [\n        \"facetId\",\n        \"name\",\n        \"colour\",\n        \"faceIds\",\n        \"attributeIds\",\n        \"version\",\n        \"updatedAt\"\n      ],\n      \"title\": \"Facet\",\n      \"type\": \"object\"\n    },\n    \"FacetColour\": {\n      \"description\": \"**Superseded by `WorldColour`** — the same set, under the name the rest of the family now uses. Retained because `persona/facet/*` is retired in favour of `persona/world/*`, and a retired specification's schema is frozen, so the definition it references has to stay. New work references `WorldColour`. A colour **name**, resolved by each consumer against its own palette — never a hex value or any other literal. Two reasons, and both are about the consumer rather than the holder. A literal cannot be legible in a terminal, in a light theme and in a dark one at once, so a stored `#8B0000` is a colour that is wrong somewhere and the holder has no way to know where. And a consumer that reserves colours to mean something — an error, a warning, an irreversible act — must be able to keep a holder's decorative choice out of that channel; it cannot do that with an arbitrary value, and it can do it trivially with a closed set it maps itself. The eight members are chosen to be distinguishable from one another and deliberately carry no status connotation: none is named for success, warning or danger.\",\n      \"enum\": [\n        \"slate\",\n        \"indigo\",\n        \"teal\",\n        \"moss\",\n        \"sand\",\n        \"clay\",\n        \"rose\",\n        \"plum\"\n      ],\n      \"title\": \"FacetColour\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/facet/list. Type https://trusttasks.org/spec/persona/facet/list/1.0#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"facets\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Facet\"\n          },\n          \"maxItems\": 250,\n          \"type\": \"array\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Present when more facets remain. **Its absence is the only signal that a listing is complete** — a consumer MUST NOT infer exhaustion from a short page, because a maintainer may return fewer than `limit` for reasons of its own.\",\n          \"maxLength\": 4096,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"facets\"\n      ],\n      \"title\": \"Persona Facet List — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    },\n    \"Version\": {\n      \"description\": \"A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.\",\n      \"minimum\": 1,\n      \"title\": \"Version\",\n      \"type\": \"integer\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Facet\":{\"additionalProperties\":false,\"description\":\"One named part of the holder's life, and what belongs to it. Agent-scoped, like the attribute pool and the profiles it groups — a facet names records that sit above every trust context, so it cannot itself live inside one.\",\"properties\":{\"attributeIds\":{\"description\":\"Attributes belonging to this facet, with the same rule about dangling ids as `faceIds`.\",\"items\":{\"$ref\":\"#/$defs/Ulid\"},\"maxItems\":1024,\"type\":\"array\",\"uniqueItems\":true},\"colour\":{\"$ref\":\"#/$defs/FacetColour\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"faceIds\":{\"description\":\"Profiles belonging to this facet. A maintainer MUST NOT prune an id whose profile has been deleted: a dangling member is how a consumer can offer to tidy, and silently dropping it turns a deletion the holder may not have intended into one they cannot see.\",\"items\":{\"$ref\":\"#/$defs/Ulid\"},\"maxItems\":256,\"type\":\"array\",\"uniqueItems\":true},\"facetId\":{\"$ref\":\"#/$defs/Ulid\"},\"icon\":{\"maxLength\":8,\"minLength\":1,\"type\":\"string\"},\"name\":{\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"version\":{\"$ref\":\"#/$defs/Version\"}},\"required\":[\"facetId\",\"name\",\"colour\",\"faceIds\",\"attributeIds\",\"version\",\"updatedAt\"],\"title\":\"Facet\",\"type\":\"object\"},\"FacetColour\":{\"description\":\"**Superseded by `WorldColour`** — the same set, under the name the rest of the family now uses. Retained because `persona/facet/*` is retired in favour of `persona/world/*`, and a retired specification's schema is frozen, so the definition it references has to stay. New work references `WorldColour`. A colour **name**, resolved by each consumer against its own palette — never a hex value or any other literal. Two reasons, and both are about the consumer rather than the holder. A literal cannot be legible in a terminal, in a light theme and in a dark one at once, so a stored `#8B0000` is a colour that is wrong somewhere and the holder has no way to know where. And a consumer that reserves colours to mean something — an error, a warning, an irreversible act — must be able to keep a holder's decorative choice out of that channel; it cannot do that with an arbitrary value, and it can do it trivially with a closed set it maps itself. The eight members are chosen to be distinguishable from one another and deliberately carry no status connotation: none is named for success, warning or danger.\",\"enum\":[\"slate\",\"indigo\",\"teal\",\"moss\",\"sand\",\"clay\",\"rose\",\"plum\"],\"title\":\"FacetColour\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to persona/facet/list. Type https://trusttasks.org/spec/persona/facet/list/1.0#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"facets\":{\"items\":{\"$ref\":\"#/$defs/Facet\"},\"maxItems\":250,\"type\":\"array\"},\"nextCursor\":{\"description\":\"Present when more facets remain. **Its absence is the only signal that a listing is complete** — a consumer MUST NOT infer exhaustion from a short page, because a maintainer may return fewer than `limit` for reasons of its own.\",\"maxLength\":4096,\"type\":\"string\"}},\"required\":[\"facets\"],\"title\":\"Persona Facet List — response payload\",\"type\":\"object\"},\"Ulid\":{\"description\":\"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\"pattern\":\"^[0-9A-HJKMNP-TV-Z]{26}$\",\"title\":\"Ulid\",\"type\":\"string\"},\"Version\":{\"description\":\"A value of the store's monotonic write counter. Server-assigned; a producer never chooses one.\",\"minimum\":1,\"title\":\"Version\",\"type\":\"integer\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

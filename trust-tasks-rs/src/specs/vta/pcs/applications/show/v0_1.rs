@@ -34,70 +34,6 @@ pub mod error {
 }
 ///An applicant engine as the VTA holds it, without its key.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ApplicationSummary",
-///  "description": "An applicant engine as the VTA holds it, without its key.",
-///  "type": "object",
-///  "required": [
-///    "applicationId",
-///    "attestations",
-///    "community",
-///    "contextId",
-///    "createdAt",
-///    "id",
-///    "joinDid",
-///    "suite"
-///  ],
-///  "properties": {
-///    "applicationId": {
-///      "description": "The VTA's handle for this application. Opaque; never sent to the community.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "attestations": {
-///      "description": "The metadata of each attestation held, in the order received. Metadata names no vetter.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/StatementMeta"
-///      }
-///    },
-///    "community": {
-///      "description": "The community's DID.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "contextId": {
-///      "description": "The context the application's key is derived in.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "createdAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "id": {
-///      "description": "The applicant's PCS identifier: what a vetter attests to, carried in a vetting/request's `ext`.",
-///      "$ref": "#/definitions/Multibase"
-///    },
-///    "joinDid": {
-///      "description": "The DID the application joins as.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "suite": {
-///      "type": "string",
-///      "maxLength": 64,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -128,17 +64,6 @@ impl ApplicationSummary {
 }
 ///The VTA's handle for this application. Opaque; never sent to the community.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The VTA's handle for this application. Opaque; never sent to the community.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ApplicationSummaryApplicationId(::std::string::String);
@@ -201,16 +126,6 @@ impl<'de> ::serde::Deserialize<'de> for ApplicationSummaryApplicationId {
 }
 ///The community's DID.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The community's DID.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ApplicationSummaryCommunity(::std::string::String);
@@ -270,16 +185,6 @@ impl<'de> ::serde::Deserialize<'de> for ApplicationSummaryCommunity {
 }
 ///The context the application's key is derived in.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The context the application's key is derived in.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ApplicationSummaryContextId(::std::string::String);
@@ -339,16 +244,6 @@ impl<'de> ::serde::Deserialize<'de> for ApplicationSummaryContextId {
 }
 ///The DID the application joins as.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The DID the application joins as.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ApplicationSummaryJoinDid(::std::string::String);
@@ -408,16 +303,6 @@ impl<'de> ::serde::Deserialize<'de> for ApplicationSummaryJoinDid {
 }
 ///`ApplicationSummarySuite`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ApplicationSummarySuite(::std::string::String);
@@ -480,21 +365,6 @@ impl<'de> ::serde::Deserialize<'de> for ApplicationSummarySuite {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -516,15 +386,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -588,17 +449,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A binary value, multibase base58btc over the suite's canonical encoding.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Multibase",
-///  "description": "A binary value, multibase base58btc over the suite's canonical encoding.",
-///  "type": "string",
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Multibase(::std::string::String);
@@ -662,32 +512,6 @@ impl<'de> ::serde::Deserialize<'de> for Multibase {
 }
 ///A client reads one of its hidden-vetting applications back from its VTA: its PCS identifier and the metadata of the attestations it holds, never its key.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/pcs/applications/show/0.1",
-///  "title": "Payload",
-///  "description": "A client reads one of its hidden-vetting applications back from its VTA: its PCS identifier and the metadata of the attestations it holds, never its key.",
-///  "type": "object",
-///  "required": [
-///    "applicationId"
-///  ],
-///  "properties": {
-///    "applicationId": {
-///      "description": "The handle vta/pcs/applications/create returned.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -705,17 +529,6 @@ impl Payload {
 }
 ///The handle vta/pcs/applications/create returned.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The handle vta/pcs/applications/create returned.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadApplicationId(::std::string::String);
@@ -778,28 +591,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadApplicationId {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "application"
-///  ],
-///  "properties": {
-///    "application": {
-///      "$ref": "#/definitions/ApplicationSummary"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -815,106 +606,6 @@ impl Response {
 }
 ///What a Vetting Statement would have said, minus its issuer.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "What a Vetting Statement would have said, minus its issuer.",
-///  "type": "object",
-///  "required": [
-///    "cardDigestMultibase",
-///    "claimsVerified",
-///    "community",
-///    "declaredRelationship",
-///    "identityCommitment",
-///    "livenessConfirmed",
-///    "method",
-///    "requirementsDigest",
-///    "tokenLabel",
-///    "tokenSerial",
-///    "validFrom",
-///    "validUntil"
-///  ],
-///  "properties": {
-///    "cardDigestMultibase": {
-///      "description": "Digest of that card, as the vetter verified it.",
-///      "type": "string",
-///      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///    },
-///    "claimsVerified": {
-///      "description": "The claim types the vetter checked.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "minLength": 1
-///      },
-///      "minItems": 1
-///    },
-///    "community": {
-///      "description": "The community this attestation is for. An attestation is not portable between communities.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "declaredRelationship": {
-///      "description": "The relationship the vetter declared, which the community's independence rules count.",
-///      "type": "string",
-///      "enum": [
-///        "none",
-///        "family",
-///        "sameEmployer",
-///        "closeFriend",
-///        "other"
-///      ]
-///    },
-///    "identityCommitment": {
-///      "description": "The commitment on the Vetting Card the applicant showed. Consistency across attestations is what stops two applicants pooling them.",
-///      "type": "string",
-///      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///    },
-///    "livenessConfirmed": {
-///      "description": "Whether the vetter confirmed a live person.",
-///      "type": "boolean"
-///    },
-///    "method": {
-///      "description": "How the vetter met the applicant.",
-///      "type": "string",
-///      "enum": [
-///        "inPerson",
-///        "video",
-///        "priorAcquaintance"
-///      ]
-///    },
-///    "requirementsDigest": {
-///      "description": "The digest of the criterion's requirements as the vetter read them.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "tokenLabel": {
-///      "description": "The token label spent, repeated inside the bound facts so it cannot be swapped in transit.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "tokenSerial": {
-///      "description": "The token serial spent, likewise bound.",
-///      "type": "string",
-///      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///    },
-///    "validFrom": {
-///      "description": "A DATE, never a timestamp: an exact time would let a community line an attestation up with a vetter's activity, which undoes the proof without touching it.",
-///      "type": "string",
-///      "format": "date"
-///    },
-///    "validUntil": {
-///      "description": "A date, for the same reason.",
-///      "type": "string",
-///      "format": "date"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -961,16 +652,6 @@ impl StatementMeta {
 }
 ///Digest of that card, as the vetter verified it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Digest of that card, as the vetter verified it.",
-///  "type": "string",
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct StatementMetaCardDigestMultibase(::std::string::String);
@@ -1034,15 +715,6 @@ impl<'de> ::serde::Deserialize<'de> for StatementMetaCardDigestMultibase {
 }
 ///`StatementMetaClaimsVerifiedItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct StatementMetaClaimsVerifiedItem(::std::string::String);
@@ -1102,16 +774,6 @@ impl<'de> ::serde::Deserialize<'de> for StatementMetaClaimsVerifiedItem {
 }
 ///The community this attestation is for. An attestation is not portable between communities.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The community this attestation is for. An attestation is not portable between communities.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct StatementMetaCommunity(::std::string::String);
@@ -1171,22 +833,6 @@ impl<'de> ::serde::Deserialize<'de> for StatementMetaCommunity {
 }
 ///The relationship the vetter declared, which the community's independence rules count.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The relationship the vetter declared, which the community's independence rules count.",
-///  "type": "string",
-///  "enum": [
-///    "none",
-///    "family",
-///    "sameEmployer",
-///    "closeFriend",
-///    "other"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1260,16 +906,6 @@ impl ::std::convert::TryFrom<::std::string::String> for StatementMetaDeclaredRel
 }
 ///The commitment on the Vetting Card the applicant showed. Consistency across attestations is what stops two applicants pooling them.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The commitment on the Vetting Card the applicant showed. Consistency across attestations is what stops two applicants pooling them.",
-///  "type": "string",
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct StatementMetaIdentityCommitment(::std::string::String);
@@ -1333,20 +969,6 @@ impl<'de> ::serde::Deserialize<'de> for StatementMetaIdentityCommitment {
 }
 ///How the vetter met the applicant.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "How the vetter met the applicant.",
-///  "type": "string",
-///  "enum": [
-///    "inPerson",
-///    "video",
-///    "priorAcquaintance"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1412,16 +1034,6 @@ impl ::std::convert::TryFrom<::std::string::String> for StatementMetaMethod {
 }
 ///The digest of the criterion's requirements as the vetter read them.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The digest of the criterion's requirements as the vetter read them.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct StatementMetaRequirementsDigest(::std::string::String);
@@ -1481,17 +1093,6 @@ impl<'de> ::serde::Deserialize<'de> for StatementMetaRequirementsDigest {
 }
 ///The token label spent, repeated inside the bound facts so it cannot be swapped in transit.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The token label spent, repeated inside the bound facts so it cannot be swapped in transit.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct StatementMetaTokenLabel(::std::string::String);
@@ -1554,16 +1155,6 @@ impl<'de> ::serde::Deserialize<'de> for StatementMetaTokenLabel {
 }
 ///The token serial spent, likewise bound.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The token serial spent, likewise bound.",
-///  "type": "string",
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct StatementMetaTokenSerial(::std::string::String);
@@ -2083,7 +1674,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/pcs/applications/show/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ApplicationSummary\": {\n      \"additionalProperties\": false,\n      \"description\": \"An applicant engine as the VTA holds it, without its key.\",\n      \"properties\": {\n        \"applicationId\": {\n          \"description\": \"The VTA's handle for this application. Opaque; never sent to the community.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"attestations\": {\n          \"description\": \"The metadata of each attestation held, in the order received. Metadata names no vetter.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/StatementMeta\"\n          },\n          \"type\": \"array\"\n        },\n        \"community\": {\n          \"description\": \"The community's DID.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"contextId\": {\n          \"description\": \"The context the application's key is derived in.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"$ref\": \"#/$defs/Multibase\",\n          \"description\": \"The applicant's PCS identifier: what a vetter attests to, carried in a vetting/request's `ext`.\"\n        },\n        \"joinDid\": {\n          \"description\": \"The DID the application joins as.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"suite\": {\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"applicationId\",\n        \"contextId\",\n        \"community\",\n        \"joinDid\",\n        \"suite\",\n        \"id\",\n        \"attestations\",\n        \"createdAt\"\n      ],\n      \"title\": \"ApplicationSummary\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Multibase\": {\n      \"description\": \"A binary value, multibase base58btc over the suite's canonical encoding.\",\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"Multibase\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"application\": {\n          \"$ref\": \"#/$defs/ApplicationSummary\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"application\"\n      ],\n      \"title\": \"VTA PCS — Applications — Show — response payload\",\n      \"type\": \"object\"\n    },\n    \"StatementMeta\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a Vetting Statement would have said, minus its issuer.\",\n      \"properties\": {\n        \"cardDigestMultibase\": {\n          \"description\": \"Digest of that card, as the vetter verified it.\",\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        },\n        \"claimsVerified\": {\n          \"description\": \"The claim types the vetter checked.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"community\": {\n          \"description\": \"The community this attestation is for. An attestation is not portable between communities.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"declaredRelationship\": {\n          \"description\": \"The relationship the vetter declared, which the community's independence rules count.\",\n          \"enum\": [\n            \"none\",\n            \"family\",\n            \"sameEmployer\",\n            \"closeFriend\",\n            \"other\"\n          ],\n          \"type\": \"string\"\n        },\n        \"identityCommitment\": {\n          \"description\": \"The commitment on the Vetting Card the applicant showed. Consistency across attestations is what stops two applicants pooling them.\",\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        },\n        \"livenessConfirmed\": {\n          \"description\": \"Whether the vetter confirmed a live person.\",\n          \"type\": \"boolean\"\n        },\n        \"method\": {\n          \"description\": \"How the vetter met the applicant.\",\n          \"enum\": [\n            \"inPerson\",\n            \"video\",\n            \"priorAcquaintance\"\n          ],\n          \"type\": \"string\"\n        },\n        \"requirementsDigest\": {\n          \"description\": \"The digest of the criterion's requirements as the vetter read them.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tokenLabel\": {\n          \"description\": \"The token label spent, repeated inside the bound facts so it cannot be swapped in transit.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tokenSerial\": {\n          \"description\": \"The token serial spent, likewise bound.\",\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        },\n        \"validFrom\": {\n          \"description\": \"A DATE, never a timestamp: an exact time would let a community line an attestation up with a vetter's activity, which undoes the proof without touching it.\",\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"validUntil\": {\n          \"description\": \"A date, for the same reason.\",\n          \"format\": \"date\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"community\",\n        \"requirementsDigest\",\n        \"method\",\n        \"claimsVerified\",\n        \"livenessConfirmed\",\n        \"declaredRelationship\",\n        \"identityCommitment\",\n        \"cardDigestMultibase\",\n        \"validFrom\",\n        \"validUntil\",\n        \"tokenLabel\",\n        \"tokenSerial\"\n      ],\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/pcs/applications/show/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A client reads one of its hidden-vetting applications back from its VTA: its PCS identifier and the metadata of the attestations it holds, never its key.\",\n  \"properties\": {\n    \"applicationId\": {\n      \"description\": \"The handle vta/pcs/applications/create returned.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"required\": [\n    \"applicationId\"\n  ],\n  \"title\": \"VTA PCS — Applications — Show — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"ApplicationSummary\":{\"additionalProperties\":false,\"description\":\"An applicant engine as the VTA holds it, without its key.\",\"properties\":{\"applicationId\":{\"description\":\"The VTA's handle for this application. Opaque; never sent to the community.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"attestations\":{\"description\":\"The metadata of each attestation held, in the order received. Metadata names no vetter.\",\"items\":{\"$ref\":\"#/$defs/StatementMeta\"},\"type\":\"array\"},\"community\":{\"description\":\"The community's DID.\",\"minLength\":1,\"type\":\"string\"},\"contextId\":{\"description\":\"The context the application's key is derived in.\",\"minLength\":1,\"type\":\"string\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"id\":{\"$ref\":\"#/$defs/Multibase\",\"description\":\"The applicant's PCS identifier: what a vetter attests to, carried in a vetting/request's `ext`.\"},\"joinDid\":{\"description\":\"The DID the application joins as.\",\"minLength\":1,\"type\":\"string\"},\"suite\":{\"maxLength\":64,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"applicationId\",\"contextId\",\"community\",\"joinDid\",\"suite\",\"id\",\"attestations\",\"createdAt\"],\"title\":\"ApplicationSummary\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Multibase\":{\"description\":\"A binary value, multibase base58btc over the suite's canonical encoding.\",\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"Multibase\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"application\":{\"$ref\":\"#/$defs/ApplicationSummary\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"application\"],\"title\":\"VTA PCS — Applications — Show — response payload\",\"type\":\"object\"},\"StatementMeta\":{\"additionalProperties\":false,\"description\":\"What a Vetting Statement would have said, minus its issuer.\",\"properties\":{\"cardDigestMultibase\":{\"description\":\"Digest of that card, as the vetter verified it.\",\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"claimsVerified\":{\"description\":\"The claim types the vetter checked.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"},\"community\":{\"description\":\"The community this attestation is for. An attestation is not portable between communities.\",\"minLength\":1,\"type\":\"string\"},\"declaredRelationship\":{\"description\":\"The relationship the vetter declared, which the community's independence rules count.\",\"enum\":[\"none\",\"family\",\"sameEmployer\",\"closeFriend\",\"other\"],\"type\":\"string\"},\"identityCommitment\":{\"description\":\"The commitment on the Vetting Card the applicant showed. Consistency across attestations is what stops two applicants pooling them.\",\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"livenessConfirmed\":{\"description\":\"Whether the vetter confirmed a live person.\",\"type\":\"boolean\"},\"method\":{\"description\":\"How the vetter met the applicant.\",\"enum\":[\"inPerson\",\"video\",\"priorAcquaintance\"],\"type\":\"string\"},\"requirementsDigest\":{\"description\":\"The digest of the criterion's requirements as the vetter read them.\",\"minLength\":1,\"type\":\"string\"},\"tokenLabel\":{\"description\":\"The token label spent, repeated inside the bound facts so it cannot be swapped in transit.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"tokenSerial\":{\"description\":\"The token serial spent, likewise bound.\",\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"validFrom\":{\"description\":\"A DATE, never a timestamp: an exact time would let a community line an attestation up with a vetter's activity, which undoes the proof without touching it.\",\"format\":\"date\",\"type\":\"string\"},\"validUntil\":{\"description\":\"A date, for the same reason.\",\"format\":\"date\",\"type\":\"string\"}},\"required\":[\"community\",\"requirementsDigest\",\"method\",\"claimsVerified\",\"livenessConfirmed\",\"declaredRelationship\",\"identityCommitment\",\"cardDigestMultibase\",\"validFrom\",\"validUntil\",\"tokenLabel\",\"tokenSerial\"],\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/pcs/applications/show/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A client reads one of its hidden-vetting applications back from its VTA: its PCS identifier and the metadata of the attestations it holds, never its key.\",\"properties\":{\"applicationId\":{\"description\":\"The handle vta/pcs/applications/create returned.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"applicationId\"],\"title\":\"VTA PCS — Applications — Show — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -2091,7 +1682,7 @@ impl crate::Payload for Response {
         "https://trusttasks.org/spec/vta/pcs/applications/show/0.1#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ApplicationSummary\": {\n      \"additionalProperties\": false,\n      \"description\": \"An applicant engine as the VTA holds it, without its key.\",\n      \"properties\": {\n        \"applicationId\": {\n          \"description\": \"The VTA's handle for this application. Opaque; never sent to the community.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"attestations\": {\n          \"description\": \"The metadata of each attestation held, in the order received. Metadata names no vetter.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/StatementMeta\"\n          },\n          \"type\": \"array\"\n        },\n        \"community\": {\n          \"description\": \"The community's DID.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"contextId\": {\n          \"description\": \"The context the application's key is derived in.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"$ref\": \"#/$defs/Multibase\",\n          \"description\": \"The applicant's PCS identifier: what a vetter attests to, carried in a vetting/request's `ext`.\"\n        },\n        \"joinDid\": {\n          \"description\": \"The DID the application joins as.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"suite\": {\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"applicationId\",\n        \"contextId\",\n        \"community\",\n        \"joinDid\",\n        \"suite\",\n        \"id\",\n        \"attestations\",\n        \"createdAt\"\n      ],\n      \"title\": \"ApplicationSummary\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Multibase\": {\n      \"description\": \"A binary value, multibase base58btc over the suite's canonical encoding.\",\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"Multibase\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"application\": {\n          \"$ref\": \"#/$defs/ApplicationSummary\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"application\"\n      ],\n      \"title\": \"VTA PCS — Applications — Show — response payload\",\n      \"type\": \"object\"\n    },\n    \"StatementMeta\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a Vetting Statement would have said, minus its issuer.\",\n      \"properties\": {\n        \"cardDigestMultibase\": {\n          \"description\": \"Digest of that card, as the vetter verified it.\",\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        },\n        \"claimsVerified\": {\n          \"description\": \"The claim types the vetter checked.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"community\": {\n          \"description\": \"The community this attestation is for. An attestation is not portable between communities.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"declaredRelationship\": {\n          \"description\": \"The relationship the vetter declared, which the community's independence rules count.\",\n          \"enum\": [\n            \"none\",\n            \"family\",\n            \"sameEmployer\",\n            \"closeFriend\",\n            \"other\"\n          ],\n          \"type\": \"string\"\n        },\n        \"identityCommitment\": {\n          \"description\": \"The commitment on the Vetting Card the applicant showed. Consistency across attestations is what stops two applicants pooling them.\",\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        },\n        \"livenessConfirmed\": {\n          \"description\": \"Whether the vetter confirmed a live person.\",\n          \"type\": \"boolean\"\n        },\n        \"method\": {\n          \"description\": \"How the vetter met the applicant.\",\n          \"enum\": [\n            \"inPerson\",\n            \"video\",\n            \"priorAcquaintance\"\n          ],\n          \"type\": \"string\"\n        },\n        \"requirementsDigest\": {\n          \"description\": \"The digest of the criterion's requirements as the vetter read them.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tokenLabel\": {\n          \"description\": \"The token label spent, repeated inside the bound facts so it cannot be swapped in transit.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"tokenSerial\": {\n          \"description\": \"The token serial spent, likewise bound.\",\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        },\n        \"validFrom\": {\n          \"description\": \"A DATE, never a timestamp: an exact time would let a community line an attestation up with a vetter's activity, which undoes the proof without touching it.\",\n          \"format\": \"date\",\n          \"type\": \"string\"\n        },\n        \"validUntil\": {\n          \"description\": \"A date, for the same reason.\",\n          \"format\": \"date\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"community\",\n        \"requirementsDigest\",\n        \"method\",\n        \"claimsVerified\",\n        \"livenessConfirmed\",\n        \"declaredRelationship\",\n        \"identityCommitment\",\n        \"cardDigestMultibase\",\n        \"validFrom\",\n        \"validUntil\",\n        \"tokenLabel\",\n        \"tokenSerial\"\n      ],\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"ApplicationSummary\":{\"additionalProperties\":false,\"description\":\"An applicant engine as the VTA holds it, without its key.\",\"properties\":{\"applicationId\":{\"description\":\"The VTA's handle for this application. Opaque; never sent to the community.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"attestations\":{\"description\":\"The metadata of each attestation held, in the order received. Metadata names no vetter.\",\"items\":{\"$ref\":\"#/$defs/StatementMeta\"},\"type\":\"array\"},\"community\":{\"description\":\"The community's DID.\",\"minLength\":1,\"type\":\"string\"},\"contextId\":{\"description\":\"The context the application's key is derived in.\",\"minLength\":1,\"type\":\"string\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"id\":{\"$ref\":\"#/$defs/Multibase\",\"description\":\"The applicant's PCS identifier: what a vetter attests to, carried in a vetting/request's `ext`.\"},\"joinDid\":{\"description\":\"The DID the application joins as.\",\"minLength\":1,\"type\":\"string\"},\"suite\":{\"maxLength\":64,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"applicationId\",\"contextId\",\"community\",\"joinDid\",\"suite\",\"id\",\"attestations\",\"createdAt\"],\"title\":\"ApplicationSummary\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Multibase\":{\"description\":\"A binary value, multibase base58btc over the suite's canonical encoding.\",\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"Multibase\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"application\":{\"$ref\":\"#/$defs/ApplicationSummary\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"application\"],\"title\":\"VTA PCS — Applications — Show — response payload\",\"type\":\"object\"},\"StatementMeta\":{\"additionalProperties\":false,\"description\":\"What a Vetting Statement would have said, minus its issuer.\",\"properties\":{\"cardDigestMultibase\":{\"description\":\"Digest of that card, as the vetter verified it.\",\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"claimsVerified\":{\"description\":\"The claim types the vetter checked.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"},\"community\":{\"description\":\"The community this attestation is for. An attestation is not portable between communities.\",\"minLength\":1,\"type\":\"string\"},\"declaredRelationship\":{\"description\":\"The relationship the vetter declared, which the community's independence rules count.\",\"enum\":[\"none\",\"family\",\"sameEmployer\",\"closeFriend\",\"other\"],\"type\":\"string\"},\"identityCommitment\":{\"description\":\"The commitment on the Vetting Card the applicant showed. Consistency across attestations is what stops two applicants pooling them.\",\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"livenessConfirmed\":{\"description\":\"Whether the vetter confirmed a live person.\",\"type\":\"boolean\"},\"method\":{\"description\":\"How the vetter met the applicant.\",\"enum\":[\"inPerson\",\"video\",\"priorAcquaintance\"],\"type\":\"string\"},\"requirementsDigest\":{\"description\":\"The digest of the criterion's requirements as the vetter read them.\",\"minLength\":1,\"type\":\"string\"},\"tokenLabel\":{\"description\":\"The token label spent, repeated inside the bound facts so it cannot be swapped in transit.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"tokenSerial\":{\"description\":\"The token serial spent, likewise bound.\",\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"validFrom\":{\"description\":\"A DATE, never a timestamp: an exact time would let a community line an attestation up with a vetter's activity, which undoes the proof without touching it.\",\"format\":\"date\",\"type\":\"string\"},\"validUntil\":{\"description\":\"A date, for the same reason.\",\"format\":\"date\",\"type\":\"string\"}},\"required\":[\"community\",\"requirementsDigest\",\"method\",\"claimsVerified\",\"livenessConfirmed\",\"declaredRelationship\",\"identityCommitment\",\"cardDigestMultibase\",\"validFrom\",\"validUntil\",\"tokenLabel\",\"tokenSerial\"],\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

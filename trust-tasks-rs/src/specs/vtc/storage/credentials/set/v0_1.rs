@@ -35,54 +35,6 @@ pub mod error {
 }
 ///Whether a config can authenticate now, and how — never the credential. `status`: `vta-account`, `ambient` and `sealed` are usable; `required` means the config cannot store until a credential is provided (a `sealed` config never set, or set before a restore, which carries no credential); `none` is a `local` config.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "CredentialState",
-///  "description": "Whether a config can authenticate now, and how — never the credential. `status`: `vta-account`, `ambient` and `sealed` are usable; `required` means the config cannot store until a credential is provided (a `sealed` config never set, or set before a restore, which carries no credential); `none` is a `local` config.",
-///  "type": "object",
-///  "required": [
-///    "status"
-///  ],
-///  "properties": {
-///    "account": {
-///      "description": "Present with `vta-account`.",
-///      "$ref": "#/definitions/ExternalAccountId"
-///    },
-///    "context": {
-///      "description": "Present with `vta-account`.",
-///      "$ref": "#/definitions/ExternalAccountContextId"
-///    },
-///    "fingerprint": {
-///      "description": "Present with `sealed`: a digest identifying the stored credential, so an administrator can tell which one is set without anyone being able to read it. Computed over the credential with a community-held key, never a bare hash of a low-entropy secret.",
-///      "$ref": "#/definitions/DigestMultibase"
-///    },
-///    "roomsHoldingCredentials": {
-///      "description": "Present with `vta-account`: how many rooms the community currently holds a live room-scoped credential for.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "setAt": {
-///      "description": "Present with `sealed`: when the stored credential was last set.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "status": {
-///      "type": "string",
-///      "enum": [
-///        "vta-account",
-///        "ambient",
-///        "sealed",
-///        "required",
-///        "none"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -119,21 +71,6 @@ impl CredentialState {
 }
 ///`CredentialStateStatus`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "enum": [
-///    "vta-account",
-///    "ambient",
-///    "sealed",
-///    "required",
-///    "none"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -214,21 +151,6 @@ This definition constrains the *encoding only*. What the digest is computed over
 
 Restricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that "interoperability is not guaranteed between implementations using such values", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DigestMultibase",
-///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-///  "examples": [
-///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-///  ],
-///  "type": "string",
-///  "minLength": 16,
-///  "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DigestMultibase(::std::string::String);
@@ -297,21 +219,6 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -333,15 +240,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -405,18 +303,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///The context at the community's VTA that owns an external account. The VTA names an account by its context and its identifier, and decides who may use it by act scope in that context: the community must hold `external-auth-use` there, and be bound to the account, for the account to issue it anything. Naming a context grants nothing; the VTA's binding is the gate.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ExternalAccountContextId",
-///  "description": "The context at the community's VTA that owns an external account. The VTA names an account by its context and its identifier, and decides who may use it by act scope in that context: the community must hold `external-auth-use` there, and be bound to the account, for the account to issue it anything. Naming a context grants nothing; the VTA's binding is the gate.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExternalAccountContextId(::std::string::String);
@@ -479,19 +365,6 @@ impl<'de> ::serde::Deserialize<'de> for ExternalAccountContextId {
 }
 ///The identifier of an external account held by the community's VTA (the external/accounts/* family), which issues the community short-lived, room-scoped credentials and holds the long-lived authority itself.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ExternalAccountId",
-///  "description": "The identifier of an external account held by the community's VTA (the external/accounts/* family), which issues the community short-lived, room-scoped credentials and holds the long-lived authority itself.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1,
-///  "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExternalAccountId(::std::string::String);
@@ -561,49 +434,6 @@ impl<'de> ::serde::Deserialize<'de> for ExternalAccountId {
 }
 ///Store a `sealed` storage config's long-lived credential, sealed end to end to the community. Write-only: no task returns it. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/storage/credentials/set/0.1",
-///  "title": "Payload",
-///  "description": "Store a `sealed` storage config's long-lived credential, sealed end to end to the community. Write-only: no task returns it. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "configId",
-///    "digestMultibase",
-///    "reason",
-///    "sealed"
-///  ],
-///  "properties": {
-///    "configId": {
-///      "$ref": "#/definitions/StorageConfigId"
-///    },
-///    "digestMultibase": {
-///      "description": "Digest over the armored bytes exactly as carried in `sealed`. Covered by the document's proof, and shown to approvers in place of the credential.",
-///      "$ref": "#/definitions/DigestMultibase"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "reason": {
-///      "description": "Why the administrator is making this change. Recorded with the change in the audit trail and shown to approvers. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.",
-///      "type": "string",
-///      "maxLength": 500,
-///      "minLength": 1
-///    },
-///    "sealed": {
-///      "description": "OpenPGP-style ASCII-armored `sealed_transfer` ciphertext of the credential. HPKE base mode, X25519-HKDF-SHA256 KEM, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`; recipient the X25519 derivation of the community DID's Ed25519 key.",
-///      "type": "string",
-///      "maxLength": 16384,
-///      "minLength": 64,
-///      "pattern": "^-----BEGIN VTA SEALED BUNDLE-----"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -628,17 +458,6 @@ impl Payload {
 }
 ///Why the administrator is making this change. Recorded with the change in the audit trail and shown to approvers. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Why the administrator is making this change. Recorded with the change in the audit trail and shown to approvers. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.",
-///  "type": "string",
-///  "maxLength": 500,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadReason(::std::string::String);
@@ -701,18 +520,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 }
 ///OpenPGP-style ASCII-armored `sealed_transfer` ciphertext of the credential. HPKE base mode, X25519-HKDF-SHA256 KEM, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`; recipient the X25519 derivation of the community DID's Ed25519 key.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "OpenPGP-style ASCII-armored `sealed_transfer` ciphertext of the credential. HPKE base mode, X25519-HKDF-SHA256 KEM, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`; recipient the X25519 derivation of the community DID's Ed25519 key.",
-///  "type": "string",
-///  "maxLength": 16384,
-///  "minLength": 64,
-///  "pattern": "^-----BEGIN VTA SEALED BUNDLE-----"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadSealed(::std::string::String);
@@ -782,36 +589,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSealed {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "configId",
-///    "credentialState"
-///  ],
-///  "properties": {
-///    "configId": {
-///      "$ref": "#/definitions/StorageConfigId"
-///    },
-///    "credentialState": {
-///      "$ref": "#/definitions/CredentialState"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "probeOk": {
-///      "description": "Present when the community probed the config with the new credential.",
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -838,19 +615,6 @@ impl Response {
 }
 ///A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "StorageConfigId",
-///  "description": "A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1,
-///  "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct StorageConfigId(::std::string::String);
@@ -1226,7 +990,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CredentialState\": {\n      \"additionalProperties\": false,\n      \"description\": \"Whether a config can authenticate now, and how — never the credential. `status`: `vta-account`, `ambient` and `sealed` are usable; `required` means the config cannot store until a credential is provided (a `sealed` config never set, or set before a restore, which carries no credential); `none` is a `local` config.\",\n      \"properties\": {\n        \"account\": {\n          \"$ref\": \"#/$defs/ExternalAccountId\",\n          \"description\": \"Present with `vta-account`.\"\n        },\n        \"context\": {\n          \"$ref\": \"#/$defs/ExternalAccountContextId\",\n          \"description\": \"Present with `vta-account`.\"\n        },\n        \"fingerprint\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"Present with `sealed`: a digest identifying the stored credential, so an administrator can tell which one is set without anyone being able to read it. Computed over the credential with a community-held key, never a bare hash of a low-entropy secret.\"\n        },\n        \"roomsHoldingCredentials\": {\n          \"description\": \"Present with `vta-account`: how many rooms the community currently holds a live room-scoped credential for.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"setAt\": {\n          \"description\": \"Present with `sealed`: when the stored credential was last set.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"enum\": [\n            \"vta-account\",\n            \"ambient\",\n            \"sealed\",\n            \"required\",\n            \"none\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\"\n      ],\n      \"title\": \"CredentialState\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ExternalAccountContextId\": {\n      \"description\": \"The context at the community's VTA that owns an external account. The VTA names an account by its context and its identifier, and decides who may use it by act scope in that context: the community must hold `external-auth-use` there, and be bound to the account, for the account to issue it anything. Naming a context grants nothing; the VTA's binding is the gate.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"title\": \"ExternalAccountContextId\",\n      \"type\": \"string\"\n    },\n    \"ExternalAccountId\": {\n      \"description\": \"The identifier of an external account held by the community's VTA (the external/accounts/* family), which issues the community short-lived, room-scoped credentials and holds the long-lived authority itself.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$\",\n      \"title\": \"ExternalAccountId\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"configId\": {\n          \"$ref\": \"#/$defs/StorageConfigId\"\n        },\n        \"credentialState\": {\n          \"$ref\": \"#/$defs/CredentialState\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"probeOk\": {\n          \"description\": \"Present when the community probed the config with the new credential.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"configId\",\n        \"credentialState\"\n      ],\n      \"title\": \"VTC Storage — Credentials — Set — response payload\",\n      \"type\": \"object\"\n    },\n    \"StorageConfigId\": {\n      \"description\": \"A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$\",\n      \"title\": \"StorageConfigId\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/storage/credentials/set/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Store a `sealed` storage config's long-lived credential, sealed end to end to the community. Write-only: no task returns it. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"configId\": {\n      \"$ref\": \"#/$defs/StorageConfigId\"\n    },\n    \"digestMultibase\": {\n      \"$ref\": \"#/$defs/DigestMultibase\",\n      \"description\": \"Digest over the armored bytes exactly as carried in `sealed`. Covered by the document's proof, and shown to approvers in place of the credential.\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"reason\": {\n      \"description\": \"Why the administrator is making this change. Recorded with the change in the audit trail and shown to approvers. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.\",\n      \"maxLength\": 500,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"sealed\": {\n      \"description\": \"OpenPGP-style ASCII-armored `sealed_transfer` ciphertext of the credential. HPKE base mode, X25519-HKDF-SHA256 KEM, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`; recipient the X25519 derivation of the community DID's Ed25519 key.\",\n      \"maxLength\": 16384,\n      \"minLength\": 64,\n      \"pattern\": \"^-----BEGIN VTA SEALED BUNDLE-----\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"configId\",\n    \"sealed\",\n    \"digestMultibase\",\n    \"reason\"\n  ],\n  \"title\": \"VTC Storage — Credentials — Set — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"CredentialState\":{\"additionalProperties\":false,\"description\":\"Whether a config can authenticate now, and how — never the credential. `status`: `vta-account`, `ambient` and `sealed` are usable; `required` means the config cannot store until a credential is provided (a `sealed` config never set, or set before a restore, which carries no credential); `none` is a `local` config.\",\"properties\":{\"account\":{\"$ref\":\"#/$defs/ExternalAccountId\",\"description\":\"Present with `vta-account`.\"},\"context\":{\"$ref\":\"#/$defs/ExternalAccountContextId\",\"description\":\"Present with `vta-account`.\"},\"fingerprint\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Present with `sealed`: a digest identifying the stored credential, so an administrator can tell which one is set without anyone being able to read it. Computed over the credential with a community-held key, never a bare hash of a low-entropy secret.\"},\"roomsHoldingCredentials\":{\"description\":\"Present with `vta-account`: how many rooms the community currently holds a live room-scoped credential for.\",\"minimum\":0,\"type\":\"integer\"},\"setAt\":{\"description\":\"Present with `sealed`: when the stored credential was last set.\",\"format\":\"date-time\",\"type\":\"string\"},\"status\":{\"enum\":[\"vta-account\",\"ambient\",\"sealed\",\"required\",\"none\"],\"type\":\"string\"}},\"required\":[\"status\"],\"title\":\"CredentialState\",\"type\":\"object\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ExternalAccountContextId\":{\"description\":\"The context at the community's VTA that owns an external account. The VTA names an account by its context and its identifier, and decides who may use it by act scope in that context: the community must hold `external-auth-use` there, and be bound to the account, for the account to issue it anything. Naming a context grants nothing; the VTA's binding is the gate.\",\"maxLength\":256,\"minLength\":1,\"title\":\"ExternalAccountContextId\",\"type\":\"string\"},\"ExternalAccountId\":{\"description\":\"The identifier of an external account held by the community's VTA (the external/accounts/* family), which issues the community short-lived, room-scoped credentials and holds the long-lived authority itself.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$\",\"title\":\"ExternalAccountId\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"configId\":{\"$ref\":\"#/$defs/StorageConfigId\"},\"credentialState\":{\"$ref\":\"#/$defs/CredentialState\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"probeOk\":{\"description\":\"Present when the community probed the config with the new credential.\",\"type\":\"boolean\"}},\"required\":[\"configId\",\"credentialState\"],\"title\":\"VTC Storage — Credentials — Set — response payload\",\"type\":\"object\"},\"StorageConfigId\":{\"description\":\"A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$\",\"title\":\"StorageConfigId\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/vtc/storage/credentials/set/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Store a `sealed` storage config's long-lived credential, sealed end to end to the community. Write-only: no task returns it. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"configId\":{\"$ref\":\"#/$defs/StorageConfigId\"},\"digestMultibase\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Digest over the armored bytes exactly as carried in `sealed`. Covered by the document's proof, and shown to approvers in place of the credential.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"reason\":{\"description\":\"Why the administrator is making this change. Recorded with the change in the audit trail and shown to approvers. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.\",\"maxLength\":500,\"minLength\":1,\"type\":\"string\"},\"sealed\":{\"description\":\"OpenPGP-style ASCII-armored `sealed_transfer` ciphertext of the credential. HPKE base mode, X25519-HKDF-SHA256 KEM, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`; recipient the X25519 derivation of the community DID's Ed25519 key.\",\"maxLength\":16384,\"minLength\":64,\"pattern\":\"^-----BEGIN VTA SEALED BUNDLE-----\",\"type\":\"string\"}},\"required\":[\"configId\",\"sealed\",\"digestMultibase\",\"reason\"],\"title\":\"VTC Storage — Credentials — Set — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1236,7 +1000,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CredentialState\": {\n      \"additionalProperties\": false,\n      \"description\": \"Whether a config can authenticate now, and how — never the credential. `status`: `vta-account`, `ambient` and `sealed` are usable; `required` means the config cannot store until a credential is provided (a `sealed` config never set, or set before a restore, which carries no credential); `none` is a `local` config.\",\n      \"properties\": {\n        \"account\": {\n          \"$ref\": \"#/$defs/ExternalAccountId\",\n          \"description\": \"Present with `vta-account`.\"\n        },\n        \"context\": {\n          \"$ref\": \"#/$defs/ExternalAccountContextId\",\n          \"description\": \"Present with `vta-account`.\"\n        },\n        \"fingerprint\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"Present with `sealed`: a digest identifying the stored credential, so an administrator can tell which one is set without anyone being able to read it. Computed over the credential with a community-held key, never a bare hash of a low-entropy secret.\"\n        },\n        \"roomsHoldingCredentials\": {\n          \"description\": \"Present with `vta-account`: how many rooms the community currently holds a live room-scoped credential for.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"setAt\": {\n          \"description\": \"Present with `sealed`: when the stored credential was last set.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"enum\": [\n            \"vta-account\",\n            \"ambient\",\n            \"sealed\",\n            \"required\",\n            \"none\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\"\n      ],\n      \"title\": \"CredentialState\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ExternalAccountContextId\": {\n      \"description\": \"The context at the community's VTA that owns an external account. The VTA names an account by its context and its identifier, and decides who may use it by act scope in that context: the community must hold `external-auth-use` there, and be bound to the account, for the account to issue it anything. Naming a context grants nothing; the VTA's binding is the gate.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"title\": \"ExternalAccountContextId\",\n      \"type\": \"string\"\n    },\n    \"ExternalAccountId\": {\n      \"description\": \"The identifier of an external account held by the community's VTA (the external/accounts/* family), which issues the community short-lived, room-scoped credentials and holds the long-lived authority itself.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$\",\n      \"title\": \"ExternalAccountId\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"configId\": {\n          \"$ref\": \"#/$defs/StorageConfigId\"\n        },\n        \"credentialState\": {\n          \"$ref\": \"#/$defs/CredentialState\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"probeOk\": {\n          \"description\": \"Present when the community probed the config with the new credential.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"configId\",\n        \"credentialState\"\n      ],\n      \"title\": \"VTC Storage — Credentials — Set — response payload\",\n      \"type\": \"object\"\n    },\n    \"StorageConfigId\": {\n      \"description\": \"A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$\",\n      \"title\": \"StorageConfigId\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"CredentialState\":{\"additionalProperties\":false,\"description\":\"Whether a config can authenticate now, and how — never the credential. `status`: `vta-account`, `ambient` and `sealed` are usable; `required` means the config cannot store until a credential is provided (a `sealed` config never set, or set before a restore, which carries no credential); `none` is a `local` config.\",\"properties\":{\"account\":{\"$ref\":\"#/$defs/ExternalAccountId\",\"description\":\"Present with `vta-account`.\"},\"context\":{\"$ref\":\"#/$defs/ExternalAccountContextId\",\"description\":\"Present with `vta-account`.\"},\"fingerprint\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Present with `sealed`: a digest identifying the stored credential, so an administrator can tell which one is set without anyone being able to read it. Computed over the credential with a community-held key, never a bare hash of a low-entropy secret.\"},\"roomsHoldingCredentials\":{\"description\":\"Present with `vta-account`: how many rooms the community currently holds a live room-scoped credential for.\",\"minimum\":0,\"type\":\"integer\"},\"setAt\":{\"description\":\"Present with `sealed`: when the stored credential was last set.\",\"format\":\"date-time\",\"type\":\"string\"},\"status\":{\"enum\":[\"vta-account\",\"ambient\",\"sealed\",\"required\",\"none\"],\"type\":\"string\"}},\"required\":[\"status\"],\"title\":\"CredentialState\",\"type\":\"object\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ExternalAccountContextId\":{\"description\":\"The context at the community's VTA that owns an external account. The VTA names an account by its context and its identifier, and decides who may use it by act scope in that context: the community must hold `external-auth-use` there, and be bound to the account, for the account to issue it anything. Naming a context grants nothing; the VTA's binding is the gate.\",\"maxLength\":256,\"minLength\":1,\"title\":\"ExternalAccountContextId\",\"type\":\"string\"},\"ExternalAccountId\":{\"description\":\"The identifier of an external account held by the community's VTA (the external/accounts/* family), which issues the community short-lived, room-scoped credentials and holds the long-lived authority itself.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$\",\"title\":\"ExternalAccountId\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"configId\":{\"$ref\":\"#/$defs/StorageConfigId\"},\"credentialState\":{\"$ref\":\"#/$defs/CredentialState\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"probeOk\":{\"description\":\"Present when the community probed the config with the new credential.\",\"type\":\"boolean\"}},\"required\":[\"configId\",\"credentialState\"],\"title\":\"VTC Storage — Credentials — Set — response payload\",\"type\":\"object\"},\"StorageConfigId\":{\"description\":\"A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$\",\"title\":\"StorageConfigId\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

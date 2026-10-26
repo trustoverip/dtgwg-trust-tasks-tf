@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,36 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///The controller VTA sets a wake handle's trigger allowlist on the push gateway — the DIDs permitted to wake the device. The gateway accepts it only from the handle's recorded controller VTA and enforces it on every push/wake. See the push wake-up binding (https://trusttasks.org/binding/push/0.1).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/push/provision/0.2",
-///  "title": "Payload",
-///  "description": "The controller VTA sets a wake handle's trigger allowlist on the push gateway — the DIDs permitted to wake the device. The gateway accepts it only from the handle's recorded controller VTA and enforces it on every push/wake. See the push wake-up binding (https://trusttasks.org/binding/push/0.1).",
-///  "type": "object",
-///  "required": [
-///    "handle",
-///    "policy"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "handle": {
-///      "description": "The opaque gateway-issued handle (from push/register) whose allowlist is being set.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "policy": {
-///      "description": "The trigger allowlist the VTA computed by its own policy — the DIDs permitted to wake this handle (typically the device's mediator and/or the VTA itself). Empty disables waking.",
-///      "$ref": "#/definitions/WakeTriggerPolicy"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -190,16 +136,6 @@ impl Payload {
 }
 ///The opaque gateway-issued handle (from push/register) whose allowlist is being set.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The opaque gateway-issued handle (from push/register) whose allowlist is being set.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadHandle(::std::string::String);
@@ -259,34 +195,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadHandle {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "handle",
-///    "policy"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "handle": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "policy": {
-///      "description": "The effective allowlist the gateway recorded.",
-///      "$ref": "#/definitions/WakeTriggerPolicy"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -304,15 +212,6 @@ impl Response {
 }
 ///`ResponseHandle`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseHandle(::std::string::String);
@@ -372,31 +271,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseHandle {
 }
 ///VTA-owned allowlist of the DIDs permitted to trigger a wake for a given WakeHandle (push wake-up binding, https://trusttasks.org/binding/push/0.1). The VTA is the source of truth for this policy — all device config state resides at the VTA — and provisions it to the gateway, which ENFORCES it: a wake request from a DID not on the list is refused. Typically holds the device's mediator DID (queue-driven wake, where the mediator alone knows the device is offline) and/or the VTA's own DID (policy-driven wake, e.g. a step-up the VTA is delegating to this device).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "WakeTriggerPolicy",
-///  "description": "VTA-owned allowlist of the DIDs permitted to trigger a wake for a given WakeHandle (push wake-up binding, https://trusttasks.org/binding/push/0.1). The VTA is the source of truth for this policy — all device config state resides at the VTA — and provisions it to the gateway, which ENFORCES it: a wake request from a DID not on the list is refused. Typically holds the device's mediator DID (queue-driven wake, where the mediator alone knows the device is offline) and/or the VTA's own DID (policy-driven wake, e.g. a step-up the VTA is delegating to this device).",
-///  "type": "object",
-///  "required": [
-///    "allowedTriggers"
-///  ],
-///  "properties": {
-///    "allowedTriggers": {
-///      "description": "DIDs authorized to trigger a wake for this handle. An empty array means no party may wake the device (push effectively disabled while the handle exists). The gateway authenticates the trigger's DID before checking membership.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "minLength": 1
-///      },
-///      "uniqueItems": true
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -412,15 +286,6 @@ impl WakeTriggerPolicy {
 }
 ///`WakeTriggerPolicyAllowedTriggersItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct WakeTriggerPolicyAllowedTriggersItem(::std::string::String);
@@ -661,7 +526,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"handle\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"policy\": {\n          \"$ref\": \"#/$defs/WakeTriggerPolicy\",\n          \"description\": \"The effective allowlist the gateway recorded.\"\n        }\n      },\n      \"required\": [\n        \"handle\",\n        \"policy\"\n      ],\n      \"title\": \"Push Provision — response payload\",\n      \"type\": \"object\"\n    },\n    \"WakeTriggerPolicy\": {\n      \"additionalProperties\": false,\n      \"description\": \"VTA-owned allowlist of the DIDs permitted to trigger a wake for a given WakeHandle (push wake-up binding, https://trusttasks.org/binding/push/0.1). The VTA is the source of truth for this policy — all device config state resides at the VTA — and provisions it to the gateway, which ENFORCES it: a wake request from a DID not on the list is refused. Typically holds the device's mediator DID (queue-driven wake, where the mediator alone knows the device is offline) and/or the VTA's own DID (policy-driven wake, e.g. a step-up the VTA is delegating to this device).\",\n      \"properties\": {\n        \"allowedTriggers\": {\n          \"description\": \"DIDs authorized to trigger a wake for this handle. An empty array means no party may wake the device (push effectively disabled while the handle exists). The gateway authenticates the trigger's DID before checking membership.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        }\n      },\n      \"required\": [\n        \"allowedTriggers\"\n      ],\n      \"title\": \"WakeTriggerPolicy\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/push/provision/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"The controller VTA sets a wake handle's trigger allowlist on the push gateway — the DIDs permitted to wake the device. The gateway accepts it only from the handle's recorded controller VTA and enforces it on every push/wake. See the push wake-up binding (https://trusttasks.org/binding/push/0.1).\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"handle\": {\n      \"description\": \"The opaque gateway-issued handle (from push/register) whose allowlist is being set.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"policy\": {\n      \"$ref\": \"#/$defs/WakeTriggerPolicy\",\n      \"description\": \"The trigger allowlist the VTA computed by its own policy — the DIDs permitted to wake this handle (typically the device's mediator and/or the VTA itself). Empty disables waking.\"\n    }\n  },\n  \"required\": [\n    \"handle\",\n    \"policy\"\n  ],\n  \"title\": \"Push Provision — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"handle\":{\"minLength\":1,\"type\":\"string\"},\"policy\":{\"$ref\":\"#/$defs/WakeTriggerPolicy\",\"description\":\"The effective allowlist the gateway recorded.\"}},\"required\":[\"handle\",\"policy\"],\"title\":\"Push Provision — response payload\",\"type\":\"object\"},\"WakeTriggerPolicy\":{\"additionalProperties\":false,\"description\":\"VTA-owned allowlist of the DIDs permitted to trigger a wake for a given WakeHandle (push wake-up binding, https://trusttasks.org/binding/push/0.1). The VTA is the source of truth for this policy — all device config state resides at the VTA — and provisions it to the gateway, which ENFORCES it: a wake request from a DID not on the list is refused. Typically holds the device's mediator DID (queue-driven wake, where the mediator alone knows the device is offline) and/or the VTA's own DID (policy-driven wake, e.g. a step-up the VTA is delegating to this device).\",\"properties\":{\"allowedTriggers\":{\"description\":\"DIDs authorized to trigger a wake for this handle. An empty array means no party may wake the device (push effectively disabled while the handle exists). The gateway authenticates the trigger's DID before checking membership.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"allowedTriggers\"],\"title\":\"WakeTriggerPolicy\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/push/provision/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The controller VTA sets a wake handle's trigger allowlist on the push gateway — the DIDs permitted to wake the device. The gateway accepts it only from the handle's recorded controller VTA and enforces it on every push/wake. See the push wake-up binding (https://trusttasks.org/binding/push/0.1).\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"handle\":{\"description\":\"The opaque gateway-issued handle (from push/register) whose allowlist is being set.\",\"minLength\":1,\"type\":\"string\"},\"policy\":{\"$ref\":\"#/$defs/WakeTriggerPolicy\",\"description\":\"The trigger allowlist the VTA computed by its own policy — the DIDs permitted to wake this handle (typically the device's mediator and/or the VTA itself). Empty disables waking.\"}},\"required\":[\"handle\",\"policy\"],\"title\":\"Push Provision — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -669,7 +534,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"handle\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"policy\": {\n          \"$ref\": \"#/$defs/WakeTriggerPolicy\",\n          \"description\": \"The effective allowlist the gateway recorded.\"\n        }\n      },\n      \"required\": [\n        \"handle\",\n        \"policy\"\n      ],\n      \"title\": \"Push Provision — response payload\",\n      \"type\": \"object\"\n    },\n    \"WakeTriggerPolicy\": {\n      \"additionalProperties\": false,\n      \"description\": \"VTA-owned allowlist of the DIDs permitted to trigger a wake for a given WakeHandle (push wake-up binding, https://trusttasks.org/binding/push/0.1). The VTA is the source of truth for this policy — all device config state resides at the VTA — and provisions it to the gateway, which ENFORCES it: a wake request from a DID not on the list is refused. Typically holds the device's mediator DID (queue-driven wake, where the mediator alone knows the device is offline) and/or the VTA's own DID (policy-driven wake, e.g. a step-up the VTA is delegating to this device).\",\n      \"properties\": {\n        \"allowedTriggers\": {\n          \"description\": \"DIDs authorized to trigger a wake for this handle. An empty array means no party may wake the device (push effectively disabled while the handle exists). The gateway authenticates the trigger's DID before checking membership.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        }\n      },\n      \"required\": [\n        \"allowedTriggers\"\n      ],\n      \"title\": \"WakeTriggerPolicy\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"handle\":{\"minLength\":1,\"type\":\"string\"},\"policy\":{\"$ref\":\"#/$defs/WakeTriggerPolicy\",\"description\":\"The effective allowlist the gateway recorded.\"}},\"required\":[\"handle\",\"policy\"],\"title\":\"Push Provision — response payload\",\"type\":\"object\"},\"WakeTriggerPolicy\":{\"additionalProperties\":false,\"description\":\"VTA-owned allowlist of the DIDs permitted to trigger a wake for a given WakeHandle (push wake-up binding, https://trusttasks.org/binding/push/0.1). The VTA is the source of truth for this policy — all device config state resides at the VTA — and provisions it to the gateway, which ENFORCES it: a wake request from a DID not on the list is refused. Typically holds the device's mediator DID (queue-driven wake, where the mediator alone knows the device is offline) and/or the VTA's own DID (policy-driven wake, e.g. a step-up the VTA is delegating to this device).\",\"properties\":{\"allowedTriggers\":{\"description\":\"DIDs authorized to trigger a wake for this handle. An empty array means no party may wake the device (push effectively disabled while the handle exists). The gateway authenticates the trigger's DID before checking membership.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"allowedTriggers\"],\"title\":\"WakeTriggerPolicy\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

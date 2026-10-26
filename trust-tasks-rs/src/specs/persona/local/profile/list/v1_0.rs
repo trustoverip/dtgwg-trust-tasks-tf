@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,40 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Enumerate this context's local profiles. A separate keyspace from the holder's pool, so the scan structurally cannot return a pool profile — the isolation is in the address, not in a filter that could be got wrong.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/persona/local/profile/list/1.0",
-///  "title": "Payload",
-///  "description": "Enumerate this context's local profiles. A separate keyspace from the holder's pool, so the scan structurally cannot return a pool profile — the isolation is in the address, not in a filter that could be got wrong.",
-///  "type": "object",
-///  "required": [
-///    "contextId"
-///  ],
-///  "properties": {
-///    "contextId": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "cursor": {
-///      "type": "string",
-///      "maxLength": 4096
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "limit": {
-///      "default": 100,
-///      "type": "integer",
-///      "maximum": 500.0,
-///      "minimum": 1.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -196,15 +138,6 @@ impl Payload {
 }
 ///`PayloadContextId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadContextId(::std::string::String);
@@ -264,15 +197,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 }
 ///`PayloadCursor`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 4096
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCursor(::std::string::String);
@@ -332,60 +256,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCursor {
 }
 ///Success response to persona/local/profile/list. Type https://trusttasks.org/spec/persona/local/profile/list/1.0#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to persona/local/profile/list. Type https://trusttasks.org/spec/persona/local/profile/list/1.0#response.",
-///  "type": "object",
-///  "required": [
-///    "profiles"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "nextCursor": {
-///      "type": "string",
-///      "maxLength": 4096
-///    },
-///    "profiles": {
-///      "type": "array",
-///      "items": {
-///        "type": "object",
-///        "required": [
-///          "entryCount",
-///          "name",
-///          "profileId"
-///        ],
-///        "properties": {
-///          "bound": {
-///            "description": "Whether a persona in this context is bound to it.",
-///            "type": "boolean"
-///          },
-///          "entryCount": {
-///            "type": "integer",
-///            "minimum": 0.0
-///          },
-///          "name": {
-///            "type": "string",
-///            "maxLength": 128
-///          },
-///          "profileId": {
-///            "$ref": "#/definitions/Ulid"
-///          }
-///        },
-///        "additionalProperties": false
-///      },
-///      "maxItems": 500
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -407,15 +277,6 @@ impl Response {
 }
 ///`ResponseNextCursor`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 4096
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseNextCursor(::std::string::String);
@@ -475,37 +336,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseNextCursor {
 }
 ///`ResponseProfilesItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "entryCount",
-///    "name",
-///    "profileId"
-///  ],
-///  "properties": {
-///    "bound": {
-///      "description": "Whether a persona in this context is bound to it.",
-///      "type": "boolean"
-///    },
-///    "entryCount": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "name": {
-///      "type": "string",
-///      "maxLength": 128
-///    },
-///    "profileId": {
-///      "$ref": "#/definitions/Ulid"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -526,15 +356,6 @@ impl ResponseProfilesItem {
 }
 ///`ResponseProfilesItemName`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 128
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseProfilesItemName(::std::string::String);
@@ -594,17 +415,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseProfilesItemName {
 }
 ///A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ulid",
-///  "description": "A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.",
-///  "type": "string",
-///  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Ulid(::std::string::String);
@@ -921,7 +731,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/local/profile/list. Type https://trusttasks.org/spec/persona/local/profile/list/1.0#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"nextCursor\": {\n          \"maxLength\": 4096,\n          \"type\": \"string\"\n        },\n        \"profiles\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"bound\": {\n                \"description\": \"Whether a persona in this context is bound to it.\",\n                \"type\": \"boolean\"\n              },\n              \"entryCount\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"name\": {\n                \"maxLength\": 128,\n                \"type\": \"string\"\n              },\n              \"profileId\": {\n                \"$ref\": \"#/$defs/Ulid\"\n              }\n            },\n            \"required\": [\n              \"profileId\",\n              \"name\",\n              \"entryCount\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 500,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"profiles\"\n      ],\n      \"title\": \"Persona Local Profile List — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/persona/local/profile/list/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Enumerate this context's local profiles. A separate keyspace from the holder's pool, so the scan structurally cannot return a pool profile — the isolation is in the address, not in a filter that could be got wrong.\",\n  \"properties\": {\n    \"contextId\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"cursor\": {\n      \"maxLength\": 4096,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"limit\": {\n      \"default\": 100,\n      \"maximum\": 500,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"contextId\"\n  ],\n  \"title\": \"Persona Local Profile List — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to persona/local/profile/list. Type https://trusttasks.org/spec/persona/local/profile/list/1.0#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"nextCursor\":{\"maxLength\":4096,\"type\":\"string\"},\"profiles\":{\"items\":{\"additionalProperties\":false,\"properties\":{\"bound\":{\"description\":\"Whether a persona in this context is bound to it.\",\"type\":\"boolean\"},\"entryCount\":{\"minimum\":0,\"type\":\"integer\"},\"name\":{\"maxLength\":128,\"type\":\"string\"},\"profileId\":{\"$ref\":\"#/$defs/Ulid\"}},\"required\":[\"profileId\",\"name\",\"entryCount\"],\"type\":\"object\"},\"maxItems\":500,\"type\":\"array\"}},\"required\":[\"profiles\"],\"title\":\"Persona Local Profile List — response payload\",\"type\":\"object\"},\"Ulid\":{\"description\":\"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\"pattern\":\"^[0-9A-HJKMNP-TV-Z]{26}$\",\"title\":\"Ulid\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/persona/local/profile/list/1.0\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Enumerate this context's local profiles. A separate keyspace from the holder's pool, so the scan structurally cannot return a pool profile — the isolation is in the address, not in a filter that could be got wrong.\",\"properties\":{\"contextId\":{\"minLength\":1,\"type\":\"string\"},\"cursor\":{\"maxLength\":4096,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"limit\":{\"default\":100,\"maximum\":500,\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"contextId\"],\"title\":\"Persona Local Profile List — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -930,7 +740,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/local/profile/list. Type https://trusttasks.org/spec/persona/local/profile/list/1.0#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"nextCursor\": {\n          \"maxLength\": 4096,\n          \"type\": \"string\"\n        },\n        \"profiles\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"bound\": {\n                \"description\": \"Whether a persona in this context is bound to it.\",\n                \"type\": \"boolean\"\n              },\n              \"entryCount\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"name\": {\n                \"maxLength\": 128,\n                \"type\": \"string\"\n              },\n              \"profileId\": {\n                \"$ref\": \"#/$defs/Ulid\"\n              }\n            },\n            \"required\": [\n              \"profileId\",\n              \"name\",\n              \"entryCount\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 500,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"profiles\"\n      ],\n      \"title\": \"Persona Local Profile List — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to persona/local/profile/list. Type https://trusttasks.org/spec/persona/local/profile/list/1.0#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"nextCursor\":{\"maxLength\":4096,\"type\":\"string\"},\"profiles\":{\"items\":{\"additionalProperties\":false,\"properties\":{\"bound\":{\"description\":\"Whether a persona in this context is bound to it.\",\"type\":\"boolean\"},\"entryCount\":{\"minimum\":0,\"type\":\"integer\"},\"name\":{\"maxLength\":128,\"type\":\"string\"},\"profileId\":{\"$ref\":\"#/$defs/Ulid\"}},\"required\":[\"profileId\",\"name\",\"entryCount\"],\"type\":\"object\"},\"maxItems\":500,\"type\":\"array\"}},\"required\":[\"profiles\"],\"title\":\"Persona Local Profile List — response payload\",\"type\":\"object\"},\"Ulid\":{\"description\":\"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\"pattern\":\"^[0-9A-HJKMNP-TV-Z]{26}$\",\"title\":\"Ulid\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

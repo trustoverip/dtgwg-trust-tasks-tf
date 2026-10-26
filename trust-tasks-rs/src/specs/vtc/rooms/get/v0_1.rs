@@ -35,34 +35,6 @@ pub mod error {
 }
 ///A config holding some of this room's blobs, other than the one it is assigned to.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "A config holding some of this room's blobs, other than the one it is assigned to.",
-///  "type": "object",
-///  "required": [
-///    "bytes",
-///    "configId",
-///    "files"
-///  ],
-///  "properties": {
-///    "bytes": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "configId": {
-///      "$ref": "#/definitions/StorageConfigId"
-///    },
-///    "files": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -79,39 +51,6 @@ impl ConfigHoldings {
 }
 ///The limits a room is enforced against now, with where each scope's came from.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "EffectiveLimits",
-///  "description": "The limits a room is enforced against now, with where each scope's came from.",
-///  "type": "object",
-///  "required": [
-///    "limits",
-///    "memberSource",
-///    "roomSource"
-///  ],
-///  "properties": {
-///    "hostCeilingBytes": {
-///      "description": "The host-wide largest-file ceiling, which no room or member limit can exceed.",
-///      "type": "integer",
-///      "maximum": 1073741824.0,
-///      "minimum": 0.0
-///    },
-///    "limits": {
-///      "$ref": "#/definitions/RoomLimits"
-///    },
-///    "memberSource": {
-///      "$ref": "#/definitions/LimitSource"
-///    },
-///    "roomSource": {
-///      "$ref": "#/definitions/LimitSource"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -136,21 +75,6 @@ impl EffectiveLimits {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -172,15 +96,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -244,80 +159,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///One room, as its host holds it — member for member the `HostedRoom` of vtc/rooms/list/0.1, which defines it inside its own payload schema. Nothing derived from the room's contents, and no member list: the host has none.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "HostedRoom",
-///  "description": "One room, as its host holds it — member for member the `HostedRoom` of vtc/rooms/list/0.1, which defines it inside its own payload schema. Nothing derived from the room's contents, and no member list: the host has none.",
-///  "type": "object",
-///  "required": [
-///    "createdAt",
-///    "epoch",
-///    "lifecycle",
-///    "ownerDid",
-///    "retentionDays",
-///    "retentionPolicy",
-///    "roomId",
-///    "updatedAt",
-///    "visibility"
-///  ],
-///  "properties": {
-///    "createdAt": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "epoch": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "epochExpiresAt": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "lifecycle": {
-///      "type": "string",
-///      "enum": [
-///        "live",
-///        "lapsed",
-///        "dormant",
-///        "reclaimable"
-///      ]
-///    },
-///    "mirrorOf": {
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1
-///    },
-///    "ownerDid": {
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    },
-///    "retentionDays": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "retentionPolicy": {
-///      "$ref": "#/definitions/RetentionPolicy"
-///    },
-///    "roomId": {
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    },
-///    "updatedAt": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "visibility": {
-///      "$ref": "#/definitions/Visibility"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -357,20 +198,6 @@ impl HostedRoom {
 }
 ///`HostedRoomLifecycle`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "enum": [
-///    "live",
-///    "lapsed",
-///    "dormant",
-///    "reclaimable"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -440,16 +267,6 @@ impl ::std::convert::TryFrom<::std::string::String> for HostedRoomLifecycle {
 }
 ///`HostedRoomMirrorOf`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct HostedRoomMirrorOf(::std::string::String);
@@ -512,16 +329,6 @@ impl<'de> ::serde::Deserialize<'de> for HostedRoomMirrorOf {
 }
 ///`HostedRoomOwnerDid`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct HostedRoomOwnerDid(::std::string::String);
@@ -586,16 +393,6 @@ impl<'de> ::serde::Deserialize<'de> for HostedRoomOwnerDid {
 }
 ///`HostedRoomRoomId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct HostedRoomRoomId(::std::string::String);
@@ -658,21 +455,6 @@ impl<'de> ::serde::Deserialize<'de> for HostedRoomRoomId {
 }
 ///Where an effective limit came from. `policy`: the community's rooms policy at the room's creation. `override`: an administrator's vtc/rooms/limits/set. `default`: the community's configured defaults, where neither applies. The host-wide ceiling bounds all three.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "LimitSource",
-///  "description": "Where an effective limit came from. `policy`: the community's rooms policy at the room's creation. `override`: an administrator's vtc/rooms/limits/set. `default`: the community's configured defaults, where neither applies. The host-wide ceiling bounds all three.",
-///  "type": "string",
-///  "enum": [
-///    "policy",
-///    "override",
-///    "default"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -738,56 +520,6 @@ impl ::std::convert::TryFrom<::std::string::String> for LimitSource {
 }
 ///Progress of the room's migration, as vtc/rooms/storage/migrate reports it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Progress of the room's migration, as vtc/rooms/storage/migrate reports it.",
-///  "type": "object",
-///  "required": [
-///    "doneBytes",
-///    "doneFiles",
-///    "migrationId",
-///    "state",
-///    "totalBytes",
-///    "totalFiles"
-///  ],
-///  "properties": {
-///    "doneBytes": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "doneFiles": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "migrationId": {
-///      "type": "string",
-///      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-///    },
-///    "state": {
-///      "description": "`paused`: halted by a capacity or backend failure and resumable by issuing vtc/rooms/storage/migrate again. `failed`: halted on a blob whose copy did not verify; the blob stays where it was.",
-///      "type": "string",
-///      "enum": [
-///        "running",
-///        "paused",
-///        "complete",
-///        "failed"
-///      ]
-///    },
-///    "totalBytes": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "totalFiles": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -812,15 +544,6 @@ impl MigrationProgress {
 }
 ///`MigrationProgressMigrationId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct MigrationProgressMigrationId(::std::string::String);
@@ -890,21 +613,6 @@ impl<'de> ::serde::Deserialize<'de> for MigrationProgressMigrationId {
 }
 ///`paused`: halted by a capacity or backend failure and resumable by issuing vtc/rooms/storage/migrate again. `failed`: halted on a blob whose copy did not verify; the blob stays where it was.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`paused`: halted by a capacity or backend failure and resumable by issuing vtc/rooms/storage/migrate again. `failed`: halted on a blob whose copy did not verify; the blob stays where it was.",
-///  "type": "string",
-///  "enum": [
-///    "running",
-///    "paused",
-///    "complete",
-///    "failed"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -974,32 +682,6 @@ impl ::std::convert::TryFrom<::std::string::String> for MigrationProgressState {
 }
 ///A room-hosting administrator reads one hosted room's host record, storage placement, limits and usage. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/rooms/get/0.1",
-///  "title": "Payload",
-///  "description": "A room-hosting administrator reads one hosted room's host record, storage placement, limits and usage. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "roomId"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "roomId": {
-///      "description": "The room's identifier, as its owner minted it.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1018,17 +700,6 @@ impl Payload {
 }
 ///The room's identifier, as its owner minted it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The room's identifier, as its owner minted it.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadRoomId(::std::string::String);
@@ -1091,126 +762,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRoomId {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "limits",
-///    "room",
-///    "storage",
-///    "usage"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "largestBlobs": {
-///      "description": "The room's largest committed blobs, by size only.",
-///      "type": "array",
-///      "items": {
-///        "type": "object",
-///        "required": [
-///          "configId",
-///          "createdAt",
-///          "size"
-///        ],
-///        "properties": {
-///          "configId": {
-///            "$ref": "#/definitions/StorageConfigId"
-///          },
-///          "createdAt": {
-///            "type": "string",
-///            "format": "date-time"
-///          },
-///          "size": {
-///            "type": "integer",
-///            "minimum": 1.0
-///          }
-///        },
-///        "additionalProperties": false
-///      },
-///      "maxItems": 10
-///    },
-///    "limits": {
-///      "$ref": "#/definitions/EffectiveLimits"
-///    },
-///    "membersWithUsage": {
-///      "description": "On an `attributed` room only: how many members have added files. Absent on `open` and `private` rooms.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "room": {
-///      "$ref": "#/definitions/HostedRoom"
-///    },
-///    "storage": {
-///      "description": "Where the room's blobs are.",
-///      "type": "object",
-///      "required": [
-///        "configId",
-///        "earlierConfigs"
-///      ],
-///      "properties": {
-///        "configId": {
-///          "$ref": "#/definitions/StorageConfigId"
-///        },
-///        "earlierConfigs": {
-///          "type": "array",
-///          "items": {
-///            "$ref": "#/definitions/ConfigHoldings"
-///          },
-///          "maxItems": 64
-///        },
-///        "migration": {
-///          "$ref": "#/definitions/MigrationProgress"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "usage": {
-///      "type": "object",
-///      "required": [
-///        "orphans",
-///        "room"
-///      ],
-///      "properties": {
-///        "orphans": {
-///          "description": "Blobs no record names, awaiting deletion after the grace window.",
-///          "type": "object",
-///          "required": [
-///            "bytes",
-///            "files"
-///          ],
-///          "properties": {
-///            "bytes": {
-///              "type": "integer",
-///              "minimum": 0.0
-///            },
-///            "files": {
-///              "type": "integer",
-///              "minimum": 0.0
-///            },
-///            "oldestOrphanedAt": {
-///              "type": "string",
-///              "format": "date-time"
-///            }
-///          },
-///          "additionalProperties": false
-///        },
-///        "room": {
-///          "$ref": "#/definitions/Usage"
-///        }
-///      },
-///      "additionalProperties": false
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1244,33 +795,6 @@ impl Response {
 }
 ///`ResponseLargestBlobsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "configId",
-///    "createdAt",
-///    "size"
-///  ],
-///  "properties": {
-///    "configId": {
-///      "$ref": "#/definitions/StorageConfigId"
-///    },
-///    "createdAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "size": {
-///      "type": "integer",
-///      "minimum": 1.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1288,35 +812,6 @@ impl ResponseLargestBlobsItem {
 }
 ///Where the room's blobs are.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Where the room's blobs are.",
-///  "type": "object",
-///  "required": [
-///    "configId",
-///    "earlierConfigs"
-///  ],
-///  "properties": {
-///    "configId": {
-///      "$ref": "#/definitions/StorageConfigId"
-///    },
-///    "earlierConfigs": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/ConfigHoldings"
-///      },
-///      "maxItems": 64
-///    },
-///    "migration": {
-///      "$ref": "#/definitions/MigrationProgress"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1335,47 +830,6 @@ impl ResponseStorage {
 }
 ///`ResponseUsage`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "orphans",
-///    "room"
-///  ],
-///  "properties": {
-///    "orphans": {
-///      "description": "Blobs no record names, awaiting deletion after the grace window.",
-///      "type": "object",
-///      "required": [
-///        "bytes",
-///        "files"
-///      ],
-///      "properties": {
-///        "bytes": {
-///          "type": "integer",
-///          "minimum": 0.0
-///        },
-///        "files": {
-///          "type": "integer",
-///          "minimum": 0.0
-///        },
-///        "oldestOrphanedAt": {
-///          "type": "string",
-///          "format": "date-time"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "room": {
-///      "$ref": "#/definitions/Usage"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1390,34 +844,6 @@ impl ResponseUsage {
 }
 ///Blobs no record names, awaiting deletion after the grace window.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Blobs no record names, awaiting deletion after the grace window.",
-///  "type": "object",
-///  "required": [
-///    "bytes",
-///    "files"
-///  ],
-///  "properties": {
-///    "bytes": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "files": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "oldestOrphanedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1438,21 +864,6 @@ impl ResponseUsageOrphans {
 }
 ///Whether a room keeps its history readable across a membership change, fixed at creation and immutable thereafter — like `Visibility`, and for the same reason: the rungs of an epoch key chain either exist for an epoch or they do not, and no later change of mind can seal key material that was never sealed or unseal what was already severed. `chained`: each advance produces an `EpochLink`, so every member reads the room's whole retained history however long they have been in it — what a **library** wants, at the cost of post-compromise security for record content, since a compromised current key then reaches every retained epoch. `fromJoin`: no rungs are produced, so a member reads only from the epoch their group state is at — what a **stream** wants, and what a room under a strict forward-secrecy obligation wants, at the cost that a joining member finds an empty-looking room and nobody can reread a record once their group state has moved past the epoch it was sealed under. Absent means `chained`; see the prose on why the absent case is the readable one.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RetentionPolicy",
-///  "description": "Whether a room keeps its history readable across a membership change, fixed at creation and immutable thereafter — like `Visibility`, and for the same reason: the rungs of an epoch key chain either exist for an epoch or they do not, and no later change of mind can seal key material that was never sealed or unseal what was already severed. `chained`: each advance produces an `EpochLink`, so every member reads the room's whole retained history however long they have been in it — what a **library** wants, at the cost of post-compromise security for record content, since a compromised current key then reaches every retained epoch. `fromJoin`: no rungs are produced, so a member reads only from the epoch their group state is at — what a **stream** wants, and what a room under a strict forward-secrecy obligation wants, at the cost that a joining member finds an empty-looking room and nobody can reread a record once their group state has moved past the epoch it was sealed under. Absent means `chained`; see the prose on why the absent case is the readable one.",
-///  "type": "string",
-///  "enum": [
-///    "chained",
-///    "fromJoin"
-///  ],
-///  "$comment": "Deliberately no JSON Schema `default`. A declared default is materialised by the generated bindings — the member becomes non-optional with a serde default — so an absent value would reappear as an explicit one on re-serialisation and break round-trip idempotence for every document written before this member existed. The meaning of absence is stated in prose, where a binding cannot act on it."
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1514,34 +925,6 @@ impl ::std::convert::TryFrom<::std::string::String> for RetentionPolicy {
 }
 ///How much a host is willing to store for one room, at the room and per member. A hosting decision, set by the host and never by anything in the room's credentials. An upload must fit every scope at once: the object against the smallest `maxFileBytes` that applies, and the member and the room with the file added.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RoomLimits",
-///  "description": "How much a host is willing to store for one room, at the room and per member. A hosting decision, set by the host and never by anything in the room's credentials. An upload must fit every scope at once: the object against the smallest `maxFileBytes` that applies, and the member and the room with the file added.",
-///  "type": "object",
-///  "required": [
-///    "filesEnabled"
-///  ],
-///  "properties": {
-///    "filesEnabled": {
-///      "description": "False refuses every rooms/blobs/* upload for the room. Reads of blobs already stored continue.",
-///      "type": "boolean"
-///    },
-///    "member": {
-///      "description": "Limits on each member's own uploads in this room, unless that member has an override. A member is the subject at the root of the authority chain they present, never the key that signed, so an agent acting on an attenuated chain spends its member's allowance. Not applied on a `private` room, where the host cannot tell members apart; the room and object limits still hold there.",
-///      "$ref": "#/definitions/ScopeLimits"
-///    },
-///    "room": {
-///      "description": "Limits on the room as a whole.",
-///      "$ref": "#/definitions/ScopeLimits"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1563,35 +946,6 @@ impl RoomLimits {
 }
 ///Limits at one scope. Every member is optional: an absent member means the scope sets no limit of that kind, and the next wider scope's limit, or the host's ceiling, governs. All sizes are ciphertext bytes.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ScopeLimits",
-///  "description": "Limits at one scope. Every member is optional: an absent member means the scope sets no limit of that kind, and the next wider scope's limit, or the host's ceiling, governs. All sizes are ciphertext bytes.",
-///  "type": "object",
-///  "properties": {
-///    "maxBytes": {
-///      "description": "The total size of the committed and reserved blobs the scope may hold.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "maxFileBytes": {
-///      "description": "The largest single blob the scope accepts. Never above 1 GiB, the transfer ceiling (BlobManifest).",
-///      "type": "integer",
-///      "maximum": 1073741824.0,
-///      "minimum": 0.0
-///    },
-///    "maxFiles": {
-///      "description": "The number of committed blobs the scope may hold. 0 refuses every upload at this scope.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1634,19 +988,6 @@ impl ScopeLimits {
 }
 ///A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "StorageConfigId",
-///  "description": "A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1,
-///  "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct StorageConfigId(::std::string::String);
@@ -1716,44 +1057,6 @@ impl<'de> ::serde::Deserialize<'de> for StorageConfigId {
 }
 ///What one scope holds now. Ciphertext bytes throughout.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Usage",
-///  "description": "What one scope holds now. Ciphertext bytes throughout.",
-///  "type": "object",
-///  "required": [
-///    "bytes",
-///    "files",
-///    "reservedBytes"
-///  ],
-///  "properties": {
-///    "bytes": {
-///      "description": "Their total size. A blob stops counting the moment it is orphaned (its last record dropped it or was retracted), not when the host finally deletes it, so a member who deletes a file has the room back at once.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "files": {
-///      "description": "Committed blobs that are not orphaned.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "reservedBytes": {
-///      "description": "Bytes reserved by uploads begun and not yet committed, aborted or expired. Counted against `maxBytes`, so two concurrent uploads cannot both fit under a limit only one of them fits.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "reservedFiles": {
-///      "description": "Uploads begun and not yet committed, aborted or expired. Counted against `maxFiles`.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1780,21 +1083,6 @@ impl Usage {
 }
 ///How much of a room its host can see, fixed at creation and immutable thereafter. `open`: records are cleartext, searchable and fully audited. `attributed`: record content is sealed, and the host still learns which member acted. `private`: content is sealed and membership is presented in zero knowledge, so the host verifies that a member acted without learning which. Immutable because a downgrade cannot un-see cleartext and an upgrade would protect only what came after while presenting as though it protected everything.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Visibility",
-///  "description": "How much of a room its host can see, fixed at creation and immutable thereafter. `open`: records are cleartext, searchable and fully audited. `attributed`: record content is sealed, and the host still learns which member acted. `private`: content is sealed and membership is presented in zero knowledge, so the host verifies that a member acted without learning which. Immutable because a downgrade cannot un-see cleartext and an upgrade would protect only what came after while presenting as though it protected everything.",
-///  "type": "string",
-///  "enum": [
-///    "open",
-///    "attributed",
-///    "private"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -2974,14 +2262,14 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/rooms/get/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ConfigHoldings\": {\n      \"additionalProperties\": false,\n      \"description\": \"A config holding some of this room's blobs, other than the one it is assigned to.\",\n      \"properties\": {\n        \"bytes\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"configId\": {\n          \"$ref\": \"#/$defs/StorageConfigId\"\n        },\n        \"files\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"configId\",\n        \"files\",\n        \"bytes\"\n      ],\n      \"type\": \"object\"\n    },\n    \"EffectiveLimits\": {\n      \"additionalProperties\": false,\n      \"description\": \"The limits a room is enforced against now, with where each scope's came from.\",\n      \"properties\": {\n        \"hostCeilingBytes\": {\n          \"description\": \"The host-wide largest-file ceiling, which no room or member limit can exceed.\",\n          \"maximum\": 1073741824,\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"limits\": {\n          \"$ref\": \"#/$defs/RoomLimits\"\n        },\n        \"memberSource\": {\n          \"$ref\": \"#/$defs/LimitSource\"\n        },\n        \"roomSource\": {\n          \"$ref\": \"#/$defs/LimitSource\"\n        }\n      },\n      \"required\": [\n        \"limits\",\n        \"roomSource\",\n        \"memberSource\"\n      ],\n      \"title\": \"EffectiveLimits\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"HostedRoom\": {\n      \"additionalProperties\": false,\n      \"description\": \"One room, as its host holds it — member for member the `HostedRoom` of vtc/rooms/list/0.1, which defines it inside its own payload schema. Nothing derived from the room's contents, and no member list: the host has none.\",\n      \"properties\": {\n        \"createdAt\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"epoch\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"epochExpiresAt\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"lifecycle\": {\n          \"enum\": [\n            \"live\",\n            \"lapsed\",\n            \"dormant\",\n            \"reclaimable\"\n          ],\n          \"type\": \"string\"\n        },\n        \"mirrorOf\": {\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ownerDid\": {\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"retentionDays\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"retentionPolicy\": {\n          \"$ref\": \"#/$defs/RetentionPolicy\"\n        },\n        \"roomId\": {\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"updatedAt\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"visibility\": {\n          \"$ref\": \"#/$defs/Visibility\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"ownerDid\",\n        \"visibility\",\n        \"retentionPolicy\",\n        \"epoch\",\n        \"lifecycle\",\n        \"retentionDays\",\n        \"createdAt\",\n        \"updatedAt\"\n      ],\n      \"title\": \"HostedRoom\",\n      \"type\": \"object\"\n    },\n    \"LimitSource\": {\n      \"description\": \"Where an effective limit came from. `policy`: the community's rooms policy at the room's creation. `override`: an administrator's vtc/rooms/limits/set. `default`: the community's configured defaults, where neither applies. The host-wide ceiling bounds all three.\",\n      \"enum\": [\n        \"policy\",\n        \"override\",\n        \"default\"\n      ],\n      \"title\": \"LimitSource\",\n      \"type\": \"string\"\n    },\n    \"MigrationProgress\": {\n      \"additionalProperties\": false,\n      \"description\": \"Progress of the room's migration, as vtc/rooms/storage/migrate reports it.\",\n      \"properties\": {\n        \"doneBytes\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"doneFiles\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"migrationId\": {\n          \"pattern\": \"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\n          \"type\": \"string\"\n        },\n        \"state\": {\n          \"description\": \"`paused`: halted by a capacity or backend failure and resumable by issuing vtc/rooms/storage/migrate again. `failed`: halted on a blob whose copy did not verify; the blob stays where it was.\",\n          \"enum\": [\n            \"running\",\n            \"paused\",\n            \"complete\",\n            \"failed\"\n          ],\n          \"type\": \"string\"\n        },\n        \"totalBytes\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"totalFiles\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"migrationId\",\n        \"state\",\n        \"totalFiles\",\n        \"totalBytes\",\n        \"doneFiles\",\n        \"doneBytes\"\n      ],\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"largestBlobs\": {\n          \"description\": \"The room's largest committed blobs, by size only.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"configId\": {\n                \"$ref\": \"#/$defs/StorageConfigId\"\n              },\n              \"createdAt\": {\n                \"format\": \"date-time\",\n                \"type\": \"string\"\n              },\n              \"size\": {\n                \"minimum\": 1,\n                \"type\": \"integer\"\n              }\n            },\n            \"required\": [\n              \"size\",\n              \"configId\",\n              \"createdAt\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 10,\n          \"type\": \"array\"\n        },\n        \"limits\": {\n          \"$ref\": \"#/$defs/EffectiveLimits\"\n        },\n        \"membersWithUsage\": {\n          \"description\": \"On an `attributed` room only: how many members have added files. Absent on `open` and `private` rooms.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"room\": {\n          \"$ref\": \"#/$defs/HostedRoom\"\n        },\n        \"storage\": {\n          \"additionalProperties\": false,\n          \"description\": \"Where the room's blobs are.\",\n          \"properties\": {\n            \"configId\": {\n              \"$ref\": \"#/$defs/StorageConfigId\"\n            },\n            \"earlierConfigs\": {\n              \"items\": {\n                \"$ref\": \"#/$defs/ConfigHoldings\"\n              },\n              \"maxItems\": 64,\n              \"type\": \"array\"\n            },\n            \"migration\": {\n              \"$ref\": \"#/$defs/MigrationProgress\"\n            }\n          },\n          \"required\": [\n            \"configId\",\n            \"earlierConfigs\"\n          ],\n          \"type\": \"object\"\n        },\n        \"usage\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"orphans\": {\n              \"additionalProperties\": false,\n              \"description\": \"Blobs no record names, awaiting deletion after the grace window.\",\n              \"properties\": {\n                \"bytes\": {\n                  \"minimum\": 0,\n                  \"type\": \"integer\"\n                },\n                \"files\": {\n                  \"minimum\": 0,\n                  \"type\": \"integer\"\n                },\n                \"oldestOrphanedAt\": {\n                  \"format\": \"date-time\",\n                  \"type\": \"string\"\n                }\n              },\n              \"required\": [\n                \"files\",\n                \"bytes\"\n              ],\n              \"type\": \"object\"\n            },\n            \"room\": {\n              \"$ref\": \"#/$defs/Usage\"\n            }\n          },\n          \"required\": [\n            \"room\",\n            \"orphans\"\n          ],\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"room\",\n        \"storage\",\n        \"limits\",\n        \"usage\"\n      ],\n      \"title\": \"VTC Rooms — Get — response payload\",\n      \"type\": \"object\"\n    },\n    \"RetentionPolicy\": {\n      \"$comment\": \"Deliberately no JSON Schema `default`. A declared default is materialised by the generated bindings — the member becomes non-optional with a serde default — so an absent value would reappear as an explicit one on re-serialisation and break round-trip idempotence for every document written before this member existed. The meaning of absence is stated in prose, where a binding cannot act on it.\",\n      \"description\": \"Whether a room keeps its history readable across a membership change, fixed at creation and immutable thereafter — like `Visibility`, and for the same reason: the rungs of an epoch key chain either exist for an epoch or they do not, and no later change of mind can seal key material that was never sealed or unseal what was already severed. `chained`: each advance produces an `EpochLink`, so every member reads the room's whole retained history however long they have been in it — what a **library** wants, at the cost of post-compromise security for record content, since a compromised current key then reaches every retained epoch. `fromJoin`: no rungs are produced, so a member reads only from the epoch their group state is at — what a **stream** wants, and what a room under a strict forward-secrecy obligation wants, at the cost that a joining member finds an empty-looking room and nobody can reread a record once their group state has moved past the epoch it was sealed under. Absent means `chained`; see the prose on why the absent case is the readable one.\",\n      \"enum\": [\n        \"chained\",\n        \"fromJoin\"\n      ],\n      \"title\": \"RetentionPolicy\",\n      \"type\": \"string\"\n    },\n    \"RoomLimits\": {\n      \"additionalProperties\": false,\n      \"description\": \"How much a host is willing to store for one room, at the room and per member. A hosting decision, set by the host and never by anything in the room's credentials. An upload must fit every scope at once: the object against the smallest `maxFileBytes` that applies, and the member and the room with the file added.\",\n      \"properties\": {\n        \"filesEnabled\": {\n          \"description\": \"False refuses every rooms/blobs/* upload for the room. Reads of blobs already stored continue.\",\n          \"type\": \"boolean\"\n        },\n        \"member\": {\n          \"$ref\": \"#/$defs/ScopeLimits\",\n          \"description\": \"Limits on each member's own uploads in this room, unless that member has an override. A member is the subject at the root of the authority chain they present, never the key that signed, so an agent acting on an attenuated chain spends its member's allowance. Not applied on a `private` room, where the host cannot tell members apart; the room and object limits still hold there.\"\n        },\n        \"room\": {\n          \"$ref\": \"#/$defs/ScopeLimits\",\n          \"description\": \"Limits on the room as a whole.\"\n        }\n      },\n      \"required\": [\n        \"filesEnabled\"\n      ],\n      \"title\": \"RoomLimits\",\n      \"type\": \"object\"\n    },\n    \"ScopeLimits\": {\n      \"additionalProperties\": false,\n      \"description\": \"Limits at one scope. Every member is optional: an absent member means the scope sets no limit of that kind, and the next wider scope's limit, or the host's ceiling, governs. All sizes are ciphertext bytes.\",\n      \"properties\": {\n        \"maxBytes\": {\n          \"description\": \"The total size of the committed and reserved blobs the scope may hold.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"maxFileBytes\": {\n          \"description\": \"The largest single blob the scope accepts. Never above 1 GiB, the transfer ceiling (BlobManifest).\",\n          \"maximum\": 1073741824,\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"maxFiles\": {\n          \"description\": \"The number of committed blobs the scope may hold. 0 refuses every upload at this scope.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"title\": \"ScopeLimits\",\n      \"type\": \"object\"\n    },\n    \"StorageConfigId\": {\n      \"description\": \"A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$\",\n      \"title\": \"StorageConfigId\",\n      \"type\": \"string\"\n    },\n    \"Usage\": {\n      \"additionalProperties\": false,\n      \"description\": \"What one scope holds now. Ciphertext bytes throughout.\",\n      \"properties\": {\n        \"bytes\": {\n          \"description\": \"Their total size. A blob stops counting the moment it is orphaned (its last record dropped it or was retracted), not when the host finally deletes it, so a member who deletes a file has the room back at once.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"files\": {\n          \"description\": \"Committed blobs that are not orphaned.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"reservedBytes\": {\n          \"description\": \"Bytes reserved by uploads begun and not yet committed, aborted or expired. Counted against `maxBytes`, so two concurrent uploads cannot both fit under a limit only one of them fits.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"reservedFiles\": {\n          \"description\": \"Uploads begun and not yet committed, aborted or expired. Counted against `maxFiles`.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"files\",\n        \"bytes\",\n        \"reservedBytes\"\n      ],\n      \"title\": \"Usage\",\n      \"type\": \"object\"\n    },\n    \"Visibility\": {\n      \"description\": \"How much of a room its host can see, fixed at creation and immutable thereafter. `open`: records are cleartext, searchable and fully audited. `attributed`: record content is sealed, and the host still learns which member acted. `private`: content is sealed and membership is presented in zero knowledge, so the host verifies that a member acted without learning which. Immutable because a downgrade cannot un-see cleartext and an upgrade would protect only what came after while presenting as though it protected everything.\",\n      \"enum\": [\n        \"open\",\n        \"attributed\",\n        \"private\"\n      ],\n      \"title\": \"Visibility\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/rooms/get/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A room-hosting administrator reads one hosted room's host record, storage placement, limits and usage. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"roomId\": {\n      \"description\": \"The room's identifier, as its owner minted it.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"roomId\"\n  ],\n  \"title\": \"VTC Rooms — Get — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"ConfigHoldings\":{\"additionalProperties\":false,\"description\":\"A config holding some of this room's blobs, other than the one it is assigned to.\",\"properties\":{\"bytes\":{\"minimum\":0,\"type\":\"integer\"},\"configId\":{\"$ref\":\"#/$defs/StorageConfigId\"},\"files\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"configId\",\"files\",\"bytes\"],\"type\":\"object\"},\"EffectiveLimits\":{\"additionalProperties\":false,\"description\":\"The limits a room is enforced against now, with where each scope's came from.\",\"properties\":{\"hostCeilingBytes\":{\"description\":\"The host-wide largest-file ceiling, which no room or member limit can exceed.\",\"maximum\":1073741824,\"minimum\":0,\"type\":\"integer\"},\"limits\":{\"$ref\":\"#/$defs/RoomLimits\"},\"memberSource\":{\"$ref\":\"#/$defs/LimitSource\"},\"roomSource\":{\"$ref\":\"#/$defs/LimitSource\"}},\"required\":[\"limits\",\"roomSource\",\"memberSource\"],\"title\":\"EffectiveLimits\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"HostedRoom\":{\"additionalProperties\":false,\"description\":\"One room, as its host holds it — member for member the `HostedRoom` of vtc/rooms/list/0.1, which defines it inside its own payload schema. Nothing derived from the room's contents, and no member list: the host has none.\",\"properties\":{\"createdAt\":{\"minimum\":0,\"type\":\"integer\"},\"epoch\":{\"minimum\":0,\"type\":\"integer\"},\"epochExpiresAt\":{\"minimum\":0,\"type\":\"integer\"},\"lifecycle\":{\"enum\":[\"live\",\"lapsed\",\"dormant\",\"reclaimable\"],\"type\":\"string\"},\"mirrorOf\":{\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"ownerDid\":{\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"retentionDays\":{\"minimum\":0,\"type\":\"integer\"},\"retentionPolicy\":{\"$ref\":\"#/$defs/RetentionPolicy\"},\"roomId\":{\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"updatedAt\":{\"minimum\":0,\"type\":\"integer\"},\"visibility\":{\"$ref\":\"#/$defs/Visibility\"}},\"required\":[\"roomId\",\"ownerDid\",\"visibility\",\"retentionPolicy\",\"epoch\",\"lifecycle\",\"retentionDays\",\"createdAt\",\"updatedAt\"],\"title\":\"HostedRoom\",\"type\":\"object\"},\"LimitSource\":{\"description\":\"Where an effective limit came from. `policy`: the community's rooms policy at the room's creation. `override`: an administrator's vtc/rooms/limits/set. `default`: the community's configured defaults, where neither applies. The host-wide ceiling bounds all three.\",\"enum\":[\"policy\",\"override\",\"default\"],\"title\":\"LimitSource\",\"type\":\"string\"},\"MigrationProgress\":{\"additionalProperties\":false,\"description\":\"Progress of the room's migration, as vtc/rooms/storage/migrate reports it.\",\"properties\":{\"doneBytes\":{\"minimum\":0,\"type\":\"integer\"},\"doneFiles\":{\"minimum\":0,\"type\":\"integer\"},\"migrationId\":{\"pattern\":\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":\"string\"},\"state\":{\"description\":\"`paused`: halted by a capacity or backend failure and resumable by issuing vtc/rooms/storage/migrate again. `failed`: halted on a blob whose copy did not verify; the blob stays where it was.\",\"enum\":[\"running\",\"paused\",\"complete\",\"failed\"],\"type\":\"string\"},\"totalBytes\":{\"minimum\":0,\"type\":\"integer\"},\"totalFiles\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"migrationId\",\"state\",\"totalFiles\",\"totalBytes\",\"doneFiles\",\"doneBytes\"],\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"largestBlobs\":{\"description\":\"The room's largest committed blobs, by size only.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"configId\":{\"$ref\":\"#/$defs/StorageConfigId\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"size\":{\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"size\",\"configId\",\"createdAt\"],\"type\":\"object\"},\"maxItems\":10,\"type\":\"array\"},\"limits\":{\"$ref\":\"#/$defs/EffectiveLimits\"},\"membersWithUsage\":{\"description\":\"On an `attributed` room only: how many members have added files. Absent on `open` and `private` rooms.\",\"minimum\":0,\"type\":\"integer\"},\"room\":{\"$ref\":\"#/$defs/HostedRoom\"},\"storage\":{\"additionalProperties\":false,\"description\":\"Where the room's blobs are.\",\"properties\":{\"configId\":{\"$ref\":\"#/$defs/StorageConfigId\"},\"earlierConfigs\":{\"items\":{\"$ref\":\"#/$defs/ConfigHoldings\"},\"maxItems\":64,\"type\":\"array\"},\"migration\":{\"$ref\":\"#/$defs/MigrationProgress\"}},\"required\":[\"configId\",\"earlierConfigs\"],\"type\":\"object\"},\"usage\":{\"additionalProperties\":false,\"properties\":{\"orphans\":{\"additionalProperties\":false,\"description\":\"Blobs no record names, awaiting deletion after the grace window.\",\"properties\":{\"bytes\":{\"minimum\":0,\"type\":\"integer\"},\"files\":{\"minimum\":0,\"type\":\"integer\"},\"oldestOrphanedAt\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"files\",\"bytes\"],\"type\":\"object\"},\"room\":{\"$ref\":\"#/$defs/Usage\"}},\"required\":[\"room\",\"orphans\"],\"type\":\"object\"}},\"required\":[\"room\",\"storage\",\"limits\",\"usage\"],\"title\":\"VTC Rooms — Get — response payload\",\"type\":\"object\"},\"RetentionPolicy\":{\"$comment\":\"Deliberately no JSON Schema `default`. A declared default is materialised by the generated bindings — the member becomes non-optional with a serde default — so an absent value would reappear as an explicit one on re-serialisation and break round-trip idempotence for every document written before this member existed. The meaning of absence is stated in prose, where a binding cannot act on it.\",\"description\":\"Whether a room keeps its history readable across a membership change, fixed at creation and immutable thereafter — like `Visibility`, and for the same reason: the rungs of an epoch key chain either exist for an epoch or they do not, and no later change of mind can seal key material that was never sealed or unseal what was already severed. `chained`: each advance produces an `EpochLink`, so every member reads the room's whole retained history however long they have been in it — what a **library** wants, at the cost of post-compromise security for record content, since a compromised current key then reaches every retained epoch. `fromJoin`: no rungs are produced, so a member reads only from the epoch their group state is at — what a **stream** wants, and what a room under a strict forward-secrecy obligation wants, at the cost that a joining member finds an empty-looking room and nobody can reread a record once their group state has moved past the epoch it was sealed under. Absent means `chained`; see the prose on why the absent case is the readable one.\",\"enum\":[\"chained\",\"fromJoin\"],\"title\":\"RetentionPolicy\",\"type\":\"string\"},\"RoomLimits\":{\"additionalProperties\":false,\"description\":\"How much a host is willing to store for one room, at the room and per member. A hosting decision, set by the host and never by anything in the room's credentials. An upload must fit every scope at once: the object against the smallest `maxFileBytes` that applies, and the member and the room with the file added.\",\"properties\":{\"filesEnabled\":{\"description\":\"False refuses every rooms/blobs/* upload for the room. Reads of blobs already stored continue.\",\"type\":\"boolean\"},\"member\":{\"$ref\":\"#/$defs/ScopeLimits\",\"description\":\"Limits on each member's own uploads in this room, unless that member has an override. A member is the subject at the root of the authority chain they present, never the key that signed, so an agent acting on an attenuated chain spends its member's allowance. Not applied on a `private` room, where the host cannot tell members apart; the room and object limits still hold there.\"},\"room\":{\"$ref\":\"#/$defs/ScopeLimits\",\"description\":\"Limits on the room as a whole.\"}},\"required\":[\"filesEnabled\"],\"title\":\"RoomLimits\",\"type\":\"object\"},\"ScopeLimits\":{\"additionalProperties\":false,\"description\":\"Limits at one scope. Every member is optional: an absent member means the scope sets no limit of that kind, and the next wider scope's limit, or the host's ceiling, governs. All sizes are ciphertext bytes.\",\"properties\":{\"maxBytes\":{\"description\":\"The total size of the committed and reserved blobs the scope may hold.\",\"minimum\":0,\"type\":\"integer\"},\"maxFileBytes\":{\"description\":\"The largest single blob the scope accepts. Never above 1 GiB, the transfer ceiling (BlobManifest).\",\"maximum\":1073741824,\"minimum\":0,\"type\":\"integer\"},\"maxFiles\":{\"description\":\"The number of committed blobs the scope may hold. 0 refuses every upload at this scope.\",\"minimum\":0,\"type\":\"integer\"}},\"title\":\"ScopeLimits\",\"type\":\"object\"},\"StorageConfigId\":{\"description\":\"A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$\",\"title\":\"StorageConfigId\",\"type\":\"string\"},\"Usage\":{\"additionalProperties\":false,\"description\":\"What one scope holds now. Ciphertext bytes throughout.\",\"properties\":{\"bytes\":{\"description\":\"Their total size. A blob stops counting the moment it is orphaned (its last record dropped it or was retracted), not when the host finally deletes it, so a member who deletes a file has the room back at once.\",\"minimum\":0,\"type\":\"integer\"},\"files\":{\"description\":\"Committed blobs that are not orphaned.\",\"minimum\":0,\"type\":\"integer\"},\"reservedBytes\":{\"description\":\"Bytes reserved by uploads begun and not yet committed, aborted or expired. Counted against `maxBytes`, so two concurrent uploads cannot both fit under a limit only one of them fits.\",\"minimum\":0,\"type\":\"integer\"},\"reservedFiles\":{\"description\":\"Uploads begun and not yet committed, aborted or expired. Counted against `maxFiles`.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"files\",\"bytes\",\"reservedBytes\"],\"title\":\"Usage\",\"type\":\"object\"},\"Visibility\":{\"description\":\"How much of a room its host can see, fixed at creation and immutable thereafter. `open`: records are cleartext, searchable and fully audited. `attributed`: record content is sealed, and the host still learns which member acted. `private`: content is sealed and membership is presented in zero knowledge, so the host verifies that a member acted without learning which. Immutable because a downgrade cannot un-see cleartext and an upgrade would protect only what came after while presenting as though it protected everything.\",\"enum\":[\"open\",\"attributed\",\"private\"],\"title\":\"Visibility\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/vtc/rooms/get/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A room-hosting administrator reads one hosted room's host record, storage placement, limits and usage. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"roomId\":{\"description\":\"The room's identifier, as its owner minted it.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"roomId\"],\"title\":\"VTC Rooms — Get — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/rooms/get/0.1#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ConfigHoldings\": {\n      \"additionalProperties\": false,\n      \"description\": \"A config holding some of this room's blobs, other than the one it is assigned to.\",\n      \"properties\": {\n        \"bytes\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"configId\": {\n          \"$ref\": \"#/$defs/StorageConfigId\"\n        },\n        \"files\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"configId\",\n        \"files\",\n        \"bytes\"\n      ],\n      \"type\": \"object\"\n    },\n    \"EffectiveLimits\": {\n      \"additionalProperties\": false,\n      \"description\": \"The limits a room is enforced against now, with where each scope's came from.\",\n      \"properties\": {\n        \"hostCeilingBytes\": {\n          \"description\": \"The host-wide largest-file ceiling, which no room or member limit can exceed.\",\n          \"maximum\": 1073741824,\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"limits\": {\n          \"$ref\": \"#/$defs/RoomLimits\"\n        },\n        \"memberSource\": {\n          \"$ref\": \"#/$defs/LimitSource\"\n        },\n        \"roomSource\": {\n          \"$ref\": \"#/$defs/LimitSource\"\n        }\n      },\n      \"required\": [\n        \"limits\",\n        \"roomSource\",\n        \"memberSource\"\n      ],\n      \"title\": \"EffectiveLimits\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"HostedRoom\": {\n      \"additionalProperties\": false,\n      \"description\": \"One room, as its host holds it — member for member the `HostedRoom` of vtc/rooms/list/0.1, which defines it inside its own payload schema. Nothing derived from the room's contents, and no member list: the host has none.\",\n      \"properties\": {\n        \"createdAt\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"epoch\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"epochExpiresAt\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"lifecycle\": {\n          \"enum\": [\n            \"live\",\n            \"lapsed\",\n            \"dormant\",\n            \"reclaimable\"\n          ],\n          \"type\": \"string\"\n        },\n        \"mirrorOf\": {\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ownerDid\": {\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"retentionDays\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"retentionPolicy\": {\n          \"$ref\": \"#/$defs/RetentionPolicy\"\n        },\n        \"roomId\": {\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"updatedAt\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"visibility\": {\n          \"$ref\": \"#/$defs/Visibility\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"ownerDid\",\n        \"visibility\",\n        \"retentionPolicy\",\n        \"epoch\",\n        \"lifecycle\",\n        \"retentionDays\",\n        \"createdAt\",\n        \"updatedAt\"\n      ],\n      \"title\": \"HostedRoom\",\n      \"type\": \"object\"\n    },\n    \"LimitSource\": {\n      \"description\": \"Where an effective limit came from. `policy`: the community's rooms policy at the room's creation. `override`: an administrator's vtc/rooms/limits/set. `default`: the community's configured defaults, where neither applies. The host-wide ceiling bounds all three.\",\n      \"enum\": [\n        \"policy\",\n        \"override\",\n        \"default\"\n      ],\n      \"title\": \"LimitSource\",\n      \"type\": \"string\"\n    },\n    \"MigrationProgress\": {\n      \"additionalProperties\": false,\n      \"description\": \"Progress of the room's migration, as vtc/rooms/storage/migrate reports it.\",\n      \"properties\": {\n        \"doneBytes\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"doneFiles\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"migrationId\": {\n          \"pattern\": \"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\n          \"type\": \"string\"\n        },\n        \"state\": {\n          \"description\": \"`paused`: halted by a capacity or backend failure and resumable by issuing vtc/rooms/storage/migrate again. `failed`: halted on a blob whose copy did not verify; the blob stays where it was.\",\n          \"enum\": [\n            \"running\",\n            \"paused\",\n            \"complete\",\n            \"failed\"\n          ],\n          \"type\": \"string\"\n        },\n        \"totalBytes\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"totalFiles\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"migrationId\",\n        \"state\",\n        \"totalFiles\",\n        \"totalBytes\",\n        \"doneFiles\",\n        \"doneBytes\"\n      ],\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"largestBlobs\": {\n          \"description\": \"The room's largest committed blobs, by size only.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"configId\": {\n                \"$ref\": \"#/$defs/StorageConfigId\"\n              },\n              \"createdAt\": {\n                \"format\": \"date-time\",\n                \"type\": \"string\"\n              },\n              \"size\": {\n                \"minimum\": 1,\n                \"type\": \"integer\"\n              }\n            },\n            \"required\": [\n              \"size\",\n              \"configId\",\n              \"createdAt\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 10,\n          \"type\": \"array\"\n        },\n        \"limits\": {\n          \"$ref\": \"#/$defs/EffectiveLimits\"\n        },\n        \"membersWithUsage\": {\n          \"description\": \"On an `attributed` room only: how many members have added files. Absent on `open` and `private` rooms.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"room\": {\n          \"$ref\": \"#/$defs/HostedRoom\"\n        },\n        \"storage\": {\n          \"additionalProperties\": false,\n          \"description\": \"Where the room's blobs are.\",\n          \"properties\": {\n            \"configId\": {\n              \"$ref\": \"#/$defs/StorageConfigId\"\n            },\n            \"earlierConfigs\": {\n              \"items\": {\n                \"$ref\": \"#/$defs/ConfigHoldings\"\n              },\n              \"maxItems\": 64,\n              \"type\": \"array\"\n            },\n            \"migration\": {\n              \"$ref\": \"#/$defs/MigrationProgress\"\n            }\n          },\n          \"required\": [\n            \"configId\",\n            \"earlierConfigs\"\n          ],\n          \"type\": \"object\"\n        },\n        \"usage\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"orphans\": {\n              \"additionalProperties\": false,\n              \"description\": \"Blobs no record names, awaiting deletion after the grace window.\",\n              \"properties\": {\n                \"bytes\": {\n                  \"minimum\": 0,\n                  \"type\": \"integer\"\n                },\n                \"files\": {\n                  \"minimum\": 0,\n                  \"type\": \"integer\"\n                },\n                \"oldestOrphanedAt\": {\n                  \"format\": \"date-time\",\n                  \"type\": \"string\"\n                }\n              },\n              \"required\": [\n                \"files\",\n                \"bytes\"\n              ],\n              \"type\": \"object\"\n            },\n            \"room\": {\n              \"$ref\": \"#/$defs/Usage\"\n            }\n          },\n          \"required\": [\n            \"room\",\n            \"orphans\"\n          ],\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"room\",\n        \"storage\",\n        \"limits\",\n        \"usage\"\n      ],\n      \"title\": \"VTC Rooms — Get — response payload\",\n      \"type\": \"object\"\n    },\n    \"RetentionPolicy\": {\n      \"$comment\": \"Deliberately no JSON Schema `default`. A declared default is materialised by the generated bindings — the member becomes non-optional with a serde default — so an absent value would reappear as an explicit one on re-serialisation and break round-trip idempotence for every document written before this member existed. The meaning of absence is stated in prose, where a binding cannot act on it.\",\n      \"description\": \"Whether a room keeps its history readable across a membership change, fixed at creation and immutable thereafter — like `Visibility`, and for the same reason: the rungs of an epoch key chain either exist for an epoch or they do not, and no later change of mind can seal key material that was never sealed or unseal what was already severed. `chained`: each advance produces an `EpochLink`, so every member reads the room's whole retained history however long they have been in it — what a **library** wants, at the cost of post-compromise security for record content, since a compromised current key then reaches every retained epoch. `fromJoin`: no rungs are produced, so a member reads only from the epoch their group state is at — what a **stream** wants, and what a room under a strict forward-secrecy obligation wants, at the cost that a joining member finds an empty-looking room and nobody can reread a record once their group state has moved past the epoch it was sealed under. Absent means `chained`; see the prose on why the absent case is the readable one.\",\n      \"enum\": [\n        \"chained\",\n        \"fromJoin\"\n      ],\n      \"title\": \"RetentionPolicy\",\n      \"type\": \"string\"\n    },\n    \"RoomLimits\": {\n      \"additionalProperties\": false,\n      \"description\": \"How much a host is willing to store for one room, at the room and per member. A hosting decision, set by the host and never by anything in the room's credentials. An upload must fit every scope at once: the object against the smallest `maxFileBytes` that applies, and the member and the room with the file added.\",\n      \"properties\": {\n        \"filesEnabled\": {\n          \"description\": \"False refuses every rooms/blobs/* upload for the room. Reads of blobs already stored continue.\",\n          \"type\": \"boolean\"\n        },\n        \"member\": {\n          \"$ref\": \"#/$defs/ScopeLimits\",\n          \"description\": \"Limits on each member's own uploads in this room, unless that member has an override. A member is the subject at the root of the authority chain they present, never the key that signed, so an agent acting on an attenuated chain spends its member's allowance. Not applied on a `private` room, where the host cannot tell members apart; the room and object limits still hold there.\"\n        },\n        \"room\": {\n          \"$ref\": \"#/$defs/ScopeLimits\",\n          \"description\": \"Limits on the room as a whole.\"\n        }\n      },\n      \"required\": [\n        \"filesEnabled\"\n      ],\n      \"title\": \"RoomLimits\",\n      \"type\": \"object\"\n    },\n    \"ScopeLimits\": {\n      \"additionalProperties\": false,\n      \"description\": \"Limits at one scope. Every member is optional: an absent member means the scope sets no limit of that kind, and the next wider scope's limit, or the host's ceiling, governs. All sizes are ciphertext bytes.\",\n      \"properties\": {\n        \"maxBytes\": {\n          \"description\": \"The total size of the committed and reserved blobs the scope may hold.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"maxFileBytes\": {\n          \"description\": \"The largest single blob the scope accepts. Never above 1 GiB, the transfer ceiling (BlobManifest).\",\n          \"maximum\": 1073741824,\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"maxFiles\": {\n          \"description\": \"The number of committed blobs the scope may hold. 0 refuses every upload at this scope.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"title\": \"ScopeLimits\",\n      \"type\": \"object\"\n    },\n    \"StorageConfigId\": {\n      \"description\": \"A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$\",\n      \"title\": \"StorageConfigId\",\n      \"type\": \"string\"\n    },\n    \"Usage\": {\n      \"additionalProperties\": false,\n      \"description\": \"What one scope holds now. Ciphertext bytes throughout.\",\n      \"properties\": {\n        \"bytes\": {\n          \"description\": \"Their total size. A blob stops counting the moment it is orphaned (its last record dropped it or was retracted), not when the host finally deletes it, so a member who deletes a file has the room back at once.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"files\": {\n          \"description\": \"Committed blobs that are not orphaned.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"reservedBytes\": {\n          \"description\": \"Bytes reserved by uploads begun and not yet committed, aborted or expired. Counted against `maxBytes`, so two concurrent uploads cannot both fit under a limit only one of them fits.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"reservedFiles\": {\n          \"description\": \"Uploads begun and not yet committed, aborted or expired. Counted against `maxFiles`.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"files\",\n        \"bytes\",\n        \"reservedBytes\"\n      ],\n      \"title\": \"Usage\",\n      \"type\": \"object\"\n    },\n    \"Visibility\": {\n      \"description\": \"How much of a room its host can see, fixed at creation and immutable thereafter. `open`: records are cleartext, searchable and fully audited. `attributed`: record content is sealed, and the host still learns which member acted. `private`: content is sealed and membership is presented in zero knowledge, so the host verifies that a member acted without learning which. Immutable because a downgrade cannot un-see cleartext and an upgrade would protect only what came after while presenting as though it protected everything.\",\n      \"enum\": [\n        \"open\",\n        \"attributed\",\n        \"private\"\n      ],\n      \"title\": \"Visibility\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"ConfigHoldings\":{\"additionalProperties\":false,\"description\":\"A config holding some of this room's blobs, other than the one it is assigned to.\",\"properties\":{\"bytes\":{\"minimum\":0,\"type\":\"integer\"},\"configId\":{\"$ref\":\"#/$defs/StorageConfigId\"},\"files\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"configId\",\"files\",\"bytes\"],\"type\":\"object\"},\"EffectiveLimits\":{\"additionalProperties\":false,\"description\":\"The limits a room is enforced against now, with where each scope's came from.\",\"properties\":{\"hostCeilingBytes\":{\"description\":\"The host-wide largest-file ceiling, which no room or member limit can exceed.\",\"maximum\":1073741824,\"minimum\":0,\"type\":\"integer\"},\"limits\":{\"$ref\":\"#/$defs/RoomLimits\"},\"memberSource\":{\"$ref\":\"#/$defs/LimitSource\"},\"roomSource\":{\"$ref\":\"#/$defs/LimitSource\"}},\"required\":[\"limits\",\"roomSource\",\"memberSource\"],\"title\":\"EffectiveLimits\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"HostedRoom\":{\"additionalProperties\":false,\"description\":\"One room, as its host holds it — member for member the `HostedRoom` of vtc/rooms/list/0.1, which defines it inside its own payload schema. Nothing derived from the room's contents, and no member list: the host has none.\",\"properties\":{\"createdAt\":{\"minimum\":0,\"type\":\"integer\"},\"epoch\":{\"minimum\":0,\"type\":\"integer\"},\"epochExpiresAt\":{\"minimum\":0,\"type\":\"integer\"},\"lifecycle\":{\"enum\":[\"live\",\"lapsed\",\"dormant\",\"reclaimable\"],\"type\":\"string\"},\"mirrorOf\":{\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"ownerDid\":{\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"retentionDays\":{\"minimum\":0,\"type\":\"integer\"},\"retentionPolicy\":{\"$ref\":\"#/$defs/RetentionPolicy\"},\"roomId\":{\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"updatedAt\":{\"minimum\":0,\"type\":\"integer\"},\"visibility\":{\"$ref\":\"#/$defs/Visibility\"}},\"required\":[\"roomId\",\"ownerDid\",\"visibility\",\"retentionPolicy\",\"epoch\",\"lifecycle\",\"retentionDays\",\"createdAt\",\"updatedAt\"],\"title\":\"HostedRoom\",\"type\":\"object\"},\"LimitSource\":{\"description\":\"Where an effective limit came from. `policy`: the community's rooms policy at the room's creation. `override`: an administrator's vtc/rooms/limits/set. `default`: the community's configured defaults, where neither applies. The host-wide ceiling bounds all three.\",\"enum\":[\"policy\",\"override\",\"default\"],\"title\":\"LimitSource\",\"type\":\"string\"},\"MigrationProgress\":{\"additionalProperties\":false,\"description\":\"Progress of the room's migration, as vtc/rooms/storage/migrate reports it.\",\"properties\":{\"doneBytes\":{\"minimum\":0,\"type\":\"integer\"},\"doneFiles\":{\"minimum\":0,\"type\":\"integer\"},\"migrationId\":{\"pattern\":\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":\"string\"},\"state\":{\"description\":\"`paused`: halted by a capacity or backend failure and resumable by issuing vtc/rooms/storage/migrate again. `failed`: halted on a blob whose copy did not verify; the blob stays where it was.\",\"enum\":[\"running\",\"paused\",\"complete\",\"failed\"],\"type\":\"string\"},\"totalBytes\":{\"minimum\":0,\"type\":\"integer\"},\"totalFiles\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"migrationId\",\"state\",\"totalFiles\",\"totalBytes\",\"doneFiles\",\"doneBytes\"],\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"largestBlobs\":{\"description\":\"The room's largest committed blobs, by size only.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"configId\":{\"$ref\":\"#/$defs/StorageConfigId\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"size\":{\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"size\",\"configId\",\"createdAt\"],\"type\":\"object\"},\"maxItems\":10,\"type\":\"array\"},\"limits\":{\"$ref\":\"#/$defs/EffectiveLimits\"},\"membersWithUsage\":{\"description\":\"On an `attributed` room only: how many members have added files. Absent on `open` and `private` rooms.\",\"minimum\":0,\"type\":\"integer\"},\"room\":{\"$ref\":\"#/$defs/HostedRoom\"},\"storage\":{\"additionalProperties\":false,\"description\":\"Where the room's blobs are.\",\"properties\":{\"configId\":{\"$ref\":\"#/$defs/StorageConfigId\"},\"earlierConfigs\":{\"items\":{\"$ref\":\"#/$defs/ConfigHoldings\"},\"maxItems\":64,\"type\":\"array\"},\"migration\":{\"$ref\":\"#/$defs/MigrationProgress\"}},\"required\":[\"configId\",\"earlierConfigs\"],\"type\":\"object\"},\"usage\":{\"additionalProperties\":false,\"properties\":{\"orphans\":{\"additionalProperties\":false,\"description\":\"Blobs no record names, awaiting deletion after the grace window.\",\"properties\":{\"bytes\":{\"minimum\":0,\"type\":\"integer\"},\"files\":{\"minimum\":0,\"type\":\"integer\"},\"oldestOrphanedAt\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"files\",\"bytes\"],\"type\":\"object\"},\"room\":{\"$ref\":\"#/$defs/Usage\"}},\"required\":[\"room\",\"orphans\"],\"type\":\"object\"}},\"required\":[\"room\",\"storage\",\"limits\",\"usage\"],\"title\":\"VTC Rooms — Get — response payload\",\"type\":\"object\"},\"RetentionPolicy\":{\"$comment\":\"Deliberately no JSON Schema `default`. A declared default is materialised by the generated bindings — the member becomes non-optional with a serde default — so an absent value would reappear as an explicit one on re-serialisation and break round-trip idempotence for every document written before this member existed. The meaning of absence is stated in prose, where a binding cannot act on it.\",\"description\":\"Whether a room keeps its history readable across a membership change, fixed at creation and immutable thereafter — like `Visibility`, and for the same reason: the rungs of an epoch key chain either exist for an epoch or they do not, and no later change of mind can seal key material that was never sealed or unseal what was already severed. `chained`: each advance produces an `EpochLink`, so every member reads the room's whole retained history however long they have been in it — what a **library** wants, at the cost of post-compromise security for record content, since a compromised current key then reaches every retained epoch. `fromJoin`: no rungs are produced, so a member reads only from the epoch their group state is at — what a **stream** wants, and what a room under a strict forward-secrecy obligation wants, at the cost that a joining member finds an empty-looking room and nobody can reread a record once their group state has moved past the epoch it was sealed under. Absent means `chained`; see the prose on why the absent case is the readable one.\",\"enum\":[\"chained\",\"fromJoin\"],\"title\":\"RetentionPolicy\",\"type\":\"string\"},\"RoomLimits\":{\"additionalProperties\":false,\"description\":\"How much a host is willing to store for one room, at the room and per member. A hosting decision, set by the host and never by anything in the room's credentials. An upload must fit every scope at once: the object against the smallest `maxFileBytes` that applies, and the member and the room with the file added.\",\"properties\":{\"filesEnabled\":{\"description\":\"False refuses every rooms/blobs/* upload for the room. Reads of blobs already stored continue.\",\"type\":\"boolean\"},\"member\":{\"$ref\":\"#/$defs/ScopeLimits\",\"description\":\"Limits on each member's own uploads in this room, unless that member has an override. A member is the subject at the root of the authority chain they present, never the key that signed, so an agent acting on an attenuated chain spends its member's allowance. Not applied on a `private` room, where the host cannot tell members apart; the room and object limits still hold there.\"},\"room\":{\"$ref\":\"#/$defs/ScopeLimits\",\"description\":\"Limits on the room as a whole.\"}},\"required\":[\"filesEnabled\"],\"title\":\"RoomLimits\",\"type\":\"object\"},\"ScopeLimits\":{\"additionalProperties\":false,\"description\":\"Limits at one scope. Every member is optional: an absent member means the scope sets no limit of that kind, and the next wider scope's limit, or the host's ceiling, governs. All sizes are ciphertext bytes.\",\"properties\":{\"maxBytes\":{\"description\":\"The total size of the committed and reserved blobs the scope may hold.\",\"minimum\":0,\"type\":\"integer\"},\"maxFileBytes\":{\"description\":\"The largest single blob the scope accepts. Never above 1 GiB, the transfer ceiling (BlobManifest).\",\"maximum\":1073741824,\"minimum\":0,\"type\":\"integer\"},\"maxFiles\":{\"description\":\"The number of committed blobs the scope may hold. 0 refuses every upload at this scope.\",\"minimum\":0,\"type\":\"integer\"}},\"title\":\"ScopeLimits\",\"type\":\"object\"},\"StorageConfigId\":{\"description\":\"A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$\",\"title\":\"StorageConfigId\",\"type\":\"string\"},\"Usage\":{\"additionalProperties\":false,\"description\":\"What one scope holds now. Ciphertext bytes throughout.\",\"properties\":{\"bytes\":{\"description\":\"Their total size. A blob stops counting the moment it is orphaned (its last record dropped it or was retracted), not when the host finally deletes it, so a member who deletes a file has the room back at once.\",\"minimum\":0,\"type\":\"integer\"},\"files\":{\"description\":\"Committed blobs that are not orphaned.\",\"minimum\":0,\"type\":\"integer\"},\"reservedBytes\":{\"description\":\"Bytes reserved by uploads begun and not yet committed, aborted or expired. Counted against `maxBytes`, so two concurrent uploads cannot both fit under a limit only one of them fits.\",\"minimum\":0,\"type\":\"integer\"},\"reservedFiles\":{\"description\":\"Uploads begun and not yet committed, aborted or expired. Counted against `maxFiles`.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"files\",\"bytes\",\"reservedBytes\"],\"title\":\"Usage\",\"type\":\"object\"},\"Visibility\":{\"description\":\"How much of a room its host can see, fixed at creation and immutable thereafter. `open`: records are cleartext, searchable and fully audited. `attributed`: record content is sealed, and the host still learns which member acted. `private`: content is sealed and membership is presented in zero knowledge, so the host verifies that a member acted without learning which. Immutable because a downgrade cannot un-see cleartext and an upgrade would protect only what came after while presenting as though it protected everything.\",\"enum\":[\"open\",\"attributed\",\"private\"],\"title\":\"Visibility\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

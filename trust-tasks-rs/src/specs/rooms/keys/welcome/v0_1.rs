@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,44 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A room's owner delivers an MLS Welcome to the agent that will hold a new member's room keys, so it can join the group. The Welcome carries the group's secrets sealed to the recipient's KeyPackage; a recipient that accepts one it was not invited to has been handed key material it should have refused.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/rooms/keys/welcome/0.1",
-///  "title": "Payload",
-///  "description": "A room's owner delivers an MLS Welcome to the agent that will hold a new member's room keys, so it can join the group. The Welcome carries the group's secrets sealed to the recipient's KeyPackage; a recipient that accepts one it was not invited to has been handed key material it should have refused.",
-///  "type": "object",
-///  "required": [
-///    "roomId",
-///    "welcome"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "invitation": {
-///      "description": "The invitation credential (VIC) the room issued to the joining party, serialized per the governing profile. This is what makes the Welcome acceptable: joining is a two-party act, and a recipient with no matching invitation MUST refuse.",
-///      "type": "string"
-///    },
-///    "ratchetTree": {
-///      "description": "The group's ratchet tree, base64url, where the Welcome does not carry it as an extension. A joiner needs the tree to derive the group's secrets; omit it only where the group uses the ratchet-tree extension.",
-///      "type": "string"
-///    },
-///    "roomId": {
-///      "description": "The room being joined.",
-///      "type": "string"
-///    },
-///    "welcome": {
-///      "description": "The MLS Welcome message, base64url.",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -210,31 +148,6 @@ impl Payload {
 }
 ///Success response to rooms/keys/welcome. Type https://trusttasks.org/spec/rooms/keys/welcome/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to rooms/keys/welcome. Type https://trusttasks.org/spec/rooms/keys/welcome/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "epoch"
-///  ],
-///  "properties": {
-///    "epoch": {
-///      "description": "The MLS epoch the recipient joined at. The sender needs this to know which commits the recipient still lacks.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -410,7 +323,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/keys/welcome. Type https://trusttasks.org/spec/rooms/keys/welcome/0.1#response.\",\n      \"properties\": {\n        \"epoch\": {\n          \"description\": \"The MLS epoch the recipient joined at. The sender needs this to know which commits the recipient still lacks.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"epoch\"\n      ],\n      \"title\": \"Rooms Keys Welcome — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/rooms/keys/welcome/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A room's owner delivers an MLS Welcome to the agent that will hold a new member's room keys, so it can join the group. The Welcome carries the group's secrets sealed to the recipient's KeyPackage; a recipient that accepts one it was not invited to has been handed key material it should have refused.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"invitation\": {\n      \"description\": \"The invitation credential (VIC) the room issued to the joining party, serialized per the governing profile. This is what makes the Welcome acceptable: joining is a two-party act, and a recipient with no matching invitation MUST refuse.\",\n      \"type\": \"string\"\n    },\n    \"ratchetTree\": {\n      \"description\": \"The group's ratchet tree, base64url, where the Welcome does not carry it as an extension. A joiner needs the tree to derive the group's secrets; omit it only where the group uses the ratchet-tree extension.\",\n      \"type\": \"string\"\n    },\n    \"roomId\": {\n      \"description\": \"The room being joined.\",\n      \"type\": \"string\"\n    },\n    \"welcome\": {\n      \"description\": \"The MLS Welcome message, base64url.\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"roomId\",\n    \"welcome\"\n  ],\n  \"title\": \"Rooms Keys Welcome — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/keys/welcome. Type https://trusttasks.org/spec/rooms/keys/welcome/0.1#response.\",\"properties\":{\"epoch\":{\"description\":\"The MLS epoch the recipient joined at. The sender needs this to know which commits the recipient still lacks.\",\"minimum\":0,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"epoch\"],\"title\":\"Rooms Keys Welcome — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/rooms/keys/welcome/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A room's owner delivers an MLS Welcome to the agent that will hold a new member's room keys, so it can join the group. The Welcome carries the group's secrets sealed to the recipient's KeyPackage; a recipient that accepts one it was not invited to has been handed key material it should have refused.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"invitation\":{\"description\":\"The invitation credential (VIC) the room issued to the joining party, serialized per the governing profile. This is what makes the Welcome acceptable: joining is a two-party act, and a recipient with no matching invitation MUST refuse.\",\"type\":\"string\"},\"ratchetTree\":{\"description\":\"The group's ratchet tree, base64url, where the Welcome does not carry it as an extension. A joiner needs the tree to derive the group's secrets; omit it only where the group uses the ratchet-tree extension.\",\"type\":\"string\"},\"roomId\":{\"description\":\"The room being joined.\",\"type\":\"string\"},\"welcome\":{\"description\":\"The MLS Welcome message, base64url.\",\"type\":\"string\"}},\"required\":[\"roomId\",\"welcome\"],\"title\":\"Rooms Keys Welcome — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -419,7 +332,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/keys/welcome. Type https://trusttasks.org/spec/rooms/keys/welcome/0.1#response.\",\n      \"properties\": {\n        \"epoch\": {\n          \"description\": \"The MLS epoch the recipient joined at. The sender needs this to know which commits the recipient still lacks.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"epoch\"\n      ],\n      \"title\": \"Rooms Keys Welcome — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/keys/welcome. Type https://trusttasks.org/spec/rooms/keys/welcome/0.1#response.\",\"properties\":{\"epoch\":{\"description\":\"The MLS epoch the recipient joined at. The sender needs this to know which commits the recipient still lacks.\",\"minimum\":0,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"epoch\"],\"title\":\"Rooms Keys Welcome — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

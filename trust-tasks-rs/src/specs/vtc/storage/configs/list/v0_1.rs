@@ -35,28 +35,6 @@ pub mod error {
 }
 ///One config and what it holds.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "One config and what it holds.",
-///  "type": "object",
-///  "required": [
-///    "config",
-///    "facts"
-///  ],
-///  "properties": {
-///    "config": {
-///      "$ref": "#/definitions/StorageConfig"
-///    },
-///    "facts": {
-///      "$ref": "#/definitions/StorageConfigFacts"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -71,21 +49,6 @@ impl ConfigItem {
 }
 ///`active`: accepts new rooms and new uploads. `draining`: retired by an administrator while blobs still name it — refuses new rooms and new uploads, keeps serving reads, and becomes `retired` when a migration has emptied it. `retired`: refuses new rooms and new uploads and holds no blob. A config is never deleted while a blob names it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ConfigState",
-///  "description": "`active`: accepts new rooms and new uploads. `draining`: retired by an administrator while blobs still name it — refuses new rooms and new uploads, keeps serving reads, and becomes `retired` when a migration has emptied it. `retired`: refuses new rooms and new uploads and holds no blob. A config is never deleted while a blob names it.",
-///  "type": "string",
-///  "enum": [
-///    "active",
-///    "draining",
-///    "retired"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -151,54 +114,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ConfigState {
 }
 ///Whether a config can authenticate now, and how — never the credential. `status`: `vta-account`, `ambient` and `sealed` are usable; `required` means the config cannot store until a credential is provided (a `sealed` config never set, or set before a restore, which carries no credential); `none` is a `local` config.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "CredentialState",
-///  "description": "Whether a config can authenticate now, and how — never the credential. `status`: `vta-account`, `ambient` and `sealed` are usable; `required` means the config cannot store until a credential is provided (a `sealed` config never set, or set before a restore, which carries no credential); `none` is a `local` config.",
-///  "type": "object",
-///  "required": [
-///    "status"
-///  ],
-///  "properties": {
-///    "account": {
-///      "description": "Present with `vta-account`.",
-///      "$ref": "#/definitions/ExternalAccountId"
-///    },
-///    "context": {
-///      "description": "Present with `vta-account`.",
-///      "$ref": "#/definitions/ExternalAccountContextId"
-///    },
-///    "fingerprint": {
-///      "description": "Present with `sealed`: a digest identifying the stored credential, so an administrator can tell which one is set without anyone being able to read it. Computed over the credential with a community-held key, never a bare hash of a low-entropy secret.",
-///      "$ref": "#/definitions/DigestMultibase"
-///    },
-///    "roomsHoldingCredentials": {
-///      "description": "Present with `vta-account`: how many rooms the community currently holds a live room-scoped credential for.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "setAt": {
-///      "description": "Present with `sealed`: when the stored credential was last set.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "status": {
-///      "type": "string",
-///      "enum": [
-///        "vta-account",
-///        "ambient",
-///        "sealed",
-///        "required",
-///        "none"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -235,21 +150,6 @@ impl CredentialState {
 }
 ///`CredentialStateStatus`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "enum": [
-///    "vta-account",
-///    "ambient",
-///    "sealed",
-///    "required",
-///    "none"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -330,21 +230,6 @@ This definition constrains the *encoding only*. What the digest is computed over
 
 Restricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that "interoperability is not guaranteed between implementations using such values", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DigestMultibase",
-///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-///  "examples": [
-///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-///  ],
-///  "type": "string",
-///  "minLength": 16,
-///  "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DigestMultibase(::std::string::String);
@@ -413,21 +298,6 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -449,15 +319,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -521,18 +382,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///The context at the community's VTA that owns an external account. The VTA names an account by its context and its identifier, and decides who may use it by act scope in that context: the community must hold `external-auth-use` there, and be bound to the account, for the account to issue it anything. Naming a context grants nothing; the VTA's binding is the gate.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ExternalAccountContextId",
-///  "description": "The context at the community's VTA that owns an external account. The VTA names an account by its context and its identifier, and decides who may use it by act scope in that context: the community must hold `external-auth-use` there, and be bound to the account, for the account to issue it anything. Naming a context grants nothing; the VTA's binding is the gate.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExternalAccountContextId(::std::string::String);
@@ -595,19 +444,6 @@ impl<'de> ::serde::Deserialize<'de> for ExternalAccountContextId {
 }
 ///The identifier of an external account held by the community's VTA (the external/accounts/* family), which issues the community short-lived, room-scoped credentials and holds the long-lived authority itself.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ExternalAccountId",
-///  "description": "The identifier of an external account held by the community's VTA (the external/accounts/* family), which issues the community short-lived, room-scoped credentials and holds the long-lived authority itself.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1,
-///  "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExternalAccountId(::std::string::String);
@@ -677,35 +513,6 @@ impl<'de> ::serde::Deserialize<'de> for ExternalAccountId {
 }
 ///`GcsSettings`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "GcsSettings",
-///  "type": "object",
-///  "required": [
-///    "bucket",
-///    "kind"
-///  ],
-///  "properties": {
-///    "bucket": {
-///      "description": "The bucket name. Validated against GCS naming rules here, because it is placed in a Credential Access Boundary condition and must never carry anything but a name.",
-///      "type": "string",
-///      "maxLength": 222,
-///      "minLength": 3,
-///      "pattern": "^[a-z0-9][a-z0-9._-]{1,220}[a-z0-9]$"
-///    },
-///    "kind": {
-///      "const": "gcs"
-///    },
-///    "prefix": {
-///      "$ref": "#/definitions/ObjectPrefix"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -723,18 +530,6 @@ impl GcsSettings {
 }
 ///The bucket name. Validated against GCS naming rules here, because it is placed in a Credential Access Boundary condition and must never carry anything but a name.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The bucket name. Validated against GCS naming rules here, because it is placed in a Credential Access Boundary condition and must never carry anything but a name.",
-///  "type": "string",
-///  "maxLength": 222,
-///  "minLength": 3,
-///  "pattern": "^[a-z0-9][a-z0-9._-]{1,220}[a-z0-9]$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct GcsSettingsBucket(::std::string::String);
@@ -804,32 +599,6 @@ impl<'de> ::serde::Deserialize<'de> for GcsSettingsBucket {
 }
 ///`LocalSettings`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "LocalSettings",
-///  "type": "object",
-///  "required": [
-///    "kind",
-///    "root"
-///  ],
-///  "properties": {
-///    "kind": {
-///      "const": "local"
-///    },
-///    "root": {
-///      "description": "Absolute path of the directory the community writes blobs under, on its own host. Created owner-only. Not carried by the community's backup: back it up beside it.",
-///      "type": "string",
-///      "maxLength": 1024,
-///      "minLength": 1,
-///      "pattern": "^/"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -845,18 +614,6 @@ impl LocalSettings {
 }
 ///Absolute path of the directory the community writes blobs under, on its own host. Created owner-only. Not carried by the community's backup: back it up beside it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Absolute path of the directory the community writes blobs under, on its own host. Created owner-only. Not carried by the community's backup: back it up beside it.",
-///  "type": "string",
-///  "maxLength": 1024,
-///  "minLength": 1,
-///  "pattern": "^/"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct LocalSettingsRoot(::std::string::String);
@@ -924,19 +681,6 @@ impl<'de> ::serde::Deserialize<'de> for LocalSettingsRoot {
 }
 ///A key prefix inside the bucket, ending in `/`, under which the config's `rooms/` tree is placed. Restricted to the S3 safe-character set so that it can be placed in a downscoped policy without escaping.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ObjectPrefix",
-///  "description": "A key prefix inside the bucket, ending in `/`, under which the config's `rooms/` tree is placed. Restricted to the S3 safe-character set so that it can be placed in a downscoped policy without escaping.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1,
-///  "pattern": "^[A-Za-z0-9!_.*'()/-]+/$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ObjectPrefix(::std::string::String);
@@ -1006,41 +750,6 @@ impl<'de> ::serde::Deserialize<'de> for ObjectPrefix {
 }
 ///Page through the community's storage configs. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/storage/configs/list/0.1",
-///  "title": "Payload",
-///  "description": "Page through the community's storage configs. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "properties": {
-///    "cursor": {
-///      "description": "Opaque continuation token from a previous page's `nextCursor`.",
-///      "type": "string",
-///      "maxLength": 1024,
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "kind": {
-///      "$ref": "#/definitions/StorageKind"
-///    },
-///    "limit": {
-///      "description": "Page size. The community chooses when absent (50 in the reference implementation).",
-///      "type": "integer",
-///      "maximum": 100.0,
-///      "minimum": 1.0
-///    },
-///    "state": {
-///      "$ref": "#/definitions/ConfigState"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1077,17 +786,6 @@ impl Payload {
 }
 ///Opaque continuation token from a previous page's `nextCursor`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Opaque continuation token from a previous page's `nextCursor`.",
-///  "type": "string",
-///  "maxLength": 1024,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCursor(::std::string::String);
@@ -1150,38 +848,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCursor {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "items"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "items": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/ConfigItem"
-///      },
-///      "maxItems": 100
-///    },
-///    "nextCursor": {
-///      "description": "Present when more remain; pass it as `cursor`.",
-///      "type": "string",
-///      "maxLength": 1024,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1205,17 +871,6 @@ impl Response {
 }
 ///Present when more remain; pass it as `cursor`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Present when more remain; pass it as `cursor`.",
-///  "type": "string",
-///  "maxLength": 1024,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseNextCursor(::std::string::String);
@@ -1278,54 +933,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseNextCursor {
 }
 ///`S3Settings`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "S3Settings",
-///  "type": "object",
-///  "required": [
-///    "bucket",
-///    "kind",
-///    "region"
-///  ],
-///  "properties": {
-///    "bucket": {
-///      "description": "The bucket name. Validated against S3 naming rules here, because it is placed in downscoped session policies and must never carry anything but a name.",
-///      "type": "string",
-///      "maxLength": 63,
-///      "minLength": 3,
-///      "pattern": "^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$"
-///    },
-///    "endpoint": {
-///      "description": "The S3 API endpoint, for a store other than AWS (R2, B2, MinIO). Absent means AWS S3 in `region`. HTTPS only.",
-///      "type": "string",
-///      "format": "uri",
-///      "maxLength": 2048,
-///      "pattern": "^https://"
-///    },
-///    "kind": {
-///      "const": "s3"
-///    },
-///    "pathStyle": {
-///      "description": "Address the bucket in the path rather than the host name, as MinIO usually needs. Absent means virtual-hosted style.",
-///      "type": "boolean"
-///    },
-///    "prefix": {
-///      "$ref": "#/definitions/ObjectPrefix"
-///    },
-///    "region": {
-///      "description": "The bucket's region, as the store names it (`eu-west-1`; `auto` for R2).",
-///      "type": "string",
-///      "maxLength": 64,
-///      "minLength": 1,
-///      "pattern": "^[a-z0-9-]+$"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1355,18 +962,6 @@ impl S3Settings {
 }
 ///The bucket name. Validated against S3 naming rules here, because it is placed in downscoped session policies and must never carry anything but a name.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The bucket name. Validated against S3 naming rules here, because it is placed in downscoped session policies and must never carry anything but a name.",
-///  "type": "string",
-///  "maxLength": 63,
-///  "minLength": 3,
-///  "pattern": "^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct S3SettingsBucket(::std::string::String);
@@ -1436,18 +1031,6 @@ impl<'de> ::serde::Deserialize<'de> for S3SettingsBucket {
 }
 ///The bucket's region, as the store names it (`eu-west-1`; `auto` for R2).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The bucket's region, as the store names it (`eu-west-1`; `auto` for R2).",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1,
-///  "pattern": "^[a-z0-9-]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct S3SettingsRegion(::std::string::String);
@@ -1522,61 +1105,6 @@ How the community authenticates to a config's backend. Absent on a `local` confi
 
 `sealed` (discouraged): a long-lived credential stored by the community, set with vtc/storage/credentials/set. Protects against every administrator through every surface the community offers; does not protect against whoever operates the machine.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "StorageAuth",
-///  "description": "How the community authenticates to a config's backend. Absent on a `local` config, which needs none.\n\n`vta-account` (RECOMMENDED): an external account in the community's VTA, named by the context that owns it and its identifier there. The VTA holds the long-lived authority; the community holds nothing that outlives a credential lifetime, and asks for credentials scoped to one room's prefix for at most 15 minutes, every issuance audited at the VTA. Required for a `walrus` config other than a `sealed` one, since the VTA's `sui-signer` account signs its storage transactions.\n\n`ambient`: the cloud identity of the machine the community runs on (an instance role, workload identity), downscoped to one room's prefix by the community itself. Not audited or rate-limited by the VTA, and usable by anything on that machine that reaches the metadata endpoint. Not valid for `walrus`.\n\n`sealed` (discouraged): a long-lived credential stored by the community, set with vtc/storage/credentials/set. Protects against every administrator through every surface the community offers; does not protect against whoever operates the machine.",
-///  "oneOf": [
-///    {
-///      "type": "object",
-///      "required": [
-///        "account",
-///        "context",
-///        "mode"
-///      ],
-///      "properties": {
-///        "account": {
-///          "$ref": "#/definitions/ExternalAccountId"
-///        },
-///        "context": {
-///          "$ref": "#/definitions/ExternalAccountContextId"
-///        },
-///        "mode": {
-///          "const": "vta-account"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "type": "object",
-///      "required": [
-///        "mode"
-///      ],
-///      "properties": {
-///        "mode": {
-///          "const": "ambient"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "type": "object",
-///      "required": [
-///        "mode"
-///      ],
-///      "properties": {
-///        "mode": {
-///          "const": "sealed"
-///        }
-///      },
-///      "additionalProperties": false
-///    }
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(tag = "mode", deny_unknown_fields)]
 #[non_exhaustive]
@@ -1593,72 +1121,6 @@ pub enum StorageAuth {
 }
 ///One storage config as the community holds it. Carries no secret.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "StorageConfig",
-///  "description": "One storage config as the community holds it. Carries no secret.",
-///  "type": "object",
-///  "required": [
-///    "createdAt",
-///    "createdBy",
-///    "id",
-///    "label",
-///    "settings",
-///    "state"
-///  ],
-///  "properties": {
-///    "auth": {
-///      "$ref": "#/definitions/StorageAuth"
-///    },
-///    "capacityBytes": {
-///      "description": "Total ciphertext bytes the community will store on this config, across every room assigned to it. A capacity, not a policy: an upload that would cross it is refused with scope `storage`. Absent means no capacity set.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "createdAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "createdBy": {
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    },
-///    "id": {
-///      "$ref": "#/definitions/StorageConfigId"
-///    },
-///    "isDefault": {
-///      "description": "True for the config a room is assigned to when neither the community's policy nor its creator names one.",
-///      "type": "boolean"
-///    },
-///    "label": {
-///      "description": "A display name for administrators (`EU — S3 (main account)`). Shown to a room's creator with the config's kind when the community lets them choose.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "settings": {
-///      "$ref": "#/definitions/StorageSettings"
-///    },
-///    "state": {
-///      "$ref": "#/definitions/ConfigState"
-///    },
-///    "updatedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "updatedBy": {
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1708,16 +1170,6 @@ impl StorageConfig {
 }
 ///`StorageConfigCreatedBy`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct StorageConfigCreatedBy(::std::string::String);
@@ -1782,69 +1234,6 @@ impl<'de> ::serde::Deserialize<'de> for StorageConfigCreatedBy {
 }
 ///What a config holds and whether it works, computed at the time of the read. Ciphertext bytes throughout.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "StorageConfigFacts",
-///  "description": "What a config holds and whether it works, computed at the time of the read. Ciphertext bytes throughout.",
-///  "type": "object",
-///  "required": [
-///    "bytes",
-///    "credential",
-///    "files",
-///    "health",
-///    "pendingDeleteBytes",
-///    "rooms"
-///  ],
-///  "properties": {
-///    "bytes": {
-///      "description": "Their total size. Counts against `capacityBytes` until the backend deletion has actually happened, unlike room and member usage, which stop counting an orphaned blob at once.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "credential": {
-///      "$ref": "#/definitions/CredentialState"
-///    },
-///    "files": {
-///      "description": "Blobs stored on this config that are not yet deleted, wherever their rooms are now assigned.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "health": {
-///      "$ref": "#/definitions/StorageHealth"
-///    },
-///    "pendingDeleteBytes": {
-///      "description": "Bytes of orphaned blobs awaiting deletion after their grace window.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "rooms": {
-///      "description": "Rooms assigned to this config.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "walrus": {
-///      "description": "Present on a `walrus` config.",
-///      "type": "object",
-///      "properties": {
-///        "nextExtensionDueAt": {
-///          "type": "string",
-///          "format": "date-time"
-///        },
-///        "signerAddress": {
-///          "description": "The Sui address that pays for storage, derived from the VTA account's key.",
-///          "type": "string",
-///          "pattern": "^0x[0-9a-f]{64}$"
-///        }
-///      },
-///      "additionalProperties": false
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1870,27 +1259,6 @@ impl StorageConfigFacts {
 }
 ///Present on a `walrus` config.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Present on a `walrus` config.",
-///  "type": "object",
-///  "properties": {
-///    "nextExtensionDueAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "signerAddress": {
-///      "description": "The Sui address that pays for storage, derived from the VTA account's key.",
-///      "type": "string",
-///      "pattern": "^0x[0-9a-f]{64}$"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1924,16 +1292,6 @@ impl StorageConfigFactsWalrus {
 }
 ///The Sui address that pays for storage, derived from the VTA account's key.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The Sui address that pays for storage, derived from the VTA account's key.",
-///  "type": "string",
-///  "pattern": "^0x[0-9a-f]{64}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct StorageConfigFactsWalrusSignerAddress(::std::string::String);
@@ -1995,19 +1353,6 @@ impl<'de> ::serde::Deserialize<'de> for StorageConfigFactsWalrusSignerAddress {
 }
 ///A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "StorageConfigId",
-///  "description": "A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1,
-///  "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct StorageConfigId(::std::string::String);
@@ -2077,17 +1422,6 @@ impl<'de> ::serde::Deserialize<'de> for StorageConfigId {
 }
 ///A display name for administrators (`EU — S3 (main account)`). Shown to a room's creator with the config's kind when the community lets them choose.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "A display name for administrators (`EU — S3 (main account)`). Shown to a room's creator with the config's kind when the community lets them choose.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct StorageConfigLabel(::std::string::String);
@@ -2150,16 +1484,6 @@ impl<'de> ::serde::Deserialize<'de> for StorageConfigLabel {
 }
 ///`StorageConfigUpdatedBy`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct StorageConfigUpdatedBy(::std::string::String);
@@ -2224,41 +1548,6 @@ impl<'de> ::serde::Deserialize<'de> for StorageConfigUpdatedBy {
 }
 ///The last evidence the community has that a config works. Every member is optional: a config never probed and never used has none.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "StorageHealth",
-///  "description": "The last evidence the community has that a config works. Every member is optional: a config never probed and never used has none.",
-///  "type": "object",
-///  "properties": {
-///    "lastDeleteAt": {
-///      "description": "The last successful deletion (on `walrus`, the last lapse the community observed).",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "lastGetAt": {
-///      "description": "The last successful chunk read.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "lastProbeAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "lastProbeOk": {
-///      "type": "boolean"
-///    },
-///    "lastPutAt": {
-///      "description": "The last successful blob write.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -2315,22 +1604,6 @@ impl StorageHealth {
 }
 ///Which backend a config stores to. `local`: plain files in a directory on the community's own host. `s3`: an S3-compatible object store (AWS S3, Cloudflare R2, Backblaze B2, MinIO). `gcs`: native Google Cloud Storage. `walrus`: the Walrus decentralised store, where every blob is public ciphertext and deletion is a lapse, not an erasure.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "StorageKind",
-///  "description": "Which backend a config stores to. `local`: plain files in a directory on the community's own host. `s3`: an S3-compatible object store (AWS S3, Cloudflare R2, Backblaze B2, MinIO). `gcs`: native Google Cloud Storage. `walrus`: the Walrus decentralised store, where every blob is public ciphertext and deletion is a lapse, not an erasure.",
-///  "type": "string",
-///  "enum": [
-///    "local",
-///    "s3",
-///    "gcs",
-///    "walrus"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -2400,29 +1673,6 @@ impl ::std::convert::TryFrom<::std::string::String> for StorageKind {
 }
 ///A config's backend settings, discriminated by `kind`. Never a secret: a credential is a StorageAuth, held elsewhere.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "StorageSettings",
-///  "description": "A config's backend settings, discriminated by `kind`. Never a secret: a credential is a StorageAuth, held elsewhere.",
-///  "oneOf": [
-///    {
-///      "$ref": "#/definitions/LocalSettings"
-///    },
-///    {
-///      "$ref": "#/definitions/S3Settings"
-///    },
-///    {
-///      "$ref": "#/definitions/GcsSettings"
-///    },
-///    {
-///      "$ref": "#/definitions/WalrusSettings"
-///    }
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged)]
 #[non_exhaustive]
@@ -2454,54 +1704,6 @@ impl ::std::convert::From<WalrusSettings> for StorageSettings {
 }
 ///`WalrusSettings`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "WalrusSettings",
-///  "type": "object",
-///  "required": [
-///    "aggregatorUrl",
-///    "epochs",
-///    "extendBeforeEpochs",
-///    "kind",
-///    "relayUrl"
-///  ],
-///  "properties": {
-///    "aggregatorUrl": {
-///      "description": "The Walrus aggregator the community reads through.",
-///      "type": "string",
-///      "format": "uri",
-///      "maxLength": 2048,
-///      "pattern": "^https://"
-///    },
-///    "epochs": {
-///      "description": "Storage epochs to buy when a blob is registered. Walrus sells storage in epochs (two weeks on mainnet) and caps one purchase at 53.",
-///      "type": "integer",
-///      "maximum": 53.0,
-///      "minimum": 1.0
-///    },
-///    "extendBeforeEpochs": {
-///      "description": "How many epochs before a live blob's end epoch the community extends it. A blob that has become an orphan is not extended, and lapses: the Walrus form of deletion.",
-///      "type": "integer",
-///      "maximum": 52.0,
-///      "minimum": 1.0
-///    },
-///    "kind": {
-///      "const": "walrus"
-///    },
-///    "relayUrl": {
-///      "description": "The Walrus upload relay the community writes through. The community never runs a publisher: a publisher holds a hot wallet in its own configuration, which is the long-lived secret these tasks exist to avoid.",
-///      "type": "string",
-///      "format": "uri",
-///      "maxLength": 2048,
-///      "pattern": "^https://"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -3715,7 +2917,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/storage/configs/list/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ConfigItem\": {\n      \"additionalProperties\": false,\n      \"description\": \"One config and what it holds.\",\n      \"properties\": {\n        \"config\": {\n          \"$ref\": \"#/$defs/StorageConfig\"\n        },\n        \"facts\": {\n          \"$ref\": \"#/$defs/StorageConfigFacts\"\n        }\n      },\n      \"required\": [\n        \"config\",\n        \"facts\"\n      ],\n      \"type\": \"object\"\n    },\n    \"ConfigState\": {\n      \"description\": \"`active`: accepts new rooms and new uploads. `draining`: retired by an administrator while blobs still name it — refuses new rooms and new uploads, keeps serving reads, and becomes `retired` when a migration has emptied it. `retired`: refuses new rooms and new uploads and holds no blob. A config is never deleted while a blob names it.\",\n      \"enum\": [\n        \"active\",\n        \"draining\",\n        \"retired\"\n      ],\n      \"title\": \"ConfigState\",\n      \"type\": \"string\"\n    },\n    \"CredentialState\": {\n      \"additionalProperties\": false,\n      \"description\": \"Whether a config can authenticate now, and how — never the credential. `status`: `vta-account`, `ambient` and `sealed` are usable; `required` means the config cannot store until a credential is provided (a `sealed` config never set, or set before a restore, which carries no credential); `none` is a `local` config.\",\n      \"properties\": {\n        \"account\": {\n          \"$ref\": \"#/$defs/ExternalAccountId\",\n          \"description\": \"Present with `vta-account`.\"\n        },\n        \"context\": {\n          \"$ref\": \"#/$defs/ExternalAccountContextId\",\n          \"description\": \"Present with `vta-account`.\"\n        },\n        \"fingerprint\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"Present with `sealed`: a digest identifying the stored credential, so an administrator can tell which one is set without anyone being able to read it. Computed over the credential with a community-held key, never a bare hash of a low-entropy secret.\"\n        },\n        \"roomsHoldingCredentials\": {\n          \"description\": \"Present with `vta-account`: how many rooms the community currently holds a live room-scoped credential for.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"setAt\": {\n          \"description\": \"Present with `sealed`: when the stored credential was last set.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"enum\": [\n            \"vta-account\",\n            \"ambient\",\n            \"sealed\",\n            \"required\",\n            \"none\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\"\n      ],\n      \"title\": \"CredentialState\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ExternalAccountContextId\": {\n      \"description\": \"The context at the community's VTA that owns an external account. The VTA names an account by its context and its identifier, and decides who may use it by act scope in that context: the community must hold `external-auth-use` there, and be bound to the account, for the account to issue it anything. Naming a context grants nothing; the VTA's binding is the gate.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"title\": \"ExternalAccountContextId\",\n      \"type\": \"string\"\n    },\n    \"ExternalAccountId\": {\n      \"description\": \"The identifier of an external account held by the community's VTA (the external/accounts/* family), which issues the community short-lived, room-scoped credentials and holds the long-lived authority itself.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$\",\n      \"title\": \"ExternalAccountId\",\n      \"type\": \"string\"\n    },\n    \"GcsSettings\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"bucket\": {\n          \"description\": \"The bucket name. Validated against GCS naming rules here, because it is placed in a Credential Access Boundary condition and must never carry anything but a name.\",\n          \"maxLength\": 222,\n          \"minLength\": 3,\n          \"pattern\": \"^[a-z0-9][a-z0-9._-]{1,220}[a-z0-9]$\",\n          \"type\": \"string\"\n        },\n        \"kind\": {\n          \"const\": \"gcs\"\n        },\n        \"prefix\": {\n          \"$ref\": \"#/$defs/ObjectPrefix\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"bucket\"\n      ],\n      \"title\": \"GcsSettings\",\n      \"type\": \"object\"\n    },\n    \"LocalSettings\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"kind\": {\n          \"const\": \"local\"\n        },\n        \"root\": {\n          \"description\": \"Absolute path of the directory the community writes blobs under, on its own host. Created owner-only. Not carried by the community's backup: back it up beside it.\",\n          \"maxLength\": 1024,\n          \"minLength\": 1,\n          \"pattern\": \"^/\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"root\"\n      ],\n      \"title\": \"LocalSettings\",\n      \"type\": \"object\"\n    },\n    \"ObjectPrefix\": {\n      \"description\": \"A key prefix inside the bucket, ending in `/`, under which the config's `rooms/` tree is placed. Restricted to the S3 safe-character set so that it can be placed in a downscoped policy without escaping.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"pattern\": \"^[A-Za-z0-9!_.*'()/-]+/$\",\n      \"title\": \"ObjectPrefix\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"items\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/ConfigItem\"\n          },\n          \"maxItems\": 100,\n          \"type\": \"array\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Present when more remain; pass it as `cursor`.\",\n          \"maxLength\": 1024,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"items\"\n      ],\n      \"title\": \"VTC Storage — Configs — List — response payload\",\n      \"type\": \"object\"\n    },\n    \"S3Settings\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"bucket\": {\n          \"description\": \"The bucket name. Validated against S3 naming rules here, because it is placed in downscoped session policies and must never carry anything but a name.\",\n          \"maxLength\": 63,\n          \"minLength\": 3,\n          \"pattern\": \"^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$\",\n          \"type\": \"string\"\n        },\n        \"endpoint\": {\n          \"description\": \"The S3 API endpoint, for a store other than AWS (R2, B2, MinIO). Absent means AWS S3 in `region`. HTTPS only.\",\n          \"format\": \"uri\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^https://\",\n          \"type\": \"string\"\n        },\n        \"kind\": {\n          \"const\": \"s3\"\n        },\n        \"pathStyle\": {\n          \"description\": \"Address the bucket in the path rather than the host name, as MinIO usually needs. Absent means virtual-hosted style.\",\n          \"type\": \"boolean\"\n        },\n        \"prefix\": {\n          \"$ref\": \"#/$defs/ObjectPrefix\"\n        },\n        \"region\": {\n          \"description\": \"The bucket's region, as the store names it (`eu-west-1`; `auto` for R2).\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"pattern\": \"^[a-z0-9-]+$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"region\",\n        \"bucket\"\n      ],\n      \"title\": \"S3Settings\",\n      \"type\": \"object\"\n    },\n    \"StorageAuth\": {\n      \"description\": \"How the community authenticates to a config's backend. Absent on a `local` config, which needs none.\\n\\n`vta-account` (RECOMMENDED): an external account in the community's VTA, named by the context that owns it and its identifier there. The VTA holds the long-lived authority; the community holds nothing that outlives a credential lifetime, and asks for credentials scoped to one room's prefix for at most 15 minutes, every issuance audited at the VTA. Required for a `walrus` config other than a `sealed` one, since the VTA's `sui-signer` account signs its storage transactions.\\n\\n`ambient`: the cloud identity of the machine the community runs on (an instance role, workload identity), downscoped to one room's prefix by the community itself. Not audited or rate-limited by the VTA, and usable by anything on that machine that reaches the metadata endpoint. Not valid for `walrus`.\\n\\n`sealed` (discouraged): a long-lived credential stored by the community, set with vtc/storage/credentials/set. Protects against every administrator through every surface the community offers; does not protect against whoever operates the machine.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"account\": {\n              \"$ref\": \"#/$defs/ExternalAccountId\"\n            },\n            \"context\": {\n              \"$ref\": \"#/$defs/ExternalAccountContextId\"\n            },\n            \"mode\": {\n              \"const\": \"vta-account\"\n            }\n          },\n          \"required\": [\n            \"mode\",\n            \"context\",\n            \"account\"\n          ],\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"mode\": {\n              \"const\": \"ambient\"\n            }\n          },\n          \"required\": [\n            \"mode\"\n          ],\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"mode\": {\n              \"const\": \"sealed\"\n            }\n          },\n          \"required\": [\n            \"mode\"\n          ],\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"StorageAuth\"\n    },\n    \"StorageConfig\": {\n      \"additionalProperties\": false,\n      \"description\": \"One storage config as the community holds it. Carries no secret.\",\n      \"properties\": {\n        \"auth\": {\n          \"$ref\": \"#/$defs/StorageAuth\"\n        },\n        \"capacityBytes\": {\n          \"description\": \"Total ciphertext bytes the community will store on this config, across every room assigned to it. A capacity, not a policy: an upload that would cross it is refused with scope `storage`. Absent means no capacity set.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"createdBy\": {\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"$ref\": \"#/$defs/StorageConfigId\"\n        },\n        \"isDefault\": {\n          \"description\": \"True for the config a room is assigned to when neither the community's policy nor its creator names one.\",\n          \"type\": \"boolean\"\n        },\n        \"label\": {\n          \"description\": \"A display name for administrators (`EU — S3 (main account)`). Shown to a room's creator with the config's kind when the community lets them choose.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"settings\": {\n          \"$ref\": \"#/$defs/StorageSettings\"\n        },\n        \"state\": {\n          \"$ref\": \"#/$defs/ConfigState\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"updatedBy\": {\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"label\",\n        \"settings\",\n        \"state\",\n        \"createdBy\",\n        \"createdAt\"\n      ],\n      \"title\": \"StorageConfig\",\n      \"type\": \"object\"\n    },\n    \"StorageConfigFacts\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a config holds and whether it works, computed at the time of the read. Ciphertext bytes throughout.\",\n      \"properties\": {\n        \"bytes\": {\n          \"description\": \"Their total size. Counts against `capacityBytes` until the backend deletion has actually happened, unlike room and member usage, which stop counting an orphaned blob at once.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"credential\": {\n          \"$ref\": \"#/$defs/CredentialState\"\n        },\n        \"files\": {\n          \"description\": \"Blobs stored on this config that are not yet deleted, wherever their rooms are now assigned.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"health\": {\n          \"$ref\": \"#/$defs/StorageHealth\"\n        },\n        \"pendingDeleteBytes\": {\n          \"description\": \"Bytes of orphaned blobs awaiting deletion after their grace window.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"rooms\": {\n          \"description\": \"Rooms assigned to this config.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"walrus\": {\n          \"additionalProperties\": false,\n          \"description\": \"Present on a `walrus` config.\",\n          \"properties\": {\n            \"nextExtensionDueAt\": {\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"signerAddress\": {\n              \"description\": \"The Sui address that pays for storage, derived from the VTA account's key.\",\n              \"pattern\": \"^0x[0-9a-f]{64}$\",\n              \"type\": \"string\"\n            }\n          },\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"rooms\",\n        \"files\",\n        \"bytes\",\n        \"pendingDeleteBytes\",\n        \"credential\",\n        \"health\"\n      ],\n      \"title\": \"StorageConfigFacts\",\n      \"type\": \"object\"\n    },\n    \"StorageConfigId\": {\n      \"description\": \"A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$\",\n      \"title\": \"StorageConfigId\",\n      \"type\": \"string\"\n    },\n    \"StorageHealth\": {\n      \"additionalProperties\": false,\n      \"description\": \"The last evidence the community has that a config works. Every member is optional: a config never probed and never used has none.\",\n      \"properties\": {\n        \"lastDeleteAt\": {\n          \"description\": \"The last successful deletion (on `walrus`, the last lapse the community observed).\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"lastGetAt\": {\n          \"description\": \"The last successful chunk read.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"lastProbeAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"lastProbeOk\": {\n          \"type\": \"boolean\"\n        },\n        \"lastPutAt\": {\n          \"description\": \"The last successful blob write.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"title\": \"StorageHealth\",\n      \"type\": \"object\"\n    },\n    \"StorageKind\": {\n      \"description\": \"Which backend a config stores to. `local`: plain files in a directory on the community's own host. `s3`: an S3-compatible object store (AWS S3, Cloudflare R2, Backblaze B2, MinIO). `gcs`: native Google Cloud Storage. `walrus`: the Walrus decentralised store, where every blob is public ciphertext and deletion is a lapse, not an erasure.\",\n      \"enum\": [\n        \"local\",\n        \"s3\",\n        \"gcs\",\n        \"walrus\"\n      ],\n      \"title\": \"StorageKind\",\n      \"type\": \"string\"\n    },\n    \"StorageSettings\": {\n      \"description\": \"A config's backend settings, discriminated by `kind`. Never a secret: a credential is a StorageAuth, held elsewhere.\",\n      \"oneOf\": [\n        {\n          \"$ref\": \"#/$defs/LocalSettings\"\n        },\n        {\n          \"$ref\": \"#/$defs/S3Settings\"\n        },\n        {\n          \"$ref\": \"#/$defs/GcsSettings\"\n        },\n        {\n          \"$ref\": \"#/$defs/WalrusSettings\"\n        }\n      ],\n      \"title\": \"StorageSettings\"\n    },\n    \"WalrusSettings\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"aggregatorUrl\": {\n          \"description\": \"The Walrus aggregator the community reads through.\",\n          \"format\": \"uri\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^https://\",\n          \"type\": \"string\"\n        },\n        \"epochs\": {\n          \"description\": \"Storage epochs to buy when a blob is registered. Walrus sells storage in epochs (two weeks on mainnet) and caps one purchase at 53.\",\n          \"maximum\": 53,\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"extendBeforeEpochs\": {\n          \"description\": \"How many epochs before a live blob's end epoch the community extends it. A blob that has become an orphan is not extended, and lapses: the Walrus form of deletion.\",\n          \"maximum\": 52,\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"kind\": {\n          \"const\": \"walrus\"\n        },\n        \"relayUrl\": {\n          \"description\": \"The Walrus upload relay the community writes through. The community never runs a publisher: a publisher holds a hot wallet in its own configuration, which is the long-lived secret these tasks exist to avoid.\",\n          \"format\": \"uri\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^https://\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"relayUrl\",\n        \"aggregatorUrl\",\n        \"epochs\",\n        \"extendBeforeEpochs\"\n      ],\n      \"title\": \"WalrusSettings\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/storage/configs/list/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Page through the community's storage configs. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"cursor\": {\n      \"description\": \"Opaque continuation token from a previous page's `nextCursor`.\",\n      \"maxLength\": 1024,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"kind\": {\n      \"$ref\": \"#/$defs/StorageKind\"\n    },\n    \"limit\": {\n      \"description\": \"Page size. The community chooses when absent (50 in the reference implementation).\",\n      \"maximum\": 100,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"state\": {\n      \"$ref\": \"#/$defs/ConfigState\"\n    }\n  },\n  \"title\": \"VTC Storage — Configs — List — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"ConfigItem\":{\"additionalProperties\":false,\"description\":\"One config and what it holds.\",\"properties\":{\"config\":{\"$ref\":\"#/$defs/StorageConfig\"},\"facts\":{\"$ref\":\"#/$defs/StorageConfigFacts\"}},\"required\":[\"config\",\"facts\"],\"type\":\"object\"},\"ConfigState\":{\"description\":\"`active`: accepts new rooms and new uploads. `draining`: retired by an administrator while blobs still name it — refuses new rooms and new uploads, keeps serving reads, and becomes `retired` when a migration has emptied it. `retired`: refuses new rooms and new uploads and holds no blob. A config is never deleted while a blob names it.\",\"enum\":[\"active\",\"draining\",\"retired\"],\"title\":\"ConfigState\",\"type\":\"string\"},\"CredentialState\":{\"additionalProperties\":false,\"description\":\"Whether a config can authenticate now, and how — never the credential. `status`: `vta-account`, `ambient` and `sealed` are usable; `required` means the config cannot store until a credential is provided (a `sealed` config never set, or set before a restore, which carries no credential); `none` is a `local` config.\",\"properties\":{\"account\":{\"$ref\":\"#/$defs/ExternalAccountId\",\"description\":\"Present with `vta-account`.\"},\"context\":{\"$ref\":\"#/$defs/ExternalAccountContextId\",\"description\":\"Present with `vta-account`.\"},\"fingerprint\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Present with `sealed`: a digest identifying the stored credential, so an administrator can tell which one is set without anyone being able to read it. Computed over the credential with a community-held key, never a bare hash of a low-entropy secret.\"},\"roomsHoldingCredentials\":{\"description\":\"Present with `vta-account`: how many rooms the community currently holds a live room-scoped credential for.\",\"minimum\":0,\"type\":\"integer\"},\"setAt\":{\"description\":\"Present with `sealed`: when the stored credential was last set.\",\"format\":\"date-time\",\"type\":\"string\"},\"status\":{\"enum\":[\"vta-account\",\"ambient\",\"sealed\",\"required\",\"none\"],\"type\":\"string\"}},\"required\":[\"status\"],\"title\":\"CredentialState\",\"type\":\"object\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ExternalAccountContextId\":{\"description\":\"The context at the community's VTA that owns an external account. The VTA names an account by its context and its identifier, and decides who may use it by act scope in that context: the community must hold `external-auth-use` there, and be bound to the account, for the account to issue it anything. Naming a context grants nothing; the VTA's binding is the gate.\",\"maxLength\":256,\"minLength\":1,\"title\":\"ExternalAccountContextId\",\"type\":\"string\"},\"ExternalAccountId\":{\"description\":\"The identifier of an external account held by the community's VTA (the external/accounts/* family), which issues the community short-lived, room-scoped credentials and holds the long-lived authority itself.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$\",\"title\":\"ExternalAccountId\",\"type\":\"string\"},\"GcsSettings\":{\"additionalProperties\":false,\"properties\":{\"bucket\":{\"description\":\"The bucket name. Validated against GCS naming rules here, because it is placed in a Credential Access Boundary condition and must never carry anything but a name.\",\"maxLength\":222,\"minLength\":3,\"pattern\":\"^[a-z0-9][a-z0-9._-]{1,220}[a-z0-9]$\",\"type\":\"string\"},\"kind\":{\"const\":\"gcs\"},\"prefix\":{\"$ref\":\"#/$defs/ObjectPrefix\"}},\"required\":[\"kind\",\"bucket\"],\"title\":\"GcsSettings\",\"type\":\"object\"},\"LocalSettings\":{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"local\"},\"root\":{\"description\":\"Absolute path of the directory the community writes blobs under, on its own host. Created owner-only. Not carried by the community's backup: back it up beside it.\",\"maxLength\":1024,\"minLength\":1,\"pattern\":\"^/\",\"type\":\"string\"}},\"required\":[\"kind\",\"root\"],\"title\":\"LocalSettings\",\"type\":\"object\"},\"ObjectPrefix\":{\"description\":\"A key prefix inside the bucket, ending in `/`, under which the config's `rooms/` tree is placed. Restricted to the S3 safe-character set so that it can be placed in a downscoped policy without escaping.\",\"maxLength\":256,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9!_.*'()/-]+/$\",\"title\":\"ObjectPrefix\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"items\":{\"items\":{\"$ref\":\"#/$defs/ConfigItem\"},\"maxItems\":100,\"type\":\"array\"},\"nextCursor\":{\"description\":\"Present when more remain; pass it as `cursor`.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"items\"],\"title\":\"VTC Storage — Configs — List — response payload\",\"type\":\"object\"},\"S3Settings\":{\"additionalProperties\":false,\"properties\":{\"bucket\":{\"description\":\"The bucket name. Validated against S3 naming rules here, because it is placed in downscoped session policies and must never carry anything but a name.\",\"maxLength\":63,\"minLength\":3,\"pattern\":\"^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$\",\"type\":\"string\"},\"endpoint\":{\"description\":\"The S3 API endpoint, for a store other than AWS (R2, B2, MinIO). Absent means AWS S3 in `region`. HTTPS only.\",\"format\":\"uri\",\"maxLength\":2048,\"pattern\":\"^https://\",\"type\":\"string\"},\"kind\":{\"const\":\"s3\"},\"pathStyle\":{\"description\":\"Address the bucket in the path rather than the host name, as MinIO usually needs. Absent means virtual-hosted style.\",\"type\":\"boolean\"},\"prefix\":{\"$ref\":\"#/$defs/ObjectPrefix\"},\"region\":{\"description\":\"The bucket's region, as the store names it (`eu-west-1`; `auto` for R2).\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9-]+$\",\"type\":\"string\"}},\"required\":[\"kind\",\"region\",\"bucket\"],\"title\":\"S3Settings\",\"type\":\"object\"},\"StorageAuth\":{\"description\":\"How the community authenticates to a config's backend. Absent on a `local` config, which needs none.\\n\\n`vta-account` (RECOMMENDED): an external account in the community's VTA, named by the context that owns it and its identifier there. The VTA holds the long-lived authority; the community holds nothing that outlives a credential lifetime, and asks for credentials scoped to one room's prefix for at most 15 minutes, every issuance audited at the VTA. Required for a `walrus` config other than a `sealed` one, since the VTA's `sui-signer` account signs its storage transactions.\\n\\n`ambient`: the cloud identity of the machine the community runs on (an instance role, workload identity), downscoped to one room's prefix by the community itself. Not audited or rate-limited by the VTA, and usable by anything on that machine that reaches the metadata endpoint. Not valid for `walrus`.\\n\\n`sealed` (discouraged): a long-lived credential stored by the community, set with vtc/storage/credentials/set. Protects against every administrator through every surface the community offers; does not protect against whoever operates the machine.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"account\":{\"$ref\":\"#/$defs/ExternalAccountId\"},\"context\":{\"$ref\":\"#/$defs/ExternalAccountContextId\"},\"mode\":{\"const\":\"vta-account\"}},\"required\":[\"mode\",\"context\",\"account\"],\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"mode\":{\"const\":\"ambient\"}},\"required\":[\"mode\"],\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"mode\":{\"const\":\"sealed\"}},\"required\":[\"mode\"],\"type\":\"object\"}],\"title\":\"StorageAuth\"},\"StorageConfig\":{\"additionalProperties\":false,\"description\":\"One storage config as the community holds it. Carries no secret.\",\"properties\":{\"auth\":{\"$ref\":\"#/$defs/StorageAuth\"},\"capacityBytes\":{\"description\":\"Total ciphertext bytes the community will store on this config, across every room assigned to it. A capacity, not a policy: an upload that would cross it is refused with scope `storage`. Absent means no capacity set.\",\"minimum\":0,\"type\":\"integer\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"createdBy\":{\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"id\":{\"$ref\":\"#/$defs/StorageConfigId\"},\"isDefault\":{\"description\":\"True for the config a room is assigned to when neither the community's policy nor its creator names one.\",\"type\":\"boolean\"},\"label\":{\"description\":\"A display name for administrators (`EU — S3 (main account)`). Shown to a room's creator with the config's kind when the community lets them choose.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"settings\":{\"$ref\":\"#/$defs/StorageSettings\"},\"state\":{\"$ref\":\"#/$defs/ConfigState\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"updatedBy\":{\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"id\",\"label\",\"settings\",\"state\",\"createdBy\",\"createdAt\"],\"title\":\"StorageConfig\",\"type\":\"object\"},\"StorageConfigFacts\":{\"additionalProperties\":false,\"description\":\"What a config holds and whether it works, computed at the time of the read. Ciphertext bytes throughout.\",\"properties\":{\"bytes\":{\"description\":\"Their total size. Counts against `capacityBytes` until the backend deletion has actually happened, unlike room and member usage, which stop counting an orphaned blob at once.\",\"minimum\":0,\"type\":\"integer\"},\"credential\":{\"$ref\":\"#/$defs/CredentialState\"},\"files\":{\"description\":\"Blobs stored on this config that are not yet deleted, wherever their rooms are now assigned.\",\"minimum\":0,\"type\":\"integer\"},\"health\":{\"$ref\":\"#/$defs/StorageHealth\"},\"pendingDeleteBytes\":{\"description\":\"Bytes of orphaned blobs awaiting deletion after their grace window.\",\"minimum\":0,\"type\":\"integer\"},\"rooms\":{\"description\":\"Rooms assigned to this config.\",\"minimum\":0,\"type\":\"integer\"},\"walrus\":{\"additionalProperties\":false,\"description\":\"Present on a `walrus` config.\",\"properties\":{\"nextExtensionDueAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"signerAddress\":{\"description\":\"The Sui address that pays for storage, derived from the VTA account's key.\",\"pattern\":\"^0x[0-9a-f]{64}$\",\"type\":\"string\"}},\"type\":\"object\"}},\"required\":[\"rooms\",\"files\",\"bytes\",\"pendingDeleteBytes\",\"credential\",\"health\"],\"title\":\"StorageConfigFacts\",\"type\":\"object\"},\"StorageConfigId\":{\"description\":\"A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$\",\"title\":\"StorageConfigId\",\"type\":\"string\"},\"StorageHealth\":{\"additionalProperties\":false,\"description\":\"The last evidence the community has that a config works. Every member is optional: a config never probed and never used has none.\",\"properties\":{\"lastDeleteAt\":{\"description\":\"The last successful deletion (on `walrus`, the last lapse the community observed).\",\"format\":\"date-time\",\"type\":\"string\"},\"lastGetAt\":{\"description\":\"The last successful chunk read.\",\"format\":\"date-time\",\"type\":\"string\"},\"lastProbeAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"lastProbeOk\":{\"type\":\"boolean\"},\"lastPutAt\":{\"description\":\"The last successful blob write.\",\"format\":\"date-time\",\"type\":\"string\"}},\"title\":\"StorageHealth\",\"type\":\"object\"},\"StorageKind\":{\"description\":\"Which backend a config stores to. `local`: plain files in a directory on the community's own host. `s3`: an S3-compatible object store (AWS S3, Cloudflare R2, Backblaze B2, MinIO). `gcs`: native Google Cloud Storage. `walrus`: the Walrus decentralised store, where every blob is public ciphertext and deletion is a lapse, not an erasure.\",\"enum\":[\"local\",\"s3\",\"gcs\",\"walrus\"],\"title\":\"StorageKind\",\"type\":\"string\"},\"StorageSettings\":{\"description\":\"A config's backend settings, discriminated by `kind`. Never a secret: a credential is a StorageAuth, held elsewhere.\",\"oneOf\":[{\"$ref\":\"#/$defs/LocalSettings\"},{\"$ref\":\"#/$defs/S3Settings\"},{\"$ref\":\"#/$defs/GcsSettings\"},{\"$ref\":\"#/$defs/WalrusSettings\"}],\"title\":\"StorageSettings\"},\"WalrusSettings\":{\"additionalProperties\":false,\"properties\":{\"aggregatorUrl\":{\"description\":\"The Walrus aggregator the community reads through.\",\"format\":\"uri\",\"maxLength\":2048,\"pattern\":\"^https://\",\"type\":\"string\"},\"epochs\":{\"description\":\"Storage epochs to buy when a blob is registered. Walrus sells storage in epochs (two weeks on mainnet) and caps one purchase at 53.\",\"maximum\":53,\"minimum\":1,\"type\":\"integer\"},\"extendBeforeEpochs\":{\"description\":\"How many epochs before a live blob's end epoch the community extends it. A blob that has become an orphan is not extended, and lapses: the Walrus form of deletion.\",\"maximum\":52,\"minimum\":1,\"type\":\"integer\"},\"kind\":{\"const\":\"walrus\"},\"relayUrl\":{\"description\":\"The Walrus upload relay the community writes through. The community never runs a publisher: a publisher holds a hot wallet in its own configuration, which is the long-lived secret these tasks exist to avoid.\",\"format\":\"uri\",\"maxLength\":2048,\"pattern\":\"^https://\",\"type\":\"string\"}},\"required\":[\"kind\",\"relayUrl\",\"aggregatorUrl\",\"epochs\",\"extendBeforeEpochs\"],\"title\":\"WalrusSettings\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/storage/configs/list/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Page through the community's storage configs. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"cursor\":{\"description\":\"Opaque continuation token from a previous page's `nextCursor`.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"kind\":{\"$ref\":\"#/$defs/StorageKind\"},\"limit\":{\"description\":\"Page size. The community chooses when absent (50 in the reference implementation).\",\"maximum\":100,\"minimum\":1,\"type\":\"integer\"},\"state\":{\"$ref\":\"#/$defs/ConfigState\"}},\"title\":\"VTC Storage — Configs — List — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -3723,7 +2925,7 @@ impl crate::Payload for Response {
         "https://trusttasks.org/spec/vtc/storage/configs/list/0.1#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ConfigItem\": {\n      \"additionalProperties\": false,\n      \"description\": \"One config and what it holds.\",\n      \"properties\": {\n        \"config\": {\n          \"$ref\": \"#/$defs/StorageConfig\"\n        },\n        \"facts\": {\n          \"$ref\": \"#/$defs/StorageConfigFacts\"\n        }\n      },\n      \"required\": [\n        \"config\",\n        \"facts\"\n      ],\n      \"type\": \"object\"\n    },\n    \"ConfigState\": {\n      \"description\": \"`active`: accepts new rooms and new uploads. `draining`: retired by an administrator while blobs still name it — refuses new rooms and new uploads, keeps serving reads, and becomes `retired` when a migration has emptied it. `retired`: refuses new rooms and new uploads and holds no blob. A config is never deleted while a blob names it.\",\n      \"enum\": [\n        \"active\",\n        \"draining\",\n        \"retired\"\n      ],\n      \"title\": \"ConfigState\",\n      \"type\": \"string\"\n    },\n    \"CredentialState\": {\n      \"additionalProperties\": false,\n      \"description\": \"Whether a config can authenticate now, and how — never the credential. `status`: `vta-account`, `ambient` and `sealed` are usable; `required` means the config cannot store until a credential is provided (a `sealed` config never set, or set before a restore, which carries no credential); `none` is a `local` config.\",\n      \"properties\": {\n        \"account\": {\n          \"$ref\": \"#/$defs/ExternalAccountId\",\n          \"description\": \"Present with `vta-account`.\"\n        },\n        \"context\": {\n          \"$ref\": \"#/$defs/ExternalAccountContextId\",\n          \"description\": \"Present with `vta-account`.\"\n        },\n        \"fingerprint\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"Present with `sealed`: a digest identifying the stored credential, so an administrator can tell which one is set without anyone being able to read it. Computed over the credential with a community-held key, never a bare hash of a low-entropy secret.\"\n        },\n        \"roomsHoldingCredentials\": {\n          \"description\": \"Present with `vta-account`: how many rooms the community currently holds a live room-scoped credential for.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"setAt\": {\n          \"description\": \"Present with `sealed`: when the stored credential was last set.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"enum\": [\n            \"vta-account\",\n            \"ambient\",\n            \"sealed\",\n            \"required\",\n            \"none\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\"\n      ],\n      \"title\": \"CredentialState\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ExternalAccountContextId\": {\n      \"description\": \"The context at the community's VTA that owns an external account. The VTA names an account by its context and its identifier, and decides who may use it by act scope in that context: the community must hold `external-auth-use` there, and be bound to the account, for the account to issue it anything. Naming a context grants nothing; the VTA's binding is the gate.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"title\": \"ExternalAccountContextId\",\n      \"type\": \"string\"\n    },\n    \"ExternalAccountId\": {\n      \"description\": \"The identifier of an external account held by the community's VTA (the external/accounts/* family), which issues the community short-lived, room-scoped credentials and holds the long-lived authority itself.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$\",\n      \"title\": \"ExternalAccountId\",\n      \"type\": \"string\"\n    },\n    \"GcsSettings\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"bucket\": {\n          \"description\": \"The bucket name. Validated against GCS naming rules here, because it is placed in a Credential Access Boundary condition and must never carry anything but a name.\",\n          \"maxLength\": 222,\n          \"minLength\": 3,\n          \"pattern\": \"^[a-z0-9][a-z0-9._-]{1,220}[a-z0-9]$\",\n          \"type\": \"string\"\n        },\n        \"kind\": {\n          \"const\": \"gcs\"\n        },\n        \"prefix\": {\n          \"$ref\": \"#/$defs/ObjectPrefix\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"bucket\"\n      ],\n      \"title\": \"GcsSettings\",\n      \"type\": \"object\"\n    },\n    \"LocalSettings\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"kind\": {\n          \"const\": \"local\"\n        },\n        \"root\": {\n          \"description\": \"Absolute path of the directory the community writes blobs under, on its own host. Created owner-only. Not carried by the community's backup: back it up beside it.\",\n          \"maxLength\": 1024,\n          \"minLength\": 1,\n          \"pattern\": \"^/\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"root\"\n      ],\n      \"title\": \"LocalSettings\",\n      \"type\": \"object\"\n    },\n    \"ObjectPrefix\": {\n      \"description\": \"A key prefix inside the bucket, ending in `/`, under which the config's `rooms/` tree is placed. Restricted to the S3 safe-character set so that it can be placed in a downscoped policy without escaping.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"pattern\": \"^[A-Za-z0-9!_.*'()/-]+/$\",\n      \"title\": \"ObjectPrefix\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"items\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/ConfigItem\"\n          },\n          \"maxItems\": 100,\n          \"type\": \"array\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Present when more remain; pass it as `cursor`.\",\n          \"maxLength\": 1024,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"items\"\n      ],\n      \"title\": \"VTC Storage — Configs — List — response payload\",\n      \"type\": \"object\"\n    },\n    \"S3Settings\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"bucket\": {\n          \"description\": \"The bucket name. Validated against S3 naming rules here, because it is placed in downscoped session policies and must never carry anything but a name.\",\n          \"maxLength\": 63,\n          \"minLength\": 3,\n          \"pattern\": \"^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$\",\n          \"type\": \"string\"\n        },\n        \"endpoint\": {\n          \"description\": \"The S3 API endpoint, for a store other than AWS (R2, B2, MinIO). Absent means AWS S3 in `region`. HTTPS only.\",\n          \"format\": \"uri\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^https://\",\n          \"type\": \"string\"\n        },\n        \"kind\": {\n          \"const\": \"s3\"\n        },\n        \"pathStyle\": {\n          \"description\": \"Address the bucket in the path rather than the host name, as MinIO usually needs. Absent means virtual-hosted style.\",\n          \"type\": \"boolean\"\n        },\n        \"prefix\": {\n          \"$ref\": \"#/$defs/ObjectPrefix\"\n        },\n        \"region\": {\n          \"description\": \"The bucket's region, as the store names it (`eu-west-1`; `auto` for R2).\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"pattern\": \"^[a-z0-9-]+$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"region\",\n        \"bucket\"\n      ],\n      \"title\": \"S3Settings\",\n      \"type\": \"object\"\n    },\n    \"StorageAuth\": {\n      \"description\": \"How the community authenticates to a config's backend. Absent on a `local` config, which needs none.\\n\\n`vta-account` (RECOMMENDED): an external account in the community's VTA, named by the context that owns it and its identifier there. The VTA holds the long-lived authority; the community holds nothing that outlives a credential lifetime, and asks for credentials scoped to one room's prefix for at most 15 minutes, every issuance audited at the VTA. Required for a `walrus` config other than a `sealed` one, since the VTA's `sui-signer` account signs its storage transactions.\\n\\n`ambient`: the cloud identity of the machine the community runs on (an instance role, workload identity), downscoped to one room's prefix by the community itself. Not audited or rate-limited by the VTA, and usable by anything on that machine that reaches the metadata endpoint. Not valid for `walrus`.\\n\\n`sealed` (discouraged): a long-lived credential stored by the community, set with vtc/storage/credentials/set. Protects against every administrator through every surface the community offers; does not protect against whoever operates the machine.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"account\": {\n              \"$ref\": \"#/$defs/ExternalAccountId\"\n            },\n            \"context\": {\n              \"$ref\": \"#/$defs/ExternalAccountContextId\"\n            },\n            \"mode\": {\n              \"const\": \"vta-account\"\n            }\n          },\n          \"required\": [\n            \"mode\",\n            \"context\",\n            \"account\"\n          ],\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"mode\": {\n              \"const\": \"ambient\"\n            }\n          },\n          \"required\": [\n            \"mode\"\n          ],\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"mode\": {\n              \"const\": \"sealed\"\n            }\n          },\n          \"required\": [\n            \"mode\"\n          ],\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"StorageAuth\"\n    },\n    \"StorageConfig\": {\n      \"additionalProperties\": false,\n      \"description\": \"One storage config as the community holds it. Carries no secret.\",\n      \"properties\": {\n        \"auth\": {\n          \"$ref\": \"#/$defs/StorageAuth\"\n        },\n        \"capacityBytes\": {\n          \"description\": \"Total ciphertext bytes the community will store on this config, across every room assigned to it. A capacity, not a policy: an upload that would cross it is refused with scope `storage`. Absent means no capacity set.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"createdBy\": {\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"$ref\": \"#/$defs/StorageConfigId\"\n        },\n        \"isDefault\": {\n          \"description\": \"True for the config a room is assigned to when neither the community's policy nor its creator names one.\",\n          \"type\": \"boolean\"\n        },\n        \"label\": {\n          \"description\": \"A display name for administrators (`EU — S3 (main account)`). Shown to a room's creator with the config's kind when the community lets them choose.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"settings\": {\n          \"$ref\": \"#/$defs/StorageSettings\"\n        },\n        \"state\": {\n          \"$ref\": \"#/$defs/ConfigState\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"updatedBy\": {\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"label\",\n        \"settings\",\n        \"state\",\n        \"createdBy\",\n        \"createdAt\"\n      ],\n      \"title\": \"StorageConfig\",\n      \"type\": \"object\"\n    },\n    \"StorageConfigFacts\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a config holds and whether it works, computed at the time of the read. Ciphertext bytes throughout.\",\n      \"properties\": {\n        \"bytes\": {\n          \"description\": \"Their total size. Counts against `capacityBytes` until the backend deletion has actually happened, unlike room and member usage, which stop counting an orphaned blob at once.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"credential\": {\n          \"$ref\": \"#/$defs/CredentialState\"\n        },\n        \"files\": {\n          \"description\": \"Blobs stored on this config that are not yet deleted, wherever their rooms are now assigned.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"health\": {\n          \"$ref\": \"#/$defs/StorageHealth\"\n        },\n        \"pendingDeleteBytes\": {\n          \"description\": \"Bytes of orphaned blobs awaiting deletion after their grace window.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"rooms\": {\n          \"description\": \"Rooms assigned to this config.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"walrus\": {\n          \"additionalProperties\": false,\n          \"description\": \"Present on a `walrus` config.\",\n          \"properties\": {\n            \"nextExtensionDueAt\": {\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"signerAddress\": {\n              \"description\": \"The Sui address that pays for storage, derived from the VTA account's key.\",\n              \"pattern\": \"^0x[0-9a-f]{64}$\",\n              \"type\": \"string\"\n            }\n          },\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"rooms\",\n        \"files\",\n        \"bytes\",\n        \"pendingDeleteBytes\",\n        \"credential\",\n        \"health\"\n      ],\n      \"title\": \"StorageConfigFacts\",\n      \"type\": \"object\"\n    },\n    \"StorageConfigId\": {\n      \"description\": \"A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$\",\n      \"title\": \"StorageConfigId\",\n      \"type\": \"string\"\n    },\n    \"StorageHealth\": {\n      \"additionalProperties\": false,\n      \"description\": \"The last evidence the community has that a config works. Every member is optional: a config never probed and never used has none.\",\n      \"properties\": {\n        \"lastDeleteAt\": {\n          \"description\": \"The last successful deletion (on `walrus`, the last lapse the community observed).\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"lastGetAt\": {\n          \"description\": \"The last successful chunk read.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"lastProbeAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"lastProbeOk\": {\n          \"type\": \"boolean\"\n        },\n        \"lastPutAt\": {\n          \"description\": \"The last successful blob write.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"title\": \"StorageHealth\",\n      \"type\": \"object\"\n    },\n    \"StorageKind\": {\n      \"description\": \"Which backend a config stores to. `local`: plain files in a directory on the community's own host. `s3`: an S3-compatible object store (AWS S3, Cloudflare R2, Backblaze B2, MinIO). `gcs`: native Google Cloud Storage. `walrus`: the Walrus decentralised store, where every blob is public ciphertext and deletion is a lapse, not an erasure.\",\n      \"enum\": [\n        \"local\",\n        \"s3\",\n        \"gcs\",\n        \"walrus\"\n      ],\n      \"title\": \"StorageKind\",\n      \"type\": \"string\"\n    },\n    \"StorageSettings\": {\n      \"description\": \"A config's backend settings, discriminated by `kind`. Never a secret: a credential is a StorageAuth, held elsewhere.\",\n      \"oneOf\": [\n        {\n          \"$ref\": \"#/$defs/LocalSettings\"\n        },\n        {\n          \"$ref\": \"#/$defs/S3Settings\"\n        },\n        {\n          \"$ref\": \"#/$defs/GcsSettings\"\n        },\n        {\n          \"$ref\": \"#/$defs/WalrusSettings\"\n        }\n      ],\n      \"title\": \"StorageSettings\"\n    },\n    \"WalrusSettings\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"aggregatorUrl\": {\n          \"description\": \"The Walrus aggregator the community reads through.\",\n          \"format\": \"uri\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^https://\",\n          \"type\": \"string\"\n        },\n        \"epochs\": {\n          \"description\": \"Storage epochs to buy when a blob is registered. Walrus sells storage in epochs (two weeks on mainnet) and caps one purchase at 53.\",\n          \"maximum\": 53,\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"extendBeforeEpochs\": {\n          \"description\": \"How many epochs before a live blob's end epoch the community extends it. A blob that has become an orphan is not extended, and lapses: the Walrus form of deletion.\",\n          \"maximum\": 52,\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"kind\": {\n          \"const\": \"walrus\"\n        },\n        \"relayUrl\": {\n          \"description\": \"The Walrus upload relay the community writes through. The community never runs a publisher: a publisher holds a hot wallet in its own configuration, which is the long-lived secret these tasks exist to avoid.\",\n          \"format\": \"uri\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^https://\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"relayUrl\",\n        \"aggregatorUrl\",\n        \"epochs\",\n        \"extendBeforeEpochs\"\n      ],\n      \"title\": \"WalrusSettings\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"ConfigItem\":{\"additionalProperties\":false,\"description\":\"One config and what it holds.\",\"properties\":{\"config\":{\"$ref\":\"#/$defs/StorageConfig\"},\"facts\":{\"$ref\":\"#/$defs/StorageConfigFacts\"}},\"required\":[\"config\",\"facts\"],\"type\":\"object\"},\"ConfigState\":{\"description\":\"`active`: accepts new rooms and new uploads. `draining`: retired by an administrator while blobs still name it — refuses new rooms and new uploads, keeps serving reads, and becomes `retired` when a migration has emptied it. `retired`: refuses new rooms and new uploads and holds no blob. A config is never deleted while a blob names it.\",\"enum\":[\"active\",\"draining\",\"retired\"],\"title\":\"ConfigState\",\"type\":\"string\"},\"CredentialState\":{\"additionalProperties\":false,\"description\":\"Whether a config can authenticate now, and how — never the credential. `status`: `vta-account`, `ambient` and `sealed` are usable; `required` means the config cannot store until a credential is provided (a `sealed` config never set, or set before a restore, which carries no credential); `none` is a `local` config.\",\"properties\":{\"account\":{\"$ref\":\"#/$defs/ExternalAccountId\",\"description\":\"Present with `vta-account`.\"},\"context\":{\"$ref\":\"#/$defs/ExternalAccountContextId\",\"description\":\"Present with `vta-account`.\"},\"fingerprint\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Present with `sealed`: a digest identifying the stored credential, so an administrator can tell which one is set without anyone being able to read it. Computed over the credential with a community-held key, never a bare hash of a low-entropy secret.\"},\"roomsHoldingCredentials\":{\"description\":\"Present with `vta-account`: how many rooms the community currently holds a live room-scoped credential for.\",\"minimum\":0,\"type\":\"integer\"},\"setAt\":{\"description\":\"Present with `sealed`: when the stored credential was last set.\",\"format\":\"date-time\",\"type\":\"string\"},\"status\":{\"enum\":[\"vta-account\",\"ambient\",\"sealed\",\"required\",\"none\"],\"type\":\"string\"}},\"required\":[\"status\"],\"title\":\"CredentialState\",\"type\":\"object\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ExternalAccountContextId\":{\"description\":\"The context at the community's VTA that owns an external account. The VTA names an account by its context and its identifier, and decides who may use it by act scope in that context: the community must hold `external-auth-use` there, and be bound to the account, for the account to issue it anything. Naming a context grants nothing; the VTA's binding is the gate.\",\"maxLength\":256,\"minLength\":1,\"title\":\"ExternalAccountContextId\",\"type\":\"string\"},\"ExternalAccountId\":{\"description\":\"The identifier of an external account held by the community's VTA (the external/accounts/* family), which issues the community short-lived, room-scoped credentials and holds the long-lived authority itself.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$\",\"title\":\"ExternalAccountId\",\"type\":\"string\"},\"GcsSettings\":{\"additionalProperties\":false,\"properties\":{\"bucket\":{\"description\":\"The bucket name. Validated against GCS naming rules here, because it is placed in a Credential Access Boundary condition and must never carry anything but a name.\",\"maxLength\":222,\"minLength\":3,\"pattern\":\"^[a-z0-9][a-z0-9._-]{1,220}[a-z0-9]$\",\"type\":\"string\"},\"kind\":{\"const\":\"gcs\"},\"prefix\":{\"$ref\":\"#/$defs/ObjectPrefix\"}},\"required\":[\"kind\",\"bucket\"],\"title\":\"GcsSettings\",\"type\":\"object\"},\"LocalSettings\":{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"local\"},\"root\":{\"description\":\"Absolute path of the directory the community writes blobs under, on its own host. Created owner-only. Not carried by the community's backup: back it up beside it.\",\"maxLength\":1024,\"minLength\":1,\"pattern\":\"^/\",\"type\":\"string\"}},\"required\":[\"kind\",\"root\"],\"title\":\"LocalSettings\",\"type\":\"object\"},\"ObjectPrefix\":{\"description\":\"A key prefix inside the bucket, ending in `/`, under which the config's `rooms/` tree is placed. Restricted to the S3 safe-character set so that it can be placed in a downscoped policy without escaping.\",\"maxLength\":256,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9!_.*'()/-]+/$\",\"title\":\"ObjectPrefix\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"items\":{\"items\":{\"$ref\":\"#/$defs/ConfigItem\"},\"maxItems\":100,\"type\":\"array\"},\"nextCursor\":{\"description\":\"Present when more remain; pass it as `cursor`.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"items\"],\"title\":\"VTC Storage — Configs — List — response payload\",\"type\":\"object\"},\"S3Settings\":{\"additionalProperties\":false,\"properties\":{\"bucket\":{\"description\":\"The bucket name. Validated against S3 naming rules here, because it is placed in downscoped session policies and must never carry anything but a name.\",\"maxLength\":63,\"minLength\":3,\"pattern\":\"^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$\",\"type\":\"string\"},\"endpoint\":{\"description\":\"The S3 API endpoint, for a store other than AWS (R2, B2, MinIO). Absent means AWS S3 in `region`. HTTPS only.\",\"format\":\"uri\",\"maxLength\":2048,\"pattern\":\"^https://\",\"type\":\"string\"},\"kind\":{\"const\":\"s3\"},\"pathStyle\":{\"description\":\"Address the bucket in the path rather than the host name, as MinIO usually needs. Absent means virtual-hosted style.\",\"type\":\"boolean\"},\"prefix\":{\"$ref\":\"#/$defs/ObjectPrefix\"},\"region\":{\"description\":\"The bucket's region, as the store names it (`eu-west-1`; `auto` for R2).\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9-]+$\",\"type\":\"string\"}},\"required\":[\"kind\",\"region\",\"bucket\"],\"title\":\"S3Settings\",\"type\":\"object\"},\"StorageAuth\":{\"description\":\"How the community authenticates to a config's backend. Absent on a `local` config, which needs none.\\n\\n`vta-account` (RECOMMENDED): an external account in the community's VTA, named by the context that owns it and its identifier there. The VTA holds the long-lived authority; the community holds nothing that outlives a credential lifetime, and asks for credentials scoped to one room's prefix for at most 15 minutes, every issuance audited at the VTA. Required for a `walrus` config other than a `sealed` one, since the VTA's `sui-signer` account signs its storage transactions.\\n\\n`ambient`: the cloud identity of the machine the community runs on (an instance role, workload identity), downscoped to one room's prefix by the community itself. Not audited or rate-limited by the VTA, and usable by anything on that machine that reaches the metadata endpoint. Not valid for `walrus`.\\n\\n`sealed` (discouraged): a long-lived credential stored by the community, set with vtc/storage/credentials/set. Protects against every administrator through every surface the community offers; does not protect against whoever operates the machine.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"account\":{\"$ref\":\"#/$defs/ExternalAccountId\"},\"context\":{\"$ref\":\"#/$defs/ExternalAccountContextId\"},\"mode\":{\"const\":\"vta-account\"}},\"required\":[\"mode\",\"context\",\"account\"],\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"mode\":{\"const\":\"ambient\"}},\"required\":[\"mode\"],\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"mode\":{\"const\":\"sealed\"}},\"required\":[\"mode\"],\"type\":\"object\"}],\"title\":\"StorageAuth\"},\"StorageConfig\":{\"additionalProperties\":false,\"description\":\"One storage config as the community holds it. Carries no secret.\",\"properties\":{\"auth\":{\"$ref\":\"#/$defs/StorageAuth\"},\"capacityBytes\":{\"description\":\"Total ciphertext bytes the community will store on this config, across every room assigned to it. A capacity, not a policy: an upload that would cross it is refused with scope `storage`. Absent means no capacity set.\",\"minimum\":0,\"type\":\"integer\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"createdBy\":{\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"id\":{\"$ref\":\"#/$defs/StorageConfigId\"},\"isDefault\":{\"description\":\"True for the config a room is assigned to when neither the community's policy nor its creator names one.\",\"type\":\"boolean\"},\"label\":{\"description\":\"A display name for administrators (`EU — S3 (main account)`). Shown to a room's creator with the config's kind when the community lets them choose.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"settings\":{\"$ref\":\"#/$defs/StorageSettings\"},\"state\":{\"$ref\":\"#/$defs/ConfigState\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"updatedBy\":{\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"id\",\"label\",\"settings\",\"state\",\"createdBy\",\"createdAt\"],\"title\":\"StorageConfig\",\"type\":\"object\"},\"StorageConfigFacts\":{\"additionalProperties\":false,\"description\":\"What a config holds and whether it works, computed at the time of the read. Ciphertext bytes throughout.\",\"properties\":{\"bytes\":{\"description\":\"Their total size. Counts against `capacityBytes` until the backend deletion has actually happened, unlike room and member usage, which stop counting an orphaned blob at once.\",\"minimum\":0,\"type\":\"integer\"},\"credential\":{\"$ref\":\"#/$defs/CredentialState\"},\"files\":{\"description\":\"Blobs stored on this config that are not yet deleted, wherever their rooms are now assigned.\",\"minimum\":0,\"type\":\"integer\"},\"health\":{\"$ref\":\"#/$defs/StorageHealth\"},\"pendingDeleteBytes\":{\"description\":\"Bytes of orphaned blobs awaiting deletion after their grace window.\",\"minimum\":0,\"type\":\"integer\"},\"rooms\":{\"description\":\"Rooms assigned to this config.\",\"minimum\":0,\"type\":\"integer\"},\"walrus\":{\"additionalProperties\":false,\"description\":\"Present on a `walrus` config.\",\"properties\":{\"nextExtensionDueAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"signerAddress\":{\"description\":\"The Sui address that pays for storage, derived from the VTA account's key.\",\"pattern\":\"^0x[0-9a-f]{64}$\",\"type\":\"string\"}},\"type\":\"object\"}},\"required\":[\"rooms\",\"files\",\"bytes\",\"pendingDeleteBytes\",\"credential\",\"health\"],\"title\":\"StorageConfigFacts\",\"type\":\"object\"},\"StorageConfigId\":{\"description\":\"A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$\",\"title\":\"StorageConfigId\",\"type\":\"string\"},\"StorageHealth\":{\"additionalProperties\":false,\"description\":\"The last evidence the community has that a config works. Every member is optional: a config never probed and never used has none.\",\"properties\":{\"lastDeleteAt\":{\"description\":\"The last successful deletion (on `walrus`, the last lapse the community observed).\",\"format\":\"date-time\",\"type\":\"string\"},\"lastGetAt\":{\"description\":\"The last successful chunk read.\",\"format\":\"date-time\",\"type\":\"string\"},\"lastProbeAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"lastProbeOk\":{\"type\":\"boolean\"},\"lastPutAt\":{\"description\":\"The last successful blob write.\",\"format\":\"date-time\",\"type\":\"string\"}},\"title\":\"StorageHealth\",\"type\":\"object\"},\"StorageKind\":{\"description\":\"Which backend a config stores to. `local`: plain files in a directory on the community's own host. `s3`: an S3-compatible object store (AWS S3, Cloudflare R2, Backblaze B2, MinIO). `gcs`: native Google Cloud Storage. `walrus`: the Walrus decentralised store, where every blob is public ciphertext and deletion is a lapse, not an erasure.\",\"enum\":[\"local\",\"s3\",\"gcs\",\"walrus\"],\"title\":\"StorageKind\",\"type\":\"string\"},\"StorageSettings\":{\"description\":\"A config's backend settings, discriminated by `kind`. Never a secret: a credential is a StorageAuth, held elsewhere.\",\"oneOf\":[{\"$ref\":\"#/$defs/LocalSettings\"},{\"$ref\":\"#/$defs/S3Settings\"},{\"$ref\":\"#/$defs/GcsSettings\"},{\"$ref\":\"#/$defs/WalrusSettings\"}],\"title\":\"StorageSettings\"},\"WalrusSettings\":{\"additionalProperties\":false,\"properties\":{\"aggregatorUrl\":{\"description\":\"The Walrus aggregator the community reads through.\",\"format\":\"uri\",\"maxLength\":2048,\"pattern\":\"^https://\",\"type\":\"string\"},\"epochs\":{\"description\":\"Storage epochs to buy when a blob is registered. Walrus sells storage in epochs (two weeks on mainnet) and caps one purchase at 53.\",\"maximum\":53,\"minimum\":1,\"type\":\"integer\"},\"extendBeforeEpochs\":{\"description\":\"How many epochs before a live blob's end epoch the community extends it. A blob that has become an orphan is not extended, and lapses: the Walrus form of deletion.\",\"maximum\":52,\"minimum\":1,\"type\":\"integer\"},\"kind\":{\"const\":\"walrus\"},\"relayUrl\":{\"description\":\"The Walrus upload relay the community writes through. The community never runs a publisher: a publisher holds a hot wallet in its own configuration, which is the long-lived secret these tasks exist to avoid.\",\"format\":\"uri\",\"maxLength\":2048,\"pattern\":\"^https://\",\"type\":\"string\"}},\"required\":[\"kind\",\"relayUrl\",\"aggregatorUrl\",\"epochs\",\"extendBeforeEpochs\"],\"title\":\"WalrusSettings\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

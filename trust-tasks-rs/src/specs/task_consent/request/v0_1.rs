@@ -41,21 +41,6 @@ This definition constrains the *encoding only*. What the digest is computed over
 
 Restricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that "interoperability is not guaranteed between implementations using such values", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DigestMultibase",
-///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-///  "examples": [
-///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-///  ],
-///  "type": "string",
-///  "minLength": 16,
-///  "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DigestMultibase(::std::string::String);
@@ -124,49 +109,6 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
 }
 ///One consequence of executing the pending task, authored by the executor that is about to run it. An effect is produced by dry-running the real handler against the executor's own prior state — never by the requester, and never by re-implementing the handler's semantics elsewhere. A consent surface renders ONLY effects it received under the executor's signature.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Effect",
-///  "description": "One consequence of executing the pending task, authored by the executor that is about to run it. An effect is produced by dry-running the real handler against the executor's own prior state — never by the requester, and never by re-implementing the handler's semantics elsewhere. A consent surface renders ONLY effects it received under the executor's signature.",
-///  "type": "object",
-///  "required": [
-///    "kind",
-///    "summary"
-///  ],
-///  "properties": {
-///    "after": {
-///      "description": "OPTIONAL resulting value at `path` once the task executes. ABSENT means the value is removed (a deletion), under the same rule as `before`."
-///    },
-///    "before": {
-///      "description": "OPTIONAL prior value at `path`, from the executor's authoritative state. ABSENT means there was no prior value (a creation); an explicit `null` is treated identically, so an executor MUST NOT rely on the two being distinguishable. Structured members are for rich rendering only — `summary` is what a surface is obliged to show, and it is where an executor states a distinction this shape cannot carry."
-///    },
-///    "detail": {
-///      "description": "OPTIONAL kind-specific structured extras (e.g. `{ \"commitments\": 2 }` for `preRotationRefresh`).",
-///      "type": "object",
-///      "additionalProperties": true
-///    },
-///    "kind": {
-///      "description": "Machine discriminator for rich rendering. Well-known kinds are registered in the prose (`documentChange`, `keyRotation`, `preRotationRefresh`, `resourceDelete`, `disclosure`), but the set is OPEN: handlers evolve faster than this schema, and an executor MUST be able to describe a consequence this version does not name. A surface that does not recognise a `kind` MUST still render `summary`.",
-///      "type": "string",
-///      "pattern": "^[a-z][a-zA-Z0-9]*$"
-///    },
-///    "path": {
-///      "description": "OPTIONAL RFC 6901 JSON Pointer locating the change within the subject resource (e.g. `/service/0`).",
-///      "type": "string"
-///    },
-///    "summary": {
-///      "description": "REQUIRED human-facing sentence describing this consequence, authored by the executor. This is the ONLY member a consent surface is guaranteed to be able to render, and it is what makes an unrecognised `kind` degrade to something truthful rather than something invisible. A surface MUST render it verbatim; it MUST NOT substitute its own prose.",
-///      "type": "string",
-///      "maxLength": 500,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -195,16 +137,6 @@ impl Effect {
 }
 ///Machine discriminator for rich rendering. Well-known kinds are registered in the prose (`documentChange`, `keyRotation`, `preRotationRefresh`, `resourceDelete`, `disclosure`), but the set is OPEN: handlers evolve faster than this schema, and an executor MUST be able to describe a consequence this version does not name. A surface that does not recognise a `kind` MUST still render `summary`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Machine discriminator for rich rendering. Well-known kinds are registered in the prose (`documentChange`, `keyRotation`, `preRotationRefresh`, `resourceDelete`, `disclosure`), but the set is OPEN: handlers evolve faster than this schema, and an executor MUST be able to describe a consequence this version does not name. A surface that does not recognise a `kind` MUST still render `summary`.",
-///  "type": "string",
-///  "pattern": "^[a-z][a-zA-Z0-9]*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct EffectKind(::std::string::String);
@@ -266,17 +198,6 @@ impl<'de> ::serde::Deserialize<'de> for EffectKind {
 }
 ///REQUIRED human-facing sentence describing this consequence, authored by the executor. This is the ONLY member a consent surface is guaranteed to be able to render, and it is what makes an unrecognised `kind` degrade to something truthful rather than something invisible. A surface MUST render it verbatim; it MUST NOT substitute its own prose.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "REQUIRED human-facing sentence describing this consequence, authored by the executor. This is the ONLY member a consent surface is guaranteed to be able to render, and it is what makes an unrecognised `kind` degrade to something truthful rather than something invisible. A surface MUST render it verbatim; it MUST NOT substitute its own prose.",
-///  "type": "string",
-///  "maxLength": 500,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct EffectSummary(::std::string::String);
@@ -339,36 +260,6 @@ impl<'de> ::serde::Deserialize<'de> for EffectSummary {
 }
 ///The authoritative SPEC §7.3 item 14 exposure class of the pending task, derived by the executor from the compiled handler it is about to invoke — never from the registry's declared value.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Exposure",
-///  "description": "The authoritative SPEC §7.3 item 14 exposure class of the pending task, derived by the executor from the compiled handler it is about to invoke — never from the registry's declared value.",
-///  "type": "object",
-///  "required": [
-///    "actsAsSubject",
-///    "discloses"
-///  ],
-///  "properties": {
-///    "actsAsSubject": {
-///      "description": "Whether execution exercises the subject's own authority to produce an attributable effect in the subject's name.",
-///      "type": "boolean"
-///    },
-///    "discloses": {
-///      "description": "Sensitivity of data the task returns to its caller.",
-///      "type": "string",
-///      "enum": [
-///        "none",
-///        "metadata",
-///        "secret"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -386,20 +277,6 @@ impl Exposure {
 }
 ///Sensitivity of data the task returns to its caller.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Sensitivity of data the task returns to its caller.",
-///  "type": "string",
-///  "enum": [
-///    "none",
-///    "metadata",
-///    "secret"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -465,21 +342,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ExposureDiscloses {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -501,15 +363,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -573,121 +426,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///The executor asks an enrolled approver device to authorize one pending privileged task, presenting the effects it computed by dry-running the real handler against its own prior state. The executor signs this document; the approver renders only what it verifies under that signature.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/task-consent/request/0.1",
-///  "title": "Payload",
-///  "description": "The executor asks an enrolled approver device to authorize one pending privileged task, presenting the effects it computed by dry-running the real handler against its own prior state. The executor signs this document; the approver renders only what it verifies under that signature.",
-///  "type": "object",
-///  "required": [
-///    "approverSet",
-///    "challenge",
-///    "effects",
-///    "excludeRequester",
-///    "expiresAt",
-///    "exposure",
-///    "minApprovals",
-///    "payloadDigest",
-///    "requester",
-///    "sideEffects",
-///    "taskType"
-///  ],
-///  "properties": {
-///    "approverSet": {
-///      "description": "Name of the approver set the policy's `requireConsent` named.",
-///      "type": "string"
-///    },
-///    "challenge": {
-///      "description": "Per-request nonce (≥128 bits entropy) echoed and signed by the matching task-consent/decision. It is also the salt in `payloadDigest`, so a party that holds this request can re-derive the digest and a party that does not cannot invert it.",
-///      "type": "string",
-///      "minLength": 16
-///    },
-///    "consequences": {
-///      "description": "Static, human-facing second-order effects declared in the task's specification (SPEC §7.3 item 13). A fallback for handlers with no dry-run — per-task, not per-request, so it can say 'any document change rotates the update keys' but not which keys. Prefer `effects`.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 500,
-///        "minLength": 1
-///      }
-///    },
-///    "effects": {
-///      "description": "What executing this task will actually do, computed by dry-running the real handler against the executor's prior state. MAY be empty when the executor has no dry-run for this handler — in which case `consequences` carries the specification's static fallback text. When BOTH are empty the surface MUST tell the approver the consequences could not be determined, and MUST NOT present the task as though it had none.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Effect"
-///      }
-///    },
-///    "excludeRequester": {
-///      "description": "When true, `requester` may not count toward the threshold — so a single compromised device cannot both propose and approve. A surface MUST NOT offer to approve a request whose `requester` is its own subject when this is set.",
-///      "type": "boolean"
-///    },
-///    "expiresAt": {
-///      "description": "After this instant the pending request lapses and no decision is accepted for it.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "exposure": {
-///      "$ref": "#/definitions/Exposure"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "minApprovals": {
-///      "description": "Distinct approvals from the set required before the task may execute.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "note": {
-///      "description": "OPTIONAL requester-authored display text — the one member of this payload whose prose the executor did NOT author, carried verbatim for context ('why I am asking'). EXPLICITLY UNTRUSTED: it is written by the least trusted party in the system and MUST NOT be treated as a statement of the task's effects. A surface that renders it MUST attribute it to `requester`, MUST present it visually distinct from `effects`, and MUST NOT let it substitute for, reorder, or obscure them. The executor's signature on this document attests only that the requester supplied this text, never that it is true.",
-///      "type": "string",
-///      "maxLength": 500,
-///      "minLength": 1
-///    },
-///    "origin": {
-///      "description": "OPTIONAL web origin that proposed the task, when it arrived via a relying party. This MUST be the origin the consumer's own runtime attested (e.g. the browser-supplied sender origin) — never a value the proposing page supplied, and never one the relying party could author.",
-///      "type": "string"
-///    },
-///    "payloadDigest": {
-///      "description": "The binding between what the approver sees and what executes. Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the payload, the task type, and the `challenge` as salt. The decision echoes it; the executor re-derives it from the payload it is about to run and refuses on mismatch. Salted because an unsalted digest over a low-entropy payload is a confirmation oracle for anyone who observes it in transit.",
-///      "$ref": "#/definitions/DigestMultibase"
-///    },
-///    "requester": {
-///      "description": "DID that submitted the pending task. Shown to the approver, and compared against the approver when `excludeRequester` is set.",
-///      "type": "string"
-///    },
-///    "requesterDeviceId": {
-///      "description": "OPTIONAL enrolled device the task was submitted from.",
-///      "type": "string"
-///    },
-///    "sideEffects": {
-///      "description": "Authoritative SPEC §7.3 item 13 side-effect class of the pending task, derived by the executor from the compiled handler it is about to invoke. NEVER taken from the registry: a registry that decided this would be a consent kill-switch, downgradeable by publishing a new version with a weaker class.",
-///      "type": "string",
-///      "enum": [
-///        "none",
-///        "mutating",
-///        "destructive"
-///      ]
-///    },
-///    "statePin": {
-///      "$ref": "#/definitions/StatePin"
-///    },
-///    "subject": {
-///      "description": "OPTIONAL identifier the task acts on — the value at the specification's `subjectPath`, usually a DID. Absent for subjectless tasks.",
-///      "type": "string"
-///    },
-///    "taskType": {
-///      "description": "Type URI of the task awaiting approval. It is bound into `payloadDigest`: without that binding, two tasks whose payloads canonicalize identically would share a digest, and an approval for a benign task would authorize a destructive one.",
-///      "type": "string",
-///      "format": "uri"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -755,16 +493,6 @@ impl Payload {
 }
 ///Per-request nonce (≥128 bits entropy) echoed and signed by the matching task-consent/decision. It is also the salt in `payloadDigest`, so a party that holds this request can re-derive the digest and a party that does not cannot invert it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Per-request nonce (≥128 bits entropy) echoed and signed by the matching task-consent/decision. It is also the salt in `payloadDigest`, so a party that holds this request can re-derive the digest and a party that does not cannot invert it.",
-///  "type": "string",
-///  "minLength": 16
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadChallenge(::std::string::String);
@@ -824,16 +552,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadChallenge {
 }
 ///`PayloadConsequencesItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 500,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadConsequencesItem(::std::string::String);
@@ -896,17 +614,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadConsequencesItem {
 }
 ///OPTIONAL requester-authored display text — the one member of this payload whose prose the executor did NOT author, carried verbatim for context ('why I am asking'). EXPLICITLY UNTRUSTED: it is written by the least trusted party in the system and MUST NOT be treated as a statement of the task's effects. A surface that renders it MUST attribute it to `requester`, MUST present it visually distinct from `effects`, and MUST NOT let it substitute for, reorder, or obscure them. The executor's signature on this document attests only that the requester supplied this text, never that it is true.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "OPTIONAL requester-authored display text — the one member of this payload whose prose the executor did NOT author, carried verbatim for context ('why I am asking'). EXPLICITLY UNTRUSTED: it is written by the least trusted party in the system and MUST NOT be treated as a statement of the task's effects. A surface that renders it MUST attribute it to `requester`, MUST present it visually distinct from `effects`, and MUST NOT let it substitute for, reorder, or obscure them. The executor's signature on this document attests only that the requester supplied this text, never that it is true.",
-///  "type": "string",
-///  "maxLength": 500,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadNote(::std::string::String);
@@ -969,20 +676,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadNote {
 }
 ///Authoritative SPEC §7.3 item 13 side-effect class of the pending task, derived by the executor from the compiled handler it is about to invoke. NEVER taken from the registry: a registry that decided this would be a consent kill-switch, downgradeable by publishing a new version with a weaker class.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Authoritative SPEC §7.3 item 13 side-effect class of the pending task, derived by the executor from the compiled handler it is about to invoke. NEVER taken from the registry: a registry that decided this would be a consent kill-switch, downgradeable by publishing a new version with a weaker class.",
-///  "type": "string",
-///  "enum": [
-///    "none",
-///    "mutating",
-///    "destructive"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1048,39 +741,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadSideEffects {
 }
 ///Synchronous acknowledgement from the approver device that a prompt was raised. The decision itself arrives separately as a task-consent/decision — a human is in the loop, so it cannot be a synchronous reply.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Synchronous acknowledgement from the approver device that a prompt was raised. The decision itself arrives separately as a task-consent/decision — a human is in the loop, so it cannot be a synchronous reply.",
-///  "type": "object",
-///  "required": [
-///    "status"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "reason": {
-///      "description": "REQUIRED when status is `refused`.",
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "status": {
-///      "description": "`prompted` = the request was verified and an approval prompt raised. `refused` = the device will not prompt; `reason` MUST be set.",
-///      "type": "string",
-///      "enum": [
-///        "prompted",
-///        "refused"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1100,16 +760,6 @@ impl Response {
 }
 ///REQUIRED when status is `refused`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "REQUIRED when status is `refused`.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseReason(::std::string::String);
@@ -1169,19 +819,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseReason {
 }
 ///`prompted` = the request was verified and an approval prompt raised. `refused` = the device will not prompt; `reason` MUST be set.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`prompted` = the request was verified and an approval prompt raised. `refused` = the device will not prompt; `reason` MUST be set.",
-///  "type": "string",
-///  "enum": [
-///    "prompted",
-///    "refused"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1243,33 +880,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseStatus {
 }
 ///The prior state the effects were computed against. A human in the loop makes the approval window minutes wide, so the state can move underneath a pending approval. The executor asserts this pin still holds at execution and refuses otherwise — without it, a lost update silently executes against state the approver never saw.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "StatePin",
-///  "description": "The prior state the effects were computed against. A human in the loop makes the approval window minutes wide, so the state can move underneath a pending approval. The executor asserts this pin still holds at execution and refuses otherwise — without it, a lost update silently executes against state the approver never saw.",
-///  "type": "object",
-///  "required": [
-///    "resource",
-///    "version"
-///  ],
-///  "properties": {
-///    "resource": {
-///      "description": "Identifier of the pinned resource (usually the subject DID).",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "version": {
-///      "description": "Opaque version identifier of the prior state (e.g. a did:webvh `versionId`). Compared for equality at execution; the executor MUST NOT attempt to order or interpret it.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1286,16 +896,6 @@ impl StatePin {
 }
 ///Identifier of the pinned resource (usually the subject DID).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Identifier of the pinned resource (usually the subject DID).",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct StatePinResource(::std::string::String);
@@ -1355,16 +955,6 @@ impl<'de> ::serde::Deserialize<'de> for StatePinResource {
 }
 ///Opaque version identifier of the prior state (e.g. a did:webvh `versionId`). Compared for equality at execution; the executor MUST NOT attempt to order or interpret it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Opaque version identifier of the prior state (e.g. a did:webvh `versionId`). Compared for equality at execution; the executor MUST NOT attempt to order or interpret it.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct StatePinVersion(::std::string::String);
@@ -2016,7 +1606,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Effect\": {\n      \"additionalProperties\": false,\n      \"description\": \"One consequence of executing the pending task, authored by the executor that is about to run it. An effect is produced by dry-running the real handler against the executor's own prior state — never by the requester, and never by re-implementing the handler's semantics elsewhere. A consent surface renders ONLY effects it received under the executor's signature.\",\n      \"properties\": {\n        \"after\": {\n          \"description\": \"OPTIONAL resulting value at `path` once the task executes. ABSENT means the value is removed (a deletion), under the same rule as `before`.\"\n        },\n        \"before\": {\n          \"description\": \"OPTIONAL prior value at `path`, from the executor's authoritative state. ABSENT means there was no prior value (a creation); an explicit `null` is treated identically, so an executor MUST NOT rely on the two being distinguishable. Structured members are for rich rendering only — `summary` is what a surface is obliged to show, and it is where an executor states a distinction this shape cannot carry.\"\n        },\n        \"detail\": {\n          \"additionalProperties\": true,\n          \"description\": \"OPTIONAL kind-specific structured extras (e.g. `{ \\\"commitments\\\": 2 }` for `preRotationRefresh`).\",\n          \"type\": \"object\"\n        },\n        \"kind\": {\n          \"description\": \"Machine discriminator for rich rendering. Well-known kinds are registered in the prose (`documentChange`, `keyRotation`, `preRotationRefresh`, `resourceDelete`, `disclosure`), but the set is OPEN: handlers evolve faster than this schema, and an executor MUST be able to describe a consequence this version does not name. A surface that does not recognise a `kind` MUST still render `summary`.\",\n          \"pattern\": \"^[a-z][a-zA-Z0-9]*$\",\n          \"type\": \"string\"\n        },\n        \"path\": {\n          \"description\": \"OPTIONAL RFC 6901 JSON Pointer locating the change within the subject resource (e.g. `/service/0`).\",\n          \"type\": \"string\"\n        },\n        \"summary\": {\n          \"description\": \"REQUIRED human-facing sentence describing this consequence, authored by the executor. This is the ONLY member a consent surface is guaranteed to be able to render, and it is what makes an unrecognised `kind` degrade to something truthful rather than something invisible. A surface MUST render it verbatim; it MUST NOT substitute its own prose.\",\n          \"maxLength\": 500,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"summary\"\n      ],\n      \"title\": \"Effect\",\n      \"type\": \"object\"\n    },\n    \"Exposure\": {\n      \"additionalProperties\": false,\n      \"description\": \"The authoritative SPEC §7.3 item 14 exposure class of the pending task, derived by the executor from the compiled handler it is about to invoke — never from the registry's declared value.\",\n      \"properties\": {\n        \"actsAsSubject\": {\n          \"description\": \"Whether execution exercises the subject's own authority to produce an attributable effect in the subject's name.\",\n          \"type\": \"boolean\"\n        },\n        \"discloses\": {\n          \"description\": \"Sensitivity of data the task returns to its caller.\",\n          \"enum\": [\n            \"none\",\n            \"metadata\",\n            \"secret\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"discloses\",\n        \"actsAsSubject\"\n      ],\n      \"title\": \"Exposure\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Synchronous acknowledgement from the approver device that a prompt was raised. The decision itself arrives separately as a task-consent/decision — a human is in the loop, so it cannot be a synchronous reply.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"reason\": {\n          \"description\": \"REQUIRED when status is `refused`.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"`prompted` = the request was verified and an approval prompt raised. `refused` = the device will not prompt; `reason` MUST be set.\",\n          \"enum\": [\n            \"prompted\",\n            \"refused\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\"\n      ],\n      \"title\": \"Task Consent Request — response payload\",\n      \"type\": \"object\"\n    },\n    \"StatePin\": {\n      \"additionalProperties\": false,\n      \"description\": \"The prior state the effects were computed against. A human in the loop makes the approval window minutes wide, so the state can move underneath a pending approval. The executor asserts this pin still holds at execution and refuses otherwise — without it, a lost update silently executes against state the approver never saw.\",\n      \"properties\": {\n        \"resource\": {\n          \"description\": \"Identifier of the pinned resource (usually the subject DID).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"description\": \"Opaque version identifier of the prior state (e.g. a did:webvh `versionId`). Compared for equality at execution; the executor MUST NOT attempt to order or interpret it.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"resource\",\n        \"version\"\n      ],\n      \"title\": \"StatePin\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/task-consent/request/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"The executor asks an enrolled approver device to authorize one pending privileged task, presenting the effects it computed by dry-running the real handler against its own prior state. The executor signs this document; the approver renders only what it verifies under that signature.\",\n  \"properties\": {\n    \"approverSet\": {\n      \"description\": \"Name of the approver set the policy's `requireConsent` named.\",\n      \"type\": \"string\"\n    },\n    \"challenge\": {\n      \"description\": \"Per-request nonce (≥128 bits entropy) echoed and signed by the matching task-consent/decision. It is also the salt in `payloadDigest`, so a party that holds this request can re-derive the digest and a party that does not cannot invert it.\",\n      \"minLength\": 16,\n      \"type\": \"string\"\n    },\n    \"consequences\": {\n      \"description\": \"Static, human-facing second-order effects declared in the task's specification (SPEC §7.3 item 13). A fallback for handlers with no dry-run — per-task, not per-request, so it can say 'any document change rotates the update keys' but not which keys. Prefer `effects`.\",\n      \"items\": {\n        \"maxLength\": 500,\n        \"minLength\": 1,\n        \"type\": \"string\"\n      },\n      \"type\": \"array\"\n    },\n    \"effects\": {\n      \"description\": \"What executing this task will actually do, computed by dry-running the real handler against the executor's prior state. MAY be empty when the executor has no dry-run for this handler — in which case `consequences` carries the specification's static fallback text. When BOTH are empty the surface MUST tell the approver the consequences could not be determined, and MUST NOT present the task as though it had none.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/Effect\"\n      },\n      \"type\": \"array\"\n    },\n    \"excludeRequester\": {\n      \"description\": \"When true, `requester` may not count toward the threshold — so a single compromised device cannot both propose and approve. A surface MUST NOT offer to approve a request whose `requester` is its own subject when this is set.\",\n      \"type\": \"boolean\"\n    },\n    \"expiresAt\": {\n      \"description\": \"After this instant the pending request lapses and no decision is accepted for it.\",\n      \"format\": \"date-time\",\n      \"type\": \"string\"\n    },\n    \"exposure\": {\n      \"$ref\": \"#/$defs/Exposure\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"minApprovals\": {\n      \"description\": \"Distinct approvals from the set required before the task may execute.\",\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"note\": {\n      \"description\": \"OPTIONAL requester-authored display text — the one member of this payload whose prose the executor did NOT author, carried verbatim for context ('why I am asking'). EXPLICITLY UNTRUSTED: it is written by the least trusted party in the system and MUST NOT be treated as a statement of the task's effects. A surface that renders it MUST attribute it to `requester`, MUST present it visually distinct from `effects`, and MUST NOT let it substitute for, reorder, or obscure them. The executor's signature on this document attests only that the requester supplied this text, never that it is true.\",\n      \"maxLength\": 500,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"origin\": {\n      \"description\": \"OPTIONAL web origin that proposed the task, when it arrived via a relying party. This MUST be the origin the consumer's own runtime attested (e.g. the browser-supplied sender origin) — never a value the proposing page supplied, and never one the relying party could author.\",\n      \"type\": \"string\"\n    },\n    \"payloadDigest\": {\n      \"$ref\": \"#/$defs/DigestMultibase\",\n      \"description\": \"The binding between what the approver sees and what executes. Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the payload, the task type, and the `challenge` as salt. The decision echoes it; the executor re-derives it from the payload it is about to run and refuses on mismatch. Salted because an unsalted digest over a low-entropy payload is a confirmation oracle for anyone who observes it in transit.\"\n    },\n    \"requester\": {\n      \"description\": \"DID that submitted the pending task. Shown to the approver, and compared against the approver when `excludeRequester` is set.\",\n      \"type\": \"string\"\n    },\n    \"requesterDeviceId\": {\n      \"description\": \"OPTIONAL enrolled device the task was submitted from.\",\n      \"type\": \"string\"\n    },\n    \"sideEffects\": {\n      \"description\": \"Authoritative SPEC §7.3 item 13 side-effect class of the pending task, derived by the executor from the compiled handler it is about to invoke. NEVER taken from the registry: a registry that decided this would be a consent kill-switch, downgradeable by publishing a new version with a weaker class.\",\n      \"enum\": [\n        \"none\",\n        \"mutating\",\n        \"destructive\"\n      ],\n      \"type\": \"string\"\n    },\n    \"statePin\": {\n      \"$ref\": \"#/$defs/StatePin\"\n    },\n    \"subject\": {\n      \"description\": \"OPTIONAL identifier the task acts on — the value at the specification's `subjectPath`, usually a DID. Absent for subjectless tasks.\",\n      \"type\": \"string\"\n    },\n    \"taskType\": {\n      \"description\": \"Type URI of the task awaiting approval. It is bound into `payloadDigest`: without that binding, two tasks whose payloads canonicalize identically would share a digest, and an approval for a benign task would authorize a destructive one.\",\n      \"format\": \"uri\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"challenge\",\n    \"taskType\",\n    \"payloadDigest\",\n    \"sideEffects\",\n    \"exposure\",\n    \"effects\",\n    \"requester\",\n    \"approverSet\",\n    \"minApprovals\",\n    \"excludeRequester\",\n    \"expiresAt\"\n  ],\n  \"title\": \"Task Consent Request — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Effect\":{\"additionalProperties\":false,\"description\":\"One consequence of executing the pending task, authored by the executor that is about to run it. An effect is produced by dry-running the real handler against the executor's own prior state — never by the requester, and never by re-implementing the handler's semantics elsewhere. A consent surface renders ONLY effects it received under the executor's signature.\",\"properties\":{\"after\":{\"description\":\"OPTIONAL resulting value at `path` once the task executes. ABSENT means the value is removed (a deletion), under the same rule as `before`.\"},\"before\":{\"description\":\"OPTIONAL prior value at `path`, from the executor's authoritative state. ABSENT means there was no prior value (a creation); an explicit `null` is treated identically, so an executor MUST NOT rely on the two being distinguishable. Structured members are for rich rendering only — `summary` is what a surface is obliged to show, and it is where an executor states a distinction this shape cannot carry.\"},\"detail\":{\"additionalProperties\":true,\"description\":\"OPTIONAL kind-specific structured extras (e.g. `{ \\\"commitments\\\": 2 }` for `preRotationRefresh`).\",\"type\":\"object\"},\"kind\":{\"description\":\"Machine discriminator for rich rendering. Well-known kinds are registered in the prose (`documentChange`, `keyRotation`, `preRotationRefresh`, `resourceDelete`, `disclosure`), but the set is OPEN: handlers evolve faster than this schema, and an executor MUST be able to describe a consequence this version does not name. A surface that does not recognise a `kind` MUST still render `summary`.\",\"pattern\":\"^[a-z][a-zA-Z0-9]*$\",\"type\":\"string\"},\"path\":{\"description\":\"OPTIONAL RFC 6901 JSON Pointer locating the change within the subject resource (e.g. `/service/0`).\",\"type\":\"string\"},\"summary\":{\"description\":\"REQUIRED human-facing sentence describing this consequence, authored by the executor. This is the ONLY member a consent surface is guaranteed to be able to render, and it is what makes an unrecognised `kind` degrade to something truthful rather than something invisible. A surface MUST render it verbatim; it MUST NOT substitute its own prose.\",\"maxLength\":500,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"kind\",\"summary\"],\"title\":\"Effect\",\"type\":\"object\"},\"Exposure\":{\"additionalProperties\":false,\"description\":\"The authoritative SPEC §7.3 item 14 exposure class of the pending task, derived by the executor from the compiled handler it is about to invoke — never from the registry's declared value.\",\"properties\":{\"actsAsSubject\":{\"description\":\"Whether execution exercises the subject's own authority to produce an attributable effect in the subject's name.\",\"type\":\"boolean\"},\"discloses\":{\"description\":\"Sensitivity of data the task returns to its caller.\",\"enum\":[\"none\",\"metadata\",\"secret\"],\"type\":\"string\"}},\"required\":[\"discloses\",\"actsAsSubject\"],\"title\":\"Exposure\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Synchronous acknowledgement from the approver device that a prompt was raised. The decision itself arrives separately as a task-consent/decision — a human is in the loop, so it cannot be a synchronous reply.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"reason\":{\"description\":\"REQUIRED when status is `refused`.\",\"maxLength\":1024,\"type\":\"string\"},\"status\":{\"description\":\"`prompted` = the request was verified and an approval prompt raised. `refused` = the device will not prompt; `reason` MUST be set.\",\"enum\":[\"prompted\",\"refused\"],\"type\":\"string\"}},\"required\":[\"status\"],\"title\":\"Task Consent Request — response payload\",\"type\":\"object\"},\"StatePin\":{\"additionalProperties\":false,\"description\":\"The prior state the effects were computed against. A human in the loop makes the approval window minutes wide, so the state can move underneath a pending approval. The executor asserts this pin still holds at execution and refuses otherwise — without it, a lost update silently executes against state the approver never saw.\",\"properties\":{\"resource\":{\"description\":\"Identifier of the pinned resource (usually the subject DID).\",\"minLength\":1,\"type\":\"string\"},\"version\":{\"description\":\"Opaque version identifier of the prior state (e.g. a did:webvh `versionId`). Compared for equality at execution; the executor MUST NOT attempt to order or interpret it.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"resource\",\"version\"],\"title\":\"StatePin\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/task-consent/request/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The executor asks an enrolled approver device to authorize one pending privileged task, presenting the effects it computed by dry-running the real handler against its own prior state. The executor signs this document; the approver renders only what it verifies under that signature.\",\"properties\":{\"approverSet\":{\"description\":\"Name of the approver set the policy's `requireConsent` named.\",\"type\":\"string\"},\"challenge\":{\"description\":\"Per-request nonce (≥128 bits entropy) echoed and signed by the matching task-consent/decision. It is also the salt in `payloadDigest`, so a party that holds this request can re-derive the digest and a party that does not cannot invert it.\",\"minLength\":16,\"type\":\"string\"},\"consequences\":{\"description\":\"Static, human-facing second-order effects declared in the task's specification (SPEC §7.3 item 13). A fallback for handlers with no dry-run — per-task, not per-request, so it can say 'any document change rotates the update keys' but not which keys. Prefer `effects`.\",\"items\":{\"maxLength\":500,\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"},\"effects\":{\"description\":\"What executing this task will actually do, computed by dry-running the real handler against the executor's prior state. MAY be empty when the executor has no dry-run for this handler — in which case `consequences` carries the specification's static fallback text. When BOTH are empty the surface MUST tell the approver the consequences could not be determined, and MUST NOT present the task as though it had none.\",\"items\":{\"$ref\":\"#/$defs/Effect\"},\"type\":\"array\"},\"excludeRequester\":{\"description\":\"When true, `requester` may not count toward the threshold — so a single compromised device cannot both propose and approve. A surface MUST NOT offer to approve a request whose `requester` is its own subject when this is set.\",\"type\":\"boolean\"},\"expiresAt\":{\"description\":\"After this instant the pending request lapses and no decision is accepted for it.\",\"format\":\"date-time\",\"type\":\"string\"},\"exposure\":{\"$ref\":\"#/$defs/Exposure\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"minApprovals\":{\"description\":\"Distinct approvals from the set required before the task may execute.\",\"minimum\":1,\"type\":\"integer\"},\"note\":{\"description\":\"OPTIONAL requester-authored display text — the one member of this payload whose prose the executor did NOT author, carried verbatim for context ('why I am asking'). EXPLICITLY UNTRUSTED: it is written by the least trusted party in the system and MUST NOT be treated as a statement of the task's effects. A surface that renders it MUST attribute it to `requester`, MUST present it visually distinct from `effects`, and MUST NOT let it substitute for, reorder, or obscure them. The executor's signature on this document attests only that the requester supplied this text, never that it is true.\",\"maxLength\":500,\"minLength\":1,\"type\":\"string\"},\"origin\":{\"description\":\"OPTIONAL web origin that proposed the task, when it arrived via a relying party. This MUST be the origin the consumer's own runtime attested (e.g. the browser-supplied sender origin) — never a value the proposing page supplied, and never one the relying party could author.\",\"type\":\"string\"},\"payloadDigest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The binding between what the approver sees and what executes. Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the payload, the task type, and the `challenge` as salt. The decision echoes it; the executor re-derives it from the payload it is about to run and refuses on mismatch. Salted because an unsalted digest over a low-entropy payload is a confirmation oracle for anyone who observes it in transit.\"},\"requester\":{\"description\":\"DID that submitted the pending task. Shown to the approver, and compared against the approver when `excludeRequester` is set.\",\"type\":\"string\"},\"requesterDeviceId\":{\"description\":\"OPTIONAL enrolled device the task was submitted from.\",\"type\":\"string\"},\"sideEffects\":{\"description\":\"Authoritative SPEC §7.3 item 13 side-effect class of the pending task, derived by the executor from the compiled handler it is about to invoke. NEVER taken from the registry: a registry that decided this would be a consent kill-switch, downgradeable by publishing a new version with a weaker class.\",\"enum\":[\"none\",\"mutating\",\"destructive\"],\"type\":\"string\"},\"statePin\":{\"$ref\":\"#/$defs/StatePin\"},\"subject\":{\"description\":\"OPTIONAL identifier the task acts on — the value at the specification's `subjectPath`, usually a DID. Absent for subjectless tasks.\",\"type\":\"string\"},\"taskType\":{\"description\":\"Type URI of the task awaiting approval. It is bound into `payloadDigest`: without that binding, two tasks whose payloads canonicalize identically would share a digest, and an approval for a benign task would authorize a destructive one.\",\"format\":\"uri\",\"type\":\"string\"}},\"required\":[\"challenge\",\"taskType\",\"payloadDigest\",\"sideEffects\",\"exposure\",\"effects\",\"requester\",\"approverSet\",\"minApprovals\",\"excludeRequester\",\"expiresAt\"],\"title\":\"Task Consent Request — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -2024,7 +1614,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Effect\": {\n      \"additionalProperties\": false,\n      \"description\": \"One consequence of executing the pending task, authored by the executor that is about to run it. An effect is produced by dry-running the real handler against the executor's own prior state — never by the requester, and never by re-implementing the handler's semantics elsewhere. A consent surface renders ONLY effects it received under the executor's signature.\",\n      \"properties\": {\n        \"after\": {\n          \"description\": \"OPTIONAL resulting value at `path` once the task executes. ABSENT means the value is removed (a deletion), under the same rule as `before`.\"\n        },\n        \"before\": {\n          \"description\": \"OPTIONAL prior value at `path`, from the executor's authoritative state. ABSENT means there was no prior value (a creation); an explicit `null` is treated identically, so an executor MUST NOT rely on the two being distinguishable. Structured members are for rich rendering only — `summary` is what a surface is obliged to show, and it is where an executor states a distinction this shape cannot carry.\"\n        },\n        \"detail\": {\n          \"additionalProperties\": true,\n          \"description\": \"OPTIONAL kind-specific structured extras (e.g. `{ \\\"commitments\\\": 2 }` for `preRotationRefresh`).\",\n          \"type\": \"object\"\n        },\n        \"kind\": {\n          \"description\": \"Machine discriminator for rich rendering. Well-known kinds are registered in the prose (`documentChange`, `keyRotation`, `preRotationRefresh`, `resourceDelete`, `disclosure`), but the set is OPEN: handlers evolve faster than this schema, and an executor MUST be able to describe a consequence this version does not name. A surface that does not recognise a `kind` MUST still render `summary`.\",\n          \"pattern\": \"^[a-z][a-zA-Z0-9]*$\",\n          \"type\": \"string\"\n        },\n        \"path\": {\n          \"description\": \"OPTIONAL RFC 6901 JSON Pointer locating the change within the subject resource (e.g. `/service/0`).\",\n          \"type\": \"string\"\n        },\n        \"summary\": {\n          \"description\": \"REQUIRED human-facing sentence describing this consequence, authored by the executor. This is the ONLY member a consent surface is guaranteed to be able to render, and it is what makes an unrecognised `kind` degrade to something truthful rather than something invisible. A surface MUST render it verbatim; it MUST NOT substitute its own prose.\",\n          \"maxLength\": 500,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"summary\"\n      ],\n      \"title\": \"Effect\",\n      \"type\": \"object\"\n    },\n    \"Exposure\": {\n      \"additionalProperties\": false,\n      \"description\": \"The authoritative SPEC §7.3 item 14 exposure class of the pending task, derived by the executor from the compiled handler it is about to invoke — never from the registry's declared value.\",\n      \"properties\": {\n        \"actsAsSubject\": {\n          \"description\": \"Whether execution exercises the subject's own authority to produce an attributable effect in the subject's name.\",\n          \"type\": \"boolean\"\n        },\n        \"discloses\": {\n          \"description\": \"Sensitivity of data the task returns to its caller.\",\n          \"enum\": [\n            \"none\",\n            \"metadata\",\n            \"secret\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"discloses\",\n        \"actsAsSubject\"\n      ],\n      \"title\": \"Exposure\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Synchronous acknowledgement from the approver device that a prompt was raised. The decision itself arrives separately as a task-consent/decision — a human is in the loop, so it cannot be a synchronous reply.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"reason\": {\n          \"description\": \"REQUIRED when status is `refused`.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"description\": \"`prompted` = the request was verified and an approval prompt raised. `refused` = the device will not prompt; `reason` MUST be set.\",\n          \"enum\": [\n            \"prompted\",\n            \"refused\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\"\n      ],\n      \"title\": \"Task Consent Request — response payload\",\n      \"type\": \"object\"\n    },\n    \"StatePin\": {\n      \"additionalProperties\": false,\n      \"description\": \"The prior state the effects were computed against. A human in the loop makes the approval window minutes wide, so the state can move underneath a pending approval. The executor asserts this pin still holds at execution and refuses otherwise — without it, a lost update silently executes against state the approver never saw.\",\n      \"properties\": {\n        \"resource\": {\n          \"description\": \"Identifier of the pinned resource (usually the subject DID).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"description\": \"Opaque version identifier of the prior state (e.g. a did:webvh `versionId`). Compared for equality at execution; the executor MUST NOT attempt to order or interpret it.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"resource\",\n        \"version\"\n      ],\n      \"title\": \"StatePin\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Effect\":{\"additionalProperties\":false,\"description\":\"One consequence of executing the pending task, authored by the executor that is about to run it. An effect is produced by dry-running the real handler against the executor's own prior state — never by the requester, and never by re-implementing the handler's semantics elsewhere. A consent surface renders ONLY effects it received under the executor's signature.\",\"properties\":{\"after\":{\"description\":\"OPTIONAL resulting value at `path` once the task executes. ABSENT means the value is removed (a deletion), under the same rule as `before`.\"},\"before\":{\"description\":\"OPTIONAL prior value at `path`, from the executor's authoritative state. ABSENT means there was no prior value (a creation); an explicit `null` is treated identically, so an executor MUST NOT rely on the two being distinguishable. Structured members are for rich rendering only — `summary` is what a surface is obliged to show, and it is where an executor states a distinction this shape cannot carry.\"},\"detail\":{\"additionalProperties\":true,\"description\":\"OPTIONAL kind-specific structured extras (e.g. `{ \\\"commitments\\\": 2 }` for `preRotationRefresh`).\",\"type\":\"object\"},\"kind\":{\"description\":\"Machine discriminator for rich rendering. Well-known kinds are registered in the prose (`documentChange`, `keyRotation`, `preRotationRefresh`, `resourceDelete`, `disclosure`), but the set is OPEN: handlers evolve faster than this schema, and an executor MUST be able to describe a consequence this version does not name. A surface that does not recognise a `kind` MUST still render `summary`.\",\"pattern\":\"^[a-z][a-zA-Z0-9]*$\",\"type\":\"string\"},\"path\":{\"description\":\"OPTIONAL RFC 6901 JSON Pointer locating the change within the subject resource (e.g. `/service/0`).\",\"type\":\"string\"},\"summary\":{\"description\":\"REQUIRED human-facing sentence describing this consequence, authored by the executor. This is the ONLY member a consent surface is guaranteed to be able to render, and it is what makes an unrecognised `kind` degrade to something truthful rather than something invisible. A surface MUST render it verbatim; it MUST NOT substitute its own prose.\",\"maxLength\":500,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"kind\",\"summary\"],\"title\":\"Effect\",\"type\":\"object\"},\"Exposure\":{\"additionalProperties\":false,\"description\":\"The authoritative SPEC §7.3 item 14 exposure class of the pending task, derived by the executor from the compiled handler it is about to invoke — never from the registry's declared value.\",\"properties\":{\"actsAsSubject\":{\"description\":\"Whether execution exercises the subject's own authority to produce an attributable effect in the subject's name.\",\"type\":\"boolean\"},\"discloses\":{\"description\":\"Sensitivity of data the task returns to its caller.\",\"enum\":[\"none\",\"metadata\",\"secret\"],\"type\":\"string\"}},\"required\":[\"discloses\",\"actsAsSubject\"],\"title\":\"Exposure\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Synchronous acknowledgement from the approver device that a prompt was raised. The decision itself arrives separately as a task-consent/decision — a human is in the loop, so it cannot be a synchronous reply.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"reason\":{\"description\":\"REQUIRED when status is `refused`.\",\"maxLength\":1024,\"type\":\"string\"},\"status\":{\"description\":\"`prompted` = the request was verified and an approval prompt raised. `refused` = the device will not prompt; `reason` MUST be set.\",\"enum\":[\"prompted\",\"refused\"],\"type\":\"string\"}},\"required\":[\"status\"],\"title\":\"Task Consent Request — response payload\",\"type\":\"object\"},\"StatePin\":{\"additionalProperties\":false,\"description\":\"The prior state the effects were computed against. A human in the loop makes the approval window minutes wide, so the state can move underneath a pending approval. The executor asserts this pin still holds at execution and refuses otherwise — without it, a lost update silently executes against state the approver never saw.\",\"properties\":{\"resource\":{\"description\":\"Identifier of the pinned resource (usually the subject DID).\",\"minLength\":1,\"type\":\"string\"},\"version\":{\"description\":\"Opaque version identifier of the prior state (e.g. a did:webvh `versionId`). Compared for equality at execution; the executor MUST NOT attempt to order or interpret it.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"resource\",\"version\"],\"title\":\"StatePin\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

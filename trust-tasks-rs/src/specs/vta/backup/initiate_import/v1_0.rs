@@ -35,66 +35,6 @@ pub mod error {
 }
 ///The control-plane account of an out-of-band byte transfer. Shared in shape with initiate-export, where it describes a download rather than an upload.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Bundle descriptor",
-///  "description": "The control-plane account of an out-of-band byte transfer. Shared in shape with initiate-export, where it describes a download rather than an upload.",
-///  "type": "object",
-///  "required": [
-///    "algorithm",
-///    "bundleId",
-///    "expectedSha256",
-///    "expectedSizeBytes",
-///    "expiresAt",
-///    "transportToken",
-///    "transportUrl"
-///  ],
-///  "properties": {
-///    "algorithm": {
-///      "description": "The mechanism actually used, which is authoritative over what was requested.",
-///      "type": "string",
-///      "maxLength": 64,
-///      "minLength": 1
-///    },
-///    "bundleId": {
-///      "description": "Handle for this bundle across its whole lifecycle. Quoted back by finalize-import and abort. Recipient-generated and unguessable, which is what lets an unauthorized reference be answered as not-found without confirming existence.",
-///      "type": "string",
-///      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-///    },
-///    "expectedSha256": {
-///      "description": "Echoed from the request, so the descriptor stands alone as the terms of the transfer.",
-///      "type": "string",
-///      "pattern": "^[0-9a-f]{64}$"
-///    },
-///    "expectedSizeBytes": {
-///      "description": "Echoed from the request, so the descriptor stands alone as the terms of the transfer.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "expiresAt": {
-///      "description": "After which the slot closes, the token is refused, and any staged bytes are discarded unread. Short by design: the window is how long a writable endpoint into the agent exists.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "transportToken": {
-///      "description": "Bearer credential for transportUrl, presented in the X-Backup-Token header. Minted per bundle and never reused. A recipient should store only a hash of it. Leaking it lets a third party fill the slot; expectedSha256 is what bounds that to a failed transfer rather than a staged substitution.",
-///      "type": "string",
-///      "maxLength": 1024,
-///      "minLength": 1
-///    },
-///    "transportUrl": {
-///      "description": "Where to write the bytes. Write-only: a recipient must not serve staged bytes back from this address, or a leaked token becomes a read of the operator's bundle. A recipient with no address at which it is reachable cannot produce this and refuses with transportUnavailable.",
-///      "type": "string",
-///      "format": "uri",
-///      "maxLength": 2048
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -127,17 +67,6 @@ impl BundleDescriptor {
 }
 ///The mechanism actually used, which is authoritative over what was requested.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The mechanism actually used, which is authoritative over what was requested.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct BundleDescriptorAlgorithm(::std::string::String);
@@ -200,16 +129,6 @@ impl<'de> ::serde::Deserialize<'de> for BundleDescriptorAlgorithm {
 }
 ///Handle for this bundle across its whole lifecycle. Quoted back by finalize-import and abort. Recipient-generated and unguessable, which is what lets an unauthorized reference be answered as not-found without confirming existence.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Handle for this bundle across its whole lifecycle. Quoted back by finalize-import and abort. Recipient-generated and unguessable, which is what lets an unauthorized reference be answered as not-found without confirming existence.",
-///  "type": "string",
-///  "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct BundleDescriptorBundleId(::std::string::String);
@@ -279,16 +198,6 @@ impl<'de> ::serde::Deserialize<'de> for BundleDescriptorBundleId {
 }
 ///Echoed from the request, so the descriptor stands alone as the terms of the transfer.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Echoed from the request, so the descriptor stands alone as the terms of the transfer.",
-///  "type": "string",
-///  "pattern": "^[0-9a-f]{64}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct BundleDescriptorExpectedSha256(::std::string::String);
@@ -350,17 +259,6 @@ impl<'de> ::serde::Deserialize<'de> for BundleDescriptorExpectedSha256 {
 }
 ///Bearer credential for transportUrl, presented in the X-Backup-Token header. Minted per bundle and never reused. A recipient should store only a hash of it. Leaking it lets a third party fill the slot; expectedSha256 is what bounds that to a failed transfer rather than a staged substitution.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Bearer credential for transportUrl, presented in the X-Backup-Token header. Minted per bundle and never reused. A recipient should store only a hash of it. Leaking it lets a third party fill the slot; expectedSha256 is what bounds that to a failed transfer rather than a staged substitution.",
-///  "type": "string",
-///  "maxLength": 1024,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct BundleDescriptorTransportToken(::std::string::String);
@@ -423,21 +321,6 @@ impl<'de> ::serde::Deserialize<'de> for BundleDescriptorTransportToken {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -459,15 +342,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -531,44 +405,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Asks the recipient to open a slot for an encrypted bundle the producer is about to upload, pre-committing the digest and size so the transfer is verifiable. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/backup/initiate-import/1.0",
-///  "title": "Payload",
-///  "description": "Asks the recipient to open a slot for an encrypted bundle the producer is about to upload, pre-committing the digest and size so the transfer is verifiable. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "expectedSha256",
-///    "expectedSizeBytes"
-///  ],
-///  "properties": {
-///    "algorithm": {
-///      "description": "Requested transport mechanism — how the bytes move, not how they are encrypted. `stream` is the only value this version defines and is what an absent member means. Deliberately not an enum, so a recipient offering more can be asked for it without a specification revision; one that does not implement the request refuses with unsupportedAlgorithm.",
-///      "type": "string",
-///      "maxLength": 64,
-///      "minLength": 1
-///    },
-///    "expectedSha256": {
-///      "description": "Lowercase hex SHA-256 of the bytes about to be uploaded, committed before the upload begins. The recipient refuses a stream that hashes differently, which is what bounds the damage from a leaked write token. A wire-integrity check only: it says the bytes that arrived are the bytes that were sent, and nothing about whether they are worth applying.",
-///      "type": "string",
-///      "pattern": "^[0-9a-f]{64}$"
-///    },
-///    "expectedSizeBytes": {
-///      "description": "Byte count of the upload. Lets the recipient size the slot and refuse a truncated or oversized transfer without hashing it first. A zero-length bundle is not a degenerate case — there is nothing to import — so the floor is 1.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -594,17 +430,6 @@ impl Payload {
 }
 ///Requested transport mechanism — how the bytes move, not how they are encrypted. `stream` is the only value this version defines and is what an absent member means. Deliberately not an enum, so a recipient offering more can be asked for it without a specification revision; one that does not implement the request refuses with unsupportedAlgorithm.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Requested transport mechanism — how the bytes move, not how they are encrypted. `stream` is the only value this version defines and is what an absent member means. Deliberately not an enum, so a recipient offering more can be asked for it without a specification revision; one that does not implement the request refuses with unsupportedAlgorithm.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadAlgorithm(::std::string::String);
@@ -667,16 +492,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadAlgorithm {
 }
 ///Lowercase hex SHA-256 of the bytes about to be uploaded, committed before the upload begins. The recipient refuses a stream that hashes differently, which is what bounds the damage from a leaked write token. A wire-integrity check only: it says the bytes that arrived are the bytes that were sent, and nothing about whether they are worth applying.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Lowercase hex SHA-256 of the bytes about to be uploaded, committed before the upload begins. The recipient refuses a stream that hashes differently, which is what bounds the damage from a leaked write token. A wire-integrity check only: it says the bytes that arrived are the bytes that were sent, and nothing about whether they are worth applying.",
-///  "type": "string",
-///  "pattern": "^[0-9a-f]{64}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadExpectedSha256(::std::string::String);
@@ -738,35 +553,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadExpectedSha256 {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "descriptor"
-///  ],
-///  "properties": {
-///    "completionHint": {
-///      "description": "Operator-facing text describing how to complete the upload. Advisory: a producer must not parse it or derive behaviour from it, and a recipient must not put a secret in it.",
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "descriptor": {
-///      "description": "Where to write the bytes, on what terms, and until when.",
-///      "$ref": "#/definitions/BundleDescriptor"
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -792,16 +578,6 @@ impl Response {
 }
 ///Operator-facing text describing how to complete the upload. Advisory: a producer must not parse it or derive behaviour from it, and a recipient must not put a secret in it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Operator-facing text describing how to complete the upload. Advisory: a producer must not parse it or derive behaviour from it, and a recipient must not put a secret in it.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseCompletionHint(::std::string::String);
@@ -1147,7 +923,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"BundleDescriptor\": {\n      \"additionalProperties\": false,\n      \"description\": \"The control-plane account of an out-of-band byte transfer. Shared in shape with initiate-export, where it describes a download rather than an upload.\",\n      \"properties\": {\n        \"algorithm\": {\n          \"description\": \"The mechanism actually used, which is authoritative over what was requested.\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"bundleId\": {\n          \"description\": \"Handle for this bundle across its whole lifecycle. Quoted back by finalize-import and abort. Recipient-generated and unguessable, which is what lets an unauthorized reference be answered as not-found without confirming existence.\",\n          \"pattern\": \"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\n          \"type\": \"string\"\n        },\n        \"expectedSha256\": {\n          \"description\": \"Echoed from the request, so the descriptor stands alone as the terms of the transfer.\",\n          \"pattern\": \"^[0-9a-f]{64}$\",\n          \"type\": \"string\"\n        },\n        \"expectedSizeBytes\": {\n          \"description\": \"Echoed from the request, so the descriptor stands alone as the terms of the transfer.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"expiresAt\": {\n          \"description\": \"After which the slot closes, the token is refused, and any staged bytes are discarded unread. Short by design: the window is how long a writable endpoint into the agent exists.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"transportToken\": {\n          \"description\": \"Bearer credential for transportUrl, presented in the X-Backup-Token header. Minted per bundle and never reused. A recipient should store only a hash of it. Leaking it lets a third party fill the slot; expectedSha256 is what bounds that to a failed transfer rather than a staged substitution.\",\n          \"maxLength\": 1024,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"transportUrl\": {\n          \"description\": \"Where to write the bytes. Write-only: a recipient must not serve staged bytes back from this address, or a leaked token becomes a read of the operator's bundle. A recipient with no address at which it is reachable cannot produce this and refuses with transportUnavailable.\",\n          \"format\": \"uri\",\n          \"maxLength\": 2048,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"bundleId\",\n        \"algorithm\",\n        \"transportUrl\",\n        \"transportToken\",\n        \"expectedSha256\",\n        \"expectedSizeBytes\",\n        \"expiresAt\"\n      ],\n      \"title\": \"Bundle descriptor\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"completionHint\": {\n          \"description\": \"Operator-facing text describing how to complete the upload. Advisory: a producer must not parse it or derive behaviour from it, and a recipient must not put a secret in it.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"descriptor\": {\n          \"$ref\": \"#/$defs/BundleDescriptor\",\n          \"description\": \"Where to write the bytes, on what terms, and until when.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        }\n      },\n      \"required\": [\n        \"descriptor\"\n      ],\n      \"title\": \"VTA Backup Initiate Import — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/backup/initiate-import/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Asks the recipient to open a slot for an encrypted bundle the producer is about to upload, pre-committing the digest and size so the transfer is verifiable. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"algorithm\": {\n      \"description\": \"Requested transport mechanism — how the bytes move, not how they are encrypted. `stream` is the only value this version defines and is what an absent member means. Deliberately not an enum, so a recipient offering more can be asked for it without a specification revision; one that does not implement the request refuses with unsupportedAlgorithm.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"expectedSha256\": {\n      \"description\": \"Lowercase hex SHA-256 of the bytes about to be uploaded, committed before the upload begins. The recipient refuses a stream that hashes differently, which is what bounds the damage from a leaked write token. A wire-integrity check only: it says the bytes that arrived are the bytes that were sent, and nothing about whether they are worth applying.\",\n      \"pattern\": \"^[0-9a-f]{64}$\",\n      \"type\": \"string\"\n    },\n    \"expectedSizeBytes\": {\n      \"description\": \"Byte count of the upload. Lets the recipient size the slot and refuse a truncated or oversized transfer without hashing it first. A zero-length bundle is not a degenerate case — there is nothing to import — so the floor is 1.\",\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    }\n  },\n  \"required\": [\n    \"expectedSha256\",\n    \"expectedSizeBytes\"\n  ],\n  \"title\": \"VTA Backup — Initiate Import — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"BundleDescriptor\":{\"additionalProperties\":false,\"description\":\"The control-plane account of an out-of-band byte transfer. Shared in shape with initiate-export, where it describes a download rather than an upload.\",\"properties\":{\"algorithm\":{\"description\":\"The mechanism actually used, which is authoritative over what was requested.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"bundleId\":{\"description\":\"Handle for this bundle across its whole lifecycle. Quoted back by finalize-import and abort. Recipient-generated and unguessable, which is what lets an unauthorized reference be answered as not-found without confirming existence.\",\"pattern\":\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":\"string\"},\"expectedSha256\":{\"description\":\"Echoed from the request, so the descriptor stands alone as the terms of the transfer.\",\"pattern\":\"^[0-9a-f]{64}$\",\"type\":\"string\"},\"expectedSizeBytes\":{\"description\":\"Echoed from the request, so the descriptor stands alone as the terms of the transfer.\",\"minimum\":1,\"type\":\"integer\"},\"expiresAt\":{\"description\":\"After which the slot closes, the token is refused, and any staged bytes are discarded unread. Short by design: the window is how long a writable endpoint into the agent exists.\",\"format\":\"date-time\",\"type\":\"string\"},\"transportToken\":{\"description\":\"Bearer credential for transportUrl, presented in the X-Backup-Token header. Minted per bundle and never reused. A recipient should store only a hash of it. Leaking it lets a third party fill the slot; expectedSha256 is what bounds that to a failed transfer rather than a staged substitution.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"},\"transportUrl\":{\"description\":\"Where to write the bytes. Write-only: a recipient must not serve staged bytes back from this address, or a leaked token becomes a read of the operator's bundle. A recipient with no address at which it is reachable cannot produce this and refuses with transportUnavailable.\",\"format\":\"uri\",\"maxLength\":2048,\"type\":\"string\"}},\"required\":[\"bundleId\",\"algorithm\",\"transportUrl\",\"transportToken\",\"expectedSha256\",\"expectedSizeBytes\",\"expiresAt\"],\"title\":\"Bundle descriptor\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"completionHint\":{\"description\":\"Operator-facing text describing how to complete the upload. Advisory: a producer must not parse it or derive behaviour from it, and a recipient must not put a secret in it.\",\"maxLength\":1024,\"type\":\"string\"},\"descriptor\":{\"$ref\":\"#/$defs/BundleDescriptor\",\"description\":\"Where to write the bytes, on what terms, and until when.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"required\":[\"descriptor\"],\"title\":\"VTA Backup Initiate Import — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/backup/initiate-import/1.0\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Asks the recipient to open a slot for an encrypted bundle the producer is about to upload, pre-committing the digest and size so the transfer is verifiable. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"algorithm\":{\"description\":\"Requested transport mechanism — how the bytes move, not how they are encrypted. `stream` is the only value this version defines and is what an absent member means. Deliberately not an enum, so a recipient offering more can be asked for it without a specification revision; one that does not implement the request refuses with unsupportedAlgorithm.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"expectedSha256\":{\"description\":\"Lowercase hex SHA-256 of the bytes about to be uploaded, committed before the upload begins. The recipient refuses a stream that hashes differently, which is what bounds the damage from a leaked write token. A wire-integrity check only: it says the bytes that arrived are the bytes that were sent, and nothing about whether they are worth applying.\",\"pattern\":\"^[0-9a-f]{64}$\",\"type\":\"string\"},\"expectedSizeBytes\":{\"description\":\"Byte count of the upload. Lets the recipient size the slot and refuse a truncated or oversized transfer without hashing it first. A zero-length bundle is not a degenerate case — there is nothing to import — so the floor is 1.\",\"minimum\":1,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"required\":[\"expectedSha256\",\"expectedSizeBytes\"],\"title\":\"VTA Backup — Initiate Import — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1157,7 +933,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"BundleDescriptor\": {\n      \"additionalProperties\": false,\n      \"description\": \"The control-plane account of an out-of-band byte transfer. Shared in shape with initiate-export, where it describes a download rather than an upload.\",\n      \"properties\": {\n        \"algorithm\": {\n          \"description\": \"The mechanism actually used, which is authoritative over what was requested.\",\n          \"maxLength\": 64,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"bundleId\": {\n          \"description\": \"Handle for this bundle across its whole lifecycle. Quoted back by finalize-import and abort. Recipient-generated and unguessable, which is what lets an unauthorized reference be answered as not-found without confirming existence.\",\n          \"pattern\": \"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\n          \"type\": \"string\"\n        },\n        \"expectedSha256\": {\n          \"description\": \"Echoed from the request, so the descriptor stands alone as the terms of the transfer.\",\n          \"pattern\": \"^[0-9a-f]{64}$\",\n          \"type\": \"string\"\n        },\n        \"expectedSizeBytes\": {\n          \"description\": \"Echoed from the request, so the descriptor stands alone as the terms of the transfer.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"expiresAt\": {\n          \"description\": \"After which the slot closes, the token is refused, and any staged bytes are discarded unread. Short by design: the window is how long a writable endpoint into the agent exists.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"transportToken\": {\n          \"description\": \"Bearer credential for transportUrl, presented in the X-Backup-Token header. Minted per bundle and never reused. A recipient should store only a hash of it. Leaking it lets a third party fill the slot; expectedSha256 is what bounds that to a failed transfer rather than a staged substitution.\",\n          \"maxLength\": 1024,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"transportUrl\": {\n          \"description\": \"Where to write the bytes. Write-only: a recipient must not serve staged bytes back from this address, or a leaked token becomes a read of the operator's bundle. A recipient with no address at which it is reachable cannot produce this and refuses with transportUnavailable.\",\n          \"format\": \"uri\",\n          \"maxLength\": 2048,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"bundleId\",\n        \"algorithm\",\n        \"transportUrl\",\n        \"transportToken\",\n        \"expectedSha256\",\n        \"expectedSizeBytes\",\n        \"expiresAt\"\n      ],\n      \"title\": \"Bundle descriptor\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"completionHint\": {\n          \"description\": \"Operator-facing text describing how to complete the upload. Advisory: a producer must not parse it or derive behaviour from it, and a recipient must not put a secret in it.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"descriptor\": {\n          \"$ref\": \"#/$defs/BundleDescriptor\",\n          \"description\": \"Where to write the bytes, on what terms, and until when.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        }\n      },\n      \"required\": [\n        \"descriptor\"\n      ],\n      \"title\": \"VTA Backup Initiate Import — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"BundleDescriptor\":{\"additionalProperties\":false,\"description\":\"The control-plane account of an out-of-band byte transfer. Shared in shape with initiate-export, where it describes a download rather than an upload.\",\"properties\":{\"algorithm\":{\"description\":\"The mechanism actually used, which is authoritative over what was requested.\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"bundleId\":{\"description\":\"Handle for this bundle across its whole lifecycle. Quoted back by finalize-import and abort. Recipient-generated and unguessable, which is what lets an unauthorized reference be answered as not-found without confirming existence.\",\"pattern\":\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",\"type\":\"string\"},\"expectedSha256\":{\"description\":\"Echoed from the request, so the descriptor stands alone as the terms of the transfer.\",\"pattern\":\"^[0-9a-f]{64}$\",\"type\":\"string\"},\"expectedSizeBytes\":{\"description\":\"Echoed from the request, so the descriptor stands alone as the terms of the transfer.\",\"minimum\":1,\"type\":\"integer\"},\"expiresAt\":{\"description\":\"After which the slot closes, the token is refused, and any staged bytes are discarded unread. Short by design: the window is how long a writable endpoint into the agent exists.\",\"format\":\"date-time\",\"type\":\"string\"},\"transportToken\":{\"description\":\"Bearer credential for transportUrl, presented in the X-Backup-Token header. Minted per bundle and never reused. A recipient should store only a hash of it. Leaking it lets a third party fill the slot; expectedSha256 is what bounds that to a failed transfer rather than a staged substitution.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"},\"transportUrl\":{\"description\":\"Where to write the bytes. Write-only: a recipient must not serve staged bytes back from this address, or a leaked token becomes a read of the operator's bundle. A recipient with no address at which it is reachable cannot produce this and refuses with transportUnavailable.\",\"format\":\"uri\",\"maxLength\":2048,\"type\":\"string\"}},\"required\":[\"bundleId\",\"algorithm\",\"transportUrl\",\"transportToken\",\"expectedSha256\",\"expectedSizeBytes\",\"expiresAt\"],\"title\":\"Bundle descriptor\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"completionHint\":{\"description\":\"Operator-facing text describing how to complete the upload. Advisory: a producer must not parse it or derive behaviour from it, and a recipient must not put a secret in it.\",\"maxLength\":1024,\"type\":\"string\"},\"descriptor\":{\"$ref\":\"#/$defs/BundleDescriptor\",\"description\":\"Where to write the bytes, on what terms, and until when.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"required\":[\"descriptor\"],\"title\":\"VTA Backup Initiate Import — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

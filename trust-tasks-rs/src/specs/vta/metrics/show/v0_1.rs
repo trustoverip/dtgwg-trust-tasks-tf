@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,53 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///One histogram's distribution, in the Prometheus cumulative-bucket convention: each bucket's `count` includes every observation at or below its `le`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Histogram",
-///  "description": "One histogram's distribution, in the Prometheus cumulative-bucket convention: each bucket's `count` includes every observation at or below its `le`.",
-///  "type": "object",
-///  "required": [
-///    "buckets",
-///    "count",
-///    "name",
-///    "sum"
-///  ],
-///  "properties": {
-///    "buckets": {
-///      "description": "Cumulative buckets, ordered by ascending `le`. Empty when the service exposes no bucket breakdown for this histogram — count and sum still apply. Always present, for the same reason as the snapshot's own arrays.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/HistogramBucket"
-///      }
-///    },
-///    "count": {
-///      "description": "Total number of observations.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "labels": {
-///      "description": "Dimensions the distribution is broken down by. Absent or empty when the histogram carries none.",
-///      "type": "object",
-///      "additionalProperties": {
-///        "type": "string"
-///      }
-///    },
-///    "name": {
-///      "description": "The histogram's stable name (e.g. `did_hosting_resolve_seconds`).",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "sum": {
-///      "description": "Sum of all observed values.",
-///      "type": "number"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -215,31 +144,6 @@ impl Histogram {
 }
 ///`HistogramBucket`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "HistogramBucket",
-///  "type": "object",
-///  "required": [
-///    "count",
-///    "le"
-///  ],
-///  "properties": {
-///    "count": {
-///      "description": "Number of observations at or below `le`.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "le": {
-///      "description": "Upper bound of this bucket, inclusive. The final bucket conventionally reports the same value as the histogram's own `count` at whatever `le` the service treats as its ceiling.",
-///      "type": "number"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -256,16 +160,6 @@ impl HistogramBucket {
 }
 ///The histogram's stable name (e.g. `did_hosting_resolve_seconds`).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The histogram's stable name (e.g. `did_hosting_resolve_seconds`).",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct HistogramName(::std::string::String);
@@ -325,39 +219,6 @@ impl<'de> ::serde::Deserialize<'de> for HistogramName {
 }
 ///One counter or gauge reading.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Metric",
-///  "description": "One counter or gauge reading.",
-///  "type": "object",
-///  "required": [
-///    "name",
-///    "value"
-///  ],
-///  "properties": {
-///    "labels": {
-///      "description": "Dimensions the value is broken down by (e.g. `{\"method\": \"resolve\"}`). Absent or empty when the metric carries none.",
-///      "type": "object",
-///      "additionalProperties": {
-///        "type": "string"
-///      }
-///    },
-///    "name": {
-///      "description": "The metric's stable name (e.g. `did_hosting_requests_total`). Implementation-defined; the framework imposes no vocabulary.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "value": {
-///      "description": "The current reading.",
-///      "type": "number"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -380,16 +241,6 @@ impl Metric {
 }
 ///The metric's stable name (e.g. `did_hosting_requests_total`). Implementation-defined; the framework imposes no vocabulary.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The metric's stable name (e.g. `did_hosting_requests_total`). Implementation-defined; the framework imposes no vocabulary.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct MetricName(::std::string::String);
@@ -449,53 +300,6 @@ impl<'de> ::serde::Deserialize<'de> for MetricName {
 }
 ///`MetricsSnapshot`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "MetricsSnapshot",
-///  "type": "object",
-///  "required": [
-///    "counters",
-///    "gauges",
-///    "histograms",
-///    "takenAt"
-///  ],
-///  "properties": {
-///    "counters": {
-///      "description": "Monotonically increasing totals (e.g. requests served, errors raised). Empty when the service exposes none. Always present, so a collector can tell \"no counters\" from \"the field was dropped\".",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Metric"
-///      }
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "gauges": {
-///      "description": "Point-in-time values that can rise or fall (e.g. open connections, queue depth). Empty when the service exposes none. Always present, for the same reason as counters.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Metric"
-///      }
-///    },
-///    "histograms": {
-///      "description": "Distributions of observed values (e.g. request latency). Empty when the service exposes none. Always present, for the same reason as counters.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Histogram"
-///      }
-///    },
-///    "takenAt": {
-///      "description": "When the service read these values from its own instrumentation. Not the same as the envelope's issuedAt when a snapshot is cached briefly before answering.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -519,23 +323,6 @@ impl MetricsSnapshot {
 }
 ///An empty request; the whole snapshot is always returned. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/metrics/show/0.1",
-///  "title": "Payload",
-///  "description": "An empty request; the whole snapshot is always returned. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -557,29 +344,6 @@ impl Payload {
 }
 ///The VTA's current metrics snapshot. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/metrics/show/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The VTA's current metrics snapshot. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/metrics/show/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "snapshot"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "snapshot": {
-///      "$ref": "#/definitions/MetricsSnapshot"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1011,7 +775,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Histogram\": {\n      \"additionalProperties\": false,\n      \"description\": \"One histogram's distribution, in the Prometheus cumulative-bucket convention: each bucket's `count` includes every observation at or below its `le`.\",\n      \"properties\": {\n        \"buckets\": {\n          \"description\": \"Cumulative buckets, ordered by ascending `le`. Empty when the service exposes no bucket breakdown for this histogram — count and sum still apply. Always present, for the same reason as the snapshot's own arrays.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/HistogramBucket\"\n          },\n          \"type\": \"array\"\n        },\n        \"count\": {\n          \"description\": \"Total number of observations.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"labels\": {\n          \"additionalProperties\": {\n            \"type\": \"string\"\n          },\n          \"description\": \"Dimensions the distribution is broken down by. Absent or empty when the histogram carries none.\",\n          \"type\": \"object\"\n        },\n        \"name\": {\n          \"description\": \"The histogram's stable name (e.g. `did_hosting_resolve_seconds`).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"sum\": {\n          \"description\": \"Sum of all observed values.\",\n          \"type\": \"number\"\n        }\n      },\n      \"required\": [\n        \"name\",\n        \"count\",\n        \"sum\",\n        \"buckets\"\n      ],\n      \"title\": \"Histogram\",\n      \"type\": \"object\"\n    },\n    \"HistogramBucket\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"count\": {\n          \"description\": \"Number of observations at or below `le`.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"le\": {\n          \"description\": \"Upper bound of this bucket, inclusive. The final bucket conventionally reports the same value as the histogram's own `count` at whatever `le` the service treats as its ceiling.\",\n          \"type\": \"number\"\n        }\n      },\n      \"required\": [\n        \"le\",\n        \"count\"\n      ],\n      \"title\": \"HistogramBucket\",\n      \"type\": \"object\"\n    },\n    \"Metric\": {\n      \"additionalProperties\": false,\n      \"description\": \"One counter or gauge reading.\",\n      \"properties\": {\n        \"labels\": {\n          \"additionalProperties\": {\n            \"type\": \"string\"\n          },\n          \"description\": \"Dimensions the value is broken down by (e.g. `{\\\"method\\\": \\\"resolve\\\"}`). Absent or empty when the metric carries none.\",\n          \"type\": \"object\"\n        },\n        \"name\": {\n          \"description\": \"The metric's stable name (e.g. `did_hosting_requests_total`). Implementation-defined; the framework imposes no vocabulary.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"value\": {\n          \"description\": \"The current reading.\",\n          \"type\": \"number\"\n        }\n      },\n      \"required\": [\n        \"name\",\n        \"value\"\n      ],\n      \"title\": \"Metric\",\n      \"type\": \"object\"\n    },\n    \"MetricsSnapshot\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"counters\": {\n          \"description\": \"Monotonically increasing totals (e.g. requests served, errors raised). Empty when the service exposes none. Always present, so a collector can tell \\\"no counters\\\" from \\\"the field was dropped\\\".\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Metric\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"gauges\": {\n          \"description\": \"Point-in-time values that can rise or fall (e.g. open connections, queue depth). Empty when the service exposes none. Always present, for the same reason as counters.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Metric\"\n          },\n          \"type\": \"array\"\n        },\n        \"histograms\": {\n          \"description\": \"Distributions of observed values (e.g. request latency). Empty when the service exposes none. Always present, for the same reason as counters.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Histogram\"\n          },\n          \"type\": \"array\"\n        },\n        \"takenAt\": {\n          \"description\": \"When the service read these values from its own instrumentation. Not the same as the envelope's issuedAt when a snapshot is cached briefly before answering.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"takenAt\",\n        \"counters\",\n        \"gauges\",\n        \"histograms\"\n      ],\n      \"title\": \"MetricsSnapshot\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The VTA's current metrics snapshot. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/metrics/show/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"snapshot\": {\n          \"$ref\": \"#/$defs/MetricsSnapshot\"\n        }\n      },\n      \"required\": [\n        \"snapshot\"\n      ],\n      \"title\": \"VTA Metrics — Show — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/metrics/show/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An empty request; the whole snapshot is always returned. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"title\": \"VTA Metrics — Show — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Histogram\":{\"additionalProperties\":false,\"description\":\"One histogram's distribution, in the Prometheus cumulative-bucket convention: each bucket's `count` includes every observation at or below its `le`.\",\"properties\":{\"buckets\":{\"description\":\"Cumulative buckets, ordered by ascending `le`. Empty when the service exposes no bucket breakdown for this histogram — count and sum still apply. Always present, for the same reason as the snapshot's own arrays.\",\"items\":{\"$ref\":\"#/$defs/HistogramBucket\"},\"type\":\"array\"},\"count\":{\"description\":\"Total number of observations.\",\"minimum\":0,\"type\":\"integer\"},\"labels\":{\"additionalProperties\":{\"type\":\"string\"},\"description\":\"Dimensions the distribution is broken down by. Absent or empty when the histogram carries none.\",\"type\":\"object\"},\"name\":{\"description\":\"The histogram's stable name (e.g. `did_hosting_resolve_seconds`).\",\"minLength\":1,\"type\":\"string\"},\"sum\":{\"description\":\"Sum of all observed values.\",\"type\":\"number\"}},\"required\":[\"name\",\"count\",\"sum\",\"buckets\"],\"title\":\"Histogram\",\"type\":\"object\"},\"HistogramBucket\":{\"additionalProperties\":false,\"properties\":{\"count\":{\"description\":\"Number of observations at or below `le`.\",\"minimum\":0,\"type\":\"integer\"},\"le\":{\"description\":\"Upper bound of this bucket, inclusive. The final bucket conventionally reports the same value as the histogram's own `count` at whatever `le` the service treats as its ceiling.\",\"type\":\"number\"}},\"required\":[\"le\",\"count\"],\"title\":\"HistogramBucket\",\"type\":\"object\"},\"Metric\":{\"additionalProperties\":false,\"description\":\"One counter or gauge reading.\",\"properties\":{\"labels\":{\"additionalProperties\":{\"type\":\"string\"},\"description\":\"Dimensions the value is broken down by (e.g. `{\\\"method\\\": \\\"resolve\\\"}`). Absent or empty when the metric carries none.\",\"type\":\"object\"},\"name\":{\"description\":\"The metric's stable name (e.g. `did_hosting_requests_total`). Implementation-defined; the framework imposes no vocabulary.\",\"minLength\":1,\"type\":\"string\"},\"value\":{\"description\":\"The current reading.\",\"type\":\"number\"}},\"required\":[\"name\",\"value\"],\"title\":\"Metric\",\"type\":\"object\"},\"MetricsSnapshot\":{\"additionalProperties\":false,\"properties\":{\"counters\":{\"description\":\"Monotonically increasing totals (e.g. requests served, errors raised). Empty when the service exposes none. Always present, so a collector can tell \\\"no counters\\\" from \\\"the field was dropped\\\".\",\"items\":{\"$ref\":\"#/$defs/Metric\"},\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"gauges\":{\"description\":\"Point-in-time values that can rise or fall (e.g. open connections, queue depth). Empty when the service exposes none. Always present, for the same reason as counters.\",\"items\":{\"$ref\":\"#/$defs/Metric\"},\"type\":\"array\"},\"histograms\":{\"description\":\"Distributions of observed values (e.g. request latency). Empty when the service exposes none. Always present, for the same reason as counters.\",\"items\":{\"$ref\":\"#/$defs/Histogram\"},\"type\":\"array\"},\"takenAt\":{\"description\":\"When the service read these values from its own instrumentation. Not the same as the envelope's issuedAt when a snapshot is cached briefly before answering.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"takenAt\",\"counters\",\"gauges\",\"histograms\"],\"title\":\"MetricsSnapshot\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The VTA's current metrics snapshot. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/metrics/show/0.1#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"snapshot\":{\"$ref\":\"#/$defs/MetricsSnapshot\"}},\"required\":[\"snapshot\"],\"title\":\"VTA Metrics — Show — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/metrics/show/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"An empty request; the whole snapshot is always returned. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"title\":\"VTA Metrics — Show — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1019,7 +783,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Histogram\": {\n      \"additionalProperties\": false,\n      \"description\": \"One histogram's distribution, in the Prometheus cumulative-bucket convention: each bucket's `count` includes every observation at or below its `le`.\",\n      \"properties\": {\n        \"buckets\": {\n          \"description\": \"Cumulative buckets, ordered by ascending `le`. Empty when the service exposes no bucket breakdown for this histogram — count and sum still apply. Always present, for the same reason as the snapshot's own arrays.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/HistogramBucket\"\n          },\n          \"type\": \"array\"\n        },\n        \"count\": {\n          \"description\": \"Total number of observations.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"labels\": {\n          \"additionalProperties\": {\n            \"type\": \"string\"\n          },\n          \"description\": \"Dimensions the distribution is broken down by. Absent or empty when the histogram carries none.\",\n          \"type\": \"object\"\n        },\n        \"name\": {\n          \"description\": \"The histogram's stable name (e.g. `did_hosting_resolve_seconds`).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"sum\": {\n          \"description\": \"Sum of all observed values.\",\n          \"type\": \"number\"\n        }\n      },\n      \"required\": [\n        \"name\",\n        \"count\",\n        \"sum\",\n        \"buckets\"\n      ],\n      \"title\": \"Histogram\",\n      \"type\": \"object\"\n    },\n    \"HistogramBucket\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"count\": {\n          \"description\": \"Number of observations at or below `le`.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"le\": {\n          \"description\": \"Upper bound of this bucket, inclusive. The final bucket conventionally reports the same value as the histogram's own `count` at whatever `le` the service treats as its ceiling.\",\n          \"type\": \"number\"\n        }\n      },\n      \"required\": [\n        \"le\",\n        \"count\"\n      ],\n      \"title\": \"HistogramBucket\",\n      \"type\": \"object\"\n    },\n    \"Metric\": {\n      \"additionalProperties\": false,\n      \"description\": \"One counter or gauge reading.\",\n      \"properties\": {\n        \"labels\": {\n          \"additionalProperties\": {\n            \"type\": \"string\"\n          },\n          \"description\": \"Dimensions the value is broken down by (e.g. `{\\\"method\\\": \\\"resolve\\\"}`). Absent or empty when the metric carries none.\",\n          \"type\": \"object\"\n        },\n        \"name\": {\n          \"description\": \"The metric's stable name (e.g. `did_hosting_requests_total`). Implementation-defined; the framework imposes no vocabulary.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"value\": {\n          \"description\": \"The current reading.\",\n          \"type\": \"number\"\n        }\n      },\n      \"required\": [\n        \"name\",\n        \"value\"\n      ],\n      \"title\": \"Metric\",\n      \"type\": \"object\"\n    },\n    \"MetricsSnapshot\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"counters\": {\n          \"description\": \"Monotonically increasing totals (e.g. requests served, errors raised). Empty when the service exposes none. Always present, so a collector can tell \\\"no counters\\\" from \\\"the field was dropped\\\".\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Metric\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"gauges\": {\n          \"description\": \"Point-in-time values that can rise or fall (e.g. open connections, queue depth). Empty when the service exposes none. Always present, for the same reason as counters.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Metric\"\n          },\n          \"type\": \"array\"\n        },\n        \"histograms\": {\n          \"description\": \"Distributions of observed values (e.g. request latency). Empty when the service exposes none. Always present, for the same reason as counters.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Histogram\"\n          },\n          \"type\": \"array\"\n        },\n        \"takenAt\": {\n          \"description\": \"When the service read these values from its own instrumentation. Not the same as the envelope's issuedAt when a snapshot is cached briefly before answering.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"takenAt\",\n        \"counters\",\n        \"gauges\",\n        \"histograms\"\n      ],\n      \"title\": \"MetricsSnapshot\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The VTA's current metrics snapshot. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/metrics/show/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"snapshot\": {\n          \"$ref\": \"#/$defs/MetricsSnapshot\"\n        }\n      },\n      \"required\": [\n        \"snapshot\"\n      ],\n      \"title\": \"VTA Metrics — Show — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Histogram\":{\"additionalProperties\":false,\"description\":\"One histogram's distribution, in the Prometheus cumulative-bucket convention: each bucket's `count` includes every observation at or below its `le`.\",\"properties\":{\"buckets\":{\"description\":\"Cumulative buckets, ordered by ascending `le`. Empty when the service exposes no bucket breakdown for this histogram — count and sum still apply. Always present, for the same reason as the snapshot's own arrays.\",\"items\":{\"$ref\":\"#/$defs/HistogramBucket\"},\"type\":\"array\"},\"count\":{\"description\":\"Total number of observations.\",\"minimum\":0,\"type\":\"integer\"},\"labels\":{\"additionalProperties\":{\"type\":\"string\"},\"description\":\"Dimensions the distribution is broken down by. Absent or empty when the histogram carries none.\",\"type\":\"object\"},\"name\":{\"description\":\"The histogram's stable name (e.g. `did_hosting_resolve_seconds`).\",\"minLength\":1,\"type\":\"string\"},\"sum\":{\"description\":\"Sum of all observed values.\",\"type\":\"number\"}},\"required\":[\"name\",\"count\",\"sum\",\"buckets\"],\"title\":\"Histogram\",\"type\":\"object\"},\"HistogramBucket\":{\"additionalProperties\":false,\"properties\":{\"count\":{\"description\":\"Number of observations at or below `le`.\",\"minimum\":0,\"type\":\"integer\"},\"le\":{\"description\":\"Upper bound of this bucket, inclusive. The final bucket conventionally reports the same value as the histogram's own `count` at whatever `le` the service treats as its ceiling.\",\"type\":\"number\"}},\"required\":[\"le\",\"count\"],\"title\":\"HistogramBucket\",\"type\":\"object\"},\"Metric\":{\"additionalProperties\":false,\"description\":\"One counter or gauge reading.\",\"properties\":{\"labels\":{\"additionalProperties\":{\"type\":\"string\"},\"description\":\"Dimensions the value is broken down by (e.g. `{\\\"method\\\": \\\"resolve\\\"}`). Absent or empty when the metric carries none.\",\"type\":\"object\"},\"name\":{\"description\":\"The metric's stable name (e.g. `did_hosting_requests_total`). Implementation-defined; the framework imposes no vocabulary.\",\"minLength\":1,\"type\":\"string\"},\"value\":{\"description\":\"The current reading.\",\"type\":\"number\"}},\"required\":[\"name\",\"value\"],\"title\":\"Metric\",\"type\":\"object\"},\"MetricsSnapshot\":{\"additionalProperties\":false,\"properties\":{\"counters\":{\"description\":\"Monotonically increasing totals (e.g. requests served, errors raised). Empty when the service exposes none. Always present, so a collector can tell \\\"no counters\\\" from \\\"the field was dropped\\\".\",\"items\":{\"$ref\":\"#/$defs/Metric\"},\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"gauges\":{\"description\":\"Point-in-time values that can rise or fall (e.g. open connections, queue depth). Empty when the service exposes none. Always present, for the same reason as counters.\",\"items\":{\"$ref\":\"#/$defs/Metric\"},\"type\":\"array\"},\"histograms\":{\"description\":\"Distributions of observed values (e.g. request latency). Empty when the service exposes none. Always present, for the same reason as counters.\",\"items\":{\"$ref\":\"#/$defs/Histogram\"},\"type\":\"array\"},\"takenAt\":{\"description\":\"When the service read these values from its own instrumentation. Not the same as the envelope's issuedAt when a snapshot is cached briefly before answering.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"takenAt\",\"counters\",\"gauges\",\"histograms\"],\"title\":\"MetricsSnapshot\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The VTA's current metrics snapshot. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vta/metrics/show/0.1#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"snapshot\":{\"$ref\":\"#/$defs/MetricsSnapshot\"}},\"required\":[\"snapshot\"],\"title\":\"VTA Metrics — Show — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

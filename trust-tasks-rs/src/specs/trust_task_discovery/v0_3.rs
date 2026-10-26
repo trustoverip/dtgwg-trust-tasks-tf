@@ -34,33 +34,6 @@ pub mod error {
 }
 ///The freshness bounds a responder applies, as a consumer, to the `issuedAt` of a document it receives (SPEC.md §7.2 item 13). A responder refuses a document when now > issuedAt + maxAgeSeconds + clockSkewSeconds, and when issuedAt > now + clockSkewSeconds. It says nothing about `expiresAt`, which is honoured independently (SPEC.md §7.2 item 4). Both members are whole seconds.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Acceptance window",
-///  "description": "The freshness bounds a responder applies, as a consumer, to the `issuedAt` of a document it receives (SPEC.md §7.2 item 13). A responder refuses a document when now > issuedAt + maxAgeSeconds + clockSkewSeconds, and when issuedAt > now + clockSkewSeconds. It says nothing about `expiresAt`, which is honoured independently (SPEC.md §7.2 item 4). Both members are whole seconds.",
-///  "type": "object",
-///  "required": [
-///    "clockSkewSeconds",
-///    "maxAgeSeconds"
-///  ],
-///  "properties": {
-///    "clockSkewSeconds": {
-///      "description": "The clock-skew tolerance, in whole seconds, the responder applies in both directions: added to maxAgeSeconds for a document in its past, and allowed for an `issuedAt` in its future (SPEC.md §4.2, §7.2 item 13). Zero when it applies none.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "maxAgeSeconds": {
-///      "description": "The greatest age, in whole seconds, of a document's `issuedAt` at which the responder still accepts the document, before any clock-skew tolerance is applied.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -79,30 +52,6 @@ impl AcceptanceWindow {
 }
 ///Request payload for the framework-defined trust-task-discovery exchange. Carries zero or more slug-glob patterns the discoverer wants the responder to filter against. The response payload schema is reachable via $anchor: 'response'.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/trust-task-discovery/0.3",
-///  "title": "Payload",
-///  "description": "Request payload for the framework-defined trust-task-discovery exchange. Carries zero or more slug-glob patterns the discoverer wants the responder to filter against. The response payload schema is reachable via $anchor: 'response'.",
-///  "type": "object",
-///  "properties": {
-///    "patterns": {
-///      "description": "Patterns are ORed: a slug matches the query if at least one pattern matches it. If the array is omitted or empty, the responder MUST treat the query as ['*'] — return every supported task. Bounded at 16 entries as parser hardening (SPEC.md §12.2), not as a capability limit: matching an unbounded pattern list against every published slug is work a responder does on an unauthenticated request, and a discoverer wanting more asks for '*' and filters locally.",
-///      "type": "array",
-///      "items": {
-///        "description": "Slug-glob pattern. Matches: '*' (every slug); '<prefix>/*' (any slug starting with '<prefix>/' — e.g. 'acl/*' matches 'acl/grant', 'acl/revoke', 'acl/grant/sub'); otherwise an exact slug match. Wildcards anywhere other than as a trailing segment are not interpreted — the only sigils are the trailing '/*' and the bare '*'.",
-///        "type": "string",
-///        "minLength": 1
-///      },
-///      "maxItems": 16
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -125,16 +74,6 @@ impl Payload {
 }
 ///Slug-glob pattern. Matches: '*' (every slug); '<prefix>/*' (any slug starting with '<prefix>/' — e.g. 'acl/*' matches 'acl/grant', 'acl/revoke', 'acl/grant/sub'); otherwise an exact slug match. Wildcards anywhere other than as a trailing segment are not interpreted — the only sigils are the trailing '/*' and the bare '*'.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Slug-glob pattern. Matches: '*' (every slug); '<prefix>/*' (any slug starting with '<prefix>/' — e.g. 'acl/*' matches 'acl/grant', 'acl/revoke', 'acl/grant/sub'); otherwise an exact slug match. Wildcards anywhere other than as a trailing segment are not interpreted — the only sigils are the trailing '/*' and the bare '*'.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadPatternsItem(::std::string::String);
@@ -194,73 +133,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPatternsItem {
 }
 ///List of bare Type URIs the responding party supports. Carried in a Trust Task document whose type is https://trusttasks.org/spec/trust-task-discovery/0.3#response. A response-level `acceptanceWindow` is the window the responder applies to every listed Type URI whose entry carries none of its own. Where neither is present for an entry, the discoverer has learnt nothing about that entry's window and MUST NOT read the absence as the absence of a window.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "List of bare Type URIs the responding party supports. Carried in a Trust Task document whose type is https://trusttasks.org/spec/trust-task-discovery/0.3#response. A response-level `acceptanceWindow` is the window the responder applies to every listed Type URI whose entry carries none of its own. Where neither is present for an entry, the discoverer has learnt nothing about that entry's window and MUST NOT read the absence as the absence of a window.",
-///  "type": "object",
-///  "required": [
-///    "supportedTypes"
-///  ],
-///  "properties": {
-///    "acceptanceWindow": {
-///      "$ref": "#/definitions/AcceptanceWindow"
-///    },
-///    "frameworkVersion": {
-///      "description": "MAJOR.MINOR.PATCH version of the Trust Tasks framework specification (SPEC.md) the responder targets — three-part, as the framework has been versioned since 0.4.0 (SPEC.md §5.1.1), and exactly the value a Trust Task specification declares as its target framework version. Lets a discoverer reason about compatibility (SPEC.md §5.2) and select the envelope schema a responder's documents are validated against, which is keyed by the full release: a PATCH is never substituted for another. RECOMMENDED. Two-part in trust-task-discovery/0.1, which could not express a PATCH.",
-///      "type": "string",
-///      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
-///    },
-///    "supportedTypes": {
-///      "description": "Each entry's Type URI MUST match at least one of the request's patterns (if any were supplied). Order is not significant. Duplicates by Type URI are not permitted, regardless of whether the entry is in shorthand or expanded form.",
-///      "type": "array",
-///      "items": {
-///        "description": "An entry in the supportedTypes list. SHORTHAND: a bare Type URI string. EXPANDED: an object with `type` and optional capability annotations (`requiredExt`, `acceptanceWindow`).",
-///        "oneOf": [
-///          {
-///            "description": "Shorthand form: a bare Type URI string. Equivalent to an object with only the `type` member set.",
-///            "type": "string",
-///            "format": "uri"
-///          },
-///          {
-///            "description": "Object form: lists a Type URI together with optional capability annotations. An `acceptanceWindow` here is the window the responder applies to documents of this Type URI, and takes precedence over the response-level `acceptanceWindow` for this entry.",
-///            "type": "object",
-///            "required": [
-///              "type"
-///            ],
-///            "properties": {
-///              "acceptanceWindow": {
-///                "$ref": "#/definitions/AcceptanceWindow"
-///              },
-///              "requiredExt": {
-///                "description": "Reverse-DNS `ext` namespaces this responder requires on inbound documents of this Type URI as a matter of local policy (SPEC.md §4.5.1, §7.2). A producer that does not populate every listed namespace will receive a `malformedRequest` rejection. Optional; reserved-but-recognized in 0.1, RECOMMENDED in future revisions for responders that enforce such policies.",
-///                "type": "array",
-///                "items": {
-///                  "type": "string",
-///                  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///                },
-///                "minItems": 1,
-///                "uniqueItems": true
-///              },
-///              "type": {
-///                "description": "A bare Type URI (no #request or #response fragment). The responder supports both request and response variants of every entry it lists.",
-///                "type": "string",
-///                "format": "uri"
-///              }
-///            },
-///            "additionalProperties": false
-///          }
-///        ]
-///      }
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -289,16 +161,6 @@ impl Response {
 }
 ///MAJOR.MINOR.PATCH version of the Trust Tasks framework specification (SPEC.md) the responder targets — three-part, as the framework has been versioned since 0.4.0 (SPEC.md §5.1.1), and exactly the value a Trust Task specification declares as its target framework version. Lets a discoverer reason about compatibility (SPEC.md §5.2) and select the envelope schema a responder's documents are validated against, which is keyed by the full release: a PATCH is never substituted for another. RECOMMENDED. Two-part in trust-task-discovery/0.1, which could not express a PATCH.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "MAJOR.MINOR.PATCH version of the Trust Tasks framework specification (SPEC.md) the responder targets — three-part, as the framework has been versioned since 0.4.0 (SPEC.md §5.1.1), and exactly the value a Trust Task specification declares as its target framework version. Lets a discoverer reason about compatibility (SPEC.md §5.2) and select the envelope schema a responder's documents are validated against, which is keyed by the full release: a PATCH is never substituted for another. RECOMMENDED. Two-part in trust-task-discovery/0.1, which could not express a PATCH.",
-///  "type": "string",
-///  "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseFrameworkVersion(::std::string::String);
@@ -366,49 +228,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseFrameworkVersion {
 }
 ///An entry in the supportedTypes list. SHORTHAND: a bare Type URI string. EXPANDED: an object with `type` and optional capability annotations (`requiredExt`, `acceptanceWindow`).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "An entry in the supportedTypes list. SHORTHAND: a bare Type URI string. EXPANDED: an object with `type` and optional capability annotations (`requiredExt`, `acceptanceWindow`).",
-///  "oneOf": [
-///    {
-///      "description": "Shorthand form: a bare Type URI string. Equivalent to an object with only the `type` member set.",
-///      "type": "string",
-///      "format": "uri"
-///    },
-///    {
-///      "description": "Object form: lists a Type URI together with optional capability annotations. An `acceptanceWindow` here is the window the responder applies to documents of this Type URI, and takes precedence over the response-level `acceptanceWindow` for this entry.",
-///      "type": "object",
-///      "required": [
-///        "type"
-///      ],
-///      "properties": {
-///        "acceptanceWindow": {
-///          "$ref": "#/definitions/AcceptanceWindow"
-///        },
-///        "requiredExt": {
-///          "description": "Reverse-DNS `ext` namespaces this responder requires on inbound documents of this Type URI as a matter of local policy (SPEC.md §4.5.1, §7.2). A producer that does not populate every listed namespace will receive a `malformedRequest` rejection. Optional; reserved-but-recognized in 0.1, RECOMMENDED in future revisions for responders that enforce such policies.",
-///          "type": "array",
-///          "items": {
-///            "type": "string",
-///            "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///          },
-///          "minItems": 1,
-///          "uniqueItems": true
-///        },
-///        "type": {
-///          "description": "A bare Type URI (no #request or #response fragment). The responder supports both request and response variants of every entry it lists.",
-///          "type": "string",
-///          "format": "uri"
-///        }
-///      },
-///      "additionalProperties": false
-///    }
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged, deny_unknown_fields)]
 #[non_exhaustive]
@@ -435,15 +254,6 @@ pub enum ResponseSupportedTypesItem {
 }
 ///`ResponseSupportedTypesItemObjectRequiredExtItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseSupportedTypesItemObjectRequiredExtItem(::std::string::String);
@@ -688,14 +498,14 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/trust-task-discovery/0.3";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AcceptanceWindow\": {\n      \"additionalProperties\": false,\n      \"description\": \"The freshness bounds a responder applies, as a consumer, to the `issuedAt` of a document it receives (SPEC.md §7.2 item 13). A responder refuses a document when now > issuedAt + maxAgeSeconds + clockSkewSeconds, and when issuedAt > now + clockSkewSeconds. It says nothing about `expiresAt`, which is honoured independently (SPEC.md §7.2 item 4). Both members are whole seconds.\",\n      \"properties\": {\n        \"clockSkewSeconds\": {\n          \"description\": \"The clock-skew tolerance, in whole seconds, the responder applies in both directions: added to maxAgeSeconds for a document in its past, and allowed for an `issuedAt` in its future (SPEC.md §4.2, §7.2 item 13). Zero when it applies none.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"maxAgeSeconds\": {\n          \"description\": \"The greatest age, in whole seconds, of a document's `issuedAt` at which the responder still accepts the document, before any clock-skew tolerance is applied.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"maxAgeSeconds\",\n        \"clockSkewSeconds\"\n      ],\n      \"title\": \"Acceptance window\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"List of bare Type URIs the responding party supports. Carried in a Trust Task document whose type is https://trusttasks.org/spec/trust-task-discovery/0.3#response. A response-level `acceptanceWindow` is the window the responder applies to every listed Type URI whose entry carries none of its own. Where neither is present for an entry, the discoverer has learnt nothing about that entry's window and MUST NOT read the absence as the absence of a window.\",\n      \"properties\": {\n        \"acceptanceWindow\": {\n          \"$ref\": \"#/$defs/AcceptanceWindow\"\n        },\n        \"frameworkVersion\": {\n          \"description\": \"MAJOR.MINOR.PATCH version of the Trust Tasks framework specification (SPEC.md) the responder targets — three-part, as the framework has been versioned since 0.4.0 (SPEC.md §5.1.1), and exactly the value a Trust Task specification declares as its target framework version. Lets a discoverer reason about compatibility (SPEC.md §5.2) and select the envelope schema a responder's documents are validated against, which is keyed by the full release: a PATCH is never substituted for another. RECOMMENDED. Two-part in trust-task-discovery/0.1, which could not express a PATCH.\",\n          \"pattern\": \"^(0|[1-9][0-9]*)\\\\.(0|[1-9][0-9]*)\\\\.(0|[1-9][0-9]*)$\",\n          \"type\": \"string\"\n        },\n        \"supportedTypes\": {\n          \"description\": \"Each entry's Type URI MUST match at least one of the request's patterns (if any were supplied). Order is not significant. Duplicates by Type URI are not permitted, regardless of whether the entry is in shorthand or expanded form.\",\n          \"items\": {\n            \"description\": \"An entry in the supportedTypes list. SHORTHAND: a bare Type URI string. EXPANDED: an object with `type` and optional capability annotations (`requiredExt`, `acceptanceWindow`).\",\n            \"oneOf\": [\n              {\n                \"description\": \"Shorthand form: a bare Type URI string. Equivalent to an object with only the `type` member set.\",\n                \"format\": \"uri\",\n                \"type\": \"string\"\n              },\n              {\n                \"additionalProperties\": false,\n                \"description\": \"Object form: lists a Type URI together with optional capability annotations. An `acceptanceWindow` here is the window the responder applies to documents of this Type URI, and takes precedence over the response-level `acceptanceWindow` for this entry.\",\n                \"properties\": {\n                  \"acceptanceWindow\": {\n                    \"$ref\": \"#/$defs/AcceptanceWindow\"\n                  },\n                  \"requiredExt\": {\n                    \"description\": \"Reverse-DNS `ext` namespaces this responder requires on inbound documents of this Type URI as a matter of local policy (SPEC.md §4.5.1, §7.2). A producer that does not populate every listed namespace will receive a `malformedRequest` rejection. Optional; reserved-but-recognized in 0.1, RECOMMENDED in future revisions for responders that enforce such policies.\",\n                    \"items\": {\n                      \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\",\n                      \"type\": \"string\"\n                    },\n                    \"minItems\": 1,\n                    \"type\": \"array\",\n                    \"uniqueItems\": true\n                  },\n                  \"type\": {\n                    \"description\": \"A bare Type URI (no #request or #response fragment). The responder supports both request and response variants of every entry it lists.\",\n                    \"format\": \"uri\",\n                    \"type\": \"string\"\n                  }\n                },\n                \"required\": [\n                  \"type\"\n                ],\n                \"type\": \"object\"\n              }\n            ]\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"supportedTypes\"\n      ],\n      \"title\": \"Trust Task Discovery — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/trust-task-discovery/0.3\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Request payload for the framework-defined trust-task-discovery exchange. Carries zero or more slug-glob patterns the discoverer wants the responder to filter against. The response payload schema is reachable via $anchor: 'response'.\",\n  \"properties\": {\n    \"patterns\": {\n      \"description\": \"Patterns are ORed: a slug matches the query if at least one pattern matches it. If the array is omitted or empty, the responder MUST treat the query as ['*'] — return every supported task. Bounded at 16 entries as parser hardening (SPEC.md §12.2), not as a capability limit: matching an unbounded pattern list against every published slug is work a responder does on an unauthenticated request, and a discoverer wanting more asks for '*' and filters locally.\",\n      \"items\": {\n        \"description\": \"Slug-glob pattern. Matches: '*' (every slug); '<prefix>/*' (any slug starting with '<prefix>/' — e.g. 'acl/*' matches 'acl/grant', 'acl/revoke', 'acl/grant/sub'); otherwise an exact slug match. Wildcards anywhere other than as a trailing segment are not interpreted — the only sigils are the trailing '/*' and the bare '*'.\",\n        \"minLength\": 1,\n        \"type\": \"string\"\n      },\n      \"maxItems\": 16,\n      \"type\": \"array\"\n    }\n  },\n  \"title\": \"Trust Task Discovery — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"AcceptanceWindow\":{\"additionalProperties\":false,\"description\":\"The freshness bounds a responder applies, as a consumer, to the `issuedAt` of a document it receives (SPEC.md §7.2 item 13). A responder refuses a document when now > issuedAt + maxAgeSeconds + clockSkewSeconds, and when issuedAt > now + clockSkewSeconds. It says nothing about `expiresAt`, which is honoured independently (SPEC.md §7.2 item 4). Both members are whole seconds.\",\"properties\":{\"clockSkewSeconds\":{\"description\":\"The clock-skew tolerance, in whole seconds, the responder applies in both directions: added to maxAgeSeconds for a document in its past, and allowed for an `issuedAt` in its future (SPEC.md §4.2, §7.2 item 13). Zero when it applies none.\",\"minimum\":0,\"type\":\"integer\"},\"maxAgeSeconds\":{\"description\":\"The greatest age, in whole seconds, of a document's `issuedAt` at which the responder still accepts the document, before any clock-skew tolerance is applied.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"maxAgeSeconds\",\"clockSkewSeconds\"],\"title\":\"Acceptance window\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"List of bare Type URIs the responding party supports. Carried in a Trust Task document whose type is https://trusttasks.org/spec/trust-task-discovery/0.3#response. A response-level `acceptanceWindow` is the window the responder applies to every listed Type URI whose entry carries none of its own. Where neither is present for an entry, the discoverer has learnt nothing about that entry's window and MUST NOT read the absence as the absence of a window.\",\"properties\":{\"acceptanceWindow\":{\"$ref\":\"#/$defs/AcceptanceWindow\"},\"frameworkVersion\":{\"description\":\"MAJOR.MINOR.PATCH version of the Trust Tasks framework specification (SPEC.md) the responder targets — three-part, as the framework has been versioned since 0.4.0 (SPEC.md §5.1.1), and exactly the value a Trust Task specification declares as its target framework version. Lets a discoverer reason about compatibility (SPEC.md §5.2) and select the envelope schema a responder's documents are validated against, which is keyed by the full release: a PATCH is never substituted for another. RECOMMENDED. Two-part in trust-task-discovery/0.1, which could not express a PATCH.\",\"pattern\":\"^(0|[1-9][0-9]*)\\\\.(0|[1-9][0-9]*)\\\\.(0|[1-9][0-9]*)$\",\"type\":\"string\"},\"supportedTypes\":{\"description\":\"Each entry's Type URI MUST match at least one of the request's patterns (if any were supplied). Order is not significant. Duplicates by Type URI are not permitted, regardless of whether the entry is in shorthand or expanded form.\",\"items\":{\"description\":\"An entry in the supportedTypes list. SHORTHAND: a bare Type URI string. EXPANDED: an object with `type` and optional capability annotations (`requiredExt`, `acceptanceWindow`).\",\"oneOf\":[{\"description\":\"Shorthand form: a bare Type URI string. Equivalent to an object with only the `type` member set.\",\"format\":\"uri\",\"type\":\"string\"},{\"additionalProperties\":false,\"description\":\"Object form: lists a Type URI together with optional capability annotations. An `acceptanceWindow` here is the window the responder applies to documents of this Type URI, and takes precedence over the response-level `acceptanceWindow` for this entry.\",\"properties\":{\"acceptanceWindow\":{\"$ref\":\"#/$defs/AcceptanceWindow\"},\"requiredExt\":{\"description\":\"Reverse-DNS `ext` namespaces this responder requires on inbound documents of this Type URI as a matter of local policy (SPEC.md §4.5.1, §7.2). A producer that does not populate every listed namespace will receive a `malformedRequest` rejection. Optional; reserved-but-recognized in 0.1, RECOMMENDED in future revisions for responders that enforce such policies.\",\"items\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\",\"type\":\"string\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"type\":{\"description\":\"A bare Type URI (no #request or #response fragment). The responder supports both request and response variants of every entry it lists.\",\"format\":\"uri\",\"type\":\"string\"}},\"required\":[\"type\"],\"type\":\"object\"}]},\"type\":\"array\"}},\"required\":[\"supportedTypes\"],\"title\":\"Trust Task Discovery — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/trust-task-discovery/0.3\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Request payload for the framework-defined trust-task-discovery exchange. Carries zero or more slug-glob patterns the discoverer wants the responder to filter against. The response payload schema is reachable via $anchor: 'response'.\",\"properties\":{\"patterns\":{\"description\":\"Patterns are ORed: a slug matches the query if at least one pattern matches it. If the array is omitted or empty, the responder MUST treat the query as ['*'] — return every supported task. Bounded at 16 entries as parser hardening (SPEC.md §12.2), not as a capability limit: matching an unbounded pattern list against every published slug is work a responder does on an unauthenticated request, and a discoverer wanting more asks for '*' and filters locally.\",\"items\":{\"description\":\"Slug-glob pattern. Matches: '*' (every slug); '<prefix>/*' (any slug starting with '<prefix>/' — e.g. 'acl/*' matches 'acl/grant', 'acl/revoke', 'acl/grant/sub'); otherwise an exact slug match. Wildcards anywhere other than as a trailing segment are not interpreted — the only sigils are the trailing '/*' and the bare '*'.\",\"minLength\":1,\"type\":\"string\"},\"maxItems\":16,\"type\":\"array\"}},\"title\":\"Trust Task Discovery — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/trust-task-discovery/0.3#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AcceptanceWindow\": {\n      \"additionalProperties\": false,\n      \"description\": \"The freshness bounds a responder applies, as a consumer, to the `issuedAt` of a document it receives (SPEC.md §7.2 item 13). A responder refuses a document when now > issuedAt + maxAgeSeconds + clockSkewSeconds, and when issuedAt > now + clockSkewSeconds. It says nothing about `expiresAt`, which is honoured independently (SPEC.md §7.2 item 4). Both members are whole seconds.\",\n      \"properties\": {\n        \"clockSkewSeconds\": {\n          \"description\": \"The clock-skew tolerance, in whole seconds, the responder applies in both directions: added to maxAgeSeconds for a document in its past, and allowed for an `issuedAt` in its future (SPEC.md §4.2, §7.2 item 13). Zero when it applies none.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"maxAgeSeconds\": {\n          \"description\": \"The greatest age, in whole seconds, of a document's `issuedAt` at which the responder still accepts the document, before any clock-skew tolerance is applied.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"maxAgeSeconds\",\n        \"clockSkewSeconds\"\n      ],\n      \"title\": \"Acceptance window\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"List of bare Type URIs the responding party supports. Carried in a Trust Task document whose type is https://trusttasks.org/spec/trust-task-discovery/0.3#response. A response-level `acceptanceWindow` is the window the responder applies to every listed Type URI whose entry carries none of its own. Where neither is present for an entry, the discoverer has learnt nothing about that entry's window and MUST NOT read the absence as the absence of a window.\",\n      \"properties\": {\n        \"acceptanceWindow\": {\n          \"$ref\": \"#/$defs/AcceptanceWindow\"\n        },\n        \"frameworkVersion\": {\n          \"description\": \"MAJOR.MINOR.PATCH version of the Trust Tasks framework specification (SPEC.md) the responder targets — three-part, as the framework has been versioned since 0.4.0 (SPEC.md §5.1.1), and exactly the value a Trust Task specification declares as its target framework version. Lets a discoverer reason about compatibility (SPEC.md §5.2) and select the envelope schema a responder's documents are validated against, which is keyed by the full release: a PATCH is never substituted for another. RECOMMENDED. Two-part in trust-task-discovery/0.1, which could not express a PATCH.\",\n          \"pattern\": \"^(0|[1-9][0-9]*)\\\\.(0|[1-9][0-9]*)\\\\.(0|[1-9][0-9]*)$\",\n          \"type\": \"string\"\n        },\n        \"supportedTypes\": {\n          \"description\": \"Each entry's Type URI MUST match at least one of the request's patterns (if any were supplied). Order is not significant. Duplicates by Type URI are not permitted, regardless of whether the entry is in shorthand or expanded form.\",\n          \"items\": {\n            \"description\": \"An entry in the supportedTypes list. SHORTHAND: a bare Type URI string. EXPANDED: an object with `type` and optional capability annotations (`requiredExt`, `acceptanceWindow`).\",\n            \"oneOf\": [\n              {\n                \"description\": \"Shorthand form: a bare Type URI string. Equivalent to an object with only the `type` member set.\",\n                \"format\": \"uri\",\n                \"type\": \"string\"\n              },\n              {\n                \"additionalProperties\": false,\n                \"description\": \"Object form: lists a Type URI together with optional capability annotations. An `acceptanceWindow` here is the window the responder applies to documents of this Type URI, and takes precedence over the response-level `acceptanceWindow` for this entry.\",\n                \"properties\": {\n                  \"acceptanceWindow\": {\n                    \"$ref\": \"#/$defs/AcceptanceWindow\"\n                  },\n                  \"requiredExt\": {\n                    \"description\": \"Reverse-DNS `ext` namespaces this responder requires on inbound documents of this Type URI as a matter of local policy (SPEC.md §4.5.1, §7.2). A producer that does not populate every listed namespace will receive a `malformedRequest` rejection. Optional; reserved-but-recognized in 0.1, RECOMMENDED in future revisions for responders that enforce such policies.\",\n                    \"items\": {\n                      \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\",\n                      \"type\": \"string\"\n                    },\n                    \"minItems\": 1,\n                    \"type\": \"array\",\n                    \"uniqueItems\": true\n                  },\n                  \"type\": {\n                    \"description\": \"A bare Type URI (no #request or #response fragment). The responder supports both request and response variants of every entry it lists.\",\n                    \"format\": \"uri\",\n                    \"type\": \"string\"\n                  }\n                },\n                \"required\": [\n                  \"type\"\n                ],\n                \"type\": \"object\"\n              }\n            ]\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"supportedTypes\"\n      ],\n      \"title\": \"Trust Task Discovery — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"AcceptanceWindow\":{\"additionalProperties\":false,\"description\":\"The freshness bounds a responder applies, as a consumer, to the `issuedAt` of a document it receives (SPEC.md §7.2 item 13). A responder refuses a document when now > issuedAt + maxAgeSeconds + clockSkewSeconds, and when issuedAt > now + clockSkewSeconds. It says nothing about `expiresAt`, which is honoured independently (SPEC.md §7.2 item 4). Both members are whole seconds.\",\"properties\":{\"clockSkewSeconds\":{\"description\":\"The clock-skew tolerance, in whole seconds, the responder applies in both directions: added to maxAgeSeconds for a document in its past, and allowed for an `issuedAt` in its future (SPEC.md §4.2, §7.2 item 13). Zero when it applies none.\",\"minimum\":0,\"type\":\"integer\"},\"maxAgeSeconds\":{\"description\":\"The greatest age, in whole seconds, of a document's `issuedAt` at which the responder still accepts the document, before any clock-skew tolerance is applied.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"maxAgeSeconds\",\"clockSkewSeconds\"],\"title\":\"Acceptance window\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"List of bare Type URIs the responding party supports. Carried in a Trust Task document whose type is https://trusttasks.org/spec/trust-task-discovery/0.3#response. A response-level `acceptanceWindow` is the window the responder applies to every listed Type URI whose entry carries none of its own. Where neither is present for an entry, the discoverer has learnt nothing about that entry's window and MUST NOT read the absence as the absence of a window.\",\"properties\":{\"acceptanceWindow\":{\"$ref\":\"#/$defs/AcceptanceWindow\"},\"frameworkVersion\":{\"description\":\"MAJOR.MINOR.PATCH version of the Trust Tasks framework specification (SPEC.md) the responder targets — three-part, as the framework has been versioned since 0.4.0 (SPEC.md §5.1.1), and exactly the value a Trust Task specification declares as its target framework version. Lets a discoverer reason about compatibility (SPEC.md §5.2) and select the envelope schema a responder's documents are validated against, which is keyed by the full release: a PATCH is never substituted for another. RECOMMENDED. Two-part in trust-task-discovery/0.1, which could not express a PATCH.\",\"pattern\":\"^(0|[1-9][0-9]*)\\\\.(0|[1-9][0-9]*)\\\\.(0|[1-9][0-9]*)$\",\"type\":\"string\"},\"supportedTypes\":{\"description\":\"Each entry's Type URI MUST match at least one of the request's patterns (if any were supplied). Order is not significant. Duplicates by Type URI are not permitted, regardless of whether the entry is in shorthand or expanded form.\",\"items\":{\"description\":\"An entry in the supportedTypes list. SHORTHAND: a bare Type URI string. EXPANDED: an object with `type` and optional capability annotations (`requiredExt`, `acceptanceWindow`).\",\"oneOf\":[{\"description\":\"Shorthand form: a bare Type URI string. Equivalent to an object with only the `type` member set.\",\"format\":\"uri\",\"type\":\"string\"},{\"additionalProperties\":false,\"description\":\"Object form: lists a Type URI together with optional capability annotations. An `acceptanceWindow` here is the window the responder applies to documents of this Type URI, and takes precedence over the response-level `acceptanceWindow` for this entry.\",\"properties\":{\"acceptanceWindow\":{\"$ref\":\"#/$defs/AcceptanceWindow\"},\"requiredExt\":{\"description\":\"Reverse-DNS `ext` namespaces this responder requires on inbound documents of this Type URI as a matter of local policy (SPEC.md §4.5.1, §7.2). A producer that does not populate every listed namespace will receive a `malformedRequest` rejection. Optional; reserved-but-recognized in 0.1, RECOMMENDED in future revisions for responders that enforce such policies.\",\"items\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\",\"type\":\"string\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true},\"type\":{\"description\":\"A bare Type URI (no #request or #response fragment). The responder supports both request and response variants of every entry it lists.\",\"format\":\"uri\",\"type\":\"string\"}},\"required\":[\"type\"],\"type\":\"object\"}]},\"type\":\"array\"}},\"required\":[\"supportedTypes\"],\"title\":\"Trust Task Discovery — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

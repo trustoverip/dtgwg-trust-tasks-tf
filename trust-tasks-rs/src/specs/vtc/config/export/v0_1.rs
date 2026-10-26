@@ -37,83 +37,6 @@ A community profile as a portable export carries it — the mutable profile memb
 
 Distinct from `vtc/_shared/community`'s `CommunityProfile`, which is the update-facing view and deliberately omits `communityDid` so that a patch cannot re-point a community's identity. Here the DID is REQUIRED and is the whole point: it is what lets an importing community refuse a document taken from a different one. `registryStatus` is absent because trust-registry reachability is a property of a running maintainer, not of exported state.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "CommunityProfileSnapshot",
-///  "description": "A community profile as a portable export carries it — the mutable profile members plus the immutable identity they belong to.\n\nDistinct from `vtc/_shared/community`'s `CommunityProfile`, which is the update-facing view and deliberately omits `communityDid` so that a patch cannot re-point a community's identity. Here the DID is REQUIRED and is the whole point: it is what lets an importing community refuse a document taken from a different one. `registryStatus` is absent because trust-registry reachability is a property of a running maintainer, not of exported state.",
-///  "type": "object",
-///  "required": [
-///    "communityDid",
-///    "language",
-///    "name"
-///  ],
-///  "properties": {
-///    "communityDid": {
-///      "description": "DID of the community this document was taken from. Immutable, set at install.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "contactEmail": {
-///      "type": [
-///        "string",
-///        "null"
-///      ]
-///    },
-///    "createdAt": {
-///      "description": "When the community was created. Provenance only — an import never writes it.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "description": {
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "extensions": {
-///      "description": "Opaque community-defined extension bag.",
-///      "type": "object"
-///    },
-///    "language": {
-///      "description": "BCP 47 language tag.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "logoUrl": {
-///      "type": [
-///        "string",
-///        "null"
-///      ]
-///    },
-///    "name": {
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "personhood": {
-///      "description": "The community's published personhood position, carried so an export restores it. Governance state, not runtime state — unlike `registryStatus`, which is deliberately absent here because reachability belongs to a running maintainer rather than to exported state.",
-///      "$ref": "#/definitions/PersonhoodGovernance"
-///    },
-///    "publicUrl": {
-///      "type": [
-///        "string",
-///        "null"
-///      ]
-///    },
-///    "relationshipIdentifierDefault": {
-///      "description": "The community's declared relationship-identifier default, as defined on `CommunityProfile` in the `vtc/_shared/0.1/community` schema. Carried in a config export so a restore reproduces the declaration rather than silently reverting it to the implementation default.",
-///      "type": "string",
-///      "enum": [
-///        "attributed",
-///        "pairwise"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "communityProfileSnapshot"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -173,16 +96,6 @@ impl CommunityProfileSnapshot {
 }
 ///DID of the community this document was taken from. Immutable, set at install.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "DID of the community this document was taken from. Immutable, set at install.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CommunityProfileSnapshotCommunityDid(::std::string::String);
@@ -242,15 +155,6 @@ impl<'de> ::serde::Deserialize<'de> for CommunityProfileSnapshotCommunityDid {
 }
 ///`CommunityProfileSnapshotDescription`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CommunityProfileSnapshotDescription(::std::string::String);
@@ -310,16 +214,6 @@ impl<'de> ::serde::Deserialize<'de> for CommunityProfileSnapshotDescription {
 }
 ///BCP 47 language tag.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "BCP 47 language tag.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CommunityProfileSnapshotLanguage(::std::string::String);
@@ -379,16 +273,6 @@ impl<'de> ::serde::Deserialize<'de> for CommunityProfileSnapshotLanguage {
 }
 ///`CommunityProfileSnapshotName`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CommunityProfileSnapshotName(::std::string::String);
@@ -451,19 +335,6 @@ impl<'de> ::serde::Deserialize<'de> for CommunityProfileSnapshotName {
 }
 ///The community's declared relationship-identifier default, as defined on `CommunityProfile` in the `vtc/_shared/0.1/community` schema. Carried in a config export so a restore reproduces the declaration rather than silently reverting it to the implementation default.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The community's declared relationship-identifier default, as defined on `CommunityProfile` in the `vtc/_shared/0.1/community` schema. Carried in a config export so a restore reproduces the declaration rather than silently reverting it to the implementation default.",
-///  "type": "string",
-///  "enum": [
-///    "attributed",
-///    "pairwise"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -532,47 +403,6 @@ A community's portable configuration: its profile plus the configuration overrid
 
 This document is designed to survive a round-trip through a file. An operator exports it, keeps it, and feeds it back later — possibly to a different maintainer, possibly across a version boundary — so it is self-describing rather than relying on the Type URI of the envelope that happened to carry it.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ConfigExportDocument",
-///  "description": "A community's portable configuration: its profile plus the configuration overrides a maintainer stores for itself. Deliberately excludes per-host layers (environment variables, on-disk config files) — those describe where a maintainer runs, not what the community is, and carrying them would make an import overwrite the target host's own deployment settings.\n\nThis document is designed to survive a round-trip through a file. An operator exports it, keeps it, and feeds it back later — possibly to a different maintainer, possibly across a version boundary — so it is self-describing rather than relying on the Type URI of the envelope that happened to carry it.",
-///  "type": "object",
-///  "required": [
-///    "configOverrides",
-///    "exportedAt",
-///    "schemaVersion"
-///  ],
-///  "properties": {
-///    "communityProfile": {
-///      "description": "The community's profile at export time. Absent when the community has no profile yet — a maintainer exported before bootstrap.",
-///      "$ref": "#/definitions/CommunityProfileSnapshot"
-///    },
-///    "configOverrides": {
-///      "description": "Stored configuration overrides as `key → value`, keyed by the maintainer's own configuration registry (the same keys `config/show` and `config/patch` use). An empty object is valid and means no overrides are set.",
-///      "type": "object",
-///      "additionalProperties": true
-///    },
-///    "exportedAt": {
-///      "description": "When the export was taken. Provenance for the operator; a consumer does not act on it.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "schemaVersion": {
-///      "description": "Version of this document's own shape. Not redundant with the Type URI version: once the document is written to a file it is bare JSON with no envelope, and this is the only thing a later reader has to check it against. A consumer MUST reject a version it does not implement rather than guess.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "configExportDocument"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -603,21 +433,6 @@ impl ConfigExportDocument {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -639,15 +454,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -711,23 +517,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Export a community's portable configuration — its profile and its stored configuration overrides — as one document. Takes no parameters: a partial export is not portable, so there is nothing to select.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/config/export/0.1",
-///  "title": "Payload",
-///  "description": "Export a community's portable configuration — its profile and its stored configuration overrides — as one document. Takes no parameters: a partial export is not portable, so there is nothing to select.",
-///  "type": "object",
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -754,43 +543,6 @@ DTG Credentials §Personhood Credentials places PHC status here rather than in t
 
 Every member is a declaration, not an enforcement: what a community actually accepts is decided by its own policy. Absent means the community has not published a position, which is not the same as asserting the negative.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "PersonhoodGovernance",
-///  "description": "A community's published position on personhood.\n\nDTG Credentials §Personhood Credentials places PHC status here rather than in the credential — \"PHC status is determined by governance and trust registries, not by credential structure\" — so a verifier deciding whether a VMC carries personhood weight reads this, not the credential's type array. §Governance Considerations item 1 makes the acceptable-IDVP list the community's to define and publish.\n\nEvery member is a declaration, not an enforcement: what a community actually accepts is decided by its own policy. Absent means the community has not published a position, which is not the same as asserting the negative.",
-///  "type": "object",
-///  "properties": {
-///    "acceptedIdvps": {
-///      "description": "DIDs of the identity-verification providers whose credentials this community accepts as personhood evidence: any W3C VC from a listed provider that meets the community's identity-proofing requirements. A community that checks its members' identity in person does not act as a provider to do so: it records each check as a `vetted/1` statement (`https://registry.trustoverip.org/dtg/vsc/vetted/1`) issued under its own DID through vtc/endorsements/issue, which its personhood policy may accept beside these credentials. Either is evidence only — personhood is the community's decision, recorded on the member's VMC. An empty list means no list has been published, not that everything is accepted.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "minLength": 1
-///      }
-///    },
-///    "governanceFrameworkUrl": {
-///      "description": "Where the governance framework these assertions refer to can be read.",
-///      "type": [
-///        "string",
-///        "null"
-///      ]
-///    },
-///    "realHuman": {
-///      "description": "Governance requires that members are real humans. Defaults to `false` when absent: a community that has not considered the question asserts nothing, which is the only safe default for a claim a verifier may rely on.",
-///      "type": "boolean"
-///    },
-///    "singleMembership": {
-///      "description": "Governance requires that each person holds at most one membership in **this** community. Per-community by definition — the glossary says \"exactly one membership in that VTC\" — so a single community can satisfy it without any network above it.",
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "personhoodGovernance"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -841,15 +593,6 @@ impl PersonhoodGovernance {
 }
 ///`PersonhoodGovernanceAcceptedIdvpsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PersonhoodGovernanceAcceptedIdvpsItem(::std::string::String);
@@ -909,29 +652,6 @@ impl<'de> ::serde::Deserialize<'de> for PersonhoodGovernanceAcceptedIdvpsItem {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "document"
-///  ],
-///  "properties": {
-///    "document": {
-///      "description": "The portable configuration document, ready to feed back to vtc/config/import.",
-///      "$ref": "#/definitions/ConfigExportDocument"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1452,7 +1172,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CommunityProfileSnapshot\": {\n      \"$anchor\": \"communityProfileSnapshot\",\n      \"additionalProperties\": false,\n      \"description\": \"A community profile as a portable export carries it — the mutable profile members plus the immutable identity they belong to.\\n\\nDistinct from `vtc/_shared/community`'s `CommunityProfile`, which is the update-facing view and deliberately omits `communityDid` so that a patch cannot re-point a community's identity. Here the DID is REQUIRED and is the whole point: it is what lets an importing community refuse a document taken from a different one. `registryStatus` is absent because trust-registry reachability is a property of a running maintainer, not of exported state.\",\n      \"properties\": {\n        \"communityDid\": {\n          \"description\": \"DID of the community this document was taken from. Immutable, set at install.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"contactEmail\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"createdAt\": {\n          \"description\": \"When the community was created. Provenance only — an import never writes it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"extensions\": {\n          \"description\": \"Opaque community-defined extension bag.\",\n          \"type\": \"object\"\n        },\n        \"language\": {\n          \"description\": \"BCP 47 language tag.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"logoUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"name\": {\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"personhood\": {\n          \"$ref\": \"#/$defs/PersonhoodGovernance\",\n          \"description\": \"The community's published personhood position, carried so an export restores it. Governance state, not runtime state — unlike `registryStatus`, which is deliberately absent here because reachability belongs to a running maintainer rather than to exported state.\"\n        },\n        \"publicUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"relationshipIdentifierDefault\": {\n          \"description\": \"The community's declared relationship-identifier default, as defined on `CommunityProfile` in the `vtc/_shared/0.1/community` schema. Carried in a config export so a restore reproduces the declaration rather than silently reverting it to the implementation default.\",\n          \"enum\": [\n            \"attributed\",\n            \"pairwise\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"communityDid\",\n        \"name\",\n        \"language\"\n      ],\n      \"title\": \"CommunityProfileSnapshot\",\n      \"type\": \"object\"\n    },\n    \"ConfigExportDocument\": {\n      \"$anchor\": \"configExportDocument\",\n      \"additionalProperties\": false,\n      \"description\": \"A community's portable configuration: its profile plus the configuration overrides a maintainer stores for itself. Deliberately excludes per-host layers (environment variables, on-disk config files) — those describe where a maintainer runs, not what the community is, and carrying them would make an import overwrite the target host's own deployment settings.\\n\\nThis document is designed to survive a round-trip through a file. An operator exports it, keeps it, and feeds it back later — possibly to a different maintainer, possibly across a version boundary — so it is self-describing rather than relying on the Type URI of the envelope that happened to carry it.\",\n      \"properties\": {\n        \"communityProfile\": {\n          \"$ref\": \"#/$defs/CommunityProfileSnapshot\",\n          \"description\": \"The community's profile at export time. Absent when the community has no profile yet — a maintainer exported before bootstrap.\"\n        },\n        \"configOverrides\": {\n          \"additionalProperties\": true,\n          \"description\": \"Stored configuration overrides as `key → value`, keyed by the maintainer's own configuration registry (the same keys `config/show` and `config/patch` use). An empty object is valid and means no overrides are set.\",\n          \"type\": \"object\"\n        },\n        \"exportedAt\": {\n          \"description\": \"When the export was taken. Provenance for the operator; a consumer does not act on it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"schemaVersion\": {\n          \"description\": \"Version of this document's own shape. Not redundant with the Type URI version: once the document is written to a file it is bare JSON with no envelope, and this is the only thing a later reader has to check it against. A consumer MUST reject a version it does not implement rather than guess.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"schemaVersion\",\n        \"exportedAt\",\n        \"configOverrides\"\n      ],\n      \"title\": \"ConfigExportDocument\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"PersonhoodGovernance\": {\n      \"$anchor\": \"personhoodGovernance\",\n      \"additionalProperties\": false,\n      \"description\": \"A community's published position on personhood.\\n\\nDTG Credentials §Personhood Credentials places PHC status here rather than in the credential — \\\"PHC status is determined by governance and trust registries, not by credential structure\\\" — so a verifier deciding whether a VMC carries personhood weight reads this, not the credential's type array. §Governance Considerations item 1 makes the acceptable-IDVP list the community's to define and publish.\\n\\nEvery member is a declaration, not an enforcement: what a community actually accepts is decided by its own policy. Absent means the community has not published a position, which is not the same as asserting the negative.\",\n      \"properties\": {\n        \"acceptedIdvps\": {\n          \"description\": \"DIDs of the identity-verification providers whose credentials this community accepts as personhood evidence: any W3C VC from a listed provider that meets the community's identity-proofing requirements. A community that checks its members' identity in person does not act as a provider to do so: it records each check as a `vetted/1` statement (`https://registry.trustoverip.org/dtg/vsc/vetted/1`) issued under its own DID through vtc/endorsements/issue, which its personhood policy may accept beside these credentials. Either is evidence only — personhood is the community's decision, recorded on the member's VMC. An empty list means no list has been published, not that everything is accepted.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"governanceFrameworkUrl\": {\n          \"description\": \"Where the governance framework these assertions refer to can be read.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"realHuman\": {\n          \"description\": \"Governance requires that members are real humans. Defaults to `false` when absent: a community that has not considered the question asserts nothing, which is the only safe default for a claim a verifier may rely on.\",\n          \"type\": \"boolean\"\n        },\n        \"singleMembership\": {\n          \"description\": \"Governance requires that each person holds at most one membership in **this** community. Per-community by definition — the glossary says \\\"exactly one membership in that VTC\\\" — so a single community can satisfy it without any network above it.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"title\": \"PersonhoodGovernance\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"document\": {\n          \"$ref\": \"#/$defs/ConfigExportDocument\",\n          \"description\": \"The portable configuration document, ready to feed back to vtc/config/import.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"document\"\n      ],\n      \"title\": \"VTC Config Export — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/config/export/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Export a community's portable configuration — its profile and its stored configuration overrides — as one document. Takes no parameters: a partial export is not portable, so there is nothing to select.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"title\": \"VTC Config Export — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"CommunityProfileSnapshot\":{\"$anchor\":\"communityProfileSnapshot\",\"additionalProperties\":false,\"description\":\"A community profile as a portable export carries it — the mutable profile members plus the immutable identity they belong to.\\n\\nDistinct from `vtc/_shared/community`'s `CommunityProfile`, which is the update-facing view and deliberately omits `communityDid` so that a patch cannot re-point a community's identity. Here the DID is REQUIRED and is the whole point: it is what lets an importing community refuse a document taken from a different one. `registryStatus` is absent because trust-registry reachability is a property of a running maintainer, not of exported state.\",\"properties\":{\"communityDid\":{\"description\":\"DID of the community this document was taken from. Immutable, set at install.\",\"minLength\":1,\"type\":\"string\"},\"contactEmail\":{\"type\":[\"string\",\"null\"]},\"createdAt\":{\"description\":\"When the community was created. Provenance only — an import never writes it.\",\"format\":\"date-time\",\"type\":\"string\"},\"description\":{\"maxLength\":1024,\"type\":\"string\"},\"extensions\":{\"description\":\"Opaque community-defined extension bag.\",\"type\":\"object\"},\"language\":{\"description\":\"BCP 47 language tag.\",\"minLength\":1,\"type\":\"string\"},\"logoUrl\":{\"type\":[\"string\",\"null\"]},\"name\":{\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"personhood\":{\"$ref\":\"#/$defs/PersonhoodGovernance\",\"description\":\"The community's published personhood position, carried so an export restores it. Governance state, not runtime state — unlike `registryStatus`, which is deliberately absent here because reachability belongs to a running maintainer rather than to exported state.\"},\"publicUrl\":{\"type\":[\"string\",\"null\"]},\"relationshipIdentifierDefault\":{\"description\":\"The community's declared relationship-identifier default, as defined on `CommunityProfile` in the `vtc/_shared/0.1/community` schema. Carried in a config export so a restore reproduces the declaration rather than silently reverting it to the implementation default.\",\"enum\":[\"attributed\",\"pairwise\"],\"type\":\"string\"}},\"required\":[\"communityDid\",\"name\",\"language\"],\"title\":\"CommunityProfileSnapshot\",\"type\":\"object\"},\"ConfigExportDocument\":{\"$anchor\":\"configExportDocument\",\"additionalProperties\":false,\"description\":\"A community's portable configuration: its profile plus the configuration overrides a maintainer stores for itself. Deliberately excludes per-host layers (environment variables, on-disk config files) — those describe where a maintainer runs, not what the community is, and carrying them would make an import overwrite the target host's own deployment settings.\\n\\nThis document is designed to survive a round-trip through a file. An operator exports it, keeps it, and feeds it back later — possibly to a different maintainer, possibly across a version boundary — so it is self-describing rather than relying on the Type URI of the envelope that happened to carry it.\",\"properties\":{\"communityProfile\":{\"$ref\":\"#/$defs/CommunityProfileSnapshot\",\"description\":\"The community's profile at export time. Absent when the community has no profile yet — a maintainer exported before bootstrap.\"},\"configOverrides\":{\"additionalProperties\":true,\"description\":\"Stored configuration overrides as `key → value`, keyed by the maintainer's own configuration registry (the same keys `config/show` and `config/patch` use). An empty object is valid and means no overrides are set.\",\"type\":\"object\"},\"exportedAt\":{\"description\":\"When the export was taken. Provenance for the operator; a consumer does not act on it.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"schemaVersion\":{\"description\":\"Version of this document's own shape. Not redundant with the Type URI version: once the document is written to a file it is bare JSON with no envelope, and this is the only thing a later reader has to check it against. A consumer MUST reject a version it does not implement rather than guess.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"schemaVersion\",\"exportedAt\",\"configOverrides\"],\"title\":\"ConfigExportDocument\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"PersonhoodGovernance\":{\"$anchor\":\"personhoodGovernance\",\"additionalProperties\":false,\"description\":\"A community's published position on personhood.\\n\\nDTG Credentials §Personhood Credentials places PHC status here rather than in the credential — \\\"PHC status is determined by governance and trust registries, not by credential structure\\\" — so a verifier deciding whether a VMC carries personhood weight reads this, not the credential's type array. §Governance Considerations item 1 makes the acceptable-IDVP list the community's to define and publish.\\n\\nEvery member is a declaration, not an enforcement: what a community actually accepts is decided by its own policy. Absent means the community has not published a position, which is not the same as asserting the negative.\",\"properties\":{\"acceptedIdvps\":{\"description\":\"DIDs of the identity-verification providers whose credentials this community accepts as personhood evidence: any W3C VC from a listed provider that meets the community's identity-proofing requirements. A community that checks its members' identity in person does not act as a provider to do so: it records each check as a `vetted/1` statement (`https://registry.trustoverip.org/dtg/vsc/vetted/1`) issued under its own DID through vtc/endorsements/issue, which its personhood policy may accept beside these credentials. Either is evidence only — personhood is the community's decision, recorded on the member's VMC. An empty list means no list has been published, not that everything is accepted.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"},\"governanceFrameworkUrl\":{\"description\":\"Where the governance framework these assertions refer to can be read.\",\"type\":[\"string\",\"null\"]},\"realHuman\":{\"description\":\"Governance requires that members are real humans. Defaults to `false` when absent: a community that has not considered the question asserts nothing, which is the only safe default for a claim a verifier may rely on.\",\"type\":\"boolean\"},\"singleMembership\":{\"description\":\"Governance requires that each person holds at most one membership in **this** community. Per-community by definition — the glossary says \\\"exactly one membership in that VTC\\\" — so a single community can satisfy it without any network above it.\",\"type\":\"boolean\"}},\"title\":\"PersonhoodGovernance\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"document\":{\"$ref\":\"#/$defs/ConfigExportDocument\",\"description\":\"The portable configuration document, ready to feed back to vtc/config/import.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"document\"],\"title\":\"VTC Config Export — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/config/export/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Export a community's portable configuration — its profile and its stored configuration overrides — as one document. Takes no parameters: a partial export is not portable, so there is nothing to select.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"title\":\"VTC Config Export — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1460,7 +1180,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CommunityProfileSnapshot\": {\n      \"$anchor\": \"communityProfileSnapshot\",\n      \"additionalProperties\": false,\n      \"description\": \"A community profile as a portable export carries it — the mutable profile members plus the immutable identity they belong to.\\n\\nDistinct from `vtc/_shared/community`'s `CommunityProfile`, which is the update-facing view and deliberately omits `communityDid` so that a patch cannot re-point a community's identity. Here the DID is REQUIRED and is the whole point: it is what lets an importing community refuse a document taken from a different one. `registryStatus` is absent because trust-registry reachability is a property of a running maintainer, not of exported state.\",\n      \"properties\": {\n        \"communityDid\": {\n          \"description\": \"DID of the community this document was taken from. Immutable, set at install.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"contactEmail\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"createdAt\": {\n          \"description\": \"When the community was created. Provenance only — an import never writes it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"extensions\": {\n          \"description\": \"Opaque community-defined extension bag.\",\n          \"type\": \"object\"\n        },\n        \"language\": {\n          \"description\": \"BCP 47 language tag.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"logoUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"name\": {\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"personhood\": {\n          \"$ref\": \"#/$defs/PersonhoodGovernance\",\n          \"description\": \"The community's published personhood position, carried so an export restores it. Governance state, not runtime state — unlike `registryStatus`, which is deliberately absent here because reachability belongs to a running maintainer rather than to exported state.\"\n        },\n        \"publicUrl\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"relationshipIdentifierDefault\": {\n          \"description\": \"The community's declared relationship-identifier default, as defined on `CommunityProfile` in the `vtc/_shared/0.1/community` schema. Carried in a config export so a restore reproduces the declaration rather than silently reverting it to the implementation default.\",\n          \"enum\": [\n            \"attributed\",\n            \"pairwise\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"communityDid\",\n        \"name\",\n        \"language\"\n      ],\n      \"title\": \"CommunityProfileSnapshot\",\n      \"type\": \"object\"\n    },\n    \"ConfigExportDocument\": {\n      \"$anchor\": \"configExportDocument\",\n      \"additionalProperties\": false,\n      \"description\": \"A community's portable configuration: its profile plus the configuration overrides a maintainer stores for itself. Deliberately excludes per-host layers (environment variables, on-disk config files) — those describe where a maintainer runs, not what the community is, and carrying them would make an import overwrite the target host's own deployment settings.\\n\\nThis document is designed to survive a round-trip through a file. An operator exports it, keeps it, and feeds it back later — possibly to a different maintainer, possibly across a version boundary — so it is self-describing rather than relying on the Type URI of the envelope that happened to carry it.\",\n      \"properties\": {\n        \"communityProfile\": {\n          \"$ref\": \"#/$defs/CommunityProfileSnapshot\",\n          \"description\": \"The community's profile at export time. Absent when the community has no profile yet — a maintainer exported before bootstrap.\"\n        },\n        \"configOverrides\": {\n          \"additionalProperties\": true,\n          \"description\": \"Stored configuration overrides as `key → value`, keyed by the maintainer's own configuration registry (the same keys `config/show` and `config/patch` use). An empty object is valid and means no overrides are set.\",\n          \"type\": \"object\"\n        },\n        \"exportedAt\": {\n          \"description\": \"When the export was taken. Provenance for the operator; a consumer does not act on it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"schemaVersion\": {\n          \"description\": \"Version of this document's own shape. Not redundant with the Type URI version: once the document is written to a file it is bare JSON with no envelope, and this is the only thing a later reader has to check it against. A consumer MUST reject a version it does not implement rather than guess.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"schemaVersion\",\n        \"exportedAt\",\n        \"configOverrides\"\n      ],\n      \"title\": \"ConfigExportDocument\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"PersonhoodGovernance\": {\n      \"$anchor\": \"personhoodGovernance\",\n      \"additionalProperties\": false,\n      \"description\": \"A community's published position on personhood.\\n\\nDTG Credentials §Personhood Credentials places PHC status here rather than in the credential — \\\"PHC status is determined by governance and trust registries, not by credential structure\\\" — so a verifier deciding whether a VMC carries personhood weight reads this, not the credential's type array. §Governance Considerations item 1 makes the acceptable-IDVP list the community's to define and publish.\\n\\nEvery member is a declaration, not an enforcement: what a community actually accepts is decided by its own policy. Absent means the community has not published a position, which is not the same as asserting the negative.\",\n      \"properties\": {\n        \"acceptedIdvps\": {\n          \"description\": \"DIDs of the identity-verification providers whose credentials this community accepts as personhood evidence: any W3C VC from a listed provider that meets the community's identity-proofing requirements. A community that checks its members' identity in person does not act as a provider to do so: it records each check as a `vetted/1` statement (`https://registry.trustoverip.org/dtg/vsc/vetted/1`) issued under its own DID through vtc/endorsements/issue, which its personhood policy may accept beside these credentials. Either is evidence only — personhood is the community's decision, recorded on the member's VMC. An empty list means no list has been published, not that everything is accepted.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"governanceFrameworkUrl\": {\n          \"description\": \"Where the governance framework these assertions refer to can be read.\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"realHuman\": {\n          \"description\": \"Governance requires that members are real humans. Defaults to `false` when absent: a community that has not considered the question asserts nothing, which is the only safe default for a claim a verifier may rely on.\",\n          \"type\": \"boolean\"\n        },\n        \"singleMembership\": {\n          \"description\": \"Governance requires that each person holds at most one membership in **this** community. Per-community by definition — the glossary says \\\"exactly one membership in that VTC\\\" — so a single community can satisfy it without any network above it.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"title\": \"PersonhoodGovernance\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"document\": {\n          \"$ref\": \"#/$defs/ConfigExportDocument\",\n          \"description\": \"The portable configuration document, ready to feed back to vtc/config/import.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"document\"\n      ],\n      \"title\": \"VTC Config Export — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"CommunityProfileSnapshot\":{\"$anchor\":\"communityProfileSnapshot\",\"additionalProperties\":false,\"description\":\"A community profile as a portable export carries it — the mutable profile members plus the immutable identity they belong to.\\n\\nDistinct from `vtc/_shared/community`'s `CommunityProfile`, which is the update-facing view and deliberately omits `communityDid` so that a patch cannot re-point a community's identity. Here the DID is REQUIRED and is the whole point: it is what lets an importing community refuse a document taken from a different one. `registryStatus` is absent because trust-registry reachability is a property of a running maintainer, not of exported state.\",\"properties\":{\"communityDid\":{\"description\":\"DID of the community this document was taken from. Immutable, set at install.\",\"minLength\":1,\"type\":\"string\"},\"contactEmail\":{\"type\":[\"string\",\"null\"]},\"createdAt\":{\"description\":\"When the community was created. Provenance only — an import never writes it.\",\"format\":\"date-time\",\"type\":\"string\"},\"description\":{\"maxLength\":1024,\"type\":\"string\"},\"extensions\":{\"description\":\"Opaque community-defined extension bag.\",\"type\":\"object\"},\"language\":{\"description\":\"BCP 47 language tag.\",\"minLength\":1,\"type\":\"string\"},\"logoUrl\":{\"type\":[\"string\",\"null\"]},\"name\":{\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"personhood\":{\"$ref\":\"#/$defs/PersonhoodGovernance\",\"description\":\"The community's published personhood position, carried so an export restores it. Governance state, not runtime state — unlike `registryStatus`, which is deliberately absent here because reachability belongs to a running maintainer rather than to exported state.\"},\"publicUrl\":{\"type\":[\"string\",\"null\"]},\"relationshipIdentifierDefault\":{\"description\":\"The community's declared relationship-identifier default, as defined on `CommunityProfile` in the `vtc/_shared/0.1/community` schema. Carried in a config export so a restore reproduces the declaration rather than silently reverting it to the implementation default.\",\"enum\":[\"attributed\",\"pairwise\"],\"type\":\"string\"}},\"required\":[\"communityDid\",\"name\",\"language\"],\"title\":\"CommunityProfileSnapshot\",\"type\":\"object\"},\"ConfigExportDocument\":{\"$anchor\":\"configExportDocument\",\"additionalProperties\":false,\"description\":\"A community's portable configuration: its profile plus the configuration overrides a maintainer stores for itself. Deliberately excludes per-host layers (environment variables, on-disk config files) — those describe where a maintainer runs, not what the community is, and carrying them would make an import overwrite the target host's own deployment settings.\\n\\nThis document is designed to survive a round-trip through a file. An operator exports it, keeps it, and feeds it back later — possibly to a different maintainer, possibly across a version boundary — so it is self-describing rather than relying on the Type URI of the envelope that happened to carry it.\",\"properties\":{\"communityProfile\":{\"$ref\":\"#/$defs/CommunityProfileSnapshot\",\"description\":\"The community's profile at export time. Absent when the community has no profile yet — a maintainer exported before bootstrap.\"},\"configOverrides\":{\"additionalProperties\":true,\"description\":\"Stored configuration overrides as `key → value`, keyed by the maintainer's own configuration registry (the same keys `config/show` and `config/patch` use). An empty object is valid and means no overrides are set.\",\"type\":\"object\"},\"exportedAt\":{\"description\":\"When the export was taken. Provenance for the operator; a consumer does not act on it.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"schemaVersion\":{\"description\":\"Version of this document's own shape. Not redundant with the Type URI version: once the document is written to a file it is bare JSON with no envelope, and this is the only thing a later reader has to check it against. A consumer MUST reject a version it does not implement rather than guess.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"schemaVersion\",\"exportedAt\",\"configOverrides\"],\"title\":\"ConfigExportDocument\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"PersonhoodGovernance\":{\"$anchor\":\"personhoodGovernance\",\"additionalProperties\":false,\"description\":\"A community's published position on personhood.\\n\\nDTG Credentials §Personhood Credentials places PHC status here rather than in the credential — \\\"PHC status is determined by governance and trust registries, not by credential structure\\\" — so a verifier deciding whether a VMC carries personhood weight reads this, not the credential's type array. §Governance Considerations item 1 makes the acceptable-IDVP list the community's to define and publish.\\n\\nEvery member is a declaration, not an enforcement: what a community actually accepts is decided by its own policy. Absent means the community has not published a position, which is not the same as asserting the negative.\",\"properties\":{\"acceptedIdvps\":{\"description\":\"DIDs of the identity-verification providers whose credentials this community accepts as personhood evidence: any W3C VC from a listed provider that meets the community's identity-proofing requirements. A community that checks its members' identity in person does not act as a provider to do so: it records each check as a `vetted/1` statement (`https://registry.trustoverip.org/dtg/vsc/vetted/1`) issued under its own DID through vtc/endorsements/issue, which its personhood policy may accept beside these credentials. Either is evidence only — personhood is the community's decision, recorded on the member's VMC. An empty list means no list has been published, not that everything is accepted.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"type\":\"array\"},\"governanceFrameworkUrl\":{\"description\":\"Where the governance framework these assertions refer to can be read.\",\"type\":[\"string\",\"null\"]},\"realHuman\":{\"description\":\"Governance requires that members are real humans. Defaults to `false` when absent: a community that has not considered the question asserts nothing, which is the only safe default for a claim a verifier may rely on.\",\"type\":\"boolean\"},\"singleMembership\":{\"description\":\"Governance requires that each person holds at most one membership in **this** community. Per-community by definition — the glossary says \\\"exactly one membership in that VTC\\\" — so a single community can satisfy it without any network above it.\",\"type\":\"boolean\"}},\"title\":\"PersonhoodGovernance\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"document\":{\"$ref\":\"#/$defs/ConfigExportDocument\",\"description\":\"The portable configuration document, ready to feed back to vtc/config/import.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"document\"],\"title\":\"VTC Config Export — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

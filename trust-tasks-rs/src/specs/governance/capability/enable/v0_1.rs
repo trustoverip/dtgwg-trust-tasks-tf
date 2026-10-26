@@ -34,132 +34,6 @@ pub mod error {
 }
 ///The self-description of a pluggable community capability: the Trust Task families it serves, the trust-registry vocabulary it reads and writes, the roles that may operate it, the membership lifecycle hooks it consumes, and the external adapters that act on its decisions. The manifest is what governance approves, what discovery advertises, and what a management UX renders.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "CapabilityManifest",
-///  "description": "The self-description of a pluggable community capability: the Trust Task families it serves, the trust-registry vocabulary it reads and writes, the roles that may operate it, the membership lifecycle hooks it consumes, and the external adapters that act on its decisions. The manifest is what governance approves, what discovery advertises, and what a management UX renders.",
-///  "type": "object",
-///  "required": [
-///    "capability",
-///    "specs",
-///    "version"
-///  ],
-///  "properties": {
-///    "capability": {
-///      "description": "The capability's namespace slug, e.g. `git-trust`.",
-///      "type": "string",
-///      "pattern": "^[a-z0-9][a-z0-9-]*$"
-///    },
-///    "configSchema": {
-///      "description": "Spec slug of the JSON schema the per-community `config` document must validate against.",
-///      "type": "string"
-///    },
-///    "consentClass": {
-///      "description": "Map of capability operation to the consent class its execution requires under the host's delegated-execution policy.",
-///      "type": "object",
-///      "additionalProperties": {
-///        "type": "string",
-///        "enum": [
-///          "normal",
-///          "elevated",
-///          "destructive"
-///        ]
-///      }
-///    },
-///    "description": {
-///      "description": "One-paragraph description for management surfaces.",
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "externalAdapters": {
-///      "description": "Out-of-stack components that consume this capability's trust decisions.",
-///      "type": "array",
-///      "items": {
-///        "type": "object",
-///        "required": [
-///          "kind",
-///          "ref"
-///        ],
-///        "properties": {
-///          "kind": {
-///            "description": "Adapter type, e.g. `github-action`, `webhook`.",
-///            "type": "string"
-///          },
-///          "ref": {
-///            "description": "Where the adapter lives, e.g. a repository path or URL.",
-///            "type": "string"
-///          }
-///        },
-///        "additionalProperties": false
-///      }
-///    },
-///    "lifecycleHooks": {
-///      "description": "Membership lifecycle events the capability consumes, e.g. `member.enrolled`, `member.revoked`, `role.changed`.",
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      }
-///    },
-///    "roles": {
-///      "description": "Map of capability operation (e.g. `grant`, `view`) to the community roles allowed to perform it.",
-///      "type": "object",
-///      "additionalProperties": {
-///        "type": "array",
-///        "items": {
-///          "type": "string"
-///        }
-///      }
-///    },
-///    "specs": {
-///      "description": "Trust Task spec slugs (or `<family>/*` globs) this capability serves when enabled.",
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      },
-///      "minItems": 1
-///    },
-///    "title": {
-///      "description": "Human-readable capability name for management surfaces.",
-///      "type": "string",
-///      "maxLength": 256
-///    },
-///    "version": {
-///      "description": "Manifest/capability version, `MAJOR.MINOR`.",
-///      "type": "string",
-///      "pattern": "^[0-9]+\\.[0-9]+$"
-///    },
-///    "vocabulary": {
-///      "description": "The trust-registry tuple vocabulary this capability may read and write. A conforming host MUST reject writes by this capability whose `action` is not listed.",
-///      "type": "object",
-///      "required": [
-///        "actions"
-///      ],
-///      "properties": {
-///        "actions": {
-///          "description": "TRQP `action` values this capability owns, e.g. `git.commit.sign`.",
-///          "type": "array",
-///          "items": {
-///            "type": "string"
-///          },
-///          "minItems": 1
-///        },
-///        "resourcePattern": {
-///          "description": "Human-readable pattern of the `resource` values used, e.g. `<org>[/<repo>]`.",
-///          "type": "string"
-///        }
-///      },
-///      "additionalProperties": false
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -224,16 +98,6 @@ impl CapabilityManifest {
 }
 ///The capability's namespace slug, e.g. `git-trust`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The capability's namespace slug, e.g. `git-trust`.",
-///  "type": "string",
-///  "pattern": "^[a-z0-9][a-z0-9-]*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CapabilityManifestCapability(::std::string::String);
@@ -295,19 +159,6 @@ impl<'de> ::serde::Deserialize<'de> for CapabilityManifestCapability {
 }
 ///`CapabilityManifestConsentClassValue`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "enum": [
-///    "normal",
-///    "elevated",
-///    "destructive"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -373,16 +224,6 @@ impl ::std::convert::TryFrom<::std::string::String> for CapabilityManifestConsen
 }
 ///One-paragraph description for management surfaces.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "One-paragraph description for management surfaces.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CapabilityManifestDescription(::std::string::String);
@@ -442,29 +283,6 @@ impl<'de> ::serde::Deserialize<'de> for CapabilityManifestDescription {
 }
 ///`CapabilityManifestExternalAdaptersItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "kind",
-///    "ref"
-///  ],
-///  "properties": {
-///    "kind": {
-///      "description": "Adapter type, e.g. `github-action`, `webhook`.",
-///      "type": "string"
-///    },
-///    "ref": {
-///      "description": "Where the adapter lives, e.g. a repository path or URL.",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -482,16 +300,6 @@ impl CapabilityManifestExternalAdaptersItem {
 }
 ///Human-readable capability name for management surfaces.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Human-readable capability name for management surfaces.",
-///  "type": "string",
-///  "maxLength": 256
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CapabilityManifestTitle(::std::string::String);
@@ -551,16 +359,6 @@ impl<'de> ::serde::Deserialize<'de> for CapabilityManifestTitle {
 }
 ///Manifest/capability version, `MAJOR.MINOR`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Manifest/capability version, `MAJOR.MINOR`.",
-///  "type": "string",
-///  "pattern": "^[0-9]+\\.[0-9]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CapabilityManifestVersion(::std::string::String);
@@ -622,33 +420,6 @@ impl<'de> ::serde::Deserialize<'de> for CapabilityManifestVersion {
 }
 ///The trust-registry tuple vocabulary this capability may read and write. A conforming host MUST reject writes by this capability whose `action` is not listed.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The trust-registry tuple vocabulary this capability may read and write. A conforming host MUST reject writes by this capability whose `action` is not listed.",
-///  "type": "object",
-///  "required": [
-///    "actions"
-///  ],
-///  "properties": {
-///    "actions": {
-///      "description": "TRQP `action` values this capability owns, e.g. `git.commit.sign`.",
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      },
-///      "minItems": 1
-///    },
-///    "resourcePattern": {
-///      "description": "Human-readable pattern of the `resource` values used, e.g. `<org>[/<repo>]`.",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -670,21 +441,6 @@ impl CapabilityManifestVocabulary {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -706,15 +462,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -778,54 +525,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A community operator enables a pluggable capability for a community. Activation registers the capability's Trust Task handlers, advertises it in discovery, and starts its lifecycle hooks; a community with no enable record carries none of the capability's records, surfaces, or attack surface.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/governance/capability/enable/0.1",
-///  "title": "Payload",
-///  "description": "A community operator enables a pluggable capability for a community. Activation registers the capability's Trust Task handlers, advertises it in discovery, and starts its lifecycle hooks; a community with no enable record carries none of the capability's records, surfaces, or attack surface.",
-///  "type": "object",
-///  "required": [
-///    "capability",
-///    "version"
-///  ],
-///  "properties": {
-///    "capability": {
-///      "description": "Namespace slug of the capability to enable, e.g. `git-trust`.",
-///      "type": "string",
-///      "pattern": "^[a-z0-9][a-z0-9-]*$"
-///    },
-///    "config": {
-///      "description": "Per-community configuration. Opaque to the framework; the recipient MUST validate it against the schema named by the capability manifest's `configSchema` and reject `configInvalid` on mismatch.",
-///      "type": "object"
-///    },
-///    "delegate": {
-///      "description": "DID of the companion service that serves this capability, for capabilities not built into the host. When present, the host records a namespace delegation to this DID and `manifest` is REQUIRED (the host cannot know a companion's manifest a priori).",
-///      "type": "string"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "manifest": {
-///      "description": "The capability's manifest. OPTIONAL for built-in capabilities (the host knows it); REQUIRED when `delegate` is present.",
-///      "$ref": "#/definitions/CapabilityManifest"
-///    },
-///    "version": {
-///      "description": "Capability version to enable.",
-///      "type": "string",
-///      "pattern": "^[0-9]+\\.[0-9]+$"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "dependentRequired": {
-///    "delegate": [
-///      "manifest"
-///    ]
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -853,16 +552,6 @@ impl Payload {
 }
 ///Namespace slug of the capability to enable, e.g. `git-trust`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Namespace slug of the capability to enable, e.g. `git-trust`.",
-///  "type": "string",
-///  "pattern": "^[a-z0-9][a-z0-9-]*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCapability(::std::string::String);
@@ -924,16 +613,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCapability {
 }
 ///Capability version to enable.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Capability version to enable.",
-///  "type": "string",
-///  "pattern": "^[0-9]+\\.[0-9]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadVersion(::std::string::String);
@@ -995,46 +674,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadVersion {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "capability",
-///    "enabled"
-///  ],
-///  "properties": {
-///    "capability": {
-///      "type": "string"
-///    },
-///    "enabled": {
-///      "description": "True once the capability is active for the community.",
-///      "type": "boolean"
-///    },
-///    "enabledAt": {
-///      "description": "When the enablement took effect, per the host clock.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "message": {
-///      "description": "Additional human-readable detail.",
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "version": {
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1064,16 +703,6 @@ impl Response {
 }
 ///Additional human-readable detail.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Additional human-readable detail.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseMessage(::std::string::String);
@@ -1729,7 +1358,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CapabilityManifest\": {\n      \"additionalProperties\": false,\n      \"description\": \"The self-description of a pluggable community capability: the Trust Task families it serves, the trust-registry vocabulary it reads and writes, the roles that may operate it, the membership lifecycle hooks it consumes, and the external adapters that act on its decisions. The manifest is what governance approves, what discovery advertises, and what a management UX renders.\",\n      \"properties\": {\n        \"capability\": {\n          \"description\": \"The capability's namespace slug, e.g. `git-trust`.\",\n          \"pattern\": \"^[a-z0-9][a-z0-9-]*$\",\n          \"type\": \"string\"\n        },\n        \"configSchema\": {\n          \"description\": \"Spec slug of the JSON schema the per-community `config` document must validate against.\",\n          \"type\": \"string\"\n        },\n        \"consentClass\": {\n          \"additionalProperties\": {\n            \"enum\": [\n              \"normal\",\n              \"elevated\",\n              \"destructive\"\n            ],\n            \"type\": \"string\"\n          },\n          \"description\": \"Map of capability operation to the consent class its execution requires under the host's delegated-execution policy.\",\n          \"type\": \"object\"\n        },\n        \"description\": {\n          \"description\": \"One-paragraph description for management surfaces.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"externalAdapters\": {\n          \"description\": \"Out-of-stack components that consume this capability's trust decisions.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"kind\": {\n                \"description\": \"Adapter type, e.g. `github-action`, `webhook`.\",\n                \"type\": \"string\"\n              },\n              \"ref\": {\n                \"description\": \"Where the adapter lives, e.g. a repository path or URL.\",\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"kind\",\n              \"ref\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        },\n        \"lifecycleHooks\": {\n          \"description\": \"Membership lifecycle events the capability consumes, e.g. `member.enrolled`, `member.revoked`, `role.changed`.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"roles\": {\n          \"additionalProperties\": {\n            \"items\": {\n              \"type\": \"string\"\n            },\n            \"type\": \"array\"\n          },\n          \"description\": \"Map of capability operation (e.g. `grant`, `view`) to the community roles allowed to perform it.\",\n          \"type\": \"object\"\n        },\n        \"specs\": {\n          \"description\": \"Trust Task spec slugs (or `<family>/*` globs) this capability serves when enabled.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"title\": {\n          \"description\": \"Human-readable capability name for management surfaces.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"description\": \"Manifest/capability version, `MAJOR.MINOR`.\",\n          \"pattern\": \"^[0-9]+\\\\.[0-9]+$\",\n          \"type\": \"string\"\n        },\n        \"vocabulary\": {\n          \"additionalProperties\": false,\n          \"description\": \"The trust-registry tuple vocabulary this capability may read and write. A conforming host MUST reject writes by this capability whose `action` is not listed.\",\n          \"properties\": {\n            \"actions\": {\n              \"description\": \"TRQP `action` values this capability owns, e.g. `git.commit.sign`.\",\n              \"items\": {\n                \"type\": \"string\"\n              },\n              \"minItems\": 1,\n              \"type\": \"array\"\n            },\n            \"resourcePattern\": {\n              \"description\": \"Human-readable pattern of the `resource` values used, e.g. `<org>[/<repo>]`.\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"actions\"\n          ],\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"capability\",\n        \"version\",\n        \"specs\"\n      ],\n      \"title\": \"CapabilityManifest\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"capability\": {\n          \"type\": \"string\"\n        },\n        \"enabled\": {\n          \"description\": \"True once the capability is active for the community.\",\n          \"type\": \"boolean\"\n        },\n        \"enabledAt\": {\n          \"description\": \"When the enablement took effect, per the host clock.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"message\": {\n          \"description\": \"Additional human-readable detail.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"capability\",\n        \"enabled\"\n      ],\n      \"title\": \"Governance Capability Enable — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/governance/capability/enable/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"dependentRequired\": {\n    \"delegate\": [\n      \"manifest\"\n    ]\n  },\n  \"description\": \"A community operator enables a pluggable capability for a community. Activation registers the capability's Trust Task handlers, advertises it in discovery, and starts its lifecycle hooks; a community with no enable record carries none of the capability's records, surfaces, or attack surface.\",\n  \"properties\": {\n    \"capability\": {\n      \"description\": \"Namespace slug of the capability to enable, e.g. `git-trust`.\",\n      \"pattern\": \"^[a-z0-9][a-z0-9-]*$\",\n      \"type\": \"string\"\n    },\n    \"config\": {\n      \"description\": \"Per-community configuration. Opaque to the framework; the recipient MUST validate it against the schema named by the capability manifest's `configSchema` and reject `configInvalid` on mismatch.\",\n      \"type\": \"object\"\n    },\n    \"delegate\": {\n      \"description\": \"DID of the companion service that serves this capability, for capabilities not built into the host. When present, the host records a namespace delegation to this DID and `manifest` is REQUIRED (the host cannot know a companion's manifest a priori).\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"manifest\": {\n      \"$ref\": \"#/$defs/CapabilityManifest\",\n      \"description\": \"The capability's manifest. OPTIONAL for built-in capabilities (the host knows it); REQUIRED when `delegate` is present.\"\n    },\n    \"version\": {\n      \"description\": \"Capability version to enable.\",\n      \"pattern\": \"^[0-9]+\\\\.[0-9]+$\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"capability\",\n    \"version\"\n  ],\n  \"title\": \"Governance Capability Enable — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"CapabilityManifest\":{\"additionalProperties\":false,\"description\":\"The self-description of a pluggable community capability: the Trust Task families it serves, the trust-registry vocabulary it reads and writes, the roles that may operate it, the membership lifecycle hooks it consumes, and the external adapters that act on its decisions. The manifest is what governance approves, what discovery advertises, and what a management UX renders.\",\"properties\":{\"capability\":{\"description\":\"The capability's namespace slug, e.g. `git-trust`.\",\"pattern\":\"^[a-z0-9][a-z0-9-]*$\",\"type\":\"string\"},\"configSchema\":{\"description\":\"Spec slug of the JSON schema the per-community `config` document must validate against.\",\"type\":\"string\"},\"consentClass\":{\"additionalProperties\":{\"enum\":[\"normal\",\"elevated\",\"destructive\"],\"type\":\"string\"},\"description\":\"Map of capability operation to the consent class its execution requires under the host's delegated-execution policy.\",\"type\":\"object\"},\"description\":{\"description\":\"One-paragraph description for management surfaces.\",\"maxLength\":1024,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"externalAdapters\":{\"description\":\"Out-of-stack components that consume this capability's trust decisions.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"kind\":{\"description\":\"Adapter type, e.g. `github-action`, `webhook`.\",\"type\":\"string\"},\"ref\":{\"description\":\"Where the adapter lives, e.g. a repository path or URL.\",\"type\":\"string\"}},\"required\":[\"kind\",\"ref\"],\"type\":\"object\"},\"type\":\"array\"},\"lifecycleHooks\":{\"description\":\"Membership lifecycle events the capability consumes, e.g. `member.enrolled`, `member.revoked`, `role.changed`.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"roles\":{\"additionalProperties\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"description\":\"Map of capability operation (e.g. `grant`, `view`) to the community roles allowed to perform it.\",\"type\":\"object\"},\"specs\":{\"description\":\"Trust Task spec slugs (or `<family>/*` globs) this capability serves when enabled.\",\"items\":{\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"},\"title\":{\"description\":\"Human-readable capability name for management surfaces.\",\"maxLength\":256,\"type\":\"string\"},\"version\":{\"description\":\"Manifest/capability version, `MAJOR.MINOR`.\",\"pattern\":\"^[0-9]+\\\\.[0-9]+$\",\"type\":\"string\"},\"vocabulary\":{\"additionalProperties\":false,\"description\":\"The trust-registry tuple vocabulary this capability may read and write. A conforming host MUST reject writes by this capability whose `action` is not listed.\",\"properties\":{\"actions\":{\"description\":\"TRQP `action` values this capability owns, e.g. `git.commit.sign`.\",\"items\":{\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"},\"resourcePattern\":{\"description\":\"Human-readable pattern of the `resource` values used, e.g. `<org>[/<repo>]`.\",\"type\":\"string\"}},\"required\":[\"actions\"],\"type\":\"object\"}},\"required\":[\"capability\",\"version\",\"specs\"],\"title\":\"CapabilityManifest\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"capability\":{\"type\":\"string\"},\"enabled\":{\"description\":\"True once the capability is active for the community.\",\"type\":\"boolean\"},\"enabledAt\":{\"description\":\"When the enablement took effect, per the host clock.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"message\":{\"description\":\"Additional human-readable detail.\",\"maxLength\":1024,\"type\":\"string\"},\"version\":{\"type\":\"string\"}},\"required\":[\"capability\",\"enabled\"],\"title\":\"Governance Capability Enable — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/governance/capability/enable/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"dependentRequired\":{\"delegate\":[\"manifest\"]},\"description\":\"A community operator enables a pluggable capability for a community. Activation registers the capability's Trust Task handlers, advertises it in discovery, and starts its lifecycle hooks; a community with no enable record carries none of the capability's records, surfaces, or attack surface.\",\"properties\":{\"capability\":{\"description\":\"Namespace slug of the capability to enable, e.g. `git-trust`.\",\"pattern\":\"^[a-z0-9][a-z0-9-]*$\",\"type\":\"string\"},\"config\":{\"description\":\"Per-community configuration. Opaque to the framework; the recipient MUST validate it against the schema named by the capability manifest's `configSchema` and reject `configInvalid` on mismatch.\",\"type\":\"object\"},\"delegate\":{\"description\":\"DID of the companion service that serves this capability, for capabilities not built into the host. When present, the host records a namespace delegation to this DID and `manifest` is REQUIRED (the host cannot know a companion's manifest a priori).\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"manifest\":{\"$ref\":\"#/$defs/CapabilityManifest\",\"description\":\"The capability's manifest. OPTIONAL for built-in capabilities (the host knows it); REQUIRED when `delegate` is present.\"},\"version\":{\"description\":\"Capability version to enable.\",\"pattern\":\"^[0-9]+\\\\.[0-9]+$\",\"type\":\"string\"}},\"required\":[\"capability\",\"version\"],\"title\":\"Governance Capability Enable — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1739,7 +1368,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CapabilityManifest\": {\n      \"additionalProperties\": false,\n      \"description\": \"The self-description of a pluggable community capability: the Trust Task families it serves, the trust-registry vocabulary it reads and writes, the roles that may operate it, the membership lifecycle hooks it consumes, and the external adapters that act on its decisions. The manifest is what governance approves, what discovery advertises, and what a management UX renders.\",\n      \"properties\": {\n        \"capability\": {\n          \"description\": \"The capability's namespace slug, e.g. `git-trust`.\",\n          \"pattern\": \"^[a-z0-9][a-z0-9-]*$\",\n          \"type\": \"string\"\n        },\n        \"configSchema\": {\n          \"description\": \"Spec slug of the JSON schema the per-community `config` document must validate against.\",\n          \"type\": \"string\"\n        },\n        \"consentClass\": {\n          \"additionalProperties\": {\n            \"enum\": [\n              \"normal\",\n              \"elevated\",\n              \"destructive\"\n            ],\n            \"type\": \"string\"\n          },\n          \"description\": \"Map of capability operation to the consent class its execution requires under the host's delegated-execution policy.\",\n          \"type\": \"object\"\n        },\n        \"description\": {\n          \"description\": \"One-paragraph description for management surfaces.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"externalAdapters\": {\n          \"description\": \"Out-of-stack components that consume this capability's trust decisions.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"kind\": {\n                \"description\": \"Adapter type, e.g. `github-action`, `webhook`.\",\n                \"type\": \"string\"\n              },\n              \"ref\": {\n                \"description\": \"Where the adapter lives, e.g. a repository path or URL.\",\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"kind\",\n              \"ref\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        },\n        \"lifecycleHooks\": {\n          \"description\": \"Membership lifecycle events the capability consumes, e.g. `member.enrolled`, `member.revoked`, `role.changed`.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"roles\": {\n          \"additionalProperties\": {\n            \"items\": {\n              \"type\": \"string\"\n            },\n            \"type\": \"array\"\n          },\n          \"description\": \"Map of capability operation (e.g. `grant`, `view`) to the community roles allowed to perform it.\",\n          \"type\": \"object\"\n        },\n        \"specs\": {\n          \"description\": \"Trust Task spec slugs (or `<family>/*` globs) this capability serves when enabled.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"title\": {\n          \"description\": \"Human-readable capability name for management surfaces.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"description\": \"Manifest/capability version, `MAJOR.MINOR`.\",\n          \"pattern\": \"^[0-9]+\\\\.[0-9]+$\",\n          \"type\": \"string\"\n        },\n        \"vocabulary\": {\n          \"additionalProperties\": false,\n          \"description\": \"The trust-registry tuple vocabulary this capability may read and write. A conforming host MUST reject writes by this capability whose `action` is not listed.\",\n          \"properties\": {\n            \"actions\": {\n              \"description\": \"TRQP `action` values this capability owns, e.g. `git.commit.sign`.\",\n              \"items\": {\n                \"type\": \"string\"\n              },\n              \"minItems\": 1,\n              \"type\": \"array\"\n            },\n            \"resourcePattern\": {\n              \"description\": \"Human-readable pattern of the `resource` values used, e.g. `<org>[/<repo>]`.\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"actions\"\n          ],\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"capability\",\n        \"version\",\n        \"specs\"\n      ],\n      \"title\": \"CapabilityManifest\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"capability\": {\n          \"type\": \"string\"\n        },\n        \"enabled\": {\n          \"description\": \"True once the capability is active for the community.\",\n          \"type\": \"boolean\"\n        },\n        \"enabledAt\": {\n          \"description\": \"When the enablement took effect, per the host clock.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"message\": {\n          \"description\": \"Additional human-readable detail.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"version\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"capability\",\n        \"enabled\"\n      ],\n      \"title\": \"Governance Capability Enable — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"CapabilityManifest\":{\"additionalProperties\":false,\"description\":\"The self-description of a pluggable community capability: the Trust Task families it serves, the trust-registry vocabulary it reads and writes, the roles that may operate it, the membership lifecycle hooks it consumes, and the external adapters that act on its decisions. The manifest is what governance approves, what discovery advertises, and what a management UX renders.\",\"properties\":{\"capability\":{\"description\":\"The capability's namespace slug, e.g. `git-trust`.\",\"pattern\":\"^[a-z0-9][a-z0-9-]*$\",\"type\":\"string\"},\"configSchema\":{\"description\":\"Spec slug of the JSON schema the per-community `config` document must validate against.\",\"type\":\"string\"},\"consentClass\":{\"additionalProperties\":{\"enum\":[\"normal\",\"elevated\",\"destructive\"],\"type\":\"string\"},\"description\":\"Map of capability operation to the consent class its execution requires under the host's delegated-execution policy.\",\"type\":\"object\"},\"description\":{\"description\":\"One-paragraph description for management surfaces.\",\"maxLength\":1024,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"externalAdapters\":{\"description\":\"Out-of-stack components that consume this capability's trust decisions.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"kind\":{\"description\":\"Adapter type, e.g. `github-action`, `webhook`.\",\"type\":\"string\"},\"ref\":{\"description\":\"Where the adapter lives, e.g. a repository path or URL.\",\"type\":\"string\"}},\"required\":[\"kind\",\"ref\"],\"type\":\"object\"},\"type\":\"array\"},\"lifecycleHooks\":{\"description\":\"Membership lifecycle events the capability consumes, e.g. `member.enrolled`, `member.revoked`, `role.changed`.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"roles\":{\"additionalProperties\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"description\":\"Map of capability operation (e.g. `grant`, `view`) to the community roles allowed to perform it.\",\"type\":\"object\"},\"specs\":{\"description\":\"Trust Task spec slugs (or `<family>/*` globs) this capability serves when enabled.\",\"items\":{\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"},\"title\":{\"description\":\"Human-readable capability name for management surfaces.\",\"maxLength\":256,\"type\":\"string\"},\"version\":{\"description\":\"Manifest/capability version, `MAJOR.MINOR`.\",\"pattern\":\"^[0-9]+\\\\.[0-9]+$\",\"type\":\"string\"},\"vocabulary\":{\"additionalProperties\":false,\"description\":\"The trust-registry tuple vocabulary this capability may read and write. A conforming host MUST reject writes by this capability whose `action` is not listed.\",\"properties\":{\"actions\":{\"description\":\"TRQP `action` values this capability owns, e.g. `git.commit.sign`.\",\"items\":{\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"},\"resourcePattern\":{\"description\":\"Human-readable pattern of the `resource` values used, e.g. `<org>[/<repo>]`.\",\"type\":\"string\"}},\"required\":[\"actions\"],\"type\":\"object\"}},\"required\":[\"capability\",\"version\",\"specs\"],\"title\":\"CapabilityManifest\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"capability\":{\"type\":\"string\"},\"enabled\":{\"description\":\"True once the capability is active for the community.\",\"type\":\"boolean\"},\"enabledAt\":{\"description\":\"When the enablement took effect, per the host clock.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"message\":{\"description\":\"Additional human-readable detail.\",\"maxLength\":1024,\"type\":\"string\"},\"version\":{\"type\":\"string\"}},\"required\":[\"capability\",\"enabled\"],\"title\":\"Governance Capability Enable — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

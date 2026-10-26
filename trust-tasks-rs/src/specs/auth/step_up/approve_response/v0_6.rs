@@ -34,70 +34,6 @@ pub mod error {
 }
 ///The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "AuthenticatorAssertionResponse (login)",
-///  "description": "The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.",
-///  "type": "object",
-///  "required": [
-///    "id",
-///    "rawId",
-///    "response",
-///    "type"
-///  ],
-///  "properties": {
-///    "authenticatorAttachment": {
-///      "enum": [
-///        "platform",
-///        "cross-platform"
-///      ]
-///    },
-///    "clientExtensionResults": {
-///      "type": "object"
-///    },
-///    "id": {
-///      "type": "string"
-///    },
-///    "rawId": {
-///      "type": "string"
-///    },
-///    "response": {
-///      "type": "object",
-///      "required": [
-///        "authenticatorData",
-///        "clientDataJSON",
-///        "signature"
-///      ],
-///      "properties": {
-///        "authenticatorData": {
-///          "type": "string"
-///        },
-///        "clientDataJSON": {
-///          "type": "string"
-///        },
-///        "signature": {
-///          "type": "string"
-///        },
-///        "userHandle": {
-///          "type": [
-///            "string",
-///            "null"
-///          ]
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "type": {
-///      "const": "public-key"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "assertionResponse"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -128,17 +64,6 @@ impl AssertionResponse {
 }
 ///`AssertionResponseAuthenticatorAttachment`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "enum": [
-///    "platform",
-///    "cross-platform"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -200,37 +125,6 @@ impl ::std::convert::TryFrom<::std::string::String> for AssertionResponseAuthent
 }
 ///`AssertionResponseResponse`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "authenticatorData",
-///    "clientDataJSON",
-///    "signature"
-///  ],
-///  "properties": {
-///    "authenticatorData": {
-///      "type": "string"
-///    },
-///    "clientDataJSON": {
-///      "type": "string"
-///    },
-///    "signature": {
-///      "type": "string"
-///    },
-///    "userHandle": {
-///      "type": [
-///        "string",
-///        "null"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -254,17 +148,6 @@ impl AssertionResponseResponse {
 }
 ///A complete, signed auth/step-up/approver/attest/0.1 Trust Task document — envelope, payload and proof — issued by the approver. Deliberately an open object here rather than a typed one: the consumer verifies it as a document in its own right (envelope, proof and payload against that specification's schemas), and verifies its proof over the members exactly as received, which a binding that narrowed it to a typed struct and re-serialised it could silently break.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "AttestStatement",
-///  "description": "A complete, signed auth/step-up/approver/attest/0.1 Trust Task document — envelope, payload and proof — issued by the approver. Deliberately an open object here rather than a typed one: the consumer verifies it as a document in its own right (envelope, proof and payload against that specification's schemas), and verifies its proof over the members exactly as received, which a binding that narrowed it to a typed struct and re-serialised it could silently break.",
-///  "type": "object",
-///  "minProperties": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct AttestStatement(pub ::serde_json::Map<::std::string::String, ::serde_json::Value>);
@@ -290,68 +173,6 @@ impl ::std::convert::From<::serde_json::Map<::std::string::String, ::serde_json:
 }
 ///Tagged union over `kind` describing the cryptographic factor the approver presents to back the approval.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Step-up Evidence",
-///  "description": "Tagged union over `kind` describing the cryptographic factor the approver presents to back the approval.",
-///  "oneOf": [
-///    {
-///      "title": "DidSigned",
-///      "description": "The approval is gated by the document's framework `proof` alone. The default when `evidence` is omitted. `amr` reflects \"vta\"/\"did\".",
-///      "type": "object",
-///      "required": [
-///        "kind"
-///      ],
-///      "properties": {
-///        "kind": {
-///          "const": "didSigned"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "WebAuthn",
-///      "type": "object",
-///      "required": [
-///        "assertion",
-///        "kind"
-///      ],
-///      "properties": {
-///        "assertion": {
-///          "description": "The unmodified AuthenticatorAssertionResponse from the platform WebAuthn API. Its `clientDataJSON` challenge MUST equal the step-up `challenge`. Verified per WebAuthn Level 2 §7.2 in addition to the framework proof; `amr` reflects \"passkey\".",
-///          "$ref": "#/definitions/AssertionResponse"
-///        },
-///        "kind": {
-///          "const": "webauthn"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "ApproverSigned",
-///      "type": "object",
-///      "required": [
-///        "kind",
-///        "statement"
-///      ],
-///      "properties": {
-///        "kind": {
-///          "const": "approverSigned"
-///        },
-///        "statement": {
-///          "description": "A complete, signed auth/step-up/approver/attest/0.1 document with `purpose: stepUp`, issued by one of the subject's bound step-up approvers over the step-up `challenge` and `boundTo`, addressed to the relying party. The statement is the factor; the document carrying it MUST still be proved by the subject's own DID — never a delegated key. Verified as received, in addition to the framework proof; `amr` reflects \"approver\".",
-///          "$ref": "#/definitions/AttestStatement"
-///        }
-///      },
-///      "additionalProperties": false
-///    }
-///  ],
-///  "$anchor": "evidence"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(tag = "kind", deny_unknown_fields)]
 #[non_exhaustive]
@@ -373,21 +194,6 @@ pub enum Evidence {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -409,15 +215,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -481,64 +278,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///The approver's signed ratification of a step-up: subject + challenge (+ sessionId, when the request carried one) are echoed inside a document signed by the approver, backed by a gate — the proof itself, a WebAuthn assertion, or a bound step-up approver's signed statement — so the relying party can elevate the session, or apply the approval to the one operation it was bound to.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/auth/step-up/approve-response/0.6",
-///  "title": "Payload",
-///  "description": "The approver's signed ratification of a step-up: subject + challenge (+ sessionId, when the request carried one) are echoed inside a document signed by the approver, backed by a gate — the proof itself, a WebAuthn assertion, or a bound step-up approver's signed statement — so the relying party can elevate the session, or apply the approval to the one operation it was bound to.",
-///  "type": "object",
-///  "required": [
-///    "challenge",
-///    "decision",
-///    "subject"
-///  ],
-///  "properties": {
-///    "challenge": {
-///      "description": "Echoed from the matching approve-request. The relying party verifies it equals the bound challenge.",
-///      "type": "string",
-///      "minLength": 16
-///    },
-///    "decision": {
-///      "description": "`approved` elevates the session, or authorizes the bound operation, per the relying party's policy. `denied` is a signed refusal — useful for audit even though it changes nothing.",
-///      "type": "string",
-///      "enum": [
-///        "approved",
-///        "denied"
-///      ]
-///    },
-///    "deniedReason": {
-///      "description": "Required when decision is `denied`. Human-readable rationale the user provided (or which the approver inferred).",
-///      "type": "string",
-///      "maxLength": 500
-///    },
-///    "evidence": {
-///      "description": "How the approver demonstrated the factor backing this approval. A tagged union on `kind`; absent is equivalent to `didSigned`. Whatever the kind, the document's framework `proof` is REQUIRED — evidence is in addition to it, never instead.",
-///      "$ref": "#/definitions/Evidence"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "grantedAcr": {
-///      "description": "The acr the approver believes it has cryptographically demonstrated. The relying party MAY accept this, MAY upgrade to a lower value, but MUST NOT exceed it.",
-///      "type": "string"
-///    },
-///    "sessionId": {
-///      "description": "Echoed from the matching approve-request when that request carried one, and absent when it did not — a step-up bound to an operation that arrived without a session.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "subject": {
-///      "description": "Echoed from the matching approve-request. The relying party verifies it equals the subject bound to the pending step-up. With `approverSigned` evidence it is also the document's issuer: the subject signs as its own DID.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -583,16 +322,6 @@ impl Payload {
 }
 ///Echoed from the matching approve-request. The relying party verifies it equals the bound challenge.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Echoed from the matching approve-request. The relying party verifies it equals the bound challenge.",
-///  "type": "string",
-///  "minLength": 16
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadChallenge(::std::string::String);
@@ -652,19 +381,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadChallenge {
 }
 ///`approved` elevates the session, or authorizes the bound operation, per the relying party's policy. `denied` is a signed refusal — useful for audit even though it changes nothing.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`approved` elevates the session, or authorizes the bound operation, per the relying party's policy. `denied` is a signed refusal — useful for audit even though it changes nothing.",
-///  "type": "string",
-///  "enum": [
-///    "approved",
-///    "denied"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -726,16 +442,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadDecision {
 }
 ///Required when decision is `denied`. Human-readable rationale the user provided (or which the approver inferred).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Required when decision is `denied`. Human-readable rationale the user provided (or which the approver inferred).",
-///  "type": "string",
-///  "maxLength": 500
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadDeniedReason(::std::string::String);
@@ -795,16 +501,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDeniedReason {
 }
 ///Echoed from the matching approve-request when that request carried one, and absent when it did not — a step-up bound to an operation that arrived without a session.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Echoed from the matching approve-request when that request carried one, and absent when it did not — a step-up bound to an operation that arrived without a session.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadSessionId(::std::string::String);
@@ -864,16 +560,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSessionId {
 }
 ///Echoed from the matching approve-request. The relying party verifies it equals the subject bound to the pending step-up. With `approverSigned` evidence it is also the document's issuer: the subject signs as its own DID.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Echoed from the matching approve-request. The relying party verifies it equals the subject bound to the pending step-up. With `approverSigned` evidence it is also the document's issuer: the subject signs as its own DID.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadSubject(::std::string::String);
@@ -933,49 +619,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubject {
 }
 ///Acknowledgement the relying party returns after processing the approval. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/approve-response/0.6#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Acknowledgement the relying party returns after processing the approval. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/approve-response/0.6#response.",
-///  "type": "object",
-///  "required": [
-///    "status"
-///  ],
-///  "properties": {
-///    "boundTo": {
-///      "description": "Present when status is `recorded`. The opaque relying-party identifier for the single operation this approval authorised. Not a capability.",
-///      "type": "string",
-///      "maxLength": 256
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "reason": {
-///      "description": "Present when status is `rejected`.",
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "session": {
-///      "description": "Present when status is `elevated`. Absent for `recorded`, which changes no session.",
-///      "$ref": "#/definitions/Session"
-///    },
-///    "status": {
-///      "description": "`elevated` — the approval was applied and the session's assurance level was raised. `recorded` — the approval was applied to the single operation it was bound to, and NO session was elevated; see `boundTo`. `rejected` — the approval was not applied.",
-///      "type": "string",
-///      "enum": [
-///        "elevated",
-///        "recorded",
-///        "rejected"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1005,16 +648,6 @@ impl Response {
 }
 ///Present when status is `recorded`. The opaque relying-party identifier for the single operation this approval authorised. Not a capability.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Present when status is `recorded`. The opaque relying-party identifier for the single operation this approval authorised. Not a capability.",
-///  "type": "string",
-///  "maxLength": 256
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseBoundTo(::std::string::String);
@@ -1074,16 +707,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseBoundTo {
 }
 ///Present when status is `rejected`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Present when status is `rejected`.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseReason(::std::string::String);
@@ -1143,20 +766,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseReason {
 }
 ///`elevated` — the approval was applied and the session's assurance level was raised. `recorded` — the approval was applied to the single operation it was bound to, and NO session was elevated; see `boundTo`. `rejected` — the approval was not applied.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`elevated` — the approval was applied and the session's assurance level was raised. `recorded` — the approval was applied to the single operation it was bound to, and NO session was elevated; see `boundTo`. `rejected` — the approval was not applied.",
-///  "type": "string",
-///  "enum": [
-///    "elevated",
-///    "recorded",
-///    "rejected"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1222,63 +831,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseStatus {
 }
 ///A logical authentication context bound to a subject. Producers and consumers exchange Session-shaped data in challenge issuance, authentication responses, and introspection (whoami).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Session",
-///  "description": "A logical authentication context bound to a subject. Producers and consumers exchange Session-shaped data in challenge issuance, authentication responses, and introspection (whoami).",
-///  "type": "object",
-///  "required": [
-///    "expiresAt",
-///    "id",
-///    "issuedAt",
-///    "subject"
-///  ],
-///  "properties": {
-///    "acr": {
-///      "description": "Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is \"aal1\" (single-factor DID auth), \"aal2\" (a second possession-or-biometric factor confirmed), and \"aal3\" (hardware-bound second factor).",
-///      "type": "string"
-///    },
-///    "amr": {
-///      "description": "Authentication Methods References per [RFC 8176]. Typical values: \"did\" (challenge-response), \"passkey\" (WebAuthn), \"vta\" (verifiable-trust agent approval). Multi-factor sessions list every method used.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "minLength": 1
-///      },
-///      "minItems": 1
-///    },
-///    "expiresAt": {
-///      "description": "ISO-8601 timestamp when the session ceases to be valid. Producers SHOULD refresh before this time; consumers MUST reject after.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "id": {
-///      "description": "Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "issuedAt": {
-///      "description": "ISO-8601 timestamp when the session was created.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "subject": {
-///      "description": "The authenticated party's VID (typically a DID URL).",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "session"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1310,15 +862,6 @@ impl Session {
 }
 ///`SessionAmrItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SessionAmrItem(::std::string::String);
@@ -1378,16 +921,6 @@ impl<'de> ::serde::Deserialize<'de> for SessionAmrItem {
 }
 ///Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SessionId(::std::string::String);
@@ -1447,16 +980,6 @@ impl<'de> ::serde::Deserialize<'de> for SessionId {
 }
 ///The authenticated party's VID (typically a DID URL).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The authenticated party's VID (typically a DID URL).",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SessionSubject(::std::string::String);
@@ -2102,7 +1625,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AssertionResponse\": {\n      \"$anchor\": \"assertionResponse\",\n      \"additionalProperties\": false,\n      \"description\": \"The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.\",\n      \"properties\": {\n        \"authenticatorAttachment\": {\n          \"enum\": [\n            \"platform\",\n            \"cross-platform\"\n          ]\n        },\n        \"clientExtensionResults\": {\n          \"type\": \"object\"\n        },\n        \"id\": {\n          \"type\": \"string\"\n        },\n        \"rawId\": {\n          \"type\": \"string\"\n        },\n        \"response\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"authenticatorData\": {\n              \"type\": \"string\"\n            },\n            \"clientDataJSON\": {\n              \"type\": \"string\"\n            },\n            \"signature\": {\n              \"type\": \"string\"\n            },\n            \"userHandle\": {\n              \"type\": [\n                \"string\",\n                \"null\"\n              ]\n            }\n          },\n          \"required\": [\n            \"clientDataJSON\",\n            \"authenticatorData\",\n            \"signature\"\n          ],\n          \"type\": \"object\"\n        },\n        \"type\": {\n          \"const\": \"public-key\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"rawId\",\n        \"type\",\n        \"response\"\n      ],\n      \"title\": \"AuthenticatorAssertionResponse (login)\",\n      \"type\": \"object\"\n    },\n    \"AttestStatement\": {\n      \"description\": \"A complete, signed auth/step-up/approver/attest/0.1 Trust Task document — envelope, payload and proof — issued by the approver. Deliberately an open object here rather than a typed one: the consumer verifies it as a document in its own right (envelope, proof and payload against that specification's schemas), and verifies its proof over the members exactly as received, which a binding that narrowed it to a typed struct and re-serialised it could silently break.\",\n      \"minProperties\": 1,\n      \"title\": \"AttestStatement\",\n      \"type\": \"object\"\n    },\n    \"Evidence\": {\n      \"$anchor\": \"evidence\",\n      \"description\": \"Tagged union over `kind` describing the cryptographic factor the approver presents to back the approval.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"description\": \"The approval is gated by the document's framework `proof` alone. The default when `evidence` is omitted. `amr` reflects \\\"vta\\\"/\\\"did\\\".\",\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"didSigned\"\n            }\n          },\n          \"required\": [\n            \"kind\"\n          ],\n          \"title\": \"DidSigned\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"assertion\": {\n              \"$ref\": \"#/$defs/AssertionResponse\",\n              \"description\": \"The unmodified AuthenticatorAssertionResponse from the platform WebAuthn API. Its `clientDataJSON` challenge MUST equal the step-up `challenge`. Verified per WebAuthn Level 2 §7.2 in addition to the framework proof; `amr` reflects \\\"passkey\\\".\"\n            },\n            \"kind\": {\n              \"const\": \"webauthn\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"assertion\"\n          ],\n          \"title\": \"WebAuthn\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"approverSigned\"\n            },\n            \"statement\": {\n              \"$ref\": \"#/$defs/AttestStatement\",\n              \"description\": \"A complete, signed auth/step-up/approver/attest/0.1 document with `purpose: stepUp`, issued by one of the subject's bound step-up approvers over the step-up `challenge` and `boundTo`, addressed to the relying party. The statement is the factor; the document carrying it MUST still be proved by the subject's own DID — never a delegated key. Verified as received, in addition to the framework proof; `amr` reflects \\\"approver\\\".\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"statement\"\n          ],\n          \"title\": \"ApproverSigned\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"Step-up Evidence\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Acknowledgement the relying party returns after processing the approval. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/approve-response/0.6#response.\",\n      \"properties\": {\n        \"boundTo\": {\n          \"description\": \"Present when status is `recorded`. The opaque relying-party identifier for the single operation this approval authorised. Not a capability.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"reason\": {\n          \"description\": \"Present when status is `rejected`.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"session\": {\n          \"$ref\": \"#/$defs/Session\",\n          \"description\": \"Present when status is `elevated`. Absent for `recorded`, which changes no session.\"\n        },\n        \"status\": {\n          \"description\": \"`elevated` — the approval was applied and the session's assurance level was raised. `recorded` — the approval was applied to the single operation it was bound to, and NO session was elevated; see `boundTo`. `rejected` — the approval was not applied.\",\n          \"enum\": [\n            \"elevated\",\n            \"recorded\",\n            \"rejected\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\"\n      ],\n      \"title\": \"Auth Step-up Approve Response — relying party ack\",\n      \"type\": \"object\"\n    },\n    \"Session\": {\n      \"$anchor\": \"session\",\n      \"additionalProperties\": false,\n      \"description\": \"A logical authentication context bound to a subject. Producers and consumers exchange Session-shaped data in challenge issuance, authentication responses, and introspection (whoami).\",\n      \"properties\": {\n        \"acr\": {\n          \"description\": \"Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is \\\"aal1\\\" (single-factor DID auth), \\\"aal2\\\" (a second possession-or-biometric factor confirmed), and \\\"aal3\\\" (hardware-bound second factor).\",\n          \"type\": \"string\"\n        },\n        \"amr\": {\n          \"description\": \"Authentication Methods References per [RFC 8176]. Typical values: \\\"did\\\" (challenge-response), \\\"passkey\\\" (WebAuthn), \\\"vta\\\" (verifiable-trust agent approval). Multi-factor sessions list every method used.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"expiresAt\": {\n          \"description\": \"ISO-8601 timestamp when the session ceases to be valid. Producers SHOULD refresh before this time; consumers MUST reject after.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"id\": {\n          \"description\": \"Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issuedAt\": {\n          \"description\": \"ISO-8601 timestamp when the session was created.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"subject\": {\n          \"description\": \"The authenticated party's VID (typically a DID URL).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"subject\",\n        \"issuedAt\",\n        \"expiresAt\"\n      ],\n      \"title\": \"Session\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/step-up/approve-response/0.6\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"The approver's signed ratification of a step-up: subject + challenge (+ sessionId, when the request carried one) are echoed inside a document signed by the approver, backed by a gate — the proof itself, a WebAuthn assertion, or a bound step-up approver's signed statement — so the relying party can elevate the session, or apply the approval to the one operation it was bound to.\",\n  \"properties\": {\n    \"challenge\": {\n      \"description\": \"Echoed from the matching approve-request. The relying party verifies it equals the bound challenge.\",\n      \"minLength\": 16,\n      \"type\": \"string\"\n    },\n    \"decision\": {\n      \"description\": \"`approved` elevates the session, or authorizes the bound operation, per the relying party's policy. `denied` is a signed refusal — useful for audit even though it changes nothing.\",\n      \"enum\": [\n        \"approved\",\n        \"denied\"\n      ],\n      \"type\": \"string\"\n    },\n    \"deniedReason\": {\n      \"description\": \"Required when decision is `denied`. Human-readable rationale the user provided (or which the approver inferred).\",\n      \"maxLength\": 500,\n      \"type\": \"string\"\n    },\n    \"evidence\": {\n      \"$ref\": \"#/$defs/Evidence\",\n      \"description\": \"How the approver demonstrated the factor backing this approval. A tagged union on `kind`; absent is equivalent to `didSigned`. Whatever the kind, the document's framework `proof` is REQUIRED — evidence is in addition to it, never instead.\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"grantedAcr\": {\n      \"description\": \"The acr the approver believes it has cryptographically demonstrated. The relying party MAY accept this, MAY upgrade to a lower value, but MUST NOT exceed it.\",\n      \"type\": \"string\"\n    },\n    \"sessionId\": {\n      \"description\": \"Echoed from the matching approve-request when that request carried one, and absent when it did not — a step-up bound to an operation that arrived without a session.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"subject\": {\n      \"description\": \"Echoed from the matching approve-request. The relying party verifies it equals the subject bound to the pending step-up. With `approverSigned` evidence it is also the document's issuer: the subject signs as its own DID.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"subject\",\n    \"challenge\",\n    \"decision\"\n  ],\n  \"title\": \"Auth — Step-up Approve Response\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"AssertionResponse\":{\"$anchor\":\"assertionResponse\",\"additionalProperties\":false,\"description\":\"The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.\",\"properties\":{\"authenticatorAttachment\":{\"enum\":[\"platform\",\"cross-platform\"]},\"clientExtensionResults\":{\"type\":\"object\"},\"id\":{\"type\":\"string\"},\"rawId\":{\"type\":\"string\"},\"response\":{\"additionalProperties\":false,\"properties\":{\"authenticatorData\":{\"type\":\"string\"},\"clientDataJSON\":{\"type\":\"string\"},\"signature\":{\"type\":\"string\"},\"userHandle\":{\"type\":[\"string\",\"null\"]}},\"required\":[\"clientDataJSON\",\"authenticatorData\",\"signature\"],\"type\":\"object\"},\"type\":{\"const\":\"public-key\"}},\"required\":[\"id\",\"rawId\",\"type\",\"response\"],\"title\":\"AuthenticatorAssertionResponse (login)\",\"type\":\"object\"},\"AttestStatement\":{\"description\":\"A complete, signed auth/step-up/approver/attest/0.1 Trust Task document — envelope, payload and proof — issued by the approver. Deliberately an open object here rather than a typed one: the consumer verifies it as a document in its own right (envelope, proof and payload against that specification's schemas), and verifies its proof over the members exactly as received, which a binding that narrowed it to a typed struct and re-serialised it could silently break.\",\"minProperties\":1,\"title\":\"AttestStatement\",\"type\":\"object\"},\"Evidence\":{\"$anchor\":\"evidence\",\"description\":\"Tagged union over `kind` describing the cryptographic factor the approver presents to back the approval.\",\"oneOf\":[{\"additionalProperties\":false,\"description\":\"The approval is gated by the document's framework `proof` alone. The default when `evidence` is omitted. `amr` reflects \\\"vta\\\"/\\\"did\\\".\",\"properties\":{\"kind\":{\"const\":\"didSigned\"}},\"required\":[\"kind\"],\"title\":\"DidSigned\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"assertion\":{\"$ref\":\"#/$defs/AssertionResponse\",\"description\":\"The unmodified AuthenticatorAssertionResponse from the platform WebAuthn API. Its `clientDataJSON` challenge MUST equal the step-up `challenge`. Verified per WebAuthn Level 2 §7.2 in addition to the framework proof; `amr` reflects \\\"passkey\\\".\"},\"kind\":{\"const\":\"webauthn\"}},\"required\":[\"kind\",\"assertion\"],\"title\":\"WebAuthn\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"approverSigned\"},\"statement\":{\"$ref\":\"#/$defs/AttestStatement\",\"description\":\"A complete, signed auth/step-up/approver/attest/0.1 document with `purpose: stepUp`, issued by one of the subject's bound step-up approvers over the step-up `challenge` and `boundTo`, addressed to the relying party. The statement is the factor; the document carrying it MUST still be proved by the subject's own DID — never a delegated key. Verified as received, in addition to the framework proof; `amr` reflects \\\"approver\\\".\"}},\"required\":[\"kind\",\"statement\"],\"title\":\"ApproverSigned\",\"type\":\"object\"}],\"title\":\"Step-up Evidence\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Acknowledgement the relying party returns after processing the approval. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/approve-response/0.6#response.\",\"properties\":{\"boundTo\":{\"description\":\"Present when status is `recorded`. The opaque relying-party identifier for the single operation this approval authorised. Not a capability.\",\"maxLength\":256,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"reason\":{\"description\":\"Present when status is `rejected`.\",\"maxLength\":1024,\"type\":\"string\"},\"session\":{\"$ref\":\"#/$defs/Session\",\"description\":\"Present when status is `elevated`. Absent for `recorded`, which changes no session.\"},\"status\":{\"description\":\"`elevated` — the approval was applied and the session's assurance level was raised. `recorded` — the approval was applied to the single operation it was bound to, and NO session was elevated; see `boundTo`. `rejected` — the approval was not applied.\",\"enum\":[\"elevated\",\"recorded\",\"rejected\"],\"type\":\"string\"}},\"required\":[\"status\"],\"title\":\"Auth Step-up Approve Response — relying party ack\",\"type\":\"object\"},\"Session\":{\"$anchor\":\"session\",\"additionalProperties\":false,\"description\":\"A logical authentication context bound to a subject. Producers and consumers exchange Session-shaped data in challenge issuance, authentication responses, and introspection (whoami).\",\"properties\":{\"acr\":{\"description\":\"Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is \\\"aal1\\\" (single-factor DID auth), \\\"aal2\\\" (a second possession-or-biometric factor confirmed), and \\\"aal3\\\" (hardware-bound second factor).\",\"type\":\"string\"},\"amr\":{\"description\":\"Authentication Methods References per [RFC 8176]. Typical values: \\\"did\\\" (challenge-response), \\\"passkey\\\" (WebAuthn), \\\"vta\\\" (verifiable-trust agent approval). Multi-factor sessions list every method used.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"},\"expiresAt\":{\"description\":\"ISO-8601 timestamp when the session ceases to be valid. Producers SHOULD refresh before this time; consumers MUST reject after.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"id\":{\"description\":\"Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied.\",\"minLength\":1,\"type\":\"string\"},\"issuedAt\":{\"description\":\"ISO-8601 timestamp when the session was created.\",\"format\":\"date-time\",\"type\":\"string\"},\"subject\":{\"description\":\"The authenticated party's VID (typically a DID URL).\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\",\"subject\",\"issuedAt\",\"expiresAt\"],\"title\":\"Session\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/auth/step-up/approve-response/0.6\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The approver's signed ratification of a step-up: subject + challenge (+ sessionId, when the request carried one) are echoed inside a document signed by the approver, backed by a gate — the proof itself, a WebAuthn assertion, or a bound step-up approver's signed statement — so the relying party can elevate the session, or apply the approval to the one operation it was bound to.\",\"properties\":{\"challenge\":{\"description\":\"Echoed from the matching approve-request. The relying party verifies it equals the bound challenge.\",\"minLength\":16,\"type\":\"string\"},\"decision\":{\"description\":\"`approved` elevates the session, or authorizes the bound operation, per the relying party's policy. `denied` is a signed refusal — useful for audit even though it changes nothing.\",\"enum\":[\"approved\",\"denied\"],\"type\":\"string\"},\"deniedReason\":{\"description\":\"Required when decision is `denied`. Human-readable rationale the user provided (or which the approver inferred).\",\"maxLength\":500,\"type\":\"string\"},\"evidence\":{\"$ref\":\"#/$defs/Evidence\",\"description\":\"How the approver demonstrated the factor backing this approval. A tagged union on `kind`; absent is equivalent to `didSigned`. Whatever the kind, the document's framework `proof` is REQUIRED — evidence is in addition to it, never instead.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"grantedAcr\":{\"description\":\"The acr the approver believes it has cryptographically demonstrated. The relying party MAY accept this, MAY upgrade to a lower value, but MUST NOT exceed it.\",\"type\":\"string\"},\"sessionId\":{\"description\":\"Echoed from the matching approve-request when that request carried one, and absent when it did not — a step-up bound to an operation that arrived without a session.\",\"minLength\":1,\"type\":\"string\"},\"subject\":{\"description\":\"Echoed from the matching approve-request. The relying party verifies it equals the subject bound to the pending step-up. With `approverSigned` evidence it is also the document's issuer: the subject signs as its own DID.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"subject\",\"challenge\",\"decision\"],\"title\":\"Auth — Step-up Approve Response\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -2112,7 +1635,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AssertionResponse\": {\n      \"$anchor\": \"assertionResponse\",\n      \"additionalProperties\": false,\n      \"description\": \"The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.\",\n      \"properties\": {\n        \"authenticatorAttachment\": {\n          \"enum\": [\n            \"platform\",\n            \"cross-platform\"\n          ]\n        },\n        \"clientExtensionResults\": {\n          \"type\": \"object\"\n        },\n        \"id\": {\n          \"type\": \"string\"\n        },\n        \"rawId\": {\n          \"type\": \"string\"\n        },\n        \"response\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"authenticatorData\": {\n              \"type\": \"string\"\n            },\n            \"clientDataJSON\": {\n              \"type\": \"string\"\n            },\n            \"signature\": {\n              \"type\": \"string\"\n            },\n            \"userHandle\": {\n              \"type\": [\n                \"string\",\n                \"null\"\n              ]\n            }\n          },\n          \"required\": [\n            \"clientDataJSON\",\n            \"authenticatorData\",\n            \"signature\"\n          ],\n          \"type\": \"object\"\n        },\n        \"type\": {\n          \"const\": \"public-key\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"rawId\",\n        \"type\",\n        \"response\"\n      ],\n      \"title\": \"AuthenticatorAssertionResponse (login)\",\n      \"type\": \"object\"\n    },\n    \"AttestStatement\": {\n      \"description\": \"A complete, signed auth/step-up/approver/attest/0.1 Trust Task document — envelope, payload and proof — issued by the approver. Deliberately an open object here rather than a typed one: the consumer verifies it as a document in its own right (envelope, proof and payload against that specification's schemas), and verifies its proof over the members exactly as received, which a binding that narrowed it to a typed struct and re-serialised it could silently break.\",\n      \"minProperties\": 1,\n      \"title\": \"AttestStatement\",\n      \"type\": \"object\"\n    },\n    \"Evidence\": {\n      \"$anchor\": \"evidence\",\n      \"description\": \"Tagged union over `kind` describing the cryptographic factor the approver presents to back the approval.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"description\": \"The approval is gated by the document's framework `proof` alone. The default when `evidence` is omitted. `amr` reflects \\\"vta\\\"/\\\"did\\\".\",\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"didSigned\"\n            }\n          },\n          \"required\": [\n            \"kind\"\n          ],\n          \"title\": \"DidSigned\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"assertion\": {\n              \"$ref\": \"#/$defs/AssertionResponse\",\n              \"description\": \"The unmodified AuthenticatorAssertionResponse from the platform WebAuthn API. Its `clientDataJSON` challenge MUST equal the step-up `challenge`. Verified per WebAuthn Level 2 §7.2 in addition to the framework proof; `amr` reflects \\\"passkey\\\".\"\n            },\n            \"kind\": {\n              \"const\": \"webauthn\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"assertion\"\n          ],\n          \"title\": \"WebAuthn\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"approverSigned\"\n            },\n            \"statement\": {\n              \"$ref\": \"#/$defs/AttestStatement\",\n              \"description\": \"A complete, signed auth/step-up/approver/attest/0.1 document with `purpose: stepUp`, issued by one of the subject's bound step-up approvers over the step-up `challenge` and `boundTo`, addressed to the relying party. The statement is the factor; the document carrying it MUST still be proved by the subject's own DID — never a delegated key. Verified as received, in addition to the framework proof; `amr` reflects \\\"approver\\\".\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"statement\"\n          ],\n          \"title\": \"ApproverSigned\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"Step-up Evidence\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Acknowledgement the relying party returns after processing the approval. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/approve-response/0.6#response.\",\n      \"properties\": {\n        \"boundTo\": {\n          \"description\": \"Present when status is `recorded`. The opaque relying-party identifier for the single operation this approval authorised. Not a capability.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"reason\": {\n          \"description\": \"Present when status is `rejected`.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"session\": {\n          \"$ref\": \"#/$defs/Session\",\n          \"description\": \"Present when status is `elevated`. Absent for `recorded`, which changes no session.\"\n        },\n        \"status\": {\n          \"description\": \"`elevated` — the approval was applied and the session's assurance level was raised. `recorded` — the approval was applied to the single operation it was bound to, and NO session was elevated; see `boundTo`. `rejected` — the approval was not applied.\",\n          \"enum\": [\n            \"elevated\",\n            \"recorded\",\n            \"rejected\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\"\n      ],\n      \"title\": \"Auth Step-up Approve Response — relying party ack\",\n      \"type\": \"object\"\n    },\n    \"Session\": {\n      \"$anchor\": \"session\",\n      \"additionalProperties\": false,\n      \"description\": \"A logical authentication context bound to a subject. Producers and consumers exchange Session-shaped data in challenge issuance, authentication responses, and introspection (whoami).\",\n      \"properties\": {\n        \"acr\": {\n          \"description\": \"Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is \\\"aal1\\\" (single-factor DID auth), \\\"aal2\\\" (a second possession-or-biometric factor confirmed), and \\\"aal3\\\" (hardware-bound second factor).\",\n          \"type\": \"string\"\n        },\n        \"amr\": {\n          \"description\": \"Authentication Methods References per [RFC 8176]. Typical values: \\\"did\\\" (challenge-response), \\\"passkey\\\" (WebAuthn), \\\"vta\\\" (verifiable-trust agent approval). Multi-factor sessions list every method used.\",\n          \"items\": {\n            \"minLength\": 1,\n            \"type\": \"string\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"expiresAt\": {\n          \"description\": \"ISO-8601 timestamp when the session ceases to be valid. Producers SHOULD refresh before this time; consumers MUST reject after.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"id\": {\n          \"description\": \"Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issuedAt\": {\n          \"description\": \"ISO-8601 timestamp when the session was created.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"subject\": {\n          \"description\": \"The authenticated party's VID (typically a DID URL).\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"subject\",\n        \"issuedAt\",\n        \"expiresAt\"\n      ],\n      \"title\": \"Session\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"AssertionResponse\":{\"$anchor\":\"assertionResponse\",\"additionalProperties\":false,\"description\":\"The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.\",\"properties\":{\"authenticatorAttachment\":{\"enum\":[\"platform\",\"cross-platform\"]},\"clientExtensionResults\":{\"type\":\"object\"},\"id\":{\"type\":\"string\"},\"rawId\":{\"type\":\"string\"},\"response\":{\"additionalProperties\":false,\"properties\":{\"authenticatorData\":{\"type\":\"string\"},\"clientDataJSON\":{\"type\":\"string\"},\"signature\":{\"type\":\"string\"},\"userHandle\":{\"type\":[\"string\",\"null\"]}},\"required\":[\"clientDataJSON\",\"authenticatorData\",\"signature\"],\"type\":\"object\"},\"type\":{\"const\":\"public-key\"}},\"required\":[\"id\",\"rawId\",\"type\",\"response\"],\"title\":\"AuthenticatorAssertionResponse (login)\",\"type\":\"object\"},\"AttestStatement\":{\"description\":\"A complete, signed auth/step-up/approver/attest/0.1 Trust Task document — envelope, payload and proof — issued by the approver. Deliberately an open object here rather than a typed one: the consumer verifies it as a document in its own right (envelope, proof and payload against that specification's schemas), and verifies its proof over the members exactly as received, which a binding that narrowed it to a typed struct and re-serialised it could silently break.\",\"minProperties\":1,\"title\":\"AttestStatement\",\"type\":\"object\"},\"Evidence\":{\"$anchor\":\"evidence\",\"description\":\"Tagged union over `kind` describing the cryptographic factor the approver presents to back the approval.\",\"oneOf\":[{\"additionalProperties\":false,\"description\":\"The approval is gated by the document's framework `proof` alone. The default when `evidence` is omitted. `amr` reflects \\\"vta\\\"/\\\"did\\\".\",\"properties\":{\"kind\":{\"const\":\"didSigned\"}},\"required\":[\"kind\"],\"title\":\"DidSigned\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"assertion\":{\"$ref\":\"#/$defs/AssertionResponse\",\"description\":\"The unmodified AuthenticatorAssertionResponse from the platform WebAuthn API. Its `clientDataJSON` challenge MUST equal the step-up `challenge`. Verified per WebAuthn Level 2 §7.2 in addition to the framework proof; `amr` reflects \\\"passkey\\\".\"},\"kind\":{\"const\":\"webauthn\"}},\"required\":[\"kind\",\"assertion\"],\"title\":\"WebAuthn\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"approverSigned\"},\"statement\":{\"$ref\":\"#/$defs/AttestStatement\",\"description\":\"A complete, signed auth/step-up/approver/attest/0.1 document with `purpose: stepUp`, issued by one of the subject's bound step-up approvers over the step-up `challenge` and `boundTo`, addressed to the relying party. The statement is the factor; the document carrying it MUST still be proved by the subject's own DID — never a delegated key. Verified as received, in addition to the framework proof; `amr` reflects \\\"approver\\\".\"}},\"required\":[\"kind\",\"statement\"],\"title\":\"ApproverSigned\",\"type\":\"object\"}],\"title\":\"Step-up Evidence\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Acknowledgement the relying party returns after processing the approval. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/step-up/approve-response/0.6#response.\",\"properties\":{\"boundTo\":{\"description\":\"Present when status is `recorded`. The opaque relying-party identifier for the single operation this approval authorised. Not a capability.\",\"maxLength\":256,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"reason\":{\"description\":\"Present when status is `rejected`.\",\"maxLength\":1024,\"type\":\"string\"},\"session\":{\"$ref\":\"#/$defs/Session\",\"description\":\"Present when status is `elevated`. Absent for `recorded`, which changes no session.\"},\"status\":{\"description\":\"`elevated` — the approval was applied and the session's assurance level was raised. `recorded` — the approval was applied to the single operation it was bound to, and NO session was elevated; see `boundTo`. `rejected` — the approval was not applied.\",\"enum\":[\"elevated\",\"recorded\",\"rejected\"],\"type\":\"string\"}},\"required\":[\"status\"],\"title\":\"Auth Step-up Approve Response — relying party ack\",\"type\":\"object\"},\"Session\":{\"$anchor\":\"session\",\"additionalProperties\":false,\"description\":\"A logical authentication context bound to a subject. Producers and consumers exchange Session-shaped data in challenge issuance, authentication responses, and introspection (whoami).\",\"properties\":{\"acr\":{\"description\":\"Authentication Context Class Reference per [OIDC Core §2]. Profiles define their own values; the recommended set is \\\"aal1\\\" (single-factor DID auth), \\\"aal2\\\" (a second possession-or-biometric factor confirmed), and \\\"aal3\\\" (hardware-bound second factor).\",\"type\":\"string\"},\"amr\":{\"description\":\"Authentication Methods References per [RFC 8176]. Typical values: \\\"did\\\" (challenge-response), \\\"passkey\\\" (WebAuthn), \\\"vta\\\" (verifiable-trust agent approval). Multi-factor sessions list every method used.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"minItems\":1,\"type\":\"array\"},\"expiresAt\":{\"description\":\"ISO-8601 timestamp when the session ceases to be valid. Producers SHOULD refresh before this time; consumers MUST reject after.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"id\":{\"description\":\"Opaque, server-chosen session identifier. Stable for the lifetime of the session. Consumers MUST treat the value as opaque; no structure is implied.\",\"minLength\":1,\"type\":\"string\"},\"issuedAt\":{\"description\":\"ISO-8601 timestamp when the session was created.\",\"format\":\"date-time\",\"type\":\"string\"},\"subject\":{\"description\":\"The authenticated party's VID (typically a DID URL).\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\",\"subject\",\"issuedAt\",\"expiresAt\"],\"title\":\"Session\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

@@ -34,54 +34,6 @@ pub mod error {
 }
 ///How a self-granted right came to be, and whether another administrator has since ratified it. A record whose `breakGlass` has no `ratifiedBy` is **unratified**: it is live and published like any other right, it does not count toward the last-owner or last-admin invariants, and any community administrator or namespace admin of its namespace may revoke it. Ratification (git-ns/right/ratify) sets `ratifiedBy` and `ratifiedAt`; from then on the record is an ordinary grant, and `breakGlass` stays as its history. Never published to the Trust Registry.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "BreakGlass",
-///  "description": "How a self-granted right came to be, and whether another administrator has since ratified it. A record whose `breakGlass` has no `ratifiedBy` is **unratified**: it is live and published like any other right, it does not count toward the last-owner or last-admin invariants, and any community administrator or namespace admin of its namespace may revoke it. Ratification (git-ns/right/ratify) sets `ratifiedBy` and `ratifiedAt`; from then on the record is an ordinary grant, and `breakGlass` stays as its history. Never published to the Trust Registry.",
-///  "type": "object",
-///  "required": [
-///    "by",
-///    "justification",
-///    "recordedAt"
-///  ],
-///  "properties": {
-///    "by": {
-///      "description": "Who broke the glass: always the record's `subject`, restated so the flag reads on its own.",
-///      "$ref": "#/definitions/Did"
-///    },
-///    "effectiveAt": {
-///      "description": "When the right takes effect, where the community's policy imposed a delay. Absent: it took effect at `recordedAt`. Until this instant the record confers nothing and is not published, and any administrator who may revoke it may do so.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "justification": {
-///      "description": "The actor's statement of why nobody else could grant this right. Shown to every community administrator, every namespace admin of the namespace and every owner of the resource; kept in the audit record; never published.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1,
-///      "pattern": "\\S"
-///    },
-///    "ratifiedAt": {
-///      "description": "When it was ratified. Present exactly when `ratifiedBy` is.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ratifiedBy": {
-///      "description": "The administrator who ratified the record — never its subject. Absent while unratified.",
-///      "$ref": "#/definitions/Did"
-///    },
-///    "recordedAt": {
-///      "description": "When the VTC recorded the break-glass.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -122,18 +74,6 @@ impl BreakGlass {
 }
 ///The actor's statement of why nobody else could grant this right. Shown to every community administrator, every namespace admin of the namespace and every owner of the resource; kept in the audit record; never published.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The actor's statement of why nobody else could grant this right. Shown to every community administrator, every namespace admin of the namespace and every owner of the resource; kept in the audit record; never published.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1,
-///  "pattern": "\\S"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct BreakGlassJustification(::std::string::String);
@@ -201,18 +141,6 @@ impl<'de> ::serde::Deserialize<'de> for BreakGlassJustification {
 }
 ///A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Did",
-///  "description": "A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Did(::std::string::String);
@@ -286,52 +214,6 @@ impl<'de> ::serde::Deserialize<'de> for Did {
 }
 ///One difference between the forge's observed state and the VTC's projection of a repository.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DriftItem",
-///  "description": "One difference between the forge's observed state and the VTC's projection of a repository.",
-///  "type": "object",
-///  "required": [
-///    "resource",
-///    "type"
-///  ],
-///  "properties": {
-///    "account": {
-///      "description": "Whose role differs, for the three role types.",
-///      "$ref": "#/definitions/ForgeAccount"
-///    },
-///    "expected": {
-///      "description": "What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing.",
-///      "type": "string",
-///      "maxLength": 256
-///    },
-///    "observed": {
-///      "description": "What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.",
-///      "type": "string",
-///      "maxLength": 256
-///    },
-///    "resource": {
-///      "$ref": "#/definitions/RepoResource"
-///    },
-///    "type": {
-///      "description": "`roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.",
-///      "type": "string",
-///      "enum": [
-///        "roleAdded",
-///        "roleRemoved",
-///        "roleChanged",
-///        "requiredCheckMissing",
-///        "protectionWeakened",
-///        "bootstrapMissing"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -357,16 +239,6 @@ impl DriftItem {
 }
 ///What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing.",
-///  "type": "string",
-///  "maxLength": 256
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DriftItemExpected(::std::string::String);
@@ -426,16 +298,6 @@ impl<'de> ::serde::Deserialize<'de> for DriftItemExpected {
 }
 ///What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.",
-///  "type": "string",
-///  "maxLength": 256
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DriftItemObserved(::std::string::String);
@@ -495,23 +357,6 @@ impl<'de> ::serde::Deserialize<'de> for DriftItemObserved {
 }
 ///`roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.",
-///  "type": "string",
-///  "enum": [
-///    "roleAdded",
-///    "roleRemoved",
-///    "roleChanged",
-///    "requiredCheckMissing",
-///    "protectionWeakened",
-///    "bootstrapMissing"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -589,34 +434,6 @@ impl ::std::convert::TryFrom<::std::string::String> for DriftItemType {
 }
 ///Which of the repository's outstanding drift items to resolve. Drift items carry no identifier of their own: they are recomputed by the bridge and replaced wholesale by every git-ns/bridge/event. An item is selected by its `type`, and for the three role types also by the account whose role differs, which is unique among a repository's outstanding items.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DriftSelector",
-///  "description": "Which of the repository's outstanding drift items to resolve. Drift items carry no identifier of their own: they are recomputed by the bridge and replaced wholesale by every git-ns/bridge/event. An item is selected by its `type`, and for the three role types also by the account whose role differs, which is unique among a repository's outstanding items.",
-///  "type": "object",
-///  "required": [
-///    "type"
-///  ],
-///  "properties": {
-///    "account": {
-///      "description": "The account whose role differs, as the drift item reports it. Required for `roleAdded`, `roleRemoved` and `roleChanged`, and absent for every other type. Matched by `forge` and `id`; `login` is display only.",
-///      "$ref": "#/definitions/ForgeAccount"
-///    },
-///    "observed": {
-///      "description": "The item's `observed` value as the caller last read it. When present, the item is selected only if the forge still shows exactly this, so a decision made about one state is never applied to another. Required for `adopt`.",
-///      "type": "string",
-///      "maxLength": 256
-///    },
-///    "type": {
-///      "$ref": "#/definitions/DriftType"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -637,16 +454,6 @@ impl DriftSelector {
 }
 ///The item's `observed` value as the caller last read it. When present, the item is selected only if the forge still shows exactly this, so a decision made about one state is never applied to another. Required for `adopt`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The item's `observed` value as the caller last read it. When present, the item is selected only if the forge still shows exactly this, so a decision made about one state is never applied to another. Required for `adopt`.",
-///  "type": "string",
-///  "maxLength": 256
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DriftSelectorObserved(::std::string::String);
@@ -706,24 +513,6 @@ impl<'de> ::serde::Deserialize<'de> for DriftSelectorObserved {
 }
 ///The kinds of drift, named so that a task can select a drift item by kind. The same values, with the same meanings, as `DriftItem`'s `type`, which keeps its own inline list so that `DriftItem` stays textually identical to 0.1; the two lists change together. `roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DriftType",
-///  "description": "The kinds of drift, named so that a task can select a drift item by kind. The same values, with the same meanings, as `DriftItem`'s `type`, which keeps its own inline list so that `DriftItem` stays textually identical to 0.1; the two lists change together. `roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.",
-///  "type": "string",
-///  "enum": [
-///    "roleAdded",
-///    "roleRemoved",
-///    "roleChanged",
-///    "requiredCheckMissing",
-///    "protectionWeakened",
-///    "bootstrapMissing"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -801,21 +590,6 @@ impl ::std::convert::TryFrom<::std::string::String> for DriftType {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -837,15 +611,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -909,36 +674,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ForgeAccount",
-///  "description": "A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.",
-///  "type": "object",
-///  "required": [
-///    "forge",
-///    "id",
-///    "login"
-///  ],
-///  "properties": {
-///    "forge": {
-///      "$ref": "#/definitions/ForgeHost"
-///    },
-///    "id": {
-///      "$ref": "#/definitions/ForgeId"
-///    },
-///    "login": {
-///      "description": "The account's current login, as the forge reported it when last seen. Display only.",
-///      "type": "string",
-///      "maxLength": 100,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -955,17 +690,6 @@ impl ForgeAccount {
 }
 ///The account's current login, as the forge reported it when last seen. Display only.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The account's current login, as the forge reported it when last seen. Display only.",
-///  "type": "string",
-///  "maxLength": 100,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ForgeAccountLogin(::std::string::String);
@@ -1028,19 +752,6 @@ impl<'de> ::serde::Deserialize<'de> for ForgeAccountLogin {
 }
 ///The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, `gitlab.com`, or a self-hosted Forgejo or GitLab instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ForgeHost",
-///  "description": "The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, `gitlab.com`, or a self-hosted Forgejo or GitLab instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.",
-///  "type": "string",
-///  "maxLength": 253,
-///  "minLength": 3,
-///  "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ForgeHost(::std::string::String);
@@ -1116,18 +827,6 @@ impl<'de> ::serde::Deserialize<'de> for ForgeHost {
 }
 ///An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub, Forgejo and GitLab ids are decimal integers written as strings (`"812736451"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ForgeId",
-///  "description": "An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub, Forgejo and GitLab ids are decimal integers written as strings (`\"812736451\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ForgeId(::std::string::String);
@@ -1190,52 +889,6 @@ impl<'de> ::serde::Deserialize<'de> for ForgeId {
 }
 ///An owner of a repository, or a namespace admin over it, resolves one reported drift item: `adopt` records the forge-side role as a VTC right for the member the resolver names, under the same rules as git-ns/right/grant; `revert` has the bridge undo the forge-side change.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/git-ns/drift/resolve/0.4",
-///  "title": "Payload",
-///  "description": "An owner of a repository, or a namespace admin over it, resolves one reported drift item: `adopt` records the forge-side role as a VTC right for the member the resolver names, under the same rules as git-ns/right/grant; `revert` has the bridge undo the forge-side change.",
-///  "type": "object",
-///  "required": [
-///    "action",
-///    "drift",
-///    "resource"
-///  ],
-///  "properties": {
-///    "action": {
-///      "description": "`adopt` — record the forge-side role as a VTC right, so the projection comes to match the forge. `revert` — have the bridge make the forge match the projection again.",
-///      "type": "string",
-///      "enum": [
-///        "adopt",
-///        "revert"
-///      ]
-///    },
-///    "drift": {
-///      "$ref": "#/definitions/DriftSelector"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "reason": {
-///      "description": "Why, in the resolver's words. Kept in the VTC's audit record and, for `adopt`, as the recorded right's `reason`, disclosed only to the repository's owners and namespace admins.",
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "resource": {
-///      "description": "The repository whose drift is resolved.",
-///      "$ref": "#/definitions/RepoResource"
-///    },
-///    "subject": {
-///      "description": "For `adopt`: the member who receives the right, as the resolver read it — the DID linked to the item's account when they decided. REQUIRED for `adopt` and absent for `revert`. The VTC adopts nothing unless the account is still linked to exactly this member, so a link changed between reading and signing never grants to someone the resolver did not name.",
-///      "$ref": "#/definitions/Did"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1261,19 +914,6 @@ impl Payload {
 }
 ///`adopt` — record the forge-side role as a VTC right, so the projection comes to match the forge. `revert` — have the bridge make the forge match the projection again.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`adopt` — record the forge-side role as a VTC right, so the projection comes to match the forge. `revert` — have the bridge make the forge match the projection again.",
-///  "type": "string",
-///  "enum": [
-///    "adopt",
-///    "revert"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1335,16 +975,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadAction {
 }
 ///Why, in the resolver's words. Kept in the VTC's audit record and, for `adopt`, as the recorded right's `reason`, disclosed only to the repository's owners and namespace admins.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Why, in the resolver's words. Kept in the VTC's audit record and, for `adopt`, as the recorded right's `reason`, disclosed only to the repository's owners and namespace admins.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadReason(::std::string::String);
@@ -1404,18 +1034,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 }
 ///A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo-path>`, lowercase, where the repository path has 1 to 21 segments (see `Resource`).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RepoResource",
-///  "description": "A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo-path>`, lowercase, where the repository path has 1 to 21 segments (see `Resource`).",
-///  "type": "string",
-///  "maxLength": 5885,
-///  "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,254}(?:/[a-z0-9_-][a-z0-9._-]{0,254}){1,21}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RepoResource(::std::string::String);
@@ -1489,18 +1107,6 @@ impl<'de> ::serde::Deserialize<'de> for RepoResource {
 }
 ///A forge-qualified resource, all lowercase: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo-path>` for one repository — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. On a forge with nested groups (GitLab) the repository path holds the subgroups between the top-level owner and the project: `gitlab.com/acme/platform/tools/cli` is one repository of the namespace `gitlab.com/acme`, and a subgroup such as `gitlab.com/acme/platform` is not a resource. A repository path has 1 to 21 segments (GitLab: 20 levels of subgroup and the project); GitHub and Forgejo repository paths are always one. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Resource",
-///  "description": "A forge-qualified resource, all lowercase: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo-path>` for one repository — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. On a forge with nested groups (GitLab) the repository path holds the subgroups between the top-level owner and the project: `gitlab.com/acme/platform/tools/cli` is one repository of the namespace `gitlab.com/acme`, and a subgroup such as `gitlab.com/acme/platform` is not a resource. A repository path has 1 to 21 segments (GitLab: 20 levels of subgroup and the project); GitHub and Forgejo repository paths are always one. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.",
-///  "type": "string",
-///  "maxLength": 5885,
-///  "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,254}(?:/[a-z0-9_-][a-z0-9._-]{0,254}){0,21}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Resource(::std::string::String);
@@ -1574,43 +1180,6 @@ impl<'de> ::serde::Deserialize<'de> for Resource {
 }
 ///What the resolution did, and where the repository's sync now stands.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "What the resolution did, and where the repository's sync now stands.",
-///  "type": "object",
-///  "required": [
-///    "action",
-///    "sync"
-///  ],
-///  "properties": {
-///    "action": {
-///      "description": "The action taken, as requested.",
-///      "type": "string",
-///      "enum": [
-///        "adopt",
-///        "revert"
-///      ]
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "right": {
-///      "description": "For `adopt`: the recorded right — newly recorded, or the live record that already existed. Absent for `revert`.",
-///      "$ref": "#/definitions/RightRecord"
-///    },
-///    "sync": {
-///      "description": "The repository's sync after the resolution. The resolved item is no longer outstanding; the state is `drift` while other items remain, and otherwise `pending` until the bridge confirms the forge matches.",
-///      "$ref": "#/definitions/Sync"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1632,19 +1201,6 @@ impl Response {
 }
 ///The action taken, as requested.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The action taken, as requested.",
-///  "type": "string",
-///  "enum": [
-///    "adopt",
-///    "revert"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1706,23 +1262,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseAction {
 }
 ///One of the five git rights. Each string is also the TRQP `action` the VTC publishes the right under in its Trust Registry, so it is carried verbatim. `git.ns.admin` and `git.repo.create` apply to a namespace resource; `git.repo.own` and `git.repo.maintain` to a repository resource; `git.commit.sign` to either.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Right",
-///  "description": "One of the five git rights. Each string is also the TRQP `action` the VTC publishes the right under in its Trust Registry, so it is carried verbatim. `git.ns.admin` and `git.repo.create` apply to a namespace resource; `git.repo.own` and `git.repo.maintain` to a repository resource; `git.commit.sign` to either.",
-///  "type": "string",
-///  "enum": [
-///    "git.ns.admin",
-///    "git.repo.create",
-///    "git.repo.own",
-///    "git.repo.maintain",
-///    "git.commit.sign"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1796,58 +1335,6 @@ impl ::std::convert::TryFrom<::std::string::String> for Right {
 }
 ///One recorded right. Implied rights (§4.2 of the rights model: `own` implies `maintain` implies `commit.sign` on the same resource; `ns.admin` implies `repo.create` and `own` across its namespace) are not records and never appear as RightRecords. A record carrying `breakGlass` was given by its subject to themselves through git-ns/right/break-glass; it is a real right, published like any other, and is shown with that flag on every surface that shows the record.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RightRecord",
-///  "description": "One recorded right. Implied rights (§4.2 of the rights model: `own` implies `maintain` implies `commit.sign` on the same resource; `ns.admin` implies `repo.create` and `own` across its namespace) are not records and never appear as RightRecords. A record carrying `breakGlass` was given by its subject to themselves through git-ns/right/break-glass; it is a real right, published like any other, and is shown with that flag on every surface that shows the record.",
-///  "type": "object",
-///  "required": [
-///    "grantedAt",
-///    "grantedBy",
-///    "resource",
-///    "right",
-///    "subject"
-///  ],
-///  "properties": {
-///    "breakGlass": {
-///      "description": "Present exactly when the subject gave themselves this right through git-ns/right/break-glass. Absent for every other record.",
-///      "$ref": "#/definitions/BreakGlass"
-///    },
-///    "expiresAt": {
-///      "description": "When the right lapses. Absent: no expiry.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "grantedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "grantedBy": {
-///      "description": "The actor whose task caused the right: the granter, the creator of a repository (for its first `own`), the adopting admin, the transferring owner, or the binding admin (for the first `git.ns.admin`). The VTC's own DID for a right it derives from its configuration.",
-///      "$ref": "#/definitions/Did"
-///    },
-///    "reason": {
-///      "description": "The granter's free-text reason. Disclosed only to holders of `git.repo.own` on the resource and of `git.ns.admin` over it.",
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "resource": {
-///      "$ref": "#/definitions/Resource"
-///    },
-///    "right": {
-///      "$ref": "#/definitions/Right"
-///    },
-///    "subject": {
-///      "description": "Who holds the right. For `git.commit.sign` this is the DID whose commit signatures the CI check accepts.",
-///      "$ref": "#/definitions/Did"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1886,16 +1373,6 @@ impl RightRecord {
 }
 ///The granter's free-text reason. Disclosed only to holders of `git.repo.own` on the resource and of `git.ns.admin` over it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The granter's free-text reason. Disclosed only to holders of `git.repo.own` on the resource and of `git.ns.admin` over it.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RightRecordReason(::std::string::String);
@@ -1955,45 +1432,6 @@ impl<'de> ::serde::Deserialize<'de> for RightRecordReason {
 }
 ///How the forge compares with the VTC's projection for one repository.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Sync",
-///  "description": "How the forge compares with the VTC's projection for one repository.",
-///  "type": "object",
-///  "required": [
-///    "drift",
-///    "state"
-///  ],
-///  "properties": {
-///    "checkedAt": {
-///      "description": "When the forge was last compared. Absent if never.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "drift": {
-///      "description": "Outstanding drift. Empty unless `state` is `drift`.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/DriftItem"
-///      }
-///    },
-///    "state": {
-///      "description": "`inSync` — the last comparison found no drift. `drift` — it found some, listed in `drift`. `pending` — a change has been sent to the forge and not yet confirmed. `unchecked` — nothing compares this repository (a manual-mode namespace).",
-///      "type": "string",
-///      "enum": [
-///        "inSync",
-///        "drift",
-///        "pending",
-///        "unchecked"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -2017,21 +1455,6 @@ impl Sync {
 }
 ///`inSync` — the last comparison found no drift. `drift` — it found some, listed in `drift`. `pending` — a change has been sent to the forge and not yet confirmed. `unchecked` — nothing compares this repository (a manual-mode namespace).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`inSync` — the last comparison found no drift. `drift` — it found some, listed in `drift`. `pending` — a change has been sent to the forge and not yet confirmed. `unchecked` — nothing compares this repository (a manual-mode namespace).",
-///  "type": "string",
-///  "enum": [
-///    "inSync",
-///    "drift",
-///    "pending",
-///    "unchecked"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -2888,7 +2311,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"BreakGlass\": {\n      \"additionalProperties\": false,\n      \"description\": \"How a self-granted right came to be, and whether another administrator has since ratified it. A record whose `breakGlass` has no `ratifiedBy` is **unratified**: it is live and published like any other right, it does not count toward the last-owner or last-admin invariants, and any community administrator or namespace admin of its namespace may revoke it. Ratification (git-ns/right/ratify) sets `ratifiedBy` and `ratifiedAt`; from then on the record is an ordinary grant, and `breakGlass` stays as its history. Never published to the Trust Registry.\",\n      \"properties\": {\n        \"by\": {\n          \"$ref\": \"#/$defs/Did\",\n          \"description\": \"Who broke the glass: always the record's `subject`, restated so the flag reads on its own.\"\n        },\n        \"effectiveAt\": {\n          \"description\": \"When the right takes effect, where the community's policy imposed a delay. Absent: it took effect at `recordedAt`. Until this instant the record confers nothing and is not published, and any administrator who may revoke it may do so.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"justification\": {\n          \"description\": \"The actor's statement of why nobody else could grant this right. Shown to every community administrator, every namespace admin of the namespace and every owner of the resource; kept in the audit record; never published.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"pattern\": \"\\\\S\",\n          \"type\": \"string\"\n        },\n        \"ratifiedAt\": {\n          \"description\": \"When it was ratified. Present exactly when `ratifiedBy` is.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ratifiedBy\": {\n          \"$ref\": \"#/$defs/Did\",\n          \"description\": \"The administrator who ratified the record — never its subject. Absent while unratified.\"\n        },\n        \"recordedAt\": {\n          \"description\": \"When the VTC recorded the break-glass.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"by\",\n        \"recordedAt\",\n        \"justification\"\n      ],\n      \"title\": \"BreakGlass\",\n      \"type\": \"object\"\n    },\n    \"Did\": {\n      \"description\": \"A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.\",\n      \"maxLength\": 2048,\n      \"pattern\": \"^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$\",\n      \"title\": \"Did\",\n      \"type\": \"string\"\n    },\n    \"DriftItem\": {\n      \"additionalProperties\": false,\n      \"description\": \"One difference between the forge's observed state and the VTC's projection of a repository.\",\n      \"properties\": {\n        \"account\": {\n          \"$ref\": \"#/$defs/ForgeAccount\",\n          \"description\": \"Whose role differs, for the three role types.\"\n        },\n        \"expected\": {\n          \"description\": \"What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"observed\": {\n          \"description\": \"What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"resource\": {\n          \"$ref\": \"#/$defs/RepoResource\"\n        },\n        \"type\": {\n          \"description\": \"`roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.\",\n          \"enum\": [\n            \"roleAdded\",\n            \"roleRemoved\",\n            \"roleChanged\",\n            \"requiredCheckMissing\",\n            \"protectionWeakened\",\n            \"bootstrapMissing\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"type\",\n        \"resource\"\n      ],\n      \"title\": \"DriftItem\",\n      \"type\": \"object\"\n    },\n    \"DriftSelector\": {\n      \"additionalProperties\": false,\n      \"description\": \"Which of the repository's outstanding drift items to resolve. Drift items carry no identifier of their own: they are recomputed by the bridge and replaced wholesale by every git-ns/bridge/event. An item is selected by its `type`, and for the three role types also by the account whose role differs, which is unique among a repository's outstanding items.\",\n      \"properties\": {\n        \"account\": {\n          \"$ref\": \"#/$defs/ForgeAccount\",\n          \"description\": \"The account whose role differs, as the drift item reports it. Required for `roleAdded`, `roleRemoved` and `roleChanged`, and absent for every other type. Matched by `forge` and `id`; `login` is display only.\"\n        },\n        \"observed\": {\n          \"description\": \"The item's `observed` value as the caller last read it. When present, the item is selected only if the forge still shows exactly this, so a decision made about one state is never applied to another. Required for `adopt`.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"type\": {\n          \"$ref\": \"#/$defs/DriftType\"\n        }\n      },\n      \"required\": [\n        \"type\"\n      ],\n      \"title\": \"DriftSelector\",\n      \"type\": \"object\"\n    },\n    \"DriftType\": {\n      \"description\": \"The kinds of drift, named so that a task can select a drift item by kind. The same values, with the same meanings, as `DriftItem`'s `type`, which keeps its own inline list so that `DriftItem` stays textually identical to 0.1; the two lists change together. `roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.\",\n      \"enum\": [\n        \"roleAdded\",\n        \"roleRemoved\",\n        \"roleChanged\",\n        \"requiredCheckMissing\",\n        \"protectionWeakened\",\n        \"bootstrapMissing\"\n      ],\n      \"title\": \"DriftType\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ForgeAccount\": {\n      \"additionalProperties\": false,\n      \"description\": \"A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.\",\n      \"properties\": {\n        \"forge\": {\n          \"$ref\": \"#/$defs/ForgeHost\"\n        },\n        \"id\": {\n          \"$ref\": \"#/$defs/ForgeId\"\n        },\n        \"login\": {\n          \"description\": \"The account's current login, as the forge reported it when last seen. Display only.\",\n          \"maxLength\": 100,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"forge\",\n        \"id\",\n        \"login\"\n      ],\n      \"title\": \"ForgeAccount\",\n      \"type\": \"object\"\n    },\n    \"ForgeHost\": {\n      \"description\": \"The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, `gitlab.com`, or a self-hosted Forgejo or GitLab instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.\",\n      \"maxLength\": 253,\n      \"minLength\": 3,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$\",\n      \"title\": \"ForgeHost\",\n      \"type\": \"string\"\n    },\n    \"ForgeId\": {\n      \"description\": \"An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub, Forgejo and GitLab ids are decimal integers written as strings (`\\\"812736451\\\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"title\": \"ForgeId\",\n      \"type\": \"string\"\n    },\n    \"RepoResource\": {\n      \"description\": \"A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo-path>`, lowercase, where the repository path has 1 to 21 segments (see `Resource`).\",\n      \"maxLength\": 5885,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,254}(?:/[a-z0-9_-][a-z0-9._-]{0,254}){1,21}$\",\n      \"title\": \"RepoResource\",\n      \"type\": \"string\"\n    },\n    \"Resource\": {\n      \"description\": \"A forge-qualified resource, all lowercase: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo-path>` for one repository — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. On a forge with nested groups (GitLab) the repository path holds the subgroups between the top-level owner and the project: `gitlab.com/acme/platform/tools/cli` is one repository of the namespace `gitlab.com/acme`, and a subgroup such as `gitlab.com/acme/platform` is not a resource. A repository path has 1 to 21 segments (GitLab: 20 levels of subgroup and the project); GitHub and Forgejo repository paths are always one. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.\",\n      \"maxLength\": 5885,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,254}(?:/[a-z0-9_-][a-z0-9._-]{0,254}){0,21}$\",\n      \"title\": \"Resource\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"What the resolution did, and where the repository's sync now stands.\",\n      \"properties\": {\n        \"action\": {\n          \"description\": \"The action taken, as requested.\",\n          \"enum\": [\n            \"adopt\",\n            \"revert\"\n          ],\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"right\": {\n          \"$ref\": \"#/$defs/RightRecord\",\n          \"description\": \"For `adopt`: the recorded right — newly recorded, or the live record that already existed. Absent for `revert`.\"\n        },\n        \"sync\": {\n          \"$ref\": \"#/$defs/Sync\",\n          \"description\": \"The repository's sync after the resolution. The resolved item is no longer outstanding; the state is `drift` while other items remain, and otherwise `pending` until the bridge confirms the forge matches.\"\n        }\n      },\n      \"required\": [\n        \"action\",\n        \"sync\"\n      ],\n      \"title\": \"Git Namespaces — Resolve Drift — response payload\",\n      \"type\": \"object\"\n    },\n    \"Right\": {\n      \"description\": \"One of the five git rights. Each string is also the TRQP `action` the VTC publishes the right under in its Trust Registry, so it is carried verbatim. `git.ns.admin` and `git.repo.create` apply to a namespace resource; `git.repo.own` and `git.repo.maintain` to a repository resource; `git.commit.sign` to either.\",\n      \"enum\": [\n        \"git.ns.admin\",\n        \"git.repo.create\",\n        \"git.repo.own\",\n        \"git.repo.maintain\",\n        \"git.commit.sign\"\n      ],\n      \"title\": \"Right\",\n      \"type\": \"string\"\n    },\n    \"RightRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"One recorded right. Implied rights (§4.2 of the rights model: `own` implies `maintain` implies `commit.sign` on the same resource; `ns.admin` implies `repo.create` and `own` across its namespace) are not records and never appear as RightRecords. A record carrying `breakGlass` was given by its subject to themselves through git-ns/right/break-glass; it is a real right, published like any other, and is shown with that flag on every surface that shows the record.\",\n      \"properties\": {\n        \"breakGlass\": {\n          \"$ref\": \"#/$defs/BreakGlass\",\n          \"description\": \"Present exactly when the subject gave themselves this right through git-ns/right/break-glass. Absent for every other record.\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the right lapses. Absent: no expiry.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"grantedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"grantedBy\": {\n          \"$ref\": \"#/$defs/Did\",\n          \"description\": \"The actor whose task caused the right: the granter, the creator of a repository (for its first `own`), the adopting admin, the transferring owner, or the binding admin (for the first `git.ns.admin`). The VTC's own DID for a right it derives from its configuration.\"\n        },\n        \"reason\": {\n          \"description\": \"The granter's free-text reason. Disclosed only to holders of `git.repo.own` on the resource and of `git.ns.admin` over it.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"resource\": {\n          \"$ref\": \"#/$defs/Resource\"\n        },\n        \"right\": {\n          \"$ref\": \"#/$defs/Right\"\n        },\n        \"subject\": {\n          \"$ref\": \"#/$defs/Did\",\n          \"description\": \"Who holds the right. For `git.commit.sign` this is the DID whose commit signatures the CI check accepts.\"\n        }\n      },\n      \"required\": [\n        \"subject\",\n        \"right\",\n        \"resource\",\n        \"grantedBy\",\n        \"grantedAt\"\n      ],\n      \"title\": \"RightRecord\",\n      \"type\": \"object\"\n    },\n    \"Sync\": {\n      \"additionalProperties\": false,\n      \"description\": \"How the forge compares with the VTC's projection for one repository.\",\n      \"properties\": {\n        \"checkedAt\": {\n          \"description\": \"When the forge was last compared. Absent if never.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"drift\": {\n          \"description\": \"Outstanding drift. Empty unless `state` is `drift`.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/DriftItem\"\n          },\n          \"type\": \"array\"\n        },\n        \"state\": {\n          \"description\": \"`inSync` — the last comparison found no drift. `drift` — it found some, listed in `drift`. `pending` — a change has been sent to the forge and not yet confirmed. `unchecked` — nothing compares this repository (a manual-mode namespace).\",\n          \"enum\": [\n            \"inSync\",\n            \"drift\",\n            \"pending\",\n            \"unchecked\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"state\",\n        \"drift\"\n      ],\n      \"title\": \"Sync\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/git-ns/drift/resolve/0.4\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An owner of a repository, or a namespace admin over it, resolves one reported drift item: `adopt` records the forge-side role as a VTC right for the member the resolver names, under the same rules as git-ns/right/grant; `revert` has the bridge undo the forge-side change.\",\n  \"properties\": {\n    \"action\": {\n      \"description\": \"`adopt` — record the forge-side role as a VTC right, so the projection comes to match the forge. `revert` — have the bridge make the forge match the projection again.\",\n      \"enum\": [\n        \"adopt\",\n        \"revert\"\n      ],\n      \"type\": \"string\"\n    },\n    \"drift\": {\n      \"$ref\": \"#/$defs/DriftSelector\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"reason\": {\n      \"description\": \"Why, in the resolver's words. Kept in the VTC's audit record and, for `adopt`, as the recorded right's `reason`, disclosed only to the repository's owners and namespace admins.\",\n      \"maxLength\": 1024,\n      \"type\": \"string\"\n    },\n    \"resource\": {\n      \"$ref\": \"#/$defs/RepoResource\",\n      \"description\": \"The repository whose drift is resolved.\"\n    },\n    \"subject\": {\n      \"$ref\": \"#/$defs/Did\",\n      \"description\": \"For `adopt`: the member who receives the right, as the resolver read it — the DID linked to the item's account when they decided. REQUIRED for `adopt` and absent for `revert`. The VTC adopts nothing unless the account is still linked to exactly this member, so a link changed between reading and signing never grants to someone the resolver did not name.\"\n    }\n  },\n  \"required\": [\n    \"resource\",\n    \"drift\",\n    \"action\"\n  ],\n  \"title\": \"Git Namespaces — Resolve Drift — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"BreakGlass\":{\"additionalProperties\":false,\"description\":\"How a self-granted right came to be, and whether another administrator has since ratified it. A record whose `breakGlass` has no `ratifiedBy` is **unratified**: it is live and published like any other right, it does not count toward the last-owner or last-admin invariants, and any community administrator or namespace admin of its namespace may revoke it. Ratification (git-ns/right/ratify) sets `ratifiedBy` and `ratifiedAt`; from then on the record is an ordinary grant, and `breakGlass` stays as its history. Never published to the Trust Registry.\",\"properties\":{\"by\":{\"$ref\":\"#/$defs/Did\",\"description\":\"Who broke the glass: always the record's `subject`, restated so the flag reads on its own.\"},\"effectiveAt\":{\"description\":\"When the right takes effect, where the community's policy imposed a delay. Absent: it took effect at `recordedAt`. Until this instant the record confers nothing and is not published, and any administrator who may revoke it may do so.\",\"format\":\"date-time\",\"type\":\"string\"},\"justification\":{\"description\":\"The actor's statement of why nobody else could grant this right. Shown to every community administrator, every namespace admin of the namespace and every owner of the resource; kept in the audit record; never published.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"\\\\S\",\"type\":\"string\"},\"ratifiedAt\":{\"description\":\"When it was ratified. Present exactly when `ratifiedBy` is.\",\"format\":\"date-time\",\"type\":\"string\"},\"ratifiedBy\":{\"$ref\":\"#/$defs/Did\",\"description\":\"The administrator who ratified the record — never its subject. Absent while unratified.\"},\"recordedAt\":{\"description\":\"When the VTC recorded the break-glass.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"by\",\"recordedAt\",\"justification\"],\"title\":\"BreakGlass\",\"type\":\"object\"},\"Did\":{\"description\":\"A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.\",\"maxLength\":2048,\"pattern\":\"^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$\",\"title\":\"Did\",\"type\":\"string\"},\"DriftItem\":{\"additionalProperties\":false,\"description\":\"One difference between the forge's observed state and the VTC's projection of a repository.\",\"properties\":{\"account\":{\"$ref\":\"#/$defs/ForgeAccount\",\"description\":\"Whose role differs, for the three role types.\"},\"expected\":{\"description\":\"What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing.\",\"maxLength\":256,\"type\":\"string\"},\"observed\":{\"description\":\"What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.\",\"maxLength\":256,\"type\":\"string\"},\"resource\":{\"$ref\":\"#/$defs/RepoResource\"},\"type\":{\"description\":\"`roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.\",\"enum\":[\"roleAdded\",\"roleRemoved\",\"roleChanged\",\"requiredCheckMissing\",\"protectionWeakened\",\"bootstrapMissing\"],\"type\":\"string\"}},\"required\":[\"type\",\"resource\"],\"title\":\"DriftItem\",\"type\":\"object\"},\"DriftSelector\":{\"additionalProperties\":false,\"description\":\"Which of the repository's outstanding drift items to resolve. Drift items carry no identifier of their own: they are recomputed by the bridge and replaced wholesale by every git-ns/bridge/event. An item is selected by its `type`, and for the three role types also by the account whose role differs, which is unique among a repository's outstanding items.\",\"properties\":{\"account\":{\"$ref\":\"#/$defs/ForgeAccount\",\"description\":\"The account whose role differs, as the drift item reports it. Required for `roleAdded`, `roleRemoved` and `roleChanged`, and absent for every other type. Matched by `forge` and `id`; `login` is display only.\"},\"observed\":{\"description\":\"The item's `observed` value as the caller last read it. When present, the item is selected only if the forge still shows exactly this, so a decision made about one state is never applied to another. Required for `adopt`.\",\"maxLength\":256,\"type\":\"string\"},\"type\":{\"$ref\":\"#/$defs/DriftType\"}},\"required\":[\"type\"],\"title\":\"DriftSelector\",\"type\":\"object\"},\"DriftType\":{\"description\":\"The kinds of drift, named so that a task can select a drift item by kind. The same values, with the same meanings, as `DriftItem`'s `type`, which keeps its own inline list so that `DriftItem` stays textually identical to 0.1; the two lists change together. `roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.\",\"enum\":[\"roleAdded\",\"roleRemoved\",\"roleChanged\",\"requiredCheckMissing\",\"protectionWeakened\",\"bootstrapMissing\"],\"title\":\"DriftType\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ForgeAccount\":{\"additionalProperties\":false,\"description\":\"A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.\",\"properties\":{\"forge\":{\"$ref\":\"#/$defs/ForgeHost\"},\"id\":{\"$ref\":\"#/$defs/ForgeId\"},\"login\":{\"description\":\"The account's current login, as the forge reported it when last seen. Display only.\",\"maxLength\":100,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"forge\",\"id\",\"login\"],\"title\":\"ForgeAccount\",\"type\":\"object\"},\"ForgeHost\":{\"description\":\"The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, `gitlab.com`, or a self-hosted Forgejo or GitLab instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.\",\"maxLength\":253,\"minLength\":3,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$\",\"title\":\"ForgeHost\",\"type\":\"string\"},\"ForgeId\":{\"description\":\"An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub, Forgejo and GitLab ids are decimal integers written as strings (`\\\"812736451\\\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.\",\"maxLength\":64,\"minLength\":1,\"title\":\"ForgeId\",\"type\":\"string\"},\"RepoResource\":{\"description\":\"A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo-path>`, lowercase, where the repository path has 1 to 21 segments (see `Resource`).\",\"maxLength\":5885,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,254}(?:/[a-z0-9_-][a-z0-9._-]{0,254}){1,21}$\",\"title\":\"RepoResource\",\"type\":\"string\"},\"Resource\":{\"description\":\"A forge-qualified resource, all lowercase: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo-path>` for one repository — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. On a forge with nested groups (GitLab) the repository path holds the subgroups between the top-level owner and the project: `gitlab.com/acme/platform/tools/cli` is one repository of the namespace `gitlab.com/acme`, and a subgroup such as `gitlab.com/acme/platform` is not a resource. A repository path has 1 to 21 segments (GitLab: 20 levels of subgroup and the project); GitHub and Forgejo repository paths are always one. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.\",\"maxLength\":5885,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,254}(?:/[a-z0-9_-][a-z0-9._-]{0,254}){0,21}$\",\"title\":\"Resource\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"What the resolution did, and where the repository's sync now stands.\",\"properties\":{\"action\":{\"description\":\"The action taken, as requested.\",\"enum\":[\"adopt\",\"revert\"],\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"right\":{\"$ref\":\"#/$defs/RightRecord\",\"description\":\"For `adopt`: the recorded right — newly recorded, or the live record that already existed. Absent for `revert`.\"},\"sync\":{\"$ref\":\"#/$defs/Sync\",\"description\":\"The repository's sync after the resolution. The resolved item is no longer outstanding; the state is `drift` while other items remain, and otherwise `pending` until the bridge confirms the forge matches.\"}},\"required\":[\"action\",\"sync\"],\"title\":\"Git Namespaces — Resolve Drift — response payload\",\"type\":\"object\"},\"Right\":{\"description\":\"One of the five git rights. Each string is also the TRQP `action` the VTC publishes the right under in its Trust Registry, so it is carried verbatim. `git.ns.admin` and `git.repo.create` apply to a namespace resource; `git.repo.own` and `git.repo.maintain` to a repository resource; `git.commit.sign` to either.\",\"enum\":[\"git.ns.admin\",\"git.repo.create\",\"git.repo.own\",\"git.repo.maintain\",\"git.commit.sign\"],\"title\":\"Right\",\"type\":\"string\"},\"RightRecord\":{\"additionalProperties\":false,\"description\":\"One recorded right. Implied rights (§4.2 of the rights model: `own` implies `maintain` implies `commit.sign` on the same resource; `ns.admin` implies `repo.create` and `own` across its namespace) are not records and never appear as RightRecords. A record carrying `breakGlass` was given by its subject to themselves through git-ns/right/break-glass; it is a real right, published like any other, and is shown with that flag on every surface that shows the record.\",\"properties\":{\"breakGlass\":{\"$ref\":\"#/$defs/BreakGlass\",\"description\":\"Present exactly when the subject gave themselves this right through git-ns/right/break-glass. Absent for every other record.\"},\"expiresAt\":{\"description\":\"When the right lapses. Absent: no expiry.\",\"format\":\"date-time\",\"type\":\"string\"},\"grantedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"grantedBy\":{\"$ref\":\"#/$defs/Did\",\"description\":\"The actor whose task caused the right: the granter, the creator of a repository (for its first `own`), the adopting admin, the transferring owner, or the binding admin (for the first `git.ns.admin`). The VTC's own DID for a right it derives from its configuration.\"},\"reason\":{\"description\":\"The granter's free-text reason. Disclosed only to holders of `git.repo.own` on the resource and of `git.ns.admin` over it.\",\"maxLength\":1024,\"type\":\"string\"},\"resource\":{\"$ref\":\"#/$defs/Resource\"},\"right\":{\"$ref\":\"#/$defs/Right\"},\"subject\":{\"$ref\":\"#/$defs/Did\",\"description\":\"Who holds the right. For `git.commit.sign` this is the DID whose commit signatures the CI check accepts.\"}},\"required\":[\"subject\",\"right\",\"resource\",\"grantedBy\",\"grantedAt\"],\"title\":\"RightRecord\",\"type\":\"object\"},\"Sync\":{\"additionalProperties\":false,\"description\":\"How the forge compares with the VTC's projection for one repository.\",\"properties\":{\"checkedAt\":{\"description\":\"When the forge was last compared. Absent if never.\",\"format\":\"date-time\",\"type\":\"string\"},\"drift\":{\"description\":\"Outstanding drift. Empty unless `state` is `drift`.\",\"items\":{\"$ref\":\"#/$defs/DriftItem\"},\"type\":\"array\"},\"state\":{\"description\":\"`inSync` — the last comparison found no drift. `drift` — it found some, listed in `drift`. `pending` — a change has been sent to the forge and not yet confirmed. `unchecked` — nothing compares this repository (a manual-mode namespace).\",\"enum\":[\"inSync\",\"drift\",\"pending\",\"unchecked\"],\"type\":\"string\"}},\"required\":[\"state\",\"drift\"],\"title\":\"Sync\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/git-ns/drift/resolve/0.4\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"An owner of a repository, or a namespace admin over it, resolves one reported drift item: `adopt` records the forge-side role as a VTC right for the member the resolver names, under the same rules as git-ns/right/grant; `revert` has the bridge undo the forge-side change.\",\"properties\":{\"action\":{\"description\":\"`adopt` — record the forge-side role as a VTC right, so the projection comes to match the forge. `revert` — have the bridge make the forge match the projection again.\",\"enum\":[\"adopt\",\"revert\"],\"type\":\"string\"},\"drift\":{\"$ref\":\"#/$defs/DriftSelector\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"reason\":{\"description\":\"Why, in the resolver's words. Kept in the VTC's audit record and, for `adopt`, as the recorded right's `reason`, disclosed only to the repository's owners and namespace admins.\",\"maxLength\":1024,\"type\":\"string\"},\"resource\":{\"$ref\":\"#/$defs/RepoResource\",\"description\":\"The repository whose drift is resolved.\"},\"subject\":{\"$ref\":\"#/$defs/Did\",\"description\":\"For `adopt`: the member who receives the right, as the resolver read it — the DID linked to the item's account when they decided. REQUIRED for `adopt` and absent for `revert`. The VTC adopts nothing unless the account is still linked to exactly this member, so a link changed between reading and signing never grants to someone the resolver did not name.\"}},\"required\":[\"resource\",\"drift\",\"action\"],\"title\":\"Git Namespaces — Resolve Drift — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -2897,7 +2320,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"BreakGlass\": {\n      \"additionalProperties\": false,\n      \"description\": \"How a self-granted right came to be, and whether another administrator has since ratified it. A record whose `breakGlass` has no `ratifiedBy` is **unratified**: it is live and published like any other right, it does not count toward the last-owner or last-admin invariants, and any community administrator or namespace admin of its namespace may revoke it. Ratification (git-ns/right/ratify) sets `ratifiedBy` and `ratifiedAt`; from then on the record is an ordinary grant, and `breakGlass` stays as its history. Never published to the Trust Registry.\",\n      \"properties\": {\n        \"by\": {\n          \"$ref\": \"#/$defs/Did\",\n          \"description\": \"Who broke the glass: always the record's `subject`, restated so the flag reads on its own.\"\n        },\n        \"effectiveAt\": {\n          \"description\": \"When the right takes effect, where the community's policy imposed a delay. Absent: it took effect at `recordedAt`. Until this instant the record confers nothing and is not published, and any administrator who may revoke it may do so.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"justification\": {\n          \"description\": \"The actor's statement of why nobody else could grant this right. Shown to every community administrator, every namespace admin of the namespace and every owner of the resource; kept in the audit record; never published.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"pattern\": \"\\\\S\",\n          \"type\": \"string\"\n        },\n        \"ratifiedAt\": {\n          \"description\": \"When it was ratified. Present exactly when `ratifiedBy` is.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ratifiedBy\": {\n          \"$ref\": \"#/$defs/Did\",\n          \"description\": \"The administrator who ratified the record — never its subject. Absent while unratified.\"\n        },\n        \"recordedAt\": {\n          \"description\": \"When the VTC recorded the break-glass.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"by\",\n        \"recordedAt\",\n        \"justification\"\n      ],\n      \"title\": \"BreakGlass\",\n      \"type\": \"object\"\n    },\n    \"Did\": {\n      \"description\": \"A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.\",\n      \"maxLength\": 2048,\n      \"pattern\": \"^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$\",\n      \"title\": \"Did\",\n      \"type\": \"string\"\n    },\n    \"DriftItem\": {\n      \"additionalProperties\": false,\n      \"description\": \"One difference between the forge's observed state and the VTC's projection of a repository.\",\n      \"properties\": {\n        \"account\": {\n          \"$ref\": \"#/$defs/ForgeAccount\",\n          \"description\": \"Whose role differs, for the three role types.\"\n        },\n        \"expected\": {\n          \"description\": \"What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"observed\": {\n          \"description\": \"What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"resource\": {\n          \"$ref\": \"#/$defs/RepoResource\"\n        },\n        \"type\": {\n          \"description\": \"`roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.\",\n          \"enum\": [\n            \"roleAdded\",\n            \"roleRemoved\",\n            \"roleChanged\",\n            \"requiredCheckMissing\",\n            \"protectionWeakened\",\n            \"bootstrapMissing\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"type\",\n        \"resource\"\n      ],\n      \"title\": \"DriftItem\",\n      \"type\": \"object\"\n    },\n    \"DriftSelector\": {\n      \"additionalProperties\": false,\n      \"description\": \"Which of the repository's outstanding drift items to resolve. Drift items carry no identifier of their own: they are recomputed by the bridge and replaced wholesale by every git-ns/bridge/event. An item is selected by its `type`, and for the three role types also by the account whose role differs, which is unique among a repository's outstanding items.\",\n      \"properties\": {\n        \"account\": {\n          \"$ref\": \"#/$defs/ForgeAccount\",\n          \"description\": \"The account whose role differs, as the drift item reports it. Required for `roleAdded`, `roleRemoved` and `roleChanged`, and absent for every other type. Matched by `forge` and `id`; `login` is display only.\"\n        },\n        \"observed\": {\n          \"description\": \"The item's `observed` value as the caller last read it. When present, the item is selected only if the forge still shows exactly this, so a decision made about one state is never applied to another. Required for `adopt`.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"type\": {\n          \"$ref\": \"#/$defs/DriftType\"\n        }\n      },\n      \"required\": [\n        \"type\"\n      ],\n      \"title\": \"DriftSelector\",\n      \"type\": \"object\"\n    },\n    \"DriftType\": {\n      \"description\": \"The kinds of drift, named so that a task can select a drift item by kind. The same values, with the same meanings, as `DriftItem`'s `type`, which keeps its own inline list so that `DriftItem` stays textually identical to 0.1; the two lists change together. `roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.\",\n      \"enum\": [\n        \"roleAdded\",\n        \"roleRemoved\",\n        \"roleChanged\",\n        \"requiredCheckMissing\",\n        \"protectionWeakened\",\n        \"bootstrapMissing\"\n      ],\n      \"title\": \"DriftType\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ForgeAccount\": {\n      \"additionalProperties\": false,\n      \"description\": \"A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.\",\n      \"properties\": {\n        \"forge\": {\n          \"$ref\": \"#/$defs/ForgeHost\"\n        },\n        \"id\": {\n          \"$ref\": \"#/$defs/ForgeId\"\n        },\n        \"login\": {\n          \"description\": \"The account's current login, as the forge reported it when last seen. Display only.\",\n          \"maxLength\": 100,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"forge\",\n        \"id\",\n        \"login\"\n      ],\n      \"title\": \"ForgeAccount\",\n      \"type\": \"object\"\n    },\n    \"ForgeHost\": {\n      \"description\": \"The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, `gitlab.com`, or a self-hosted Forgejo or GitLab instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.\",\n      \"maxLength\": 253,\n      \"minLength\": 3,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$\",\n      \"title\": \"ForgeHost\",\n      \"type\": \"string\"\n    },\n    \"ForgeId\": {\n      \"description\": \"An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub, Forgejo and GitLab ids are decimal integers written as strings (`\\\"812736451\\\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"title\": \"ForgeId\",\n      \"type\": \"string\"\n    },\n    \"RepoResource\": {\n      \"description\": \"A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo-path>`, lowercase, where the repository path has 1 to 21 segments (see `Resource`).\",\n      \"maxLength\": 5885,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,254}(?:/[a-z0-9_-][a-z0-9._-]{0,254}){1,21}$\",\n      \"title\": \"RepoResource\",\n      \"type\": \"string\"\n    },\n    \"Resource\": {\n      \"description\": \"A forge-qualified resource, all lowercase: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo-path>` for one repository — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. On a forge with nested groups (GitLab) the repository path holds the subgroups between the top-level owner and the project: `gitlab.com/acme/platform/tools/cli` is one repository of the namespace `gitlab.com/acme`, and a subgroup such as `gitlab.com/acme/platform` is not a resource. A repository path has 1 to 21 segments (GitLab: 20 levels of subgroup and the project); GitHub and Forgejo repository paths are always one. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.\",\n      \"maxLength\": 5885,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,254}(?:/[a-z0-9_-][a-z0-9._-]{0,254}){0,21}$\",\n      \"title\": \"Resource\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"What the resolution did, and where the repository's sync now stands.\",\n      \"properties\": {\n        \"action\": {\n          \"description\": \"The action taken, as requested.\",\n          \"enum\": [\n            \"adopt\",\n            \"revert\"\n          ],\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"right\": {\n          \"$ref\": \"#/$defs/RightRecord\",\n          \"description\": \"For `adopt`: the recorded right — newly recorded, or the live record that already existed. Absent for `revert`.\"\n        },\n        \"sync\": {\n          \"$ref\": \"#/$defs/Sync\",\n          \"description\": \"The repository's sync after the resolution. The resolved item is no longer outstanding; the state is `drift` while other items remain, and otherwise `pending` until the bridge confirms the forge matches.\"\n        }\n      },\n      \"required\": [\n        \"action\",\n        \"sync\"\n      ],\n      \"title\": \"Git Namespaces — Resolve Drift — response payload\",\n      \"type\": \"object\"\n    },\n    \"Right\": {\n      \"description\": \"One of the five git rights. Each string is also the TRQP `action` the VTC publishes the right under in its Trust Registry, so it is carried verbatim. `git.ns.admin` and `git.repo.create` apply to a namespace resource; `git.repo.own` and `git.repo.maintain` to a repository resource; `git.commit.sign` to either.\",\n      \"enum\": [\n        \"git.ns.admin\",\n        \"git.repo.create\",\n        \"git.repo.own\",\n        \"git.repo.maintain\",\n        \"git.commit.sign\"\n      ],\n      \"title\": \"Right\",\n      \"type\": \"string\"\n    },\n    \"RightRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"One recorded right. Implied rights (§4.2 of the rights model: `own` implies `maintain` implies `commit.sign` on the same resource; `ns.admin` implies `repo.create` and `own` across its namespace) are not records and never appear as RightRecords. A record carrying `breakGlass` was given by its subject to themselves through git-ns/right/break-glass; it is a real right, published like any other, and is shown with that flag on every surface that shows the record.\",\n      \"properties\": {\n        \"breakGlass\": {\n          \"$ref\": \"#/$defs/BreakGlass\",\n          \"description\": \"Present exactly when the subject gave themselves this right through git-ns/right/break-glass. Absent for every other record.\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the right lapses. Absent: no expiry.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"grantedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"grantedBy\": {\n          \"$ref\": \"#/$defs/Did\",\n          \"description\": \"The actor whose task caused the right: the granter, the creator of a repository (for its first `own`), the adopting admin, the transferring owner, or the binding admin (for the first `git.ns.admin`). The VTC's own DID for a right it derives from its configuration.\"\n        },\n        \"reason\": {\n          \"description\": \"The granter's free-text reason. Disclosed only to holders of `git.repo.own` on the resource and of `git.ns.admin` over it.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"resource\": {\n          \"$ref\": \"#/$defs/Resource\"\n        },\n        \"right\": {\n          \"$ref\": \"#/$defs/Right\"\n        },\n        \"subject\": {\n          \"$ref\": \"#/$defs/Did\",\n          \"description\": \"Who holds the right. For `git.commit.sign` this is the DID whose commit signatures the CI check accepts.\"\n        }\n      },\n      \"required\": [\n        \"subject\",\n        \"right\",\n        \"resource\",\n        \"grantedBy\",\n        \"grantedAt\"\n      ],\n      \"title\": \"RightRecord\",\n      \"type\": \"object\"\n    },\n    \"Sync\": {\n      \"additionalProperties\": false,\n      \"description\": \"How the forge compares with the VTC's projection for one repository.\",\n      \"properties\": {\n        \"checkedAt\": {\n          \"description\": \"When the forge was last compared. Absent if never.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"drift\": {\n          \"description\": \"Outstanding drift. Empty unless `state` is `drift`.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/DriftItem\"\n          },\n          \"type\": \"array\"\n        },\n        \"state\": {\n          \"description\": \"`inSync` — the last comparison found no drift. `drift` — it found some, listed in `drift`. `pending` — a change has been sent to the forge and not yet confirmed. `unchecked` — nothing compares this repository (a manual-mode namespace).\",\n          \"enum\": [\n            \"inSync\",\n            \"drift\",\n            \"pending\",\n            \"unchecked\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"state\",\n        \"drift\"\n      ],\n      \"title\": \"Sync\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"BreakGlass\":{\"additionalProperties\":false,\"description\":\"How a self-granted right came to be, and whether another administrator has since ratified it. A record whose `breakGlass` has no `ratifiedBy` is **unratified**: it is live and published like any other right, it does not count toward the last-owner or last-admin invariants, and any community administrator or namespace admin of its namespace may revoke it. Ratification (git-ns/right/ratify) sets `ratifiedBy` and `ratifiedAt`; from then on the record is an ordinary grant, and `breakGlass` stays as its history. Never published to the Trust Registry.\",\"properties\":{\"by\":{\"$ref\":\"#/$defs/Did\",\"description\":\"Who broke the glass: always the record's `subject`, restated so the flag reads on its own.\"},\"effectiveAt\":{\"description\":\"When the right takes effect, where the community's policy imposed a delay. Absent: it took effect at `recordedAt`. Until this instant the record confers nothing and is not published, and any administrator who may revoke it may do so.\",\"format\":\"date-time\",\"type\":\"string\"},\"justification\":{\"description\":\"The actor's statement of why nobody else could grant this right. Shown to every community administrator, every namespace admin of the namespace and every owner of the resource; kept in the audit record; never published.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"\\\\S\",\"type\":\"string\"},\"ratifiedAt\":{\"description\":\"When it was ratified. Present exactly when `ratifiedBy` is.\",\"format\":\"date-time\",\"type\":\"string\"},\"ratifiedBy\":{\"$ref\":\"#/$defs/Did\",\"description\":\"The administrator who ratified the record — never its subject. Absent while unratified.\"},\"recordedAt\":{\"description\":\"When the VTC recorded the break-glass.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"by\",\"recordedAt\",\"justification\"],\"title\":\"BreakGlass\",\"type\":\"object\"},\"Did\":{\"description\":\"A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.\",\"maxLength\":2048,\"pattern\":\"^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$\",\"title\":\"Did\",\"type\":\"string\"},\"DriftItem\":{\"additionalProperties\":false,\"description\":\"One difference between the forge's observed state and the VTC's projection of a repository.\",\"properties\":{\"account\":{\"$ref\":\"#/$defs/ForgeAccount\",\"description\":\"Whose role differs, for the three role types.\"},\"expected\":{\"description\":\"What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing.\",\"maxLength\":256,\"type\":\"string\"},\"observed\":{\"description\":\"What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.\",\"maxLength\":256,\"type\":\"string\"},\"resource\":{\"$ref\":\"#/$defs/RepoResource\"},\"type\":{\"description\":\"`roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.\",\"enum\":[\"roleAdded\",\"roleRemoved\",\"roleChanged\",\"requiredCheckMissing\",\"protectionWeakened\",\"bootstrapMissing\"],\"type\":\"string\"}},\"required\":[\"type\",\"resource\"],\"title\":\"DriftItem\",\"type\":\"object\"},\"DriftSelector\":{\"additionalProperties\":false,\"description\":\"Which of the repository's outstanding drift items to resolve. Drift items carry no identifier of their own: they are recomputed by the bridge and replaced wholesale by every git-ns/bridge/event. An item is selected by its `type`, and for the three role types also by the account whose role differs, which is unique among a repository's outstanding items.\",\"properties\":{\"account\":{\"$ref\":\"#/$defs/ForgeAccount\",\"description\":\"The account whose role differs, as the drift item reports it. Required for `roleAdded`, `roleRemoved` and `roleChanged`, and absent for every other type. Matched by `forge` and `id`; `login` is display only.\"},\"observed\":{\"description\":\"The item's `observed` value as the caller last read it. When present, the item is selected only if the forge still shows exactly this, so a decision made about one state is never applied to another. Required for `adopt`.\",\"maxLength\":256,\"type\":\"string\"},\"type\":{\"$ref\":\"#/$defs/DriftType\"}},\"required\":[\"type\"],\"title\":\"DriftSelector\",\"type\":\"object\"},\"DriftType\":{\"description\":\"The kinds of drift, named so that a task can select a drift item by kind. The same values, with the same meanings, as `DriftItem`'s `type`, which keeps its own inline list so that `DriftItem` stays textually identical to 0.1; the two lists change together. `roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.\",\"enum\":[\"roleAdded\",\"roleRemoved\",\"roleChanged\",\"requiredCheckMissing\",\"protectionWeakened\",\"bootstrapMissing\"],\"title\":\"DriftType\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ForgeAccount\":{\"additionalProperties\":false,\"description\":\"A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.\",\"properties\":{\"forge\":{\"$ref\":\"#/$defs/ForgeHost\"},\"id\":{\"$ref\":\"#/$defs/ForgeId\"},\"login\":{\"description\":\"The account's current login, as the forge reported it when last seen. Display only.\",\"maxLength\":100,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"forge\",\"id\",\"login\"],\"title\":\"ForgeAccount\",\"type\":\"object\"},\"ForgeHost\":{\"description\":\"The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, `gitlab.com`, or a self-hosted Forgejo or GitLab instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.\",\"maxLength\":253,\"minLength\":3,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$\",\"title\":\"ForgeHost\",\"type\":\"string\"},\"ForgeId\":{\"description\":\"An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub, Forgejo and GitLab ids are decimal integers written as strings (`\\\"812736451\\\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.\",\"maxLength\":64,\"minLength\":1,\"title\":\"ForgeId\",\"type\":\"string\"},\"RepoResource\":{\"description\":\"A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo-path>`, lowercase, where the repository path has 1 to 21 segments (see `Resource`).\",\"maxLength\":5885,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,254}(?:/[a-z0-9_-][a-z0-9._-]{0,254}){1,21}$\",\"title\":\"RepoResource\",\"type\":\"string\"},\"Resource\":{\"description\":\"A forge-qualified resource, all lowercase: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo-path>` for one repository — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. On a forge with nested groups (GitLab) the repository path holds the subgroups between the top-level owner and the project: `gitlab.com/acme/platform/tools/cli` is one repository of the namespace `gitlab.com/acme`, and a subgroup such as `gitlab.com/acme/platform` is not a resource. A repository path has 1 to 21 segments (GitLab: 20 levels of subgroup and the project); GitHub and Forgejo repository paths are always one. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.\",\"maxLength\":5885,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,254}(?:/[a-z0-9_-][a-z0-9._-]{0,254}){0,21}$\",\"title\":\"Resource\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"What the resolution did, and where the repository's sync now stands.\",\"properties\":{\"action\":{\"description\":\"The action taken, as requested.\",\"enum\":[\"adopt\",\"revert\"],\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"right\":{\"$ref\":\"#/$defs/RightRecord\",\"description\":\"For `adopt`: the recorded right — newly recorded, or the live record that already existed. Absent for `revert`.\"},\"sync\":{\"$ref\":\"#/$defs/Sync\",\"description\":\"The repository's sync after the resolution. The resolved item is no longer outstanding; the state is `drift` while other items remain, and otherwise `pending` until the bridge confirms the forge matches.\"}},\"required\":[\"action\",\"sync\"],\"title\":\"Git Namespaces — Resolve Drift — response payload\",\"type\":\"object\"},\"Right\":{\"description\":\"One of the five git rights. Each string is also the TRQP `action` the VTC publishes the right under in its Trust Registry, so it is carried verbatim. `git.ns.admin` and `git.repo.create` apply to a namespace resource; `git.repo.own` and `git.repo.maintain` to a repository resource; `git.commit.sign` to either.\",\"enum\":[\"git.ns.admin\",\"git.repo.create\",\"git.repo.own\",\"git.repo.maintain\",\"git.commit.sign\"],\"title\":\"Right\",\"type\":\"string\"},\"RightRecord\":{\"additionalProperties\":false,\"description\":\"One recorded right. Implied rights (§4.2 of the rights model: `own` implies `maintain` implies `commit.sign` on the same resource; `ns.admin` implies `repo.create` and `own` across its namespace) are not records and never appear as RightRecords. A record carrying `breakGlass` was given by its subject to themselves through git-ns/right/break-glass; it is a real right, published like any other, and is shown with that flag on every surface that shows the record.\",\"properties\":{\"breakGlass\":{\"$ref\":\"#/$defs/BreakGlass\",\"description\":\"Present exactly when the subject gave themselves this right through git-ns/right/break-glass. Absent for every other record.\"},\"expiresAt\":{\"description\":\"When the right lapses. Absent: no expiry.\",\"format\":\"date-time\",\"type\":\"string\"},\"grantedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"grantedBy\":{\"$ref\":\"#/$defs/Did\",\"description\":\"The actor whose task caused the right: the granter, the creator of a repository (for its first `own`), the adopting admin, the transferring owner, or the binding admin (for the first `git.ns.admin`). The VTC's own DID for a right it derives from its configuration.\"},\"reason\":{\"description\":\"The granter's free-text reason. Disclosed only to holders of `git.repo.own` on the resource and of `git.ns.admin` over it.\",\"maxLength\":1024,\"type\":\"string\"},\"resource\":{\"$ref\":\"#/$defs/Resource\"},\"right\":{\"$ref\":\"#/$defs/Right\"},\"subject\":{\"$ref\":\"#/$defs/Did\",\"description\":\"Who holds the right. For `git.commit.sign` this is the DID whose commit signatures the CI check accepts.\"}},\"required\":[\"subject\",\"right\",\"resource\",\"grantedBy\",\"grantedAt\"],\"title\":\"RightRecord\",\"type\":\"object\"},\"Sync\":{\"additionalProperties\":false,\"description\":\"How the forge compares with the VTC's projection for one repository.\",\"properties\":{\"checkedAt\":{\"description\":\"When the forge was last compared. Absent if never.\",\"format\":\"date-time\",\"type\":\"string\"},\"drift\":{\"description\":\"Outstanding drift. Empty unless `state` is `drift`.\",\"items\":{\"$ref\":\"#/$defs/DriftItem\"},\"type\":\"array\"},\"state\":{\"description\":\"`inSync` — the last comparison found no drift. `drift` — it found some, listed in `drift`. `pending` — a change has been sent to the forge and not yet confirmed. `unchecked` — nothing compares this repository (a manual-mode namespace).\",\"enum\":[\"inSync\",\"drift\",\"pending\",\"unchecked\"],\"type\":\"string\"}},\"required\":[\"state\",\"drift\"],\"title\":\"Sync\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

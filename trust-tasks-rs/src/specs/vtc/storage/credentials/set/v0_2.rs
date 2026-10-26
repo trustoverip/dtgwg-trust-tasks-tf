@@ -35,55 +35,6 @@ pub mod error {
 }
 ///Whether a config can authenticate now, and how — never the credential. `status`: `vta-account`, `ambient` and `sealed` are usable; `required` means the config cannot store until a credential is provided (a `sealed` config never set, or set before a restore, which carries no credential); `notAllowed` means the config's mode is one the community's host configuration no longer permits, so it cannot store until its `auth` is changed; `none` is a `local` config.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "CredentialState",
-///  "description": "Whether a config can authenticate now, and how — never the credential. `status`: `vta-account`, `ambient` and `sealed` are usable; `required` means the config cannot store until a credential is provided (a `sealed` config never set, or set before a restore, which carries no credential); `notAllowed` means the config's mode is one the community's host configuration no longer permits, so it cannot store until its `auth` is changed; `none` is a `local` config.",
-///  "type": "object",
-///  "required": [
-///    "status"
-///  ],
-///  "properties": {
-///    "account": {
-///      "description": "Present with `vta-account`.",
-///      "$ref": "#/definitions/ExternalAccountId"
-///    },
-///    "context": {
-///      "description": "Present with `vta-account`.",
-///      "$ref": "#/definitions/ExternalAccountContextId"
-///    },
-///    "fingerprint": {
-///      "description": "Present with `sealed`: a digest identifying the stored credential, so an administrator can tell which one is set without anyone being able to read it. Computed over the credential with a community-held key, never a bare hash of a low-entropy secret.",
-///      "$ref": "#/definitions/DigestMultibase"
-///    },
-///    "roomsHoldingCredentials": {
-///      "description": "Present with `vta-account`, `ambient` and `sealed`: how many rooms the community currently holds a live room-scoped credential for.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "setAt": {
-///      "description": "Present with `sealed`: when the stored credential was last set.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "status": {
-///      "type": "string",
-///      "enum": [
-///        "vta-account",
-///        "ambient",
-///        "sealed",
-///        "required",
-///        "notAllowed",
-///        "none"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -120,22 +71,6 @@ impl CredentialState {
 }
 ///`CredentialStateStatus`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "enum": [
-///    "vta-account",
-///    "ambient",
-///    "sealed",
-///    "required",
-///    "notAllowed",
-///    "none"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -220,21 +155,6 @@ This definition constrains the *encoding only*. What the digest is computed over
 
 Restricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that "interoperability is not guaranteed between implementations using such values", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DigestMultibase",
-///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-///  "examples": [
-///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-///  ],
-///  "type": "string",
-///  "minLength": 16,
-///  "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DigestMultibase(::std::string::String);
@@ -303,21 +223,6 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -339,15 +244,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -411,18 +307,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///The context at the community's VTA that owns an external account. The VTA names an account by its context and its identifier, and decides who may use it by act scope in that context: the community must hold `external-auth-use` there, and be bound to the account, for the account to issue it anything. Naming a context grants nothing; the VTA's binding is the gate.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ExternalAccountContextId",
-///  "description": "The context at the community's VTA that owns an external account. The VTA names an account by its context and its identifier, and decides who may use it by act scope in that context: the community must hold `external-auth-use` there, and be bound to the account, for the account to issue it anything. Naming a context grants nothing; the VTA's binding is the gate.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExternalAccountContextId(::std::string::String);
@@ -485,19 +369,6 @@ impl<'de> ::serde::Deserialize<'de> for ExternalAccountContextId {
 }
 ///The identifier of an external account held by the community's VTA (the external/accounts/* family), which issues the community short-lived, room-scoped credentials and holds the long-lived authority itself.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ExternalAccountId",
-///  "description": "The identifier of an external account held by the community's VTA (the external/accounts/* family), which issues the community short-lived, room-scoped credentials and holds the long-lived authority itself.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1,
-///  "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExternalAccountId(::std::string::String);
@@ -567,49 +438,6 @@ impl<'de> ::serde::Deserialize<'de> for ExternalAccountId {
 }
 ///Store a `sealed` storage config's long-lived credential, sealed end to end to the community. Write-only: no task returns it. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/storage/credentials/set/0.2",
-///  "title": "Payload",
-///  "description": "Store a `sealed` storage config's long-lived credential, sealed end to end to the community. Write-only: no task returns it. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "configId",
-///    "digestMultibase",
-///    "reason",
-///    "sealed"
-///  ],
-///  "properties": {
-///    "configId": {
-///      "$ref": "#/definitions/StorageConfigId"
-///    },
-///    "digestMultibase": {
-///      "description": "Digest over the armored bytes exactly as carried in `sealed`. Covered by the document's proof, and shown to approvers in place of the credential.",
-///      "$ref": "#/definitions/DigestMultibase"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "reason": {
-///      "description": "Why the administrator is making this change. Recorded with the change in the audit trail and shown to approvers. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.",
-///      "type": "string",
-///      "maxLength": 500,
-///      "minLength": 1
-///    },
-///    "sealed": {
-///      "description": "OpenPGP-style ASCII-armored `sealed_transfer` ciphertext of the credential. HPKE base mode, X25519-HKDF-SHA256 KEM, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`; recipient the X25519 derivation of the community DID's Ed25519 key.",
-///      "type": "string",
-///      "maxLength": 16384,
-///      "minLength": 64,
-///      "pattern": "^-----BEGIN VTA SEALED BUNDLE-----"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -634,17 +462,6 @@ impl Payload {
 }
 ///Why the administrator is making this change. Recorded with the change in the audit trail and shown to approvers. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Why the administrator is making this change. Recorded with the change in the audit trail and shown to approvers. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.",
-///  "type": "string",
-///  "maxLength": 500,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadReason(::std::string::String);
@@ -707,18 +524,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 }
 ///OpenPGP-style ASCII-armored `sealed_transfer` ciphertext of the credential. HPKE base mode, X25519-HKDF-SHA256 KEM, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`; recipient the X25519 derivation of the community DID's Ed25519 key.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "OpenPGP-style ASCII-armored `sealed_transfer` ciphertext of the credential. HPKE base mode, X25519-HKDF-SHA256 KEM, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`; recipient the X25519 derivation of the community DID's Ed25519 key.",
-///  "type": "string",
-///  "maxLength": 16384,
-///  "minLength": 64,
-///  "pattern": "^-----BEGIN VTA SEALED BUNDLE-----"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadSealed(::std::string::String);
@@ -788,36 +593,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSealed {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "configId",
-///    "credentialState"
-///  ],
-///  "properties": {
-///    "configId": {
-///      "$ref": "#/definitions/StorageConfigId"
-///    },
-///    "credentialState": {
-///      "$ref": "#/definitions/CredentialState"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "probeOk": {
-///      "description": "Present when the community probed the config with the new credential.",
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -844,15 +619,6 @@ impl Response {
 }
 ///Not a member of the payload: the cleartext inside `sealed`, declared here so that every generated binding carries the type a producer seals and a community opens. Never appears on the wire outside a seal.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Not a member of the payload: the cleartext inside `sealed`, declared here so that every generated binding carries the type a producer seals and a community opens. Never appears on the wire outside a seal.",
-///  "$ref": "#/definitions/SealedStorageCredential"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct SealedCredentialCleartext(pub SealedStorageCredential);
@@ -874,135 +640,6 @@ impl ::std::convert::From<SealedStorageCredential> for SealedCredentialCleartext
 }
 ///The cleartext inside the sealed block of vtc/storage/credentials/set/0.2, discriminated by `kind`, which must equal the config's kind. It names the config it is for inside the seal, so that a block captured on its way to one config cannot be replayed into another: a community MUST refuse a block whose `configId` differs from the request's. Never appears on the wire outside a seal, and is never returned. A `local` config has no credential.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "SealedStorageCredential",
-///  "description": "The cleartext inside the sealed block of vtc/storage/credentials/set/0.2, discriminated by `kind`, which must equal the config's kind. It names the config it is for inside the seal, so that a block captured on its way to one config cannot be replayed into another: a community MUST refuse a block whose `configId` differs from the request's. Never appears on the wire outside a seal, and is never returned. A `local` config has no credential.",
-///  "oneOf": [
-///    {
-///      "description": "An S3 access-key pair: an AWS IAM user's key, or an S3-compatible store's (R2, B2, MinIO).",
-///      "type": "object",
-///      "required": [
-///        "accessKeyId",
-///        "configId",
-///        "kind",
-///        "secretAccessKey"
-///      ],
-///      "properties": {
-///        "accessKeyId": {
-///          "description": "The access key's identifier.",
-///          "type": "string",
-///          "maxLength": 128,
-///          "minLength": 1,
-///          "pattern": "^[A-Za-z0-9]+$"
-///        },
-///        "configId": {
-///          "$ref": "#/definitions/StorageConfigId"
-///        },
-///        "kind": {
-///          "const": "s3"
-///        },
-///        "secretAccessKey": {
-///          "description": "The secret half.",
-///          "type": "string",
-///          "maxLength": 256,
-///          "minLength": 1,
-///          "pattern": "^[!-~]+$"
-///        },
-///        "sessionToken": {
-///          "description": "Present when the pair is a temporary one that needs it. A temporary pair stops working at its own expiry, after which the config reports failures until another is set; it is accepted for evaluation, never recommended.",
-///          "type": "string",
-///          "maxLength": 8192,
-///          "minLength": 1,
-///          "pattern": "^[!-~]+$"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "description": "A Google Cloud service-account key.",
-///      "type": "object",
-///      "required": [
-///        "configId",
-///        "kind",
-///        "serviceAccountKey"
-///      ],
-///      "properties": {
-///        "configId": {
-///          "$ref": "#/definitions/StorageConfigId"
-///        },
-///        "kind": {
-///          "const": "gcs"
-///        },
-///        "serviceAccountKey": {
-///          "description": "The service-account key exactly as Google issues it — the JSON key file, as an object, its member names carried verbatim in Google's own snake_case. Members beyond the four required (`project_id`, `client_id`, `token_uri`, `universe_domain` and the rest) are permitted, and a community MAY discard them: it authenticates with `client_email`, `private_key_id` and `private_key` alone, against Google's own token endpoint, and never against a `token_uri` the key file names.",
-///          "type": "object",
-///          "required": [
-///            "client_email",
-///            "private_key",
-///            "private_key_id",
-///            "type"
-///          ],
-///          "properties": {
-///            "client_email": {
-///              "type": "string",
-///              "maxLength": 320,
-///              "minLength": 3,
-///              "pattern": "^[^@\\s]+@[^@\\s]+$"
-///            },
-///            "private_key": {
-///              "description": "The PKCS #8 PEM private key.",
-///              "type": "string",
-///              "maxLength": 8192,
-///              "minLength": 64,
-///              "pattern": "^-----BEGIN PRIVATE KEY-----"
-///            },
-///            "private_key_id": {
-///              "type": "string",
-///              "maxLength": 128,
-///              "minLength": 1,
-///              "pattern": "^[A-Za-z0-9]+$"
-///            },
-///            "type": {
-///              "const": "service_account"
-///            }
-///          },
-///          "additionalProperties": true
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "description": "The Sui key that pays for a `walrus` config's storage.",
-///      "type": "object",
-///      "required": [
-///        "configId",
-///        "kind",
-///        "suiPrivateKey"
-///      ],
-///      "properties": {
-///        "configId": {
-///          "$ref": "#/definitions/StorageConfigId"
-///        },
-///        "kind": {
-///          "const": "walrus"
-///        },
-///        "suiPrivateKey": {
-///          "description": "The private key in Sui's Bech32 `suiprivkey` encoding (SIP-15), which carries its signature scheme.",
-///          "type": "string",
-///          "maxLength": 256,
-///          "minLength": 20,
-///          "pattern": "^suiprivkey1[02-9ac-hj-np-z]+$"
-///        }
-///      },
-///      "additionalProperties": false
-///    }
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(tag = "kind", deny_unknown_fields)]
 #[non_exhaustive]
@@ -1046,18 +683,6 @@ pub enum SealedStorageCredential {
 }
 ///The access key's identifier.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The access key's identifier.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1,
-///  "pattern": "^[A-Za-z0-9]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SealedStorageCredentialAccessKeyId(::std::string::String);
@@ -1125,18 +750,6 @@ impl<'de> ::serde::Deserialize<'de> for SealedStorageCredentialAccessKeyId {
 }
 ///The secret half.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The secret half.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1,
-///  "pattern": "^[!-~]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SealedStorageCredentialSecretAccessKey(::std::string::String);
@@ -1204,46 +817,6 @@ impl<'de> ::serde::Deserialize<'de> for SealedStorageCredentialSecretAccessKey {
 }
 ///The service-account key exactly as Google issues it — the JSON key file, as an object, its member names carried verbatim in Google's own snake_case. Members beyond the four required (`project_id`, `client_id`, `token_uri`, `universe_domain` and the rest) are permitted, and a community MAY discard them: it authenticates with `client_email`, `private_key_id` and `private_key` alone, against Google's own token endpoint, and never against a `token_uri` the key file names.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The service-account key exactly as Google issues it — the JSON key file, as an object, its member names carried verbatim in Google's own snake_case. Members beyond the four required (`project_id`, `client_id`, `token_uri`, `universe_domain` and the rest) are permitted, and a community MAY discard them: it authenticates with `client_email`, `private_key_id` and `private_key` alone, against Google's own token endpoint, and never against a `token_uri` the key file names.",
-///  "type": "object",
-///  "required": [
-///    "client_email",
-///    "private_key",
-///    "private_key_id",
-///    "type"
-///  ],
-///  "properties": {
-///    "client_email": {
-///      "type": "string",
-///      "maxLength": 320,
-///      "minLength": 3,
-///      "pattern": "^[^@\\s]+@[^@\\s]+$"
-///    },
-///    "private_key": {
-///      "description": "The PKCS #8 PEM private key.",
-///      "type": "string",
-///      "maxLength": 8192,
-///      "minLength": 64,
-///      "pattern": "^-----BEGIN PRIVATE KEY-----"
-///    },
-///    "private_key_id": {
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1,
-///      "pattern": "^[A-Za-z0-9]+$"
-///    },
-///    "type": {
-///      "const": "service_account"
-///    }
-///  },
-///  "additionalProperties": true
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
 pub struct SealedStorageCredentialServiceAccountKey {
@@ -1261,17 +834,6 @@ impl SealedStorageCredentialServiceAccountKey {
 }
 ///`SealedStorageCredentialServiceAccountKeyClientEmail`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 320,
-///  "minLength": 3,
-///  "pattern": "^[^@\\s]+@[^@\\s]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SealedStorageCredentialServiceAccountKeyClientEmail(::std::string::String);
@@ -1345,18 +907,6 @@ impl<'de> ::serde::Deserialize<'de> for SealedStorageCredentialServiceAccountKey
 }
 ///The PKCS #8 PEM private key.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The PKCS #8 PEM private key.",
-///  "type": "string",
-///  "maxLength": 8192,
-///  "minLength": 64,
-///  "pattern": "^-----BEGIN PRIVATE KEY-----"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SealedStorageCredentialServiceAccountKeyPrivateKey(::std::string::String);
@@ -1432,17 +982,6 @@ impl<'de> ::serde::Deserialize<'de> for SealedStorageCredentialServiceAccountKey
 }
 ///`SealedStorageCredentialServiceAccountKeyPrivateKeyId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1,
-///  "pattern": "^[A-Za-z0-9]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SealedStorageCredentialServiceAccountKeyPrivateKeyId(::std::string::String);
@@ -1516,18 +1055,6 @@ impl<'de> ::serde::Deserialize<'de> for SealedStorageCredentialServiceAccountKey
 }
 ///Present when the pair is a temporary one that needs it. A temporary pair stops working at its own expiry, after which the config reports failures until another is set; it is accepted for evaluation, never recommended.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Present when the pair is a temporary one that needs it. A temporary pair stops working at its own expiry, after which the config reports failures until another is set; it is accepted for evaluation, never recommended.",
-///  "type": "string",
-///  "maxLength": 8192,
-///  "minLength": 1,
-///  "pattern": "^[!-~]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SealedStorageCredentialSessionToken(::std::string::String);
@@ -1595,18 +1122,6 @@ impl<'de> ::serde::Deserialize<'de> for SealedStorageCredentialSessionToken {
 }
 ///The private key in Sui's Bech32 `suiprivkey` encoding (SIP-15), which carries its signature scheme.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The private key in Sui's Bech32 `suiprivkey` encoding (SIP-15), which carries its signature scheme.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 20,
-///  "pattern": "^suiprivkey1[02-9ac-hj-np-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SealedStorageCredentialSuiPrivateKey(::std::string::String);
@@ -1676,19 +1191,6 @@ impl<'de> ::serde::Deserialize<'de> for SealedStorageCredentialSuiPrivateKey {
 }
 ///A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "StorageConfigId",
-///  "description": "A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1,
-///  "pattern": "^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct StorageConfigId(::std::string::String);
@@ -2159,7 +1661,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CredentialState\": {\n      \"additionalProperties\": false,\n      \"description\": \"Whether a config can authenticate now, and how — never the credential. `status`: `vta-account`, `ambient` and `sealed` are usable; `required` means the config cannot store until a credential is provided (a `sealed` config never set, or set before a restore, which carries no credential); `notAllowed` means the config's mode is one the community's host configuration no longer permits, so it cannot store until its `auth` is changed; `none` is a `local` config.\",\n      \"properties\": {\n        \"account\": {\n          \"$ref\": \"#/$defs/ExternalAccountId\",\n          \"description\": \"Present with `vta-account`.\"\n        },\n        \"context\": {\n          \"$ref\": \"#/$defs/ExternalAccountContextId\",\n          \"description\": \"Present with `vta-account`.\"\n        },\n        \"fingerprint\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"Present with `sealed`: a digest identifying the stored credential, so an administrator can tell which one is set without anyone being able to read it. Computed over the credential with a community-held key, never a bare hash of a low-entropy secret.\"\n        },\n        \"roomsHoldingCredentials\": {\n          \"description\": \"Present with `vta-account`, `ambient` and `sealed`: how many rooms the community currently holds a live room-scoped credential for.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"setAt\": {\n          \"description\": \"Present with `sealed`: when the stored credential was last set.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"enum\": [\n            \"vta-account\",\n            \"ambient\",\n            \"sealed\",\n            \"required\",\n            \"notAllowed\",\n            \"none\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\"\n      ],\n      \"title\": \"CredentialState\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ExternalAccountContextId\": {\n      \"description\": \"The context at the community's VTA that owns an external account. The VTA names an account by its context and its identifier, and decides who may use it by act scope in that context: the community must hold `external-auth-use` there, and be bound to the account, for the account to issue it anything. Naming a context grants nothing; the VTA's binding is the gate.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"title\": \"ExternalAccountContextId\",\n      \"type\": \"string\"\n    },\n    \"ExternalAccountId\": {\n      \"description\": \"The identifier of an external account held by the community's VTA (the external/accounts/* family), which issues the community short-lived, room-scoped credentials and holds the long-lived authority itself.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$\",\n      \"title\": \"ExternalAccountId\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"configId\": {\n          \"$ref\": \"#/$defs/StorageConfigId\"\n        },\n        \"credentialState\": {\n          \"$ref\": \"#/$defs/CredentialState\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"probeOk\": {\n          \"description\": \"Present when the community probed the config with the new credential.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"configId\",\n        \"credentialState\"\n      ],\n      \"title\": \"VTC Storage — Credentials — Set — response payload\",\n      \"type\": \"object\"\n    },\n    \"SealedCredentialCleartext\": {\n      \"$ref\": \"#/$defs/SealedStorageCredential\",\n      \"description\": \"Not a member of the payload: the cleartext inside `sealed`, declared here so that every generated binding carries the type a producer seals and a community opens. Never appears on the wire outside a seal.\"\n    },\n    \"SealedStorageCredential\": {\n      \"description\": \"The cleartext inside the sealed block of vtc/storage/credentials/set/0.2, discriminated by `kind`, which must equal the config's kind. It names the config it is for inside the seal, so that a block captured on its way to one config cannot be replayed into another: a community MUST refuse a block whose `configId` differs from the request's. Never appears on the wire outside a seal, and is never returned. A `local` config has no credential.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"description\": \"An S3 access-key pair: an AWS IAM user's key, or an S3-compatible store's (R2, B2, MinIO).\",\n          \"properties\": {\n            \"accessKeyId\": {\n              \"description\": \"The access key's identifier.\",\n              \"maxLength\": 128,\n              \"minLength\": 1,\n              \"pattern\": \"^[A-Za-z0-9]+$\",\n              \"type\": \"string\"\n            },\n            \"configId\": {\n              \"$ref\": \"#/$defs/StorageConfigId\"\n            },\n            \"kind\": {\n              \"const\": \"s3\"\n            },\n            \"secretAccessKey\": {\n              \"description\": \"The secret half.\",\n              \"maxLength\": 256,\n              \"minLength\": 1,\n              \"pattern\": \"^[!-~]+$\",\n              \"type\": \"string\"\n            },\n            \"sessionToken\": {\n              \"description\": \"Present when the pair is a temporary one that needs it. A temporary pair stops working at its own expiry, after which the config reports failures until another is set; it is accepted for evaluation, never recommended.\",\n              \"maxLength\": 8192,\n              \"minLength\": 1,\n              \"pattern\": \"^[!-~]+$\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"configId\",\n            \"accessKeyId\",\n            \"secretAccessKey\"\n          ],\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"A Google Cloud service-account key.\",\n          \"properties\": {\n            \"configId\": {\n              \"$ref\": \"#/$defs/StorageConfigId\"\n            },\n            \"kind\": {\n              \"const\": \"gcs\"\n            },\n            \"serviceAccountKey\": {\n              \"additionalProperties\": true,\n              \"description\": \"The service-account key exactly as Google issues it — the JSON key file, as an object, its member names carried verbatim in Google's own snake_case. Members beyond the four required (`project_id`, `client_id`, `token_uri`, `universe_domain` and the rest) are permitted, and a community MAY discard them: it authenticates with `client_email`, `private_key_id` and `private_key` alone, against Google's own token endpoint, and never against a `token_uri` the key file names.\",\n              \"properties\": {\n                \"client_email\": {\n                  \"maxLength\": 320,\n                  \"minLength\": 3,\n                  \"pattern\": \"^[^@\\\\s]+@[^@\\\\s]+$\",\n                  \"type\": \"string\"\n                },\n                \"private_key\": {\n                  \"description\": \"The PKCS #8 PEM private key.\",\n                  \"maxLength\": 8192,\n                  \"minLength\": 64,\n                  \"pattern\": \"^-----BEGIN PRIVATE KEY-----\",\n                  \"type\": \"string\"\n                },\n                \"private_key_id\": {\n                  \"maxLength\": 128,\n                  \"minLength\": 1,\n                  \"pattern\": \"^[A-Za-z0-9]+$\",\n                  \"type\": \"string\"\n                },\n                \"type\": {\n                  \"const\": \"service_account\"\n                }\n              },\n              \"required\": [\n                \"type\",\n                \"client_email\",\n                \"private_key_id\",\n                \"private_key\"\n              ],\n              \"type\": \"object\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"configId\",\n            \"serviceAccountKey\"\n          ],\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"The Sui key that pays for a `walrus` config's storage.\",\n          \"properties\": {\n            \"configId\": {\n              \"$ref\": \"#/$defs/StorageConfigId\"\n            },\n            \"kind\": {\n              \"const\": \"walrus\"\n            },\n            \"suiPrivateKey\": {\n              \"description\": \"The private key in Sui's Bech32 `suiprivkey` encoding (SIP-15), which carries its signature scheme.\",\n              \"maxLength\": 256,\n              \"minLength\": 20,\n              \"pattern\": \"^suiprivkey1[02-9ac-hj-np-z]+$\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"configId\",\n            \"suiPrivateKey\"\n          ],\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"SealedStorageCredential\"\n    },\n    \"StorageConfigId\": {\n      \"description\": \"A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$\",\n      \"title\": \"StorageConfigId\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/storage/credentials/set/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Store a `sealed` storage config's long-lived credential, sealed end to end to the community. Write-only: no task returns it. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"configId\": {\n      \"$ref\": \"#/$defs/StorageConfigId\"\n    },\n    \"digestMultibase\": {\n      \"$ref\": \"#/$defs/DigestMultibase\",\n      \"description\": \"Digest over the armored bytes exactly as carried in `sealed`. Covered by the document's proof, and shown to approvers in place of the credential.\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"reason\": {\n      \"description\": \"Why the administrator is making this change. Recorded with the change in the audit trail and shown to approvers. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.\",\n      \"maxLength\": 500,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"sealed\": {\n      \"description\": \"OpenPGP-style ASCII-armored `sealed_transfer` ciphertext of the credential. HPKE base mode, X25519-HKDF-SHA256 KEM, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`; recipient the X25519 derivation of the community DID's Ed25519 key.\",\n      \"maxLength\": 16384,\n      \"minLength\": 64,\n      \"pattern\": \"^-----BEGIN VTA SEALED BUNDLE-----\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"configId\",\n    \"sealed\",\n    \"digestMultibase\",\n    \"reason\"\n  ],\n  \"title\": \"VTC Storage — Credentials — Set — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"CredentialState\":{\"additionalProperties\":false,\"description\":\"Whether a config can authenticate now, and how — never the credential. `status`: `vta-account`, `ambient` and `sealed` are usable; `required` means the config cannot store until a credential is provided (a `sealed` config never set, or set before a restore, which carries no credential); `notAllowed` means the config's mode is one the community's host configuration no longer permits, so it cannot store until its `auth` is changed; `none` is a `local` config.\",\"properties\":{\"account\":{\"$ref\":\"#/$defs/ExternalAccountId\",\"description\":\"Present with `vta-account`.\"},\"context\":{\"$ref\":\"#/$defs/ExternalAccountContextId\",\"description\":\"Present with `vta-account`.\"},\"fingerprint\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Present with `sealed`: a digest identifying the stored credential, so an administrator can tell which one is set without anyone being able to read it. Computed over the credential with a community-held key, never a bare hash of a low-entropy secret.\"},\"roomsHoldingCredentials\":{\"description\":\"Present with `vta-account`, `ambient` and `sealed`: how many rooms the community currently holds a live room-scoped credential for.\",\"minimum\":0,\"type\":\"integer\"},\"setAt\":{\"description\":\"Present with `sealed`: when the stored credential was last set.\",\"format\":\"date-time\",\"type\":\"string\"},\"status\":{\"enum\":[\"vta-account\",\"ambient\",\"sealed\",\"required\",\"notAllowed\",\"none\"],\"type\":\"string\"}},\"required\":[\"status\"],\"title\":\"CredentialState\",\"type\":\"object\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ExternalAccountContextId\":{\"description\":\"The context at the community's VTA that owns an external account. The VTA names an account by its context and its identifier, and decides who may use it by act scope in that context: the community must hold `external-auth-use` there, and be bound to the account, for the account to issue it anything. Naming a context grants nothing; the VTA's binding is the gate.\",\"maxLength\":256,\"minLength\":1,\"title\":\"ExternalAccountContextId\",\"type\":\"string\"},\"ExternalAccountId\":{\"description\":\"The identifier of an external account held by the community's VTA (the external/accounts/* family), which issues the community short-lived, room-scoped credentials and holds the long-lived authority itself.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$\",\"title\":\"ExternalAccountId\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"configId\":{\"$ref\":\"#/$defs/StorageConfigId\"},\"credentialState\":{\"$ref\":\"#/$defs/CredentialState\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"probeOk\":{\"description\":\"Present when the community probed the config with the new credential.\",\"type\":\"boolean\"}},\"required\":[\"configId\",\"credentialState\"],\"title\":\"VTC Storage — Credentials — Set — response payload\",\"type\":\"object\"},\"SealedCredentialCleartext\":{\"$ref\":\"#/$defs/SealedStorageCredential\",\"description\":\"Not a member of the payload: the cleartext inside `sealed`, declared here so that every generated binding carries the type a producer seals and a community opens. Never appears on the wire outside a seal.\"},\"SealedStorageCredential\":{\"description\":\"The cleartext inside the sealed block of vtc/storage/credentials/set/0.2, discriminated by `kind`, which must equal the config's kind. It names the config it is for inside the seal, so that a block captured on its way to one config cannot be replayed into another: a community MUST refuse a block whose `configId` differs from the request's. Never appears on the wire outside a seal, and is never returned. A `local` config has no credential.\",\"oneOf\":[{\"additionalProperties\":false,\"description\":\"An S3 access-key pair: an AWS IAM user's key, or an S3-compatible store's (R2, B2, MinIO).\",\"properties\":{\"accessKeyId\":{\"description\":\"The access key's identifier.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9]+$\",\"type\":\"string\"},\"configId\":{\"$ref\":\"#/$defs/StorageConfigId\"},\"kind\":{\"const\":\"s3\"},\"secretAccessKey\":{\"description\":\"The secret half.\",\"maxLength\":256,\"minLength\":1,\"pattern\":\"^[!-~]+$\",\"type\":\"string\"},\"sessionToken\":{\"description\":\"Present when the pair is a temporary one that needs it. A temporary pair stops working at its own expiry, after which the config reports failures until another is set; it is accepted for evaluation, never recommended.\",\"maxLength\":8192,\"minLength\":1,\"pattern\":\"^[!-~]+$\",\"type\":\"string\"}},\"required\":[\"kind\",\"configId\",\"accessKeyId\",\"secretAccessKey\"],\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"A Google Cloud service-account key.\",\"properties\":{\"configId\":{\"$ref\":\"#/$defs/StorageConfigId\"},\"kind\":{\"const\":\"gcs\"},\"serviceAccountKey\":{\"additionalProperties\":true,\"description\":\"The service-account key exactly as Google issues it — the JSON key file, as an object, its member names carried verbatim in Google's own snake_case. Members beyond the four required (`project_id`, `client_id`, `token_uri`, `universe_domain` and the rest) are permitted, and a community MAY discard them: it authenticates with `client_email`, `private_key_id` and `private_key` alone, against Google's own token endpoint, and never against a `token_uri` the key file names.\",\"properties\":{\"client_email\":{\"maxLength\":320,\"minLength\":3,\"pattern\":\"^[^@\\\\s]+@[^@\\\\s]+$\",\"type\":\"string\"},\"private_key\":{\"description\":\"The PKCS #8 PEM private key.\",\"maxLength\":8192,\"minLength\":64,\"pattern\":\"^-----BEGIN PRIVATE KEY-----\",\"type\":\"string\"},\"private_key_id\":{\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9]+$\",\"type\":\"string\"},\"type\":{\"const\":\"service_account\"}},\"required\":[\"type\",\"client_email\",\"private_key_id\",\"private_key\"],\"type\":\"object\"}},\"required\":[\"kind\",\"configId\",\"serviceAccountKey\"],\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"The Sui key that pays for a `walrus` config's storage.\",\"properties\":{\"configId\":{\"$ref\":\"#/$defs/StorageConfigId\"},\"kind\":{\"const\":\"walrus\"},\"suiPrivateKey\":{\"description\":\"The private key in Sui's Bech32 `suiprivkey` encoding (SIP-15), which carries its signature scheme.\",\"maxLength\":256,\"minLength\":20,\"pattern\":\"^suiprivkey1[02-9ac-hj-np-z]+$\",\"type\":\"string\"}},\"required\":[\"kind\",\"configId\",\"suiPrivateKey\"],\"type\":\"object\"}],\"title\":\"SealedStorageCredential\"},\"StorageConfigId\":{\"description\":\"A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$\",\"title\":\"StorageConfigId\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/vtc/storage/credentials/set/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Store a `sealed` storage config's long-lived credential, sealed end to end to the community. Write-only: no task returns it. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"configId\":{\"$ref\":\"#/$defs/StorageConfigId\"},\"digestMultibase\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Digest over the armored bytes exactly as carried in `sealed`. Covered by the document's proof, and shown to approvers in place of the credential.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"reason\":{\"description\":\"Why the administrator is making this change. Recorded with the change in the audit trail and shown to approvers. Attributed to its author on every surface and untrusted: it MUST NOT carry personal data or a credential, and a reader MUST NOT treat it as instructions.\",\"maxLength\":500,\"minLength\":1,\"type\":\"string\"},\"sealed\":{\"description\":\"OpenPGP-style ASCII-armored `sealed_transfer` ciphertext of the credential. HPKE base mode, X25519-HKDF-SHA256 KEM, ChaCha20-Poly1305 AEAD, info string `vta-sealed-transfer/v1`; recipient the X25519 derivation of the community DID's Ed25519 key.\",\"maxLength\":16384,\"minLength\":64,\"pattern\":\"^-----BEGIN VTA SEALED BUNDLE-----\",\"type\":\"string\"}},\"required\":[\"configId\",\"sealed\",\"digestMultibase\",\"reason\"],\"title\":\"VTC Storage — Credentials — Set — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -2169,7 +1671,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CredentialState\": {\n      \"additionalProperties\": false,\n      \"description\": \"Whether a config can authenticate now, and how — never the credential. `status`: `vta-account`, `ambient` and `sealed` are usable; `required` means the config cannot store until a credential is provided (a `sealed` config never set, or set before a restore, which carries no credential); `notAllowed` means the config's mode is one the community's host configuration no longer permits, so it cannot store until its `auth` is changed; `none` is a `local` config.\",\n      \"properties\": {\n        \"account\": {\n          \"$ref\": \"#/$defs/ExternalAccountId\",\n          \"description\": \"Present with `vta-account`.\"\n        },\n        \"context\": {\n          \"$ref\": \"#/$defs/ExternalAccountContextId\",\n          \"description\": \"Present with `vta-account`.\"\n        },\n        \"fingerprint\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"Present with `sealed`: a digest identifying the stored credential, so an administrator can tell which one is set without anyone being able to read it. Computed over the credential with a community-held key, never a bare hash of a low-entropy secret.\"\n        },\n        \"roomsHoldingCredentials\": {\n          \"description\": \"Present with `vta-account`, `ambient` and `sealed`: how many rooms the community currently holds a live room-scoped credential for.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"setAt\": {\n          \"description\": \"Present with `sealed`: when the stored credential was last set.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"enum\": [\n            \"vta-account\",\n            \"ambient\",\n            \"sealed\",\n            \"required\",\n            \"notAllowed\",\n            \"none\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\"\n      ],\n      \"title\": \"CredentialState\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ExternalAccountContextId\": {\n      \"description\": \"The context at the community's VTA that owns an external account. The VTA names an account by its context and its identifier, and decides who may use it by act scope in that context: the community must hold `external-auth-use` there, and be bound to the account, for the account to issue it anything. Naming a context grants nothing; the VTA's binding is the gate.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"title\": \"ExternalAccountContextId\",\n      \"type\": \"string\"\n    },\n    \"ExternalAccountId\": {\n      \"description\": \"The identifier of an external account held by the community's VTA (the external/accounts/* family), which issues the community short-lived, room-scoped credentials and holds the long-lived authority itself.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$\",\n      \"title\": \"ExternalAccountId\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"configId\": {\n          \"$ref\": \"#/$defs/StorageConfigId\"\n        },\n        \"credentialState\": {\n          \"$ref\": \"#/$defs/CredentialState\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"probeOk\": {\n          \"description\": \"Present when the community probed the config with the new credential.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"configId\",\n        \"credentialState\"\n      ],\n      \"title\": \"VTC Storage — Credentials — Set — response payload\",\n      \"type\": \"object\"\n    },\n    \"SealedCredentialCleartext\": {\n      \"$ref\": \"#/$defs/SealedStorageCredential\",\n      \"description\": \"Not a member of the payload: the cleartext inside `sealed`, declared here so that every generated binding carries the type a producer seals and a community opens. Never appears on the wire outside a seal.\"\n    },\n    \"SealedStorageCredential\": {\n      \"description\": \"The cleartext inside the sealed block of vtc/storage/credentials/set/0.2, discriminated by `kind`, which must equal the config's kind. It names the config it is for inside the seal, so that a block captured on its way to one config cannot be replayed into another: a community MUST refuse a block whose `configId` differs from the request's. Never appears on the wire outside a seal, and is never returned. A `local` config has no credential.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"description\": \"An S3 access-key pair: an AWS IAM user's key, or an S3-compatible store's (R2, B2, MinIO).\",\n          \"properties\": {\n            \"accessKeyId\": {\n              \"description\": \"The access key's identifier.\",\n              \"maxLength\": 128,\n              \"minLength\": 1,\n              \"pattern\": \"^[A-Za-z0-9]+$\",\n              \"type\": \"string\"\n            },\n            \"configId\": {\n              \"$ref\": \"#/$defs/StorageConfigId\"\n            },\n            \"kind\": {\n              \"const\": \"s3\"\n            },\n            \"secretAccessKey\": {\n              \"description\": \"The secret half.\",\n              \"maxLength\": 256,\n              \"minLength\": 1,\n              \"pattern\": \"^[!-~]+$\",\n              \"type\": \"string\"\n            },\n            \"sessionToken\": {\n              \"description\": \"Present when the pair is a temporary one that needs it. A temporary pair stops working at its own expiry, after which the config reports failures until another is set; it is accepted for evaluation, never recommended.\",\n              \"maxLength\": 8192,\n              \"minLength\": 1,\n              \"pattern\": \"^[!-~]+$\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"configId\",\n            \"accessKeyId\",\n            \"secretAccessKey\"\n          ],\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"A Google Cloud service-account key.\",\n          \"properties\": {\n            \"configId\": {\n              \"$ref\": \"#/$defs/StorageConfigId\"\n            },\n            \"kind\": {\n              \"const\": \"gcs\"\n            },\n            \"serviceAccountKey\": {\n              \"additionalProperties\": true,\n              \"description\": \"The service-account key exactly as Google issues it — the JSON key file, as an object, its member names carried verbatim in Google's own snake_case. Members beyond the four required (`project_id`, `client_id`, `token_uri`, `universe_domain` and the rest) are permitted, and a community MAY discard them: it authenticates with `client_email`, `private_key_id` and `private_key` alone, against Google's own token endpoint, and never against a `token_uri` the key file names.\",\n              \"properties\": {\n                \"client_email\": {\n                  \"maxLength\": 320,\n                  \"minLength\": 3,\n                  \"pattern\": \"^[^@\\\\s]+@[^@\\\\s]+$\",\n                  \"type\": \"string\"\n                },\n                \"private_key\": {\n                  \"description\": \"The PKCS #8 PEM private key.\",\n                  \"maxLength\": 8192,\n                  \"minLength\": 64,\n                  \"pattern\": \"^-----BEGIN PRIVATE KEY-----\",\n                  \"type\": \"string\"\n                },\n                \"private_key_id\": {\n                  \"maxLength\": 128,\n                  \"minLength\": 1,\n                  \"pattern\": \"^[A-Za-z0-9]+$\",\n                  \"type\": \"string\"\n                },\n                \"type\": {\n                  \"const\": \"service_account\"\n                }\n              },\n              \"required\": [\n                \"type\",\n                \"client_email\",\n                \"private_key_id\",\n                \"private_key\"\n              ],\n              \"type\": \"object\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"configId\",\n            \"serviceAccountKey\"\n          ],\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"The Sui key that pays for a `walrus` config's storage.\",\n          \"properties\": {\n            \"configId\": {\n              \"$ref\": \"#/$defs/StorageConfigId\"\n            },\n            \"kind\": {\n              \"const\": \"walrus\"\n            },\n            \"suiPrivateKey\": {\n              \"description\": \"The private key in Sui's Bech32 `suiprivkey` encoding (SIP-15), which carries its signature scheme.\",\n              \"maxLength\": 256,\n              \"minLength\": 20,\n              \"pattern\": \"^suiprivkey1[02-9ac-hj-np-z]+$\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"configId\",\n            \"suiPrivateKey\"\n          ],\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"SealedStorageCredential\"\n    },\n    \"StorageConfigId\": {\n      \"description\": \"A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$\",\n      \"title\": \"StorageConfigId\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"CredentialState\":{\"additionalProperties\":false,\"description\":\"Whether a config can authenticate now, and how — never the credential. `status`: `vta-account`, `ambient` and `sealed` are usable; `required` means the config cannot store until a credential is provided (a `sealed` config never set, or set before a restore, which carries no credential); `notAllowed` means the config's mode is one the community's host configuration no longer permits, so it cannot store until its `auth` is changed; `none` is a `local` config.\",\"properties\":{\"account\":{\"$ref\":\"#/$defs/ExternalAccountId\",\"description\":\"Present with `vta-account`.\"},\"context\":{\"$ref\":\"#/$defs/ExternalAccountContextId\",\"description\":\"Present with `vta-account`.\"},\"fingerprint\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Present with `sealed`: a digest identifying the stored credential, so an administrator can tell which one is set without anyone being able to read it. Computed over the credential with a community-held key, never a bare hash of a low-entropy secret.\"},\"roomsHoldingCredentials\":{\"description\":\"Present with `vta-account`, `ambient` and `sealed`: how many rooms the community currently holds a live room-scoped credential for.\",\"minimum\":0,\"type\":\"integer\"},\"setAt\":{\"description\":\"Present with `sealed`: when the stored credential was last set.\",\"format\":\"date-time\",\"type\":\"string\"},\"status\":{\"enum\":[\"vta-account\",\"ambient\",\"sealed\",\"required\",\"notAllowed\",\"none\"],\"type\":\"string\"}},\"required\":[\"status\"],\"title\":\"CredentialState\",\"type\":\"object\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ExternalAccountContextId\":{\"description\":\"The context at the community's VTA that owns an external account. The VTA names an account by its context and its identifier, and decides who may use it by act scope in that context: the community must hold `external-auth-use` there, and be bound to the account, for the account to issue it anything. Naming a context grants nothing; the VTA's binding is the gate.\",\"maxLength\":256,\"minLength\":1,\"title\":\"ExternalAccountContextId\",\"type\":\"string\"},\"ExternalAccountId\":{\"description\":\"The identifier of an external account held by the community's VTA (the external/accounts/* family), which issues the community short-lived, room-scoped credentials and holds the long-lived authority itself.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$\",\"title\":\"ExternalAccountId\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"configId\":{\"$ref\":\"#/$defs/StorageConfigId\"},\"credentialState\":{\"$ref\":\"#/$defs/CredentialState\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"probeOk\":{\"description\":\"Present when the community probed the config with the new credential.\",\"type\":\"boolean\"}},\"required\":[\"configId\",\"credentialState\"],\"title\":\"VTC Storage — Credentials — Set — response payload\",\"type\":\"object\"},\"SealedCredentialCleartext\":{\"$ref\":\"#/$defs/SealedStorageCredential\",\"description\":\"Not a member of the payload: the cleartext inside `sealed`, declared here so that every generated binding carries the type a producer seals and a community opens. Never appears on the wire outside a seal.\"},\"SealedStorageCredential\":{\"description\":\"The cleartext inside the sealed block of vtc/storage/credentials/set/0.2, discriminated by `kind`, which must equal the config's kind. It names the config it is for inside the seal, so that a block captured on its way to one config cannot be replayed into another: a community MUST refuse a block whose `configId` differs from the request's. Never appears on the wire outside a seal, and is never returned. A `local` config has no credential.\",\"oneOf\":[{\"additionalProperties\":false,\"description\":\"An S3 access-key pair: an AWS IAM user's key, or an S3-compatible store's (R2, B2, MinIO).\",\"properties\":{\"accessKeyId\":{\"description\":\"The access key's identifier.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9]+$\",\"type\":\"string\"},\"configId\":{\"$ref\":\"#/$defs/StorageConfigId\"},\"kind\":{\"const\":\"s3\"},\"secretAccessKey\":{\"description\":\"The secret half.\",\"maxLength\":256,\"minLength\":1,\"pattern\":\"^[!-~]+$\",\"type\":\"string\"},\"sessionToken\":{\"description\":\"Present when the pair is a temporary one that needs it. A temporary pair stops working at its own expiry, after which the config reports failures until another is set; it is accepted for evaluation, never recommended.\",\"maxLength\":8192,\"minLength\":1,\"pattern\":\"^[!-~]+$\",\"type\":\"string\"}},\"required\":[\"kind\",\"configId\",\"accessKeyId\",\"secretAccessKey\"],\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"A Google Cloud service-account key.\",\"properties\":{\"configId\":{\"$ref\":\"#/$defs/StorageConfigId\"},\"kind\":{\"const\":\"gcs\"},\"serviceAccountKey\":{\"additionalProperties\":true,\"description\":\"The service-account key exactly as Google issues it — the JSON key file, as an object, its member names carried verbatim in Google's own snake_case. Members beyond the four required (`project_id`, `client_id`, `token_uri`, `universe_domain` and the rest) are permitted, and a community MAY discard them: it authenticates with `client_email`, `private_key_id` and `private_key` alone, against Google's own token endpoint, and never against a `token_uri` the key file names.\",\"properties\":{\"client_email\":{\"maxLength\":320,\"minLength\":3,\"pattern\":\"^[^@\\\\s]+@[^@\\\\s]+$\",\"type\":\"string\"},\"private_key\":{\"description\":\"The PKCS #8 PEM private key.\",\"maxLength\":8192,\"minLength\":64,\"pattern\":\"^-----BEGIN PRIVATE KEY-----\",\"type\":\"string\"},\"private_key_id\":{\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[A-Za-z0-9]+$\",\"type\":\"string\"},\"type\":{\"const\":\"service_account\"}},\"required\":[\"type\",\"client_email\",\"private_key_id\",\"private_key\"],\"type\":\"object\"}},\"required\":[\"kind\",\"configId\",\"serviceAccountKey\"],\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"The Sui key that pays for a `walrus` config's storage.\",\"properties\":{\"configId\":{\"$ref\":\"#/$defs/StorageConfigId\"},\"kind\":{\"const\":\"walrus\"},\"suiPrivateKey\":{\"description\":\"The private key in Sui's Bech32 `suiprivkey` encoding (SIP-15), which carries its signature scheme.\",\"maxLength\":256,\"minLength\":20,\"pattern\":\"^suiprivkey1[02-9ac-hj-np-z]+$\",\"type\":\"string\"}},\"required\":[\"kind\",\"configId\",\"suiPrivateKey\"],\"type\":\"object\"}],\"title\":\"SealedStorageCredential\"},\"StorageConfigId\":{\"description\":\"A storage config's identifier, chosen by the administrator who creates it and immutable thereafter: lowercase letters, digits and inner hyphens, at most 64 characters (`eu-s3-primary`, `walrus-main`). Unique within the community. Never reused after a config is retired, because blobs name their config by this value.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$\",\"title\":\"StorageConfigId\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

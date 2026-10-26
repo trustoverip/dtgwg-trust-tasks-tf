@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,36 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Read the binding for one persona in a context: whether a profile is bound, and its label — never its contents.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/persona/binding/get/1.0",
-///  "title": "Payload",
-///  "description": "Read the binding for one persona in a context: whether a profile is bound, and its label — never its contents.",
-///  "type": "object",
-///  "required": [
-///    "contextId",
-///    "personaDid"
-///  ],
-///  "properties": {
-///    "contextId": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "personaDid": {
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -190,15 +136,6 @@ impl Payload {
 }
 ///`PayloadContextId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadContextId(::std::string::String);
@@ -258,16 +195,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 }
 ///`PayloadPersonaDid`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadPersonaDid(::std::string::String);
@@ -330,69 +257,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadPersonaDid {
 }
 ///Success response to persona/binding/get. Type https://trusttasks.org/spec/persona/binding/get/1.0#response. This task is context-callable, which is why the response is deliberately thin: an application in the context learns THAT a profile is bound and what the holder calls it, and never what it contains. Contents reach an application only through the disclosure path, where the holder sees a preview first.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to persona/binding/get. Type https://trusttasks.org/spec/persona/binding/get/1.0#response. This task is context-callable, which is why the response is deliberately thin: an application in the context learns THAT a profile is bound and what the holder calls it, and never what it contains. Contents reach an application only through the disclosure path, where the holder sees a preview first.",
-///  "type": "object",
-///  "required": [
-///    "bound",
-///    "contextId",
-///    "personaDid"
-///  ],
-///  "properties": {
-///    "bound": {
-///      "description": "Whether a profile is bound. False is a normal state, not an error — a persona need not have a profile.",
-///      "type": "boolean"
-///    },
-///    "boundAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "claimCount": {
-///      "description": "How many claims the materialised projection holds. Lets an application render \"12 details available\" without obtaining any of them.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "contextId": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "label": {
-///      "description": "The name the holder chose for this context to call the face (persona/binding/set `label`). Absent when they chose none.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "personaDid": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "profileId": {
-///      "description": "Present when bound. An identifier only; a context-scoped caller cannot resolve it, because profile reads are holder-authorized.",
-///      "$ref": "#/definitions/Ulid"
-///    },
-///    "profileName": {
-///      "description": "The holder's OWN name for the bound face. A maintainer MUST omit it unless the caller is holder-authorized: it is the holder's filing, not something they told this context, and it can say far more than the face shows. A context-scoped caller reads `label`.",
-///      "type": "string",
-///      "maxLength": 128
-///    },
-///    "until": {
-///      "description": "When this binding ends on its own. Absent when it lasts until changed. Context-visible: the context learns when the face stops being worn here, which is the thing the holder set it to tell.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -446,15 +310,6 @@ impl Response {
 }
 ///`ResponseContextId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseContextId(::std::string::String);
@@ -514,17 +369,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseContextId {
 }
 ///The name the holder chose for this context to call the face (persona/binding/set `label`). Absent when they chose none.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The name the holder chose for this context to call the face (persona/binding/set `label`). Absent when they chose none.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseLabel(::std::string::String);
@@ -587,15 +431,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseLabel {
 }
 ///`ResponsePersonaDid`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponsePersonaDid(::std::string::String);
@@ -655,16 +490,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponsePersonaDid {
 }
 ///The holder's OWN name for the bound face. A maintainer MUST omit it unless the caller is holder-authorized: it is the holder's filing, not something they told this context, and it can say far more than the face shows. A context-scoped caller reads `label`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The holder's OWN name for the bound face. A maintainer MUST omit it unless the caller is holder-authorized: it is the holder's filing, not something they told this context, and it can say far more than the face shows. A context-scoped caller reads `label`.",
-///  "type": "string",
-///  "maxLength": 128
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseProfileName(::std::string::String);
@@ -724,17 +549,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseProfileName {
 }
 ///A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ulid",
-///  "description": "A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.",
-///  "type": "string",
-///  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Ulid(::std::string::String);
@@ -1051,7 +865,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/binding/get. Type https://trusttasks.org/spec/persona/binding/get/1.0#response. This task is context-callable, which is why the response is deliberately thin: an application in the context learns THAT a profile is bound and what the holder calls it, and never what it contains. Contents reach an application only through the disclosure path, where the holder sees a preview first.\",\n      \"properties\": {\n        \"bound\": {\n          \"description\": \"Whether a profile is bound. False is a normal state, not an error — a persona need not have a profile.\",\n          \"type\": \"boolean\"\n        },\n        \"boundAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"claimCount\": {\n          \"description\": \"How many claims the materialised projection holds. Lets an application render \\\"12 details available\\\" without obtaining any of them.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"contextId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"label\": {\n          \"description\": \"The name the holder chose for this context to call the face (persona/binding/set `label`). Absent when they chose none.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"personaDid\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"profileId\": {\n          \"$ref\": \"#/$defs/Ulid\",\n          \"description\": \"Present when bound. An identifier only; a context-scoped caller cannot resolve it, because profile reads are holder-authorized.\"\n        },\n        \"profileName\": {\n          \"description\": \"The holder's OWN name for the bound face. A maintainer MUST omit it unless the caller is holder-authorized: it is the holder's filing, not something they told this context, and it can say far more than the face shows. A context-scoped caller reads `label`.\",\n          \"maxLength\": 128,\n          \"type\": \"string\"\n        },\n        \"until\": {\n          \"description\": \"When this binding ends on its own. Absent when it lasts until changed. Context-visible: the context learns when the face stops being worn here, which is the thing the holder set it to tell.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"contextId\",\n        \"personaDid\",\n        \"bound\"\n      ],\n      \"title\": \"Persona Binding Get — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/persona/binding/get/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Read the binding for one persona in a context: whether a profile is bound, and its label — never its contents.\",\n  \"properties\": {\n    \"contextId\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"personaDid\": {\n      \"maxLength\": 2048,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"contextId\",\n    \"personaDid\"\n  ],\n  \"title\": \"Persona Binding Get — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to persona/binding/get. Type https://trusttasks.org/spec/persona/binding/get/1.0#response. This task is context-callable, which is why the response is deliberately thin: an application in the context learns THAT a profile is bound and what the holder calls it, and never what it contains. Contents reach an application only through the disclosure path, where the holder sees a preview first.\",\"properties\":{\"bound\":{\"description\":\"Whether a profile is bound. False is a normal state, not an error — a persona need not have a profile.\",\"type\":\"boolean\"},\"boundAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"claimCount\":{\"description\":\"How many claims the materialised projection holds. Lets an application render \\\"12 details available\\\" without obtaining any of them.\",\"minimum\":0,\"type\":\"integer\"},\"contextId\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"label\":{\"description\":\"The name the holder chose for this context to call the face (persona/binding/set `label`). Absent when they chose none.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"personaDid\":{\"minLength\":1,\"type\":\"string\"},\"profileId\":{\"$ref\":\"#/$defs/Ulid\",\"description\":\"Present when bound. An identifier only; a context-scoped caller cannot resolve it, because profile reads are holder-authorized.\"},\"profileName\":{\"description\":\"The holder's OWN name for the bound face. A maintainer MUST omit it unless the caller is holder-authorized: it is the holder's filing, not something they told this context, and it can say far more than the face shows. A context-scoped caller reads `label`.\",\"maxLength\":128,\"type\":\"string\"},\"until\":{\"description\":\"When this binding ends on its own. Absent when it lasts until changed. Context-visible: the context learns when the face stops being worn here, which is the thing the holder set it to tell.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"contextId\",\"personaDid\",\"bound\"],\"title\":\"Persona Binding Get — response payload\",\"type\":\"object\"},\"Ulid\":{\"description\":\"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\"pattern\":\"^[0-9A-HJKMNP-TV-Z]{26}$\",\"title\":\"Ulid\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/persona/binding/get/1.0\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Read the binding for one persona in a context: whether a profile is bound, and its label — never its contents.\",\"properties\":{\"contextId\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"personaDid\":{\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"contextId\",\"personaDid\"],\"title\":\"Persona Binding Get — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1059,7 +873,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/binding/get. Type https://trusttasks.org/spec/persona/binding/get/1.0#response. This task is context-callable, which is why the response is deliberately thin: an application in the context learns THAT a profile is bound and what the holder calls it, and never what it contains. Contents reach an application only through the disclosure path, where the holder sees a preview first.\",\n      \"properties\": {\n        \"bound\": {\n          \"description\": \"Whether a profile is bound. False is a normal state, not an error — a persona need not have a profile.\",\n          \"type\": \"boolean\"\n        },\n        \"boundAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"claimCount\": {\n          \"description\": \"How many claims the materialised projection holds. Lets an application render \\\"12 details available\\\" without obtaining any of them.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"contextId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"label\": {\n          \"description\": \"The name the holder chose for this context to call the face (persona/binding/set `label`). Absent when they chose none.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"personaDid\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"profileId\": {\n          \"$ref\": \"#/$defs/Ulid\",\n          \"description\": \"Present when bound. An identifier only; a context-scoped caller cannot resolve it, because profile reads are holder-authorized.\"\n        },\n        \"profileName\": {\n          \"description\": \"The holder's OWN name for the bound face. A maintainer MUST omit it unless the caller is holder-authorized: it is the holder's filing, not something they told this context, and it can say far more than the face shows. A context-scoped caller reads `label`.\",\n          \"maxLength\": 128,\n          \"type\": \"string\"\n        },\n        \"until\": {\n          \"description\": \"When this binding ends on its own. Absent when it lasts until changed. Context-visible: the context learns when the face stops being worn here, which is the thing the holder set it to tell.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"contextId\",\n        \"personaDid\",\n        \"bound\"\n      ],\n      \"title\": \"Persona Binding Get — response payload\",\n      \"type\": \"object\"\n    },\n    \"Ulid\": {\n      \"description\": \"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"Ulid\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to persona/binding/get. Type https://trusttasks.org/spec/persona/binding/get/1.0#response. This task is context-callable, which is why the response is deliberately thin: an application in the context learns THAT a profile is bound and what the holder calls it, and never what it contains. Contents reach an application only through the disclosure path, where the holder sees a preview first.\",\"properties\":{\"bound\":{\"description\":\"Whether a profile is bound. False is a normal state, not an error — a persona need not have a profile.\",\"type\":\"boolean\"},\"boundAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"claimCount\":{\"description\":\"How many claims the materialised projection holds. Lets an application render \\\"12 details available\\\" without obtaining any of them.\",\"minimum\":0,\"type\":\"integer\"},\"contextId\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"label\":{\"description\":\"The name the holder chose for this context to call the face (persona/binding/set `label`). Absent when they chose none.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"personaDid\":{\"minLength\":1,\"type\":\"string\"},\"profileId\":{\"$ref\":\"#/$defs/Ulid\",\"description\":\"Present when bound. An identifier only; a context-scoped caller cannot resolve it, because profile reads are holder-authorized.\"},\"profileName\":{\"description\":\"The holder's OWN name for the bound face. A maintainer MUST omit it unless the caller is holder-authorized: it is the holder's filing, not something they told this context, and it can say far more than the face shows. A context-scoped caller reads `label`.\",\"maxLength\":128,\"type\":\"string\"},\"until\":{\"description\":\"When this binding ends on its own. Absent when it lasts until changed. Context-visible: the context learns when the face stops being worn here, which is the thing the holder set it to tell.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"contextId\",\"personaDid\",\"bound\"],\"title\":\"Persona Binding Get — response payload\",\"type\":\"object\"},\"Ulid\":{\"description\":\"A ULID in Crockford base32, uppercase. Used for `attributeId` and `profileId`. Chosen over a UUID because the leading 48 bits are a timestamp, so a key-ordered scan of the store is also creation-ordered and a `list` needs no secondary sort. Server-assigned on create; a producer MAY supply one to make a create idempotent, and a maintainer MUST reject a supplied value that already exists rather than silently overwriting.\",\"pattern\":\"^[0-9A-HJKMNP-TV-Z]{26}$\",\"title\":\"Ulid\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

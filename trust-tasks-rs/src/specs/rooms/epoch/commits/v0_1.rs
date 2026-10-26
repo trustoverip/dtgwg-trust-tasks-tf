@@ -39,40 +39,6 @@ What a party presents to act on a room. Carries the whole authority chain: a hos
 
 **A chain that verifies may still be revoked.** A host that has accepted a `RevocationList` for the room (`rooms/revocations/put`) MUST, from the moment it accepted it, refuse every presentation in which the membership credential or any link of `authority` is revoked by that list, under every task and every version of every task it serves for the room. A chain from which any link is revoked is refused whole: a credential delegated from a revoked one confers nothing, however it was attenuated. The refusal is the same `permissionDenied` as any other failed presentation.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "AuthorityPresentation",
-///  "description": "What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier. A host MUST bind the presenter to the chain's leaf. A chain that verifies is evidence that authority was conferred on somebody; it is not evidence that the party presenting it is that somebody. The leaf's subject MUST equal the party the host authenticated for this request — an identity the transport established or a document `proof` proved, never one named in a payload. A host that omits this check authorizes every captured presentation, and the omission is silent, because the chain still verifies.\n\n**Every credential is its issuer's attestation, and only its issuer's.** For the membership credential and for every link of `authority`, a host MUST verify the credential's `proof` with a key that the credential's own `issuer` lists for `assertionMethod` in its DID document, and MUST refuse a credential whose proof names a verification method that is not its issuer's. A proof that verifies under some other party's key is that party's statement, not the issuer's, and confers nothing. The same binding holds for every other document a room signs, such as a `RevocationList`.\n\n**A chain that verifies may still be revoked.** A host that has accepted a `RevocationList` for the room (`rooms/revocations/put`) MUST, from the moment it accepted it, refuse every presentation in which the membership credential or any link of `authority` is revoked by that list, under every task and every version of every task it serves for the room. A chain from which any link is revoked is refused whole: a credential delegated from a revoked one confers nothing, however it was attenuated. The refusal is the same `permissionDenied` as any other failed presentation.",
-///  "type": "object",
-///  "required": [
-///    "authority",
-///    "membership"
-///  ],
-///  "properties": {
-///    "authority": {
-///      "description": "The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent.",
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      },
-///      "maxItems": 8,
-///      "minItems": 1
-///    },
-///    "membership": {
-///      "description": "The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.",
-///      "type": "string"
-///    },
-///    "subjectBinding": {
-///      "description": "REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this.",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -96,21 +62,6 @@ impl AuthorityPresentation {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -132,15 +83,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -204,48 +146,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///TODO: what the request payload of rooms/epoch/commits carries. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/rooms/epoch/commits/0.1",
-///  "title": "Payload",
-///  "description": "TODO: what the request payload of rooms/epoch/commits carries. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "presentation",
-///    "roomId",
-///    "sinceEpoch"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "limit": {
-///      "description": "Page size to ask for. Commits are large and a member far behind may have many; a caller reads to the end by asking again from the epoch it reached.",
-///      "type": "integer",
-///      "maximum": 100.0,
-///      "minimum": 1.0
-///    },
-///    "presentation": {
-///      "description": "Must confer `read` at this room's scope. A commit is opaque to whoever holds it without the group state, so this authorises the *fetch* rather than the contents — and on a `private` room requires no host session, exactly as a record read does.",
-///      "$ref": "#/definitions/AuthorityPresentation"
-///    },
-///    "roomId": {
-///      "description": "The room to catch up on.",
-///      "type": "string"
-///    },
-///    "sinceEpoch": {
-///      "description": "The epoch this member is at. The host returns the commits **above** it, in order.\n\nA member asks for what they are missing rather than for a count, because only they know where they are — a host that guessed would be guessing from the last time it saw them, which on a `private` room is a thing it should not be tracking.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -275,60 +175,6 @@ impl Payload {
 }
 ///Success response to rooms/epoch/commits. Type https://trusttasks.org/spec/rooms/epoch/commits/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to rooms/epoch/commits. Type https://trusttasks.org/spec/rooms/epoch/commits/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "commits",
-///    "roomId"
-///  ],
-///  "properties": {
-///    "commits": {
-///      "description": "The commits above `sinceEpoch`, **in ascending epoch order and with no gaps**. MLS commits apply in sequence: one applied out of order or over a gap is rejected by the group, so a host that returned an unordered or sparse set would produce a member who cannot catch up and cannot say why. A host that is missing a commit MUST return the run it has *up to* the gap and stop, rather than skipping it.",
-///      "type": "array",
-///      "items": {
-///        "type": "object",
-///        "required": [
-///          "commit",
-///          "epoch"
-///        ],
-///        "properties": {
-///          "commit": {
-///            "description": "The MLS commit, base64url, exactly as it was published. A host that re-encoded it would produce something the group rejects.",
-///            "type": "string",
-///            "maxLength": 262144
-///          },
-///          "epoch": {
-///            "description": "The epoch this commit produced.",
-///            "type": "integer",
-///            "minimum": 1.0
-///          }
-///        },
-///        "additionalProperties": false
-///      },
-///      "maxItems": 100
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "roomEpoch": {
-///      "description": "The epoch the room is at now.\n\n**Not `sinceEpoch` plus the number returned.** Those differ whenever the host is missing a commit or the page ended early, and that difference is the useful part: a member who applies everything served and is still behind knows a delivery is missing rather than concluding their own state is broken.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "roomId": {
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -357,31 +203,6 @@ impl Response {
 }
 ///`ResponseCommitsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "commit",
-///    "epoch"
-///  ],
-///  "properties": {
-///    "commit": {
-///      "description": "The MLS commit, base64url, exactly as it was published. A host that re-encoded it would produce something the group rejects.",
-///      "type": "string",
-///      "maxLength": 262144
-///    },
-///    "epoch": {
-///      "description": "The epoch this commit produced.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -398,16 +219,6 @@ impl ResponseCommitsItem {
 }
 ///The MLS commit, base64url, exactly as it was published. A host that re-encoded it would produce something the group rejects.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The MLS commit, base64url, exactly as it was published. A host that re-encoded it would produce something the group rejects.",
-///  "type": "string",
-///  "maxLength": 262144
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseCommitsItemCommit(::std::string::String);
@@ -783,7 +594,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AuthorityPresentation\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier. A host MUST bind the presenter to the chain's leaf. A chain that verifies is evidence that authority was conferred on somebody; it is not evidence that the party presenting it is that somebody. The leaf's subject MUST equal the party the host authenticated for this request — an identity the transport established or a document `proof` proved, never one named in a payload. A host that omits this check authorizes every captured presentation, and the omission is silent, because the chain still verifies.\\n\\n**Every credential is its issuer's attestation, and only its issuer's.** For the membership credential and for every link of `authority`, a host MUST verify the credential's `proof` with a key that the credential's own `issuer` lists for `assertionMethod` in its DID document, and MUST refuse a credential whose proof names a verification method that is not its issuer's. A proof that verifies under some other party's key is that party's statement, not the issuer's, and confers nothing. The same binding holds for every other document a room signs, such as a `RevocationList`.\\n\\n**A chain that verifies may still be revoked.** A host that has accepted a `RevocationList` for the room (`rooms/revocations/put`) MUST, from the moment it accepted it, refuse every presentation in which the membership credential or any link of `authority` is revoked by that list, under every task and every version of every task it serves for the room. A chain from which any link is revoked is refused whole: a credential delegated from a revoked one confers nothing, however it was attenuated. The refusal is the same `permissionDenied` as any other failed presentation.\",\n      \"properties\": {\n        \"authority\": {\n          \"description\": \"The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"maxItems\": 8,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"membership\": {\n          \"description\": \"The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.\",\n          \"type\": \"string\"\n        },\n        \"subjectBinding\": {\n          \"description\": \"REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"membership\",\n        \"authority\"\n      ],\n      \"title\": \"AuthorityPresentation\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/epoch/commits. Type https://trusttasks.org/spec/rooms/epoch/commits/0.1#response.\",\n      \"properties\": {\n        \"commits\": {\n          \"description\": \"The commits above `sinceEpoch`, **in ascending epoch order and with no gaps**. MLS commits apply in sequence: one applied out of order or over a gap is rejected by the group, so a host that returned an unordered or sparse set would produce a member who cannot catch up and cannot say why. A host that is missing a commit MUST return the run it has *up to* the gap and stop, rather than skipping it.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"commit\": {\n                \"description\": \"The MLS commit, base64url, exactly as it was published. A host that re-encoded it would produce something the group rejects.\",\n                \"maxLength\": 262144,\n                \"type\": \"string\"\n              },\n              \"epoch\": {\n                \"description\": \"The epoch this commit produced.\",\n                \"minimum\": 1,\n                \"type\": \"integer\"\n              }\n            },\n            \"required\": [\n              \"epoch\",\n              \"commit\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 100,\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"roomEpoch\": {\n          \"description\": \"The epoch the room is at now.\\n\\n**Not `sinceEpoch` plus the number returned.** Those differ whenever the host is missing a commit or the page ended early, and that difference is the useful part: a member who applies everything served and is still behind knows a delivery is missing rather than concluding their own state is broken.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"roomId\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"commits\"\n      ],\n      \"title\": \"Rooms Epoch Commits — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/rooms/epoch/commits/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"TODO: what the request payload of rooms/epoch/commits carries. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"limit\": {\n      \"description\": \"Page size to ask for. Commits are large and a member far behind may have many; a caller reads to the end by asking again from the epoch it reached.\",\n      \"maximum\": 100,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"presentation\": {\n      \"$ref\": \"#/$defs/AuthorityPresentation\",\n      \"description\": \"Must confer `read` at this room's scope. A commit is opaque to whoever holds it without the group state, so this authorises the *fetch* rather than the contents — and on a `private` room requires no host session, exactly as a record read does.\"\n    },\n    \"roomId\": {\n      \"description\": \"The room to catch up on.\",\n      \"type\": \"string\"\n    },\n    \"sinceEpoch\": {\n      \"description\": \"The epoch this member is at. The host returns the commits **above** it, in order.\\n\\nA member asks for what they are missing rather than for a count, because only they know where they are — a host that guessed would be guessing from the last time it saw them, which on a `private` room is a thing it should not be tracking.\",\n      \"minimum\": 0,\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"roomId\",\n    \"sinceEpoch\",\n    \"presentation\"\n  ],\n  \"title\": \"Rooms Epoch Commits — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"AuthorityPresentation\":{\"additionalProperties\":false,\"description\":\"What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier. A host MUST bind the presenter to the chain's leaf. A chain that verifies is evidence that authority was conferred on somebody; it is not evidence that the party presenting it is that somebody. The leaf's subject MUST equal the party the host authenticated for this request — an identity the transport established or a document `proof` proved, never one named in a payload. A host that omits this check authorizes every captured presentation, and the omission is silent, because the chain still verifies.\\n\\n**Every credential is its issuer's attestation, and only its issuer's.** For the membership credential and for every link of `authority`, a host MUST verify the credential's `proof` with a key that the credential's own `issuer` lists for `assertionMethod` in its DID document, and MUST refuse a credential whose proof names a verification method that is not its issuer's. A proof that verifies under some other party's key is that party's statement, not the issuer's, and confers nothing. The same binding holds for every other document a room signs, such as a `RevocationList`.\\n\\n**A chain that verifies may still be revoked.** A host that has accepted a `RevocationList` for the room (`rooms/revocations/put`) MUST, from the moment it accepted it, refuse every presentation in which the membership credential or any link of `authority` is revoked by that list, under every task and every version of every task it serves for the room. A chain from which any link is revoked is refused whole: a credential delegated from a revoked one confers nothing, however it was attenuated. The refusal is the same `permissionDenied` as any other failed presentation.\",\"properties\":{\"authority\":{\"description\":\"The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent.\",\"items\":{\"type\":\"string\"},\"maxItems\":8,\"minItems\":1,\"type\":\"array\"},\"membership\":{\"description\":\"The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.\",\"type\":\"string\"},\"subjectBinding\":{\"description\":\"REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this.\",\"type\":\"string\"}},\"required\":[\"membership\",\"authority\"],\"title\":\"AuthorityPresentation\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/epoch/commits. Type https://trusttasks.org/spec/rooms/epoch/commits/0.1#response.\",\"properties\":{\"commits\":{\"description\":\"The commits above `sinceEpoch`, **in ascending epoch order and with no gaps**. MLS commits apply in sequence: one applied out of order or over a gap is rejected by the group, so a host that returned an unordered or sparse set would produce a member who cannot catch up and cannot say why. A host that is missing a commit MUST return the run it has *up to* the gap and stop, rather than skipping it.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"commit\":{\"description\":\"The MLS commit, base64url, exactly as it was published. A host that re-encoded it would produce something the group rejects.\",\"maxLength\":262144,\"type\":\"string\"},\"epoch\":{\"description\":\"The epoch this commit produced.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"epoch\",\"commit\"],\"type\":\"object\"},\"maxItems\":100,\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"roomEpoch\":{\"description\":\"The epoch the room is at now.\\n\\n**Not `sinceEpoch` plus the number returned.** Those differ whenever the host is missing a commit or the page ended early, and that difference is the useful part: a member who applies everything served and is still behind knows a delivery is missing rather than concluding their own state is broken.\",\"minimum\":1,\"type\":\"integer\"},\"roomId\":{\"type\":\"string\"}},\"required\":[\"roomId\",\"commits\"],\"title\":\"Rooms Epoch Commits — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/rooms/epoch/commits/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"TODO: what the request payload of rooms/epoch/commits carries. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"limit\":{\"description\":\"Page size to ask for. Commits are large and a member far behind may have many; a caller reads to the end by asking again from the epoch it reached.\",\"maximum\":100,\"minimum\":1,\"type\":\"integer\"},\"presentation\":{\"$ref\":\"#/$defs/AuthorityPresentation\",\"description\":\"Must confer `read` at this room's scope. A commit is opaque to whoever holds it without the group state, so this authorises the *fetch* rather than the contents — and on a `private` room requires no host session, exactly as a record read does.\"},\"roomId\":{\"description\":\"The room to catch up on.\",\"type\":\"string\"},\"sinceEpoch\":{\"description\":\"The epoch this member is at. The host returns the commits **above** it, in order.\\n\\nA member asks for what they are missing rather than for a count, because only they know where they are — a host that guessed would be guessing from the last time it saw them, which on a `private` room is a thing it should not be tracking.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"roomId\",\"sinceEpoch\",\"presentation\"],\"title\":\"Rooms Epoch Commits — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -792,7 +603,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AuthorityPresentation\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier. A host MUST bind the presenter to the chain's leaf. A chain that verifies is evidence that authority was conferred on somebody; it is not evidence that the party presenting it is that somebody. The leaf's subject MUST equal the party the host authenticated for this request — an identity the transport established or a document `proof` proved, never one named in a payload. A host that omits this check authorizes every captured presentation, and the omission is silent, because the chain still verifies.\\n\\n**Every credential is its issuer's attestation, and only its issuer's.** For the membership credential and for every link of `authority`, a host MUST verify the credential's `proof` with a key that the credential's own `issuer` lists for `assertionMethod` in its DID document, and MUST refuse a credential whose proof names a verification method that is not its issuer's. A proof that verifies under some other party's key is that party's statement, not the issuer's, and confers nothing. The same binding holds for every other document a room signs, such as a `RevocationList`.\\n\\n**A chain that verifies may still be revoked.** A host that has accepted a `RevocationList` for the room (`rooms/revocations/put`) MUST, from the moment it accepted it, refuse every presentation in which the membership credential or any link of `authority` is revoked by that list, under every task and every version of every task it serves for the room. A chain from which any link is revoked is refused whole: a credential delegated from a revoked one confers nothing, however it was attenuated. The refusal is the same `permissionDenied` as any other failed presentation.\",\n      \"properties\": {\n        \"authority\": {\n          \"description\": \"The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"maxItems\": 8,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"membership\": {\n          \"description\": \"The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.\",\n          \"type\": \"string\"\n        },\n        \"subjectBinding\": {\n          \"description\": \"REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"membership\",\n        \"authority\"\n      ],\n      \"title\": \"AuthorityPresentation\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to rooms/epoch/commits. Type https://trusttasks.org/spec/rooms/epoch/commits/0.1#response.\",\n      \"properties\": {\n        \"commits\": {\n          \"description\": \"The commits above `sinceEpoch`, **in ascending epoch order and with no gaps**. MLS commits apply in sequence: one applied out of order or over a gap is rejected by the group, so a host that returned an unordered or sparse set would produce a member who cannot catch up and cannot say why. A host that is missing a commit MUST return the run it has *up to* the gap and stop, rather than skipping it.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"commit\": {\n                \"description\": \"The MLS commit, base64url, exactly as it was published. A host that re-encoded it would produce something the group rejects.\",\n                \"maxLength\": 262144,\n                \"type\": \"string\"\n              },\n              \"epoch\": {\n                \"description\": \"The epoch this commit produced.\",\n                \"minimum\": 1,\n                \"type\": \"integer\"\n              }\n            },\n            \"required\": [\n              \"epoch\",\n              \"commit\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 100,\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"roomEpoch\": {\n          \"description\": \"The epoch the room is at now.\\n\\n**Not `sinceEpoch` plus the number returned.** Those differ whenever the host is missing a commit or the page ended early, and that difference is the useful part: a member who applies everything served and is still behind knows a delivery is missing rather than concluding their own state is broken.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"roomId\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"roomId\",\n        \"commits\"\n      ],\n      \"title\": \"Rooms Epoch Commits — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"AuthorityPresentation\":{\"additionalProperties\":false,\"description\":\"What a party presents to act on a room. Carries the whole authority chain: a host MUST NOT dereference an authority credential's `parent` to fetch a link it was not given. Resolving over the network would make verification depend on availability, turn every identifier into a request the host can be induced to make against an address the holder chooses, and signal credential use to whoever hosts the identifier. A host MUST bind the presenter to the chain's leaf. A chain that verifies is evidence that authority was conferred on somebody; it is not evidence that the party presenting it is that somebody. The leaf's subject MUST equal the party the host authenticated for this request — an identity the transport established or a document `proof` proved, never one named in a payload. A host that omits this check authorizes every captured presentation, and the omission is silent, because the chain still verifies.\\n\\n**Every credential is its issuer's attestation, and only its issuer's.** For the membership credential and for every link of `authority`, a host MUST verify the credential's `proof` with a key that the credential's own `issuer` lists for `assertionMethod` in its DID document, and MUST refuse a credential whose proof names a verification method that is not its issuer's. A proof that verifies under some other party's key is that party's statement, not the issuer's, and confers nothing. The same binding holds for every other document a room signs, such as a `RevocationList`.\\n\\n**A chain that verifies may still be revoked.** A host that has accepted a `RevocationList` for the room (`rooms/revocations/put`) MUST, from the moment it accepted it, refuse every presentation in which the membership credential or any link of `authority` is revoked by that list, under every task and every version of every task it serves for the room. A chain from which any link is revoked is refused whole: a credential delegated from a revoked one confers nothing, however it was attenuated. The refusal is the same `permissionDenied` as any other failed presentation.\",\"properties\":{\"authority\":{\"description\":\"The authority chain, LEAF FIRST: the first element is the credential being relied on and the last MUST be one issued by the room itself. Every link the presenter relies on is present, because the host will not fetch one. Capped at 8: verification is linear in chain length and runs on every operation, so an unbounded chain is a denial-of-service surface against the host. The known uses need 2 to 3 — a person attenuating to an agent, and that agent to a sub-agent.\",\"items\":{\"type\":\"string\"},\"maxItems\":8,\"minItems\":1,\"type\":\"array\"},\"membership\":{\"description\":\"The presenter's membership credential for this room, or — on a `private` room — a zero-knowledge presentation of it. Serialized per the governing profile.\",\"type\":\"string\"},\"subjectBinding\":{\"description\":\"REQUIRED on a `private` room, where the subject identifier is withheld: a proof that the membership credential and the authority chain's leaf describe the SAME subject. Without it two parties pool credentials — one contributes membership, the other authority — and the combination verifies as a single party holding both. A host MUST refuse a private-room presentation that omits this.\",\"type\":\"string\"}},\"required\":[\"membership\",\"authority\"],\"title\":\"AuthorityPresentation\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to rooms/epoch/commits. Type https://trusttasks.org/spec/rooms/epoch/commits/0.1#response.\",\"properties\":{\"commits\":{\"description\":\"The commits above `sinceEpoch`, **in ascending epoch order and with no gaps**. MLS commits apply in sequence: one applied out of order or over a gap is rejected by the group, so a host that returned an unordered or sparse set would produce a member who cannot catch up and cannot say why. A host that is missing a commit MUST return the run it has *up to* the gap and stop, rather than skipping it.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"commit\":{\"description\":\"The MLS commit, base64url, exactly as it was published. A host that re-encoded it would produce something the group rejects.\",\"maxLength\":262144,\"type\":\"string\"},\"epoch\":{\"description\":\"The epoch this commit produced.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"epoch\",\"commit\"],\"type\":\"object\"},\"maxItems\":100,\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"roomEpoch\":{\"description\":\"The epoch the room is at now.\\n\\n**Not `sinceEpoch` plus the number returned.** Those differ whenever the host is missing a commit or the page ended early, and that difference is the useful part: a member who applies everything served and is still behind knows a delivery is missing rather than concluding their own state is broken.\",\"minimum\":1,\"type\":\"integer\"},\"roomId\":{\"type\":\"string\"}},\"required\":[\"roomId\",\"commits\"],\"title\":\"Rooms Epoch Commits — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

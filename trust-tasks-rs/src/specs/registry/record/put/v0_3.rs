@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,33 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///An administrator asks a trust registry to create or replace the trust record at its four-part key (entity+authority+action+resource). Create-or-update in one task, following the vault/upsert precedent; the optional `expectedExisting` assertion recovers the strict create-only / update-only semantics of the superseded registry/record/create and registry/record/update tasks.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/registry/record/put/0.3",
-///  "title": "Payload",
-///  "description": "An administrator asks a trust registry to create or replace the trust record at its four-part key (entity+authority+action+resource). Create-or-update in one task, following the vault/upsert precedent; the optional `expectedExisting` assertion recovers the strict create-only / update-only semantics of the superseded registry/record/create and registry/record/update tasks.",
-///  "type": "object",
-///  "required": [
-///    "record"
-///  ],
-///  "properties": {
-///    "expectedExisting": {
-///      "description": "Optional existence assertion. When true, the registry MUST reject with `registry/record/put:notFound` if no record exists at the key (strict update). When false, the registry MUST reject with `registry/record/put:alreadyExists` if one does (strict create). Omitted: pure create-or-update.",
-///      "type": "boolean"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "record": {
-///      "$ref": "#/definitions/TrustRecord"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -191,20 +140,6 @@ impl Payload {
 }
 ///Whether the record asserts an authorization or a recognition relationship.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RecordType",
-///  "description": "Whether the record asserts an authorization or a recognition relationship.",
-///  "type": "string",
-///  "enum": [
-///    "authorization",
-///    "recognition"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -266,39 +201,6 @@ impl ::std::convert::TryFrom<::std::string::String> for RecordType {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "ok",
-///    "wasCreated"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "message": {
-///      "description": "Optional human-readable detail.",
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "ok": {
-///      "description": "Whether the record was stored.",
-///      "type": "boolean"
-///    },
-///    "wasCreated": {
-///      "description": "True when the put created a new record, false when it replaced an existing one.",
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -321,16 +223,6 @@ impl Response {
 }
 ///Optional human-readable detail.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Optional human-readable detail.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseMessage(::std::string::String);
@@ -390,63 +282,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseMessage {
 }
 ///`TrustRecord`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "TrustRecord",
-///  "type": "object",
-///  "required": [
-///    "action",
-///    "authorityId",
-///    "entityId",
-///    "recordType",
-///    "resource"
-///  ],
-///  "properties": {
-///    "action": {
-///      "type": "string"
-///    },
-///    "authorityId": {
-///      "type": "string"
-///    },
-///    "authorized": {
-///      "description": "Present on authorization records: whether the action+resource authorization is confirmed.",
-///      "type": "boolean"
-///    },
-///    "context": {
-///      "description": "Opaque governance context attached to the record.",
-///      "type": "object",
-///      "additionalProperties": true
-///    },
-///    "entityId": {
-///      "type": "string"
-///    },
-///    "recognized": {
-///      "description": "Present on recognition records: whether the action+resource is recognised.",
-///      "type": "boolean"
-///    },
-///    "recordType": {
-///      "$ref": "#/definitions/RecordType"
-///    },
-///    "resource": {
-///      "type": "string"
-///    },
-///    "validFrom": {
-///      "description": "The first instant at which the authority statement holds (inclusive). Absent: no lower bound.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "validUntil": {
-///      "description": "The instant at which the authority statement stops holding (exclusive). Absent: no upper bound. When both bounds are present, `validFrom` MUST be earlier than `validUntil`.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -828,7 +663,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"RecordType\": {\n      \"description\": \"Whether the record asserts an authorization or a recognition relationship.\",\n      \"enum\": [\n        \"authorization\",\n        \"recognition\"\n      ],\n      \"title\": \"RecordType\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"message\": {\n          \"description\": \"Optional human-readable detail.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"ok\": {\n          \"description\": \"Whether the record was stored.\",\n          \"type\": \"boolean\"\n        },\n        \"wasCreated\": {\n          \"description\": \"True when the put created a new record, false when it replaced an existing one.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"ok\",\n        \"wasCreated\"\n      ],\n      \"title\": \"Registry Record Put — response payload\",\n      \"type\": \"object\"\n    },\n    \"TrustRecord\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"action\": {\n          \"type\": \"string\"\n        },\n        \"authorityId\": {\n          \"type\": \"string\"\n        },\n        \"authorized\": {\n          \"description\": \"Present on authorization records: whether the action+resource authorization is confirmed.\",\n          \"type\": \"boolean\"\n        },\n        \"context\": {\n          \"additionalProperties\": true,\n          \"description\": \"Opaque governance context attached to the record.\",\n          \"type\": \"object\"\n        },\n        \"entityId\": {\n          \"type\": \"string\"\n        },\n        \"recognized\": {\n          \"description\": \"Present on recognition records: whether the action+resource is recognised.\",\n          \"type\": \"boolean\"\n        },\n        \"recordType\": {\n          \"$ref\": \"#/$defs/RecordType\"\n        },\n        \"resource\": {\n          \"type\": \"string\"\n        },\n        \"validFrom\": {\n          \"description\": \"The first instant at which the authority statement holds (inclusive). Absent: no lower bound.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"validUntil\": {\n          \"description\": \"The instant at which the authority statement stops holding (exclusive). Absent: no upper bound. When both bounds are present, `validFrom` MUST be earlier than `validUntil`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"entityId\",\n        \"authorityId\",\n        \"action\",\n        \"resource\",\n        \"recordType\"\n      ],\n      \"title\": \"TrustRecord\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/registry/record/put/0.3\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An administrator asks a trust registry to create or replace the trust record at its four-part key (entity+authority+action+resource). Create-or-update in one task, following the vault/upsert precedent; the optional `expectedExisting` assertion recovers the strict create-only / update-only semantics of the superseded registry/record/create and registry/record/update tasks.\",\n  \"properties\": {\n    \"expectedExisting\": {\n      \"description\": \"Optional existence assertion. When true, the registry MUST reject with `registry/record/put:notFound` if no record exists at the key (strict update). When false, the registry MUST reject with `registry/record/put:alreadyExists` if one does (strict create). Omitted: pure create-or-update.\",\n      \"type\": \"boolean\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"record\": {\n      \"$ref\": \"#/$defs/TrustRecord\"\n    }\n  },\n  \"required\": [\n    \"record\"\n  ],\n  \"title\": \"Registry Record Put — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"RecordType\":{\"description\":\"Whether the record asserts an authorization or a recognition relationship.\",\"enum\":[\"authorization\",\"recognition\"],\"title\":\"RecordType\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"message\":{\"description\":\"Optional human-readable detail.\",\"maxLength\":1024,\"type\":\"string\"},\"ok\":{\"description\":\"Whether the record was stored.\",\"type\":\"boolean\"},\"wasCreated\":{\"description\":\"True when the put created a new record, false when it replaced an existing one.\",\"type\":\"boolean\"}},\"required\":[\"ok\",\"wasCreated\"],\"title\":\"Registry Record Put — response payload\",\"type\":\"object\"},\"TrustRecord\":{\"additionalProperties\":false,\"properties\":{\"action\":{\"type\":\"string\"},\"authorityId\":{\"type\":\"string\"},\"authorized\":{\"description\":\"Present on authorization records: whether the action+resource authorization is confirmed.\",\"type\":\"boolean\"},\"context\":{\"additionalProperties\":true,\"description\":\"Opaque governance context attached to the record.\",\"type\":\"object\"},\"entityId\":{\"type\":\"string\"},\"recognized\":{\"description\":\"Present on recognition records: whether the action+resource is recognised.\",\"type\":\"boolean\"},\"recordType\":{\"$ref\":\"#/$defs/RecordType\"},\"resource\":{\"type\":\"string\"},\"validFrom\":{\"description\":\"The first instant at which the authority statement holds (inclusive). Absent: no lower bound.\",\"format\":\"date-time\",\"type\":\"string\"},\"validUntil\":{\"description\":\"The instant at which the authority statement stops holding (exclusive). Absent: no upper bound. When both bounds are present, `validFrom` MUST be earlier than `validUntil`.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"entityId\",\"authorityId\",\"action\",\"resource\",\"recordType\"],\"title\":\"TrustRecord\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/registry/record/put/0.3\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"An administrator asks a trust registry to create or replace the trust record at its four-part key (entity+authority+action+resource). Create-or-update in one task, following the vault/upsert precedent; the optional `expectedExisting` assertion recovers the strict create-only / update-only semantics of the superseded registry/record/create and registry/record/update tasks.\",\"properties\":{\"expectedExisting\":{\"description\":\"Optional existence assertion. When true, the registry MUST reject with `registry/record/put:notFound` if no record exists at the key (strict update). When false, the registry MUST reject with `registry/record/put:alreadyExists` if one does (strict create). Omitted: pure create-or-update.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"record\":{\"$ref\":\"#/$defs/TrustRecord\"}},\"required\":[\"record\"],\"title\":\"Registry Record Put — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -837,7 +672,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"RecordType\": {\n      \"description\": \"Whether the record asserts an authorization or a recognition relationship.\",\n      \"enum\": [\n        \"authorization\",\n        \"recognition\"\n      ],\n      \"title\": \"RecordType\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"message\": {\n          \"description\": \"Optional human-readable detail.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"ok\": {\n          \"description\": \"Whether the record was stored.\",\n          \"type\": \"boolean\"\n        },\n        \"wasCreated\": {\n          \"description\": \"True when the put created a new record, false when it replaced an existing one.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"ok\",\n        \"wasCreated\"\n      ],\n      \"title\": \"Registry Record Put — response payload\",\n      \"type\": \"object\"\n    },\n    \"TrustRecord\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"action\": {\n          \"type\": \"string\"\n        },\n        \"authorityId\": {\n          \"type\": \"string\"\n        },\n        \"authorized\": {\n          \"description\": \"Present on authorization records: whether the action+resource authorization is confirmed.\",\n          \"type\": \"boolean\"\n        },\n        \"context\": {\n          \"additionalProperties\": true,\n          \"description\": \"Opaque governance context attached to the record.\",\n          \"type\": \"object\"\n        },\n        \"entityId\": {\n          \"type\": \"string\"\n        },\n        \"recognized\": {\n          \"description\": \"Present on recognition records: whether the action+resource is recognised.\",\n          \"type\": \"boolean\"\n        },\n        \"recordType\": {\n          \"$ref\": \"#/$defs/RecordType\"\n        },\n        \"resource\": {\n          \"type\": \"string\"\n        },\n        \"validFrom\": {\n          \"description\": \"The first instant at which the authority statement holds (inclusive). Absent: no lower bound.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"validUntil\": {\n          \"description\": \"The instant at which the authority statement stops holding (exclusive). Absent: no upper bound. When both bounds are present, `validFrom` MUST be earlier than `validUntil`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"entityId\",\n        \"authorityId\",\n        \"action\",\n        \"resource\",\n        \"recordType\"\n      ],\n      \"title\": \"TrustRecord\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"RecordType\":{\"description\":\"Whether the record asserts an authorization or a recognition relationship.\",\"enum\":[\"authorization\",\"recognition\"],\"title\":\"RecordType\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"message\":{\"description\":\"Optional human-readable detail.\",\"maxLength\":1024,\"type\":\"string\"},\"ok\":{\"description\":\"Whether the record was stored.\",\"type\":\"boolean\"},\"wasCreated\":{\"description\":\"True when the put created a new record, false when it replaced an existing one.\",\"type\":\"boolean\"}},\"required\":[\"ok\",\"wasCreated\"],\"title\":\"Registry Record Put — response payload\",\"type\":\"object\"},\"TrustRecord\":{\"additionalProperties\":false,\"properties\":{\"action\":{\"type\":\"string\"},\"authorityId\":{\"type\":\"string\"},\"authorized\":{\"description\":\"Present on authorization records: whether the action+resource authorization is confirmed.\",\"type\":\"boolean\"},\"context\":{\"additionalProperties\":true,\"description\":\"Opaque governance context attached to the record.\",\"type\":\"object\"},\"entityId\":{\"type\":\"string\"},\"recognized\":{\"description\":\"Present on recognition records: whether the action+resource is recognised.\",\"type\":\"boolean\"},\"recordType\":{\"$ref\":\"#/$defs/RecordType\"},\"resource\":{\"type\":\"string\"},\"validFrom\":{\"description\":\"The first instant at which the authority statement holds (inclusive). Absent: no lower bound.\",\"format\":\"date-time\",\"type\":\"string\"},\"validUntil\":{\"description\":\"The instant at which the authority statement stops holding (exclusive). Absent: no upper bound. When both bounds are present, `validFrom` MUST be earlier than `validUntil`.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"entityId\",\"authorityId\",\"action\",\"resource\",\"recordType\"],\"title\":\"TrustRecord\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

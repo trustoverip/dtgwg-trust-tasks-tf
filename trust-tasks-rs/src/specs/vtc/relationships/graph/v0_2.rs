@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -145,47 +121,6 @@ One edge between a **pair** of identifiers, carrying every half published betwee
 
 `0.1` called each credential an edge, which made a DTG edge inexpressible: the two directed halves between the same pair are one relationship, and a consumer given a flat list had to re-derive that pairing — sorting DIDs, grouping, and deciding for itself what `complete` means. Two implementations doing that independently will disagree at the margins, which is exactly the reasoning a schema exists to settle once.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "GraphEdge",
-///  "description": "One edge between a **pair** of identifiers, carrying every half published between them.\n\n`0.1` called each credential an edge, which made a DTG edge inexpressible: the two directed halves between the same pair are one relationship, and a consumer given a flat list had to re-derive that pairing — sorting DIDs, grouping, and deciding for itself what `complete` means. Two implementations doing that independently will disagree at the margins, which is exactly the reasoning a schema exists to settle once.",
-///  "type": "object",
-///  "required": [
-///    "complete",
-///    "endpoints",
-///    "halves"
-///  ],
-///  "properties": {
-///    "complete": {
-///      "description": "True when both endpoints have asserted about each other. The distinction a flat list cannot make: an edge asserted by one party is a claim, and an edge asserted by both is a relationship.",
-///      "type": "boolean"
-///    },
-///    "endpoints": {
-///      "description": "The two endpoints, DID-sorted. Sorting gives the pair one identity whichever half was published first. Both entries are equal only for a self-issued credential.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "pattern": "^did:"
-///      },
-///      "maxItems": 2,
-///      "minItems": 2
-///    },
-///    "halves": {
-///      "description": "Every credential published between the endpoints, oldest first. One for a half-edge, two for the ordinary reciprocated edge, more where a party has re-issued.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/GraphHalf"
-///      },
-///      "minItems": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "graphEdge"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -204,15 +139,6 @@ impl GraphEdge {
 }
 ///`GraphEdgeEndpointsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct GraphEdgeEndpointsItem(::std::string::String);
@@ -277,52 +203,6 @@ One published relationship credential: a **directed half** of an edge, asserted 
 
 Body-free on purpose — the graph shows the shape of the trust network, not credential contents. `id` is the row identifier a revoke takes.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "GraphHalf",
-///  "description": "One published relationship credential: a **directed half** of an edge, asserted by `issuerDid` about `subjectDid`.\n\nBody-free on purpose — the graph shows the shape of the trust network, not credential contents. `id` is the row identifier a revoke takes.",
-///  "type": "object",
-///  "required": [
-///    "createdAt",
-///    "id",
-///    "issuerDid",
-///    "subjectDid"
-///  ],
-///  "properties": {
-///    "createdAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "id": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "issuerDid": {
-///      "description": "The asserting party.",
-///      "type": "string",
-///      "pattern": "^did:"
-///    },
-///    "personaDid": {
-///      "description": "The persona this issuer has asserted on this half, when they have.\n\nThe one place deliberate correlation becomes visible: two pairwise halves carrying the same `personaDid` are the same party, said so by that party. A consumer that cannot read it cannot honour a correlation its subject chose to publish.",
-///      "type": [
-///        "string",
-///        "null"
-///      ],
-///      "pattern": "^did:|^$"
-///    },
-///    "subjectDid": {
-///      "description": "The party asserted about.",
-///      "type": "string",
-///      "pattern": "^did:"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "graphHalf"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -354,15 +234,6 @@ impl GraphHalf {
 }
 ///`GraphHalfId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct GraphHalfId(::std::string::String);
@@ -422,16 +293,6 @@ impl<'de> ::serde::Deserialize<'de> for GraphHalfId {
 }
 ///The asserting party.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The asserting party.",
-///  "type": "string",
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct GraphHalfIssuerDid(::std::string::String);
@@ -496,16 +357,6 @@ The persona this issuer has asserted on this half, when they have.
 
 The one place deliberate correlation becomes visible: two pairwise halves carrying the same `personaDid` are the same party, said so by that party. A consumer that cannot read it cannot honour a correlation its subject chose to publish.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The persona this issuer has asserted on this half, when they have.\n\nThe one place deliberate correlation becomes visible: two pairwise halves carrying the same `personaDid` are the same party, said so by that party. A consumer that cannot read it cannot honour a correlation its subject chose to publish.",
-///  "type": "string",
-///  "pattern": "^did:|^$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct GraphHalfPersonaDid(::std::string::String);
@@ -567,16 +418,6 @@ impl<'de> ::serde::Deserialize<'de> for GraphHalfPersonaDid {
 }
 ///The party asserted about.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The party asserted about.",
-///  "type": "string",
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct GraphHalfSubjectDid(::std::string::String);
@@ -638,27 +479,6 @@ impl<'de> ::serde::Deserialize<'de> for GraphHalfSubjectDid {
 }
 ///`GraphNode`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "GraphNode",
-///  "type": "object",
-///  "required": [
-///    "did"
-///  ],
-///  "properties": {
-///    "did": {
-///      "description": "A DID participating in at least one live relationship.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "graphNode"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -673,16 +493,6 @@ impl GraphNode {
 }
 ///A DID participating in at least one live relationship.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "A DID participating in at least one live relationship.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct GraphNodeDid(::std::string::String);
@@ -742,22 +552,6 @@ impl<'de> ::serde::Deserialize<'de> for GraphNodeDid {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/relationships/graph/0.2",
-///  "title": "Payload",
-///  "type": "object",
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -779,40 +573,6 @@ impl Payload {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "edges",
-///    "nodes"
-///  ],
-///  "properties": {
-///    "edges": {
-///      "description": "One per **pair** of identifiers with at least one live credential between them, not one per credential.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/GraphEdge"
-///      }
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "nodes": {
-///      "description": "One per distinct DID appearing in a live edge. No isolated nodes.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/GraphNode"
-///      }
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1141,7 +901,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/relationships/graph/0.2";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"GraphEdge\": {\n      \"$anchor\": \"graphEdge\",\n      \"additionalProperties\": false,\n      \"description\": \"One edge between a **pair** of identifiers, carrying every half published between them.\\n\\n`0.1` called each credential an edge, which made a DTG edge inexpressible: the two directed halves between the same pair are one relationship, and a consumer given a flat list had to re-derive that pairing — sorting DIDs, grouping, and deciding for itself what `complete` means. Two implementations doing that independently will disagree at the margins, which is exactly the reasoning a schema exists to settle once.\",\n      \"properties\": {\n        \"complete\": {\n          \"description\": \"True when both endpoints have asserted about each other. The distinction a flat list cannot make: an edge asserted by one party is a claim, and an edge asserted by both is a relationship.\",\n          \"type\": \"boolean\"\n        },\n        \"endpoints\": {\n          \"description\": \"The two endpoints, DID-sorted. Sorting gives the pair one identity whichever half was published first. Both entries are equal only for a self-issued credential.\",\n          \"items\": {\n            \"pattern\": \"^did:\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 2,\n          \"minItems\": 2,\n          \"type\": \"array\"\n        },\n        \"halves\": {\n          \"description\": \"Every credential published between the endpoints, oldest first. One for a half-edge, two for the ordinary reciprocated edge, more where a party has re-issued.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/GraphHalf\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"endpoints\",\n        \"halves\",\n        \"complete\"\n      ],\n      \"title\": \"GraphEdge\",\n      \"type\": \"object\"\n    },\n    \"GraphHalf\": {\n      \"$anchor\": \"graphHalf\",\n      \"additionalProperties\": false,\n      \"description\": \"One published relationship credential: a **directed half** of an edge, asserted by `issuerDid` about `subjectDid`.\\n\\nBody-free on purpose — the graph shows the shape of the trust network, not credential contents. `id` is the row identifier a revoke takes.\",\n      \"properties\": {\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issuerDid\": {\n          \"description\": \"The asserting party.\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"personaDid\": {\n          \"description\": \"The persona this issuer has asserted on this half, when they have.\\n\\nThe one place deliberate correlation becomes visible: two pairwise halves carrying the same `personaDid` are the same party, said so by that party. A consumer that cannot read it cannot honour a correlation its subject chose to publish.\",\n          \"pattern\": \"^did:|^$\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"subjectDid\": {\n          \"description\": \"The party asserted about.\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"issuerDid\",\n        \"subjectDid\",\n        \"createdAt\"\n      ],\n      \"title\": \"GraphHalf\",\n      \"type\": \"object\"\n    },\n    \"GraphNode\": {\n      \"$anchor\": \"graphNode\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"did\": {\n          \"description\": \"A DID participating in at least one live relationship.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"did\"\n      ],\n      \"title\": \"GraphNode\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"edges\": {\n          \"description\": \"One per **pair** of identifiers with at least one live credential between them, not one per credential.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/GraphEdge\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"nodes\": {\n          \"description\": \"One per distinct DID appearing in a live edge. No isolated nodes.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/GraphNode\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"nodes\",\n        \"edges\"\n      ],\n      \"title\": \"VTC Relationships Graph — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/relationships/graph/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"title\": \"VTC Relationships Graph — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"GraphEdge\":{\"$anchor\":\"graphEdge\",\"additionalProperties\":false,\"description\":\"One edge between a **pair** of identifiers, carrying every half published between them.\\n\\n`0.1` called each credential an edge, which made a DTG edge inexpressible: the two directed halves between the same pair are one relationship, and a consumer given a flat list had to re-derive that pairing — sorting DIDs, grouping, and deciding for itself what `complete` means. Two implementations doing that independently will disagree at the margins, which is exactly the reasoning a schema exists to settle once.\",\"properties\":{\"complete\":{\"description\":\"True when both endpoints have asserted about each other. The distinction a flat list cannot make: an edge asserted by one party is a claim, and an edge asserted by both is a relationship.\",\"type\":\"boolean\"},\"endpoints\":{\"description\":\"The two endpoints, DID-sorted. Sorting gives the pair one identity whichever half was published first. Both entries are equal only for a self-issued credential.\",\"items\":{\"pattern\":\"^did:\",\"type\":\"string\"},\"maxItems\":2,\"minItems\":2,\"type\":\"array\"},\"halves\":{\"description\":\"Every credential published between the endpoints, oldest first. One for a half-edge, two for the ordinary reciprocated edge, more where a party has re-issued.\",\"items\":{\"$ref\":\"#/$defs/GraphHalf\"},\"minItems\":1,\"type\":\"array\"}},\"required\":[\"endpoints\",\"halves\",\"complete\"],\"title\":\"GraphEdge\",\"type\":\"object\"},\"GraphHalf\":{\"$anchor\":\"graphHalf\",\"additionalProperties\":false,\"description\":\"One published relationship credential: a **directed half** of an edge, asserted by `issuerDid` about `subjectDid`.\\n\\nBody-free on purpose — the graph shows the shape of the trust network, not credential contents. `id` is the row identifier a revoke takes.\",\"properties\":{\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"id\":{\"minLength\":1,\"type\":\"string\"},\"issuerDid\":{\"description\":\"The asserting party.\",\"pattern\":\"^did:\",\"type\":\"string\"},\"personaDid\":{\"description\":\"The persona this issuer has asserted on this half, when they have.\\n\\nThe one place deliberate correlation becomes visible: two pairwise halves carrying the same `personaDid` are the same party, said so by that party. A consumer that cannot read it cannot honour a correlation its subject chose to publish.\",\"pattern\":\"^did:|^$\",\"type\":[\"string\",\"null\"]},\"subjectDid\":{\"description\":\"The party asserted about.\",\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"id\",\"issuerDid\",\"subjectDid\",\"createdAt\"],\"title\":\"GraphHalf\",\"type\":\"object\"},\"GraphNode\":{\"$anchor\":\"graphNode\",\"additionalProperties\":false,\"properties\":{\"did\":{\"description\":\"A DID participating in at least one live relationship.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"did\"],\"title\":\"GraphNode\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"edges\":{\"description\":\"One per **pair** of identifiers with at least one live credential between them, not one per credential.\",\"items\":{\"$ref\":\"#/$defs/GraphEdge\"},\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"nodes\":{\"description\":\"One per distinct DID appearing in a live edge. No isolated nodes.\",\"items\":{\"$ref\":\"#/$defs/GraphNode\"},\"type\":\"array\"}},\"required\":[\"nodes\",\"edges\"],\"title\":\"VTC Relationships Graph — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/relationships/graph/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"title\":\"VTC Relationships Graph — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1149,7 +909,7 @@ impl crate::Payload for Response {
         "https://trusttasks.org/spec/vtc/relationships/graph/0.2#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"GraphEdge\": {\n      \"$anchor\": \"graphEdge\",\n      \"additionalProperties\": false,\n      \"description\": \"One edge between a **pair** of identifiers, carrying every half published between them.\\n\\n`0.1` called each credential an edge, which made a DTG edge inexpressible: the two directed halves between the same pair are one relationship, and a consumer given a flat list had to re-derive that pairing — sorting DIDs, grouping, and deciding for itself what `complete` means. Two implementations doing that independently will disagree at the margins, which is exactly the reasoning a schema exists to settle once.\",\n      \"properties\": {\n        \"complete\": {\n          \"description\": \"True when both endpoints have asserted about each other. The distinction a flat list cannot make: an edge asserted by one party is a claim, and an edge asserted by both is a relationship.\",\n          \"type\": \"boolean\"\n        },\n        \"endpoints\": {\n          \"description\": \"The two endpoints, DID-sorted. Sorting gives the pair one identity whichever half was published first. Both entries are equal only for a self-issued credential.\",\n          \"items\": {\n            \"pattern\": \"^did:\",\n            \"type\": \"string\"\n          },\n          \"maxItems\": 2,\n          \"minItems\": 2,\n          \"type\": \"array\"\n        },\n        \"halves\": {\n          \"description\": \"Every credential published between the endpoints, oldest first. One for a half-edge, two for the ordinary reciprocated edge, more where a party has re-issued.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/GraphHalf\"\n          },\n          \"minItems\": 1,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"endpoints\",\n        \"halves\",\n        \"complete\"\n      ],\n      \"title\": \"GraphEdge\",\n      \"type\": \"object\"\n    },\n    \"GraphHalf\": {\n      \"$anchor\": \"graphHalf\",\n      \"additionalProperties\": false,\n      \"description\": \"One published relationship credential: a **directed half** of an edge, asserted by `issuerDid` about `subjectDid`.\\n\\nBody-free on purpose — the graph shows the shape of the trust network, not credential contents. `id` is the row identifier a revoke takes.\",\n      \"properties\": {\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"issuerDid\": {\n          \"description\": \"The asserting party.\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"personaDid\": {\n          \"description\": \"The persona this issuer has asserted on this half, when they have.\\n\\nThe one place deliberate correlation becomes visible: two pairwise halves carrying the same `personaDid` are the same party, said so by that party. A consumer that cannot read it cannot honour a correlation its subject chose to publish.\",\n          \"pattern\": \"^did:|^$\",\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"subjectDid\": {\n          \"description\": \"The party asserted about.\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"issuerDid\",\n        \"subjectDid\",\n        \"createdAt\"\n      ],\n      \"title\": \"GraphHalf\",\n      \"type\": \"object\"\n    },\n    \"GraphNode\": {\n      \"$anchor\": \"graphNode\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"did\": {\n          \"description\": \"A DID participating in at least one live relationship.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"did\"\n      ],\n      \"title\": \"GraphNode\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"edges\": {\n          \"description\": \"One per **pair** of identifiers with at least one live credential between them, not one per credential.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/GraphEdge\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"nodes\": {\n          \"description\": \"One per distinct DID appearing in a live edge. No isolated nodes.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/GraphNode\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"nodes\",\n        \"edges\"\n      ],\n      \"title\": \"VTC Relationships Graph — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"GraphEdge\":{\"$anchor\":\"graphEdge\",\"additionalProperties\":false,\"description\":\"One edge between a **pair** of identifiers, carrying every half published between them.\\n\\n`0.1` called each credential an edge, which made a DTG edge inexpressible: the two directed halves between the same pair are one relationship, and a consumer given a flat list had to re-derive that pairing — sorting DIDs, grouping, and deciding for itself what `complete` means. Two implementations doing that independently will disagree at the margins, which is exactly the reasoning a schema exists to settle once.\",\"properties\":{\"complete\":{\"description\":\"True when both endpoints have asserted about each other. The distinction a flat list cannot make: an edge asserted by one party is a claim, and an edge asserted by both is a relationship.\",\"type\":\"boolean\"},\"endpoints\":{\"description\":\"The two endpoints, DID-sorted. Sorting gives the pair one identity whichever half was published first. Both entries are equal only for a self-issued credential.\",\"items\":{\"pattern\":\"^did:\",\"type\":\"string\"},\"maxItems\":2,\"minItems\":2,\"type\":\"array\"},\"halves\":{\"description\":\"Every credential published between the endpoints, oldest first. One for a half-edge, two for the ordinary reciprocated edge, more where a party has re-issued.\",\"items\":{\"$ref\":\"#/$defs/GraphHalf\"},\"minItems\":1,\"type\":\"array\"}},\"required\":[\"endpoints\",\"halves\",\"complete\"],\"title\":\"GraphEdge\",\"type\":\"object\"},\"GraphHalf\":{\"$anchor\":\"graphHalf\",\"additionalProperties\":false,\"description\":\"One published relationship credential: a **directed half** of an edge, asserted by `issuerDid` about `subjectDid`.\\n\\nBody-free on purpose — the graph shows the shape of the trust network, not credential contents. `id` is the row identifier a revoke takes.\",\"properties\":{\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"id\":{\"minLength\":1,\"type\":\"string\"},\"issuerDid\":{\"description\":\"The asserting party.\",\"pattern\":\"^did:\",\"type\":\"string\"},\"personaDid\":{\"description\":\"The persona this issuer has asserted on this half, when they have.\\n\\nThe one place deliberate correlation becomes visible: two pairwise halves carrying the same `personaDid` are the same party, said so by that party. A consumer that cannot read it cannot honour a correlation its subject chose to publish.\",\"pattern\":\"^did:|^$\",\"type\":[\"string\",\"null\"]},\"subjectDid\":{\"description\":\"The party asserted about.\",\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"id\",\"issuerDid\",\"subjectDid\",\"createdAt\"],\"title\":\"GraphHalf\",\"type\":\"object\"},\"GraphNode\":{\"$anchor\":\"graphNode\",\"additionalProperties\":false,\"properties\":{\"did\":{\"description\":\"A DID participating in at least one live relationship.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"did\"],\"title\":\"GraphNode\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"edges\":{\"description\":\"One per **pair** of identifiers with at least one live credential between them, not one per credential.\",\"items\":{\"$ref\":\"#/$defs/GraphEdge\"},\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"nodes\":{\"description\":\"One per distinct DID appearing in a live edge. No isolated nodes.\",\"items\":{\"$ref\":\"#/$defs/GraphNode\"},\"type\":\"array\"}},\"required\":[\"nodes\",\"edges\"],\"title\":\"VTC Relationships Graph — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

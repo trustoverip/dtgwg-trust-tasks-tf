@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,31 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/join-requests/status/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "requestId": {
-///      "description": "The request to poll. Optional: an applicant whose first reply was lost never received an id, and the id-less poll — resolved from the authenticated applicant's own DID — is the only form available to them. Supply it when you have it; a consumer that has it MUST prefer it over inferring the request from the caller.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "resendCredentials": {
-///      "description": "Ask the community to deliver again the membership credential and role credential it already issued for this request, when the request is `approved` and they have not arrived. Set it only after a response of `approved` with `credentialsDelivered: false` and a reasonable wait; the community rate-limits it and answers in `credentialResend`. The community never issues new credentials in response.",
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -204,16 +155,6 @@ impl Payload {
 }
 ///The request to poll. Optional: an applicant whose first reply was lost never received an id, and the id-less poll — resolved from the authenticated applicant's own DID — is the only form available to them. Supply it when you have it; a consumer that has it MUST prefer it over inferring the request from the caller.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The request to poll. Optional: an applicant whose first reply was lost never received an id, and the id-less poll — resolved from the authenticated applicant's own DID — is the only form available to them. Supply it when you have it; a consumer that has it MUST prefer it over inferring the request from the caller.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadRequestId(::std::string::String);
@@ -273,86 +214,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRequestId {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "requestId",
-///    "status"
-///  ],
-///  "properties": {
-///    "code": {
-///      "description": "Stable refusal code, safe to branch on. Present only when `status` is `rejected`.",
-///      "type": "string"
-///    },
-///    "credentialResend": {
-///      "description": "The community's answer to `resendCredentials`. `queued`: a re-delivery of the already-issued credentials is queued. `notNeeded`: delivery is already acknowledged. `rateLimited`: a re-delivery was honoured too recently; see `retryAfter`. Present only when `resendCredentials` was set and `status` is `approved`; absent then means the community does not support re-delivery.",
-///      "type": "string",
-///      "enum": [
-///        "queued",
-///        "notNeeded",
-///        "rateLimited"
-///      ]
-///    },
-///    "credentialsDelivered": {
-///      "description": "Whether the community holds the applicant's acknowledgement that the membership credential arrived. Present only when `status` is `approved`.",
-///      "type": "boolean"
-///    },
-///    "decidedAt": {
-///      "description": "When the refusal was decided — not when this poll was produced. Present only when `status` is `rejected`.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "needs": {
-///      "description": "When deferred, what the applicant must supply next.",
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      }
-///    },
-///    "presentationDefinition": {
-///      "description": "When more evidence is needed, the presentation-definition to satisfy (opaque here).",
-///      "type": "object"
-///    },
-///    "reason": {
-///      "description": "Elaboration in prose, when the decider gave one. Present only when `status` is `rejected`.",
-///      "type": [
-///        "string",
-///        "null"
-///      ],
-///      "maxLength": 1024
-///    },
-///    "requestId": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "retryAfter": {
-///      "description": "The earliest time the community will honour another `resendCredentials`. Present only when `credentialResend` is `rateLimited`.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "status": {
-///      "type": "string",
-///      "enum": [
-///        "pending",
-///        "deferred",
-///        "approved",
-///        "rejected",
-///        "withdrawn"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -414,20 +275,6 @@ impl Response {
 }
 ///The community's answer to `resendCredentials`. `queued`: a re-delivery of the already-issued credentials is queued. `notNeeded`: delivery is already acknowledged. `rateLimited`: a re-delivery was honoured too recently; see `retryAfter`. Present only when `resendCredentials` was set and `status` is `approved`; absent then means the community does not support re-delivery.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The community's answer to `resendCredentials`. `queued`: a re-delivery of the already-issued credentials is queued. `notNeeded`: delivery is already acknowledged. `rateLimited`: a re-delivery was honoured too recently; see `retryAfter`. Present only when `resendCredentials` was set and `status` is `approved`; absent then means the community does not support re-delivery.",
-///  "type": "string",
-///  "enum": [
-///    "queued",
-///    "notNeeded",
-///    "rateLimited"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -493,16 +340,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseCredentialResend
 }
 ///Elaboration in prose, when the decider gave one. Present only when `status` is `rejected`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Elaboration in prose, when the decider gave one. Present only when `status` is `rejected`.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseReason(::std::string::String);
@@ -562,15 +399,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseReason {
 }
 ///`ResponseRequestId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseRequestId(::std::string::String);
@@ -630,21 +458,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseRequestId {
 }
 ///`ResponseStatus`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "enum": [
-///    "pending",
-///    "deferred",
-///    "approved",
-///    "rejected",
-///    "withdrawn"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -998,7 +811,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"code\": {\n          \"description\": \"Stable refusal code, safe to branch on. Present only when `status` is `rejected`.\",\n          \"type\": \"string\"\n        },\n        \"credentialResend\": {\n          \"description\": \"The community's answer to `resendCredentials`. `queued`: a re-delivery of the already-issued credentials is queued. `notNeeded`: delivery is already acknowledged. `rateLimited`: a re-delivery was honoured too recently; see `retryAfter`. Present only when `resendCredentials` was set and `status` is `approved`; absent then means the community does not support re-delivery.\",\n          \"enum\": [\n            \"queued\",\n            \"notNeeded\",\n            \"rateLimited\"\n          ],\n          \"type\": \"string\"\n        },\n        \"credentialsDelivered\": {\n          \"description\": \"Whether the community holds the applicant's acknowledgement that the membership credential arrived. Present only when `status` is `approved`.\",\n          \"type\": \"boolean\"\n        },\n        \"decidedAt\": {\n          \"description\": \"When the refusal was decided — not when this poll was produced. Present only when `status` is `rejected`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"needs\": {\n          \"description\": \"When deferred, what the applicant must supply next.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"presentationDefinition\": {\n          \"description\": \"When more evidence is needed, the presentation-definition to satisfy (opaque here).\",\n          \"type\": \"object\"\n        },\n        \"reason\": {\n          \"description\": \"Elaboration in prose, when the decider gave one. Present only when `status` is `rejected`.\",\n          \"maxLength\": 1024,\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"requestId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"retryAfter\": {\n          \"description\": \"The earliest time the community will honour another `resendCredentials`. Present only when `credentialResend` is `rateLimited`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"enum\": [\n            \"pending\",\n            \"deferred\",\n            \"approved\",\n            \"rejected\",\n            \"withdrawn\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"requestId\",\n        \"status\"\n      ],\n      \"title\": \"VTC Join-Requests Status — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/join-requests/status/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"requestId\": {\n      \"description\": \"The request to poll. Optional: an applicant whose first reply was lost never received an id, and the id-less poll — resolved from the authenticated applicant's own DID — is the only form available to them. Supply it when you have it; a consumer that has it MUST prefer it over inferring the request from the caller.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"resendCredentials\": {\n      \"description\": \"Ask the community to deliver again the membership credential and role credential it already issued for this request, when the request is `approved` and they have not arrived. Set it only after a response of `approved` with `credentialsDelivered: false` and a reasonable wait; the community rate-limits it and answers in `credentialResend`. The community never issues new credentials in response.\",\n      \"type\": \"boolean\"\n    }\n  },\n  \"title\": \"VTC Join-Requests Status — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"code\":{\"description\":\"Stable refusal code, safe to branch on. Present only when `status` is `rejected`.\",\"type\":\"string\"},\"credentialResend\":{\"description\":\"The community's answer to `resendCredentials`. `queued`: a re-delivery of the already-issued credentials is queued. `notNeeded`: delivery is already acknowledged. `rateLimited`: a re-delivery was honoured too recently; see `retryAfter`. Present only when `resendCredentials` was set and `status` is `approved`; absent then means the community does not support re-delivery.\",\"enum\":[\"queued\",\"notNeeded\",\"rateLimited\"],\"type\":\"string\"},\"credentialsDelivered\":{\"description\":\"Whether the community holds the applicant's acknowledgement that the membership credential arrived. Present only when `status` is `approved`.\",\"type\":\"boolean\"},\"decidedAt\":{\"description\":\"When the refusal was decided — not when this poll was produced. Present only when `status` is `rejected`.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"needs\":{\"description\":\"When deferred, what the applicant must supply next.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"presentationDefinition\":{\"description\":\"When more evidence is needed, the presentation-definition to satisfy (opaque here).\",\"type\":\"object\"},\"reason\":{\"description\":\"Elaboration in prose, when the decider gave one. Present only when `status` is `rejected`.\",\"maxLength\":1024,\"type\":[\"string\",\"null\"]},\"requestId\":{\"minLength\":1,\"type\":\"string\"},\"retryAfter\":{\"description\":\"The earliest time the community will honour another `resendCredentials`. Present only when `credentialResend` is `rateLimited`.\",\"format\":\"date-time\",\"type\":\"string\"},\"status\":{\"enum\":[\"pending\",\"deferred\",\"approved\",\"rejected\",\"withdrawn\"],\"type\":\"string\"}},\"required\":[\"requestId\",\"status\"],\"title\":\"VTC Join-Requests Status — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/join-requests/status/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"requestId\":{\"description\":\"The request to poll. Optional: an applicant whose first reply was lost never received an id, and the id-less poll — resolved from the authenticated applicant's own DID — is the only form available to them. Supply it when you have it; a consumer that has it MUST prefer it over inferring the request from the caller.\",\"minLength\":1,\"type\":\"string\"},\"resendCredentials\":{\"description\":\"Ask the community to deliver again the membership credential and role credential it already issued for this request, when the request is `approved` and they have not arrived. Set it only after a response of `approved` with `credentialsDelivered: false` and a reasonable wait; the community rate-limits it and answers in `credentialResend`. The community never issues new credentials in response.\",\"type\":\"boolean\"}},\"title\":\"VTC Join-Requests Status — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1008,7 +821,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"code\": {\n          \"description\": \"Stable refusal code, safe to branch on. Present only when `status` is `rejected`.\",\n          \"type\": \"string\"\n        },\n        \"credentialResend\": {\n          \"description\": \"The community's answer to `resendCredentials`. `queued`: a re-delivery of the already-issued credentials is queued. `notNeeded`: delivery is already acknowledged. `rateLimited`: a re-delivery was honoured too recently; see `retryAfter`. Present only when `resendCredentials` was set and `status` is `approved`; absent then means the community does not support re-delivery.\",\n          \"enum\": [\n            \"queued\",\n            \"notNeeded\",\n            \"rateLimited\"\n          ],\n          \"type\": \"string\"\n        },\n        \"credentialsDelivered\": {\n          \"description\": \"Whether the community holds the applicant's acknowledgement that the membership credential arrived. Present only when `status` is `approved`.\",\n          \"type\": \"boolean\"\n        },\n        \"decidedAt\": {\n          \"description\": \"When the refusal was decided — not when this poll was produced. Present only when `status` is `rejected`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"needs\": {\n          \"description\": \"When deferred, what the applicant must supply next.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"presentationDefinition\": {\n          \"description\": \"When more evidence is needed, the presentation-definition to satisfy (opaque here).\",\n          \"type\": \"object\"\n        },\n        \"reason\": {\n          \"description\": \"Elaboration in prose, when the decider gave one. Present only when `status` is `rejected`.\",\n          \"maxLength\": 1024,\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"requestId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"retryAfter\": {\n          \"description\": \"The earliest time the community will honour another `resendCredentials`. Present only when `credentialResend` is `rateLimited`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"enum\": [\n            \"pending\",\n            \"deferred\",\n            \"approved\",\n            \"rejected\",\n            \"withdrawn\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"requestId\",\n        \"status\"\n      ],\n      \"title\": \"VTC Join-Requests Status — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"code\":{\"description\":\"Stable refusal code, safe to branch on. Present only when `status` is `rejected`.\",\"type\":\"string\"},\"credentialResend\":{\"description\":\"The community's answer to `resendCredentials`. `queued`: a re-delivery of the already-issued credentials is queued. `notNeeded`: delivery is already acknowledged. `rateLimited`: a re-delivery was honoured too recently; see `retryAfter`. Present only when `resendCredentials` was set and `status` is `approved`; absent then means the community does not support re-delivery.\",\"enum\":[\"queued\",\"notNeeded\",\"rateLimited\"],\"type\":\"string\"},\"credentialsDelivered\":{\"description\":\"Whether the community holds the applicant's acknowledgement that the membership credential arrived. Present only when `status` is `approved`.\",\"type\":\"boolean\"},\"decidedAt\":{\"description\":\"When the refusal was decided — not when this poll was produced. Present only when `status` is `rejected`.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"needs\":{\"description\":\"When deferred, what the applicant must supply next.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"presentationDefinition\":{\"description\":\"When more evidence is needed, the presentation-definition to satisfy (opaque here).\",\"type\":\"object\"},\"reason\":{\"description\":\"Elaboration in prose, when the decider gave one. Present only when `status` is `rejected`.\",\"maxLength\":1024,\"type\":[\"string\",\"null\"]},\"requestId\":{\"minLength\":1,\"type\":\"string\"},\"retryAfter\":{\"description\":\"The earliest time the community will honour another `resendCredentials`. Present only when `credentialResend` is `rateLimited`.\",\"format\":\"date-time\",\"type\":\"string\"},\"status\":{\"enum\":[\"pending\",\"deferred\",\"approved\",\"rejected\",\"withdrawn\"],\"type\":\"string\"}},\"required\":[\"requestId\",\"status\"],\"title\":\"VTC Join-Requests Status — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

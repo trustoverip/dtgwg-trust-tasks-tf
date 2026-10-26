@@ -35,21 +35,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -71,15 +56,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -143,29 +119,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///An administrator asks a trust registry to update an existing trust record. The record key (entity+authority+action+resource) must already exist.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/registry/record/update/0.1",
-///  "title": "Payload",
-///  "description": "An administrator asks a trust registry to update an existing trust record. The record key (entity+authority+action+resource) must already exist.",
-///  "type": "object",
-///  "required": [
-///    "record"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "record": {
-///      "$ref": "#/definitions/TrustRecord"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -182,20 +135,6 @@ impl Payload {
 }
 ///Whether the record asserts an authorization or a recognition relationship.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RecordType",
-///  "description": "Whether the record asserts an authorization or a recognition relationship.",
-///  "type": "string",
-///  "enum": [
-///    "authorization",
-///    "recognition"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -257,33 +196,6 @@ impl ::std::convert::TryFrom<::std::string::String> for RecordType {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "ok"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "message": {
-///      "description": "Optional human-readable detail.",
-///      "type": "string"
-///    },
-///    "ok": {
-///      "description": "Whether the record was updated.",
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -304,53 +216,6 @@ impl Response {
 }
 ///`TrustRecord`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "TrustRecord",
-///  "type": "object",
-///  "required": [
-///    "action",
-///    "authority_id",
-///    "entity_id",
-///    "record_type",
-///    "resource"
-///  ],
-///  "properties": {
-///    "action": {
-///      "type": "string"
-///    },
-///    "authority_id": {
-///      "type": "string"
-///    },
-///    "authorized": {
-///      "description": "Present on authorization records: whether the action+resource authorization is confirmed.",
-///      "type": "boolean"
-///    },
-///    "context": {
-///      "description": "Opaque governance context attached to the record.",
-///      "type": "object",
-///      "additionalProperties": true
-///    },
-///    "entity_id": {
-///      "type": "string"
-///    },
-///    "recognized": {
-///      "description": "Present on recognition records: whether the action+resource is recognised.",
-///      "type": "boolean"
-///    },
-///    "record_type": {
-///      "$ref": "#/definitions/RecordType"
-///    },
-///    "resource": {
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -647,7 +512,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"RecordType\": {\n      \"description\": \"Whether the record asserts an authorization or a recognition relationship.\",\n      \"enum\": [\n        \"authorization\",\n        \"recognition\"\n      ],\n      \"title\": \"RecordType\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"message\": {\n          \"description\": \"Optional human-readable detail.\",\n          \"type\": \"string\"\n        },\n        \"ok\": {\n          \"description\": \"Whether the record was updated.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"ok\"\n      ],\n      \"title\": \"Registry Record Update — response payload\",\n      \"type\": \"object\"\n    },\n    \"TrustRecord\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"action\": {\n          \"type\": \"string\"\n        },\n        \"authority_id\": {\n          \"type\": \"string\"\n        },\n        \"authorized\": {\n          \"description\": \"Present on authorization records: whether the action+resource authorization is confirmed.\",\n          \"type\": \"boolean\"\n        },\n        \"context\": {\n          \"additionalProperties\": true,\n          \"description\": \"Opaque governance context attached to the record.\",\n          \"type\": \"object\"\n        },\n        \"entity_id\": {\n          \"type\": \"string\"\n        },\n        \"recognized\": {\n          \"description\": \"Present on recognition records: whether the action+resource is recognised.\",\n          \"type\": \"boolean\"\n        },\n        \"record_type\": {\n          \"$ref\": \"#/$defs/RecordType\"\n        },\n        \"resource\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"entity_id\",\n        \"authority_id\",\n        \"action\",\n        \"resource\",\n        \"record_type\"\n      ],\n      \"title\": \"TrustRecord\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/registry/record/update/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An administrator asks a trust registry to update an existing trust record. The record key (entity+authority+action+resource) must already exist.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"record\": {\n      \"$ref\": \"#/$defs/TrustRecord\"\n    }\n  },\n  \"required\": [\n    \"record\"\n  ],\n  \"title\": \"Registry Record Update — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"RecordType\":{\"description\":\"Whether the record asserts an authorization or a recognition relationship.\",\"enum\":[\"authorization\",\"recognition\"],\"title\":\"RecordType\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"message\":{\"description\":\"Optional human-readable detail.\",\"type\":\"string\"},\"ok\":{\"description\":\"Whether the record was updated.\",\"type\":\"boolean\"}},\"required\":[\"ok\"],\"title\":\"Registry Record Update — response payload\",\"type\":\"object\"},\"TrustRecord\":{\"additionalProperties\":false,\"properties\":{\"action\":{\"type\":\"string\"},\"authority_id\":{\"type\":\"string\"},\"authorized\":{\"description\":\"Present on authorization records: whether the action+resource authorization is confirmed.\",\"type\":\"boolean\"},\"context\":{\"additionalProperties\":true,\"description\":\"Opaque governance context attached to the record.\",\"type\":\"object\"},\"entity_id\":{\"type\":\"string\"},\"recognized\":{\"description\":\"Present on recognition records: whether the action+resource is recognised.\",\"type\":\"boolean\"},\"record_type\":{\"$ref\":\"#/$defs/RecordType\"},\"resource\":{\"type\":\"string\"}},\"required\":[\"entity_id\",\"authority_id\",\"action\",\"resource\",\"record_type\"],\"title\":\"TrustRecord\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/registry/record/update/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"An administrator asks a trust registry to update an existing trust record. The record key (entity+authority+action+resource) must already exist.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"record\":{\"$ref\":\"#/$defs/TrustRecord\"}},\"required\":[\"record\"],\"title\":\"Registry Record Update — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -656,7 +521,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"RecordType\": {\n      \"description\": \"Whether the record asserts an authorization or a recognition relationship.\",\n      \"enum\": [\n        \"authorization\",\n        \"recognition\"\n      ],\n      \"title\": \"RecordType\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"message\": {\n          \"description\": \"Optional human-readable detail.\",\n          \"type\": \"string\"\n        },\n        \"ok\": {\n          \"description\": \"Whether the record was updated.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"ok\"\n      ],\n      \"title\": \"Registry Record Update — response payload\",\n      \"type\": \"object\"\n    },\n    \"TrustRecord\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"action\": {\n          \"type\": \"string\"\n        },\n        \"authority_id\": {\n          \"type\": \"string\"\n        },\n        \"authorized\": {\n          \"description\": \"Present on authorization records: whether the action+resource authorization is confirmed.\",\n          \"type\": \"boolean\"\n        },\n        \"context\": {\n          \"additionalProperties\": true,\n          \"description\": \"Opaque governance context attached to the record.\",\n          \"type\": \"object\"\n        },\n        \"entity_id\": {\n          \"type\": \"string\"\n        },\n        \"recognized\": {\n          \"description\": \"Present on recognition records: whether the action+resource is recognised.\",\n          \"type\": \"boolean\"\n        },\n        \"record_type\": {\n          \"$ref\": \"#/$defs/RecordType\"\n        },\n        \"resource\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"entity_id\",\n        \"authority_id\",\n        \"action\",\n        \"resource\",\n        \"record_type\"\n      ],\n      \"title\": \"TrustRecord\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"RecordType\":{\"description\":\"Whether the record asserts an authorization or a recognition relationship.\",\"enum\":[\"authorization\",\"recognition\"],\"title\":\"RecordType\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"message\":{\"description\":\"Optional human-readable detail.\",\"type\":\"string\"},\"ok\":{\"description\":\"Whether the record was updated.\",\"type\":\"boolean\"}},\"required\":[\"ok\"],\"title\":\"Registry Record Update — response payload\",\"type\":\"object\"},\"TrustRecord\":{\"additionalProperties\":false,\"properties\":{\"action\":{\"type\":\"string\"},\"authority_id\":{\"type\":\"string\"},\"authorized\":{\"description\":\"Present on authorization records: whether the action+resource authorization is confirmed.\",\"type\":\"boolean\"},\"context\":{\"additionalProperties\":true,\"description\":\"Opaque governance context attached to the record.\",\"type\":\"object\"},\"entity_id\":{\"type\":\"string\"},\"recognized\":{\"description\":\"Present on recognition records: whether the action+resource is recognised.\",\"type\":\"boolean\"},\"record_type\":{\"$ref\":\"#/$defs/RecordType\"},\"resource\":{\"type\":\"string\"}},\"required\":[\"entity_id\",\"authority_id\",\"action\",\"resource\",\"record_type\"],\"title\":\"TrustRecord\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

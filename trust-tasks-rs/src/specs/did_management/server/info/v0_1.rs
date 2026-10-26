@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,22 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/did-management/server/info/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -179,48 +139,6 @@ impl Payload {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "agentNames",
-///    "serviceDid",
-///    "serviceNames"
-///  ],
-///  "properties": {
-///    "agentNames": {
-///      "description": "Whether the service serves agent-name redirects. A client cannot detect it otherwise: with the feature off a name answers exactly as an unknown one.",
-///      "type": "boolean"
-///    },
-///    "domainPurgeGraceSeconds": {
-///      "description": "How long a disabled domain keeps serving before its content becomes eligible for purge. Absent when the service cannot state it.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "serviceDid": {
-///      "description": "The service's own DID: the recipient a client addresses every other Trust Task to, and the issuer of this response.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "serviceNames": {
-///      "description": "The agent names the service's own DID serves, as local parts. The community name of a service that owns its domain is the empty string. Empty when it serves none.",
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      }
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -251,16 +169,6 @@ impl Response {
 }
 ///The service's own DID: the recipient a client addresses every other Trust Task to, and the issuer of this response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The service's own DID: the recipient a client addresses every other Trust Task to, and the issuer of this response.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseServiceDid(::std::string::String);
@@ -455,7 +363,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/did-management/server/info/0.1";
     const IS_BEARER: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"agentNames\": {\n          \"description\": \"Whether the service serves agent-name redirects. A client cannot detect it otherwise: with the feature off a name answers exactly as an unknown one.\",\n          \"type\": \"boolean\"\n        },\n        \"domainPurgeGraceSeconds\": {\n          \"description\": \"How long a disabled domain keeps serving before its content becomes eligible for purge. Absent when the service cannot state it.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"serviceDid\": {\n          \"description\": \"The service's own DID: the recipient a client addresses every other Trust Task to, and the issuer of this response.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"serviceNames\": {\n          \"description\": \"The agent names the service's own DID serves, as local parts. The community name of a service that owns its domain is the empty string. Empty when it serves none.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"serviceDid\",\n        \"agentNames\",\n        \"serviceNames\"\n      ],\n      \"title\": \"Server Info — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/did-management/server/info/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"title\": \"Server Info — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"agentNames\":{\"description\":\"Whether the service serves agent-name redirects. A client cannot detect it otherwise: with the feature off a name answers exactly as an unknown one.\",\"type\":\"boolean\"},\"domainPurgeGraceSeconds\":{\"description\":\"How long a disabled domain keeps serving before its content becomes eligible for purge. Absent when the service cannot state it.\",\"minimum\":0,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"serviceDid\":{\"description\":\"The service's own DID: the recipient a client addresses every other Trust Task to, and the issuer of this response.\",\"minLength\":1,\"type\":\"string\"},\"serviceNames\":{\"description\":\"The agent names the service's own DID serves, as local parts. The community name of a service that owns its domain is the empty string. Empty when it serves none.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"serviceDid\",\"agentNames\",\"serviceNames\"],\"title\":\"Server Info — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/did-management/server/info/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"title\":\"Server Info — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -464,7 +372,7 @@ impl crate::Payload for Response {
     const IS_BEARER: bool = true;
     const IS_PROOF_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"agentNames\": {\n          \"description\": \"Whether the service serves agent-name redirects. A client cannot detect it otherwise: with the feature off a name answers exactly as an unknown one.\",\n          \"type\": \"boolean\"\n        },\n        \"domainPurgeGraceSeconds\": {\n          \"description\": \"How long a disabled domain keeps serving before its content becomes eligible for purge. Absent when the service cannot state it.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"serviceDid\": {\n          \"description\": \"The service's own DID: the recipient a client addresses every other Trust Task to, and the issuer of this response.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"serviceNames\": {\n          \"description\": \"The agent names the service's own DID serves, as local parts. The community name of a service that owns its domain is the empty string. Empty when it serves none.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"serviceDid\",\n        \"agentNames\",\n        \"serviceNames\"\n      ],\n      \"title\": \"Server Info — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"agentNames\":{\"description\":\"Whether the service serves agent-name redirects. A client cannot detect it otherwise: with the feature off a name answers exactly as an unknown one.\",\"type\":\"boolean\"},\"domainPurgeGraceSeconds\":{\"description\":\"How long a disabled domain keeps serving before its content becomes eligible for purge. Absent when the service cannot state it.\",\"minimum\":0,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"serviceDid\":{\"description\":\"The service's own DID: the recipient a client addresses every other Trust Task to, and the issuer of this response.\",\"minLength\":1,\"type\":\"string\"},\"serviceNames\":{\"description\":\"The agent names the service's own DID serves, as local parts. The community name of a service that owns its domain is the empty string. Empty when it serves none.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"serviceDid\",\"agentNames\",\"serviceNames\"],\"title\":\"Server Info — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

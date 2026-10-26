@@ -35,21 +35,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -71,15 +56,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -143,56 +119,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A relying party asks a wallet (or other approval agent) to obtain user confirmation for an action. The wallet surfaces the reason to the user and returns a signed confirm/response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/confirm/request/0.1",
-///  "title": "Payload",
-///  "description": "A relying party asks a wallet (or other approval agent) to obtain user confirmation for an action. The wallet surfaces the reason to the user and returns a signed confirm/response.",
-///  "type": "object",
-///  "required": [
-///    "challenge",
-///    "reason",
-///    "subject"
-///  ],
-///  "properties": {
-///    "actionDetails": {
-///      "description": "Optional structured payload describing the action — amount, beneficiary, scope, etc. The wallet MAY surface fields to the user. Framework imposes no schema; consumer-defined.",
-///      "type": "object"
-///    },
-///    "actionType": {
-///      "description": "Optional machine-readable action category the wallet MAY use for UI styling, history grouping, or local policy. Free-form; ecosystems define the vocabulary (e.g. \"payment.transfer\", \"acl.delete\", \"data.share\").",
-///      "type": "string"
-///    },
-///    "challenge": {
-///      "description": "base64url-encoded nonce ≥128 bits. Echoed and signed in the confirm-response.",
-///      "type": "string",
-///      "minLength": 16
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "reason": {
-///      "description": "Human-readable action description shown to the user verbatim. SHOULD be specific (\"Confirm transfer of $100 to bob.example\" — not \"Approve action\").",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "subject": {
-///      "description": "The VID whose consent the relying party is asking for. The wallet MUST verify it speaks for this VID.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ttl": {
-///      "description": "Seconds within which the relying party expects a response. The wallet SHOULD treat as advisory.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -231,16 +157,6 @@ impl Payload {
 }
 ///base64url-encoded nonce ≥128 bits. Echoed and signed in the confirm-response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "base64url-encoded nonce ≥128 bits. Echoed and signed in the confirm-response.",
-///  "type": "string",
-///  "minLength": 16
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadChallenge(::std::string::String);
@@ -300,16 +216,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadChallenge {
 }
 ///Human-readable action description shown to the user verbatim. SHOULD be specific ("Confirm transfer of $100 to bob.example" — not "Approve action").
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Human-readable action description shown to the user verbatim. SHOULD be specific (\"Confirm transfer of $100 to bob.example\" — not \"Approve action\").",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadReason(::std::string::String);
@@ -369,16 +275,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 }
 ///The VID whose consent the relying party is asking for. The wallet MUST verify it speaks for this VID.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The VID whose consent the relying party is asking for. The wallet MUST verify it speaks for this VID.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadSubject(::std::string::String);
@@ -438,37 +334,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubject {
 }
 ///Synchronous acknowledgement that the wallet received the request and will (or will not) deliver a confirm/response. The actual signed confirmation arrives via confirm/response out-of-band. Carried in a Trust Task document whose type is https://trusttasks.org/spec/confirm/request/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Synchronous acknowledgement that the wallet received the request and will (or will not) deliver a confirm/response. The actual signed confirmation arrives via confirm/response out-of-band. Carried in a Trust Task document whose type is https://trusttasks.org/spec/confirm/request/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "status"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "reason": {
-///      "description": "Required when status is `refused`.",
-///      "type": "string"
-///    },
-///    "status": {
-///      "type": "string",
-///      "enum": [
-///        "accepted",
-///        "refused"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -488,18 +353,6 @@ impl Response {
 }
 ///`ResponseStatus`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "enum": [
-///    "accepted",
-///    "refused"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -769,7 +622,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Synchronous acknowledgement that the wallet received the request and will (or will not) deliver a confirm/response. The actual signed confirmation arrives via confirm/response out-of-band. Carried in a Trust Task document whose type is https://trusttasks.org/spec/confirm/request/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"reason\": {\n          \"description\": \"Required when status is `refused`.\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"enum\": [\n            \"accepted\",\n            \"refused\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\"\n      ],\n      \"title\": \"Confirm Request — synchronous ack\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/confirm/request/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A relying party asks a wallet (or other approval agent) to obtain user confirmation for an action. The wallet surfaces the reason to the user and returns a signed confirm/response.\",\n  \"properties\": {\n    \"actionDetails\": {\n      \"description\": \"Optional structured payload describing the action — amount, beneficiary, scope, etc. The wallet MAY surface fields to the user. Framework imposes no schema; consumer-defined.\",\n      \"type\": \"object\"\n    },\n    \"actionType\": {\n      \"description\": \"Optional machine-readable action category the wallet MAY use for UI styling, history grouping, or local policy. Free-form; ecosystems define the vocabulary (e.g. \\\"payment.transfer\\\", \\\"acl.delete\\\", \\\"data.share\\\").\",\n      \"type\": \"string\"\n    },\n    \"challenge\": {\n      \"description\": \"base64url-encoded nonce ≥128 bits. Echoed and signed in the confirm-response.\",\n      \"minLength\": 16,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"reason\": {\n      \"description\": \"Human-readable action description shown to the user verbatim. SHOULD be specific (\\\"Confirm transfer of $100 to bob.example\\\" — not \\\"Approve action\\\").\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"subject\": {\n      \"description\": \"The VID whose consent the relying party is asking for. The wallet MUST verify it speaks for this VID.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ttl\": {\n      \"description\": \"Seconds within which the relying party expects a response. The wallet SHOULD treat as advisory.\",\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"subject\",\n    \"challenge\",\n    \"reason\"\n  ],\n  \"title\": \"Confirm — Request\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Synchronous acknowledgement that the wallet received the request and will (or will not) deliver a confirm/response. The actual signed confirmation arrives via confirm/response out-of-band. Carried in a Trust Task document whose type is https://trusttasks.org/spec/confirm/request/0.1#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"reason\":{\"description\":\"Required when status is `refused`.\",\"type\":\"string\"},\"status\":{\"enum\":[\"accepted\",\"refused\"],\"type\":\"string\"}},\"required\":[\"status\"],\"title\":\"Confirm Request — synchronous ack\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/confirm/request/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A relying party asks a wallet (or other approval agent) to obtain user confirmation for an action. The wallet surfaces the reason to the user and returns a signed confirm/response.\",\"properties\":{\"actionDetails\":{\"description\":\"Optional structured payload describing the action — amount, beneficiary, scope, etc. The wallet MAY surface fields to the user. Framework imposes no schema; consumer-defined.\",\"type\":\"object\"},\"actionType\":{\"description\":\"Optional machine-readable action category the wallet MAY use for UI styling, history grouping, or local policy. Free-form; ecosystems define the vocabulary (e.g. \\\"payment.transfer\\\", \\\"acl.delete\\\", \\\"data.share\\\").\",\"type\":\"string\"},\"challenge\":{\"description\":\"base64url-encoded nonce ≥128 bits. Echoed and signed in the confirm-response.\",\"minLength\":16,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"reason\":{\"description\":\"Human-readable action description shown to the user verbatim. SHOULD be specific (\\\"Confirm transfer of $100 to bob.example\\\" — not \\\"Approve action\\\").\",\"minLength\":1,\"type\":\"string\"},\"subject\":{\"description\":\"The VID whose consent the relying party is asking for. The wallet MUST verify it speaks for this VID.\",\"minLength\":1,\"type\":\"string\"},\"ttl\":{\"description\":\"Seconds within which the relying party expects a response. The wallet SHOULD treat as advisory.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"subject\",\"challenge\",\"reason\"],\"title\":\"Confirm — Request\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -777,7 +630,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Synchronous acknowledgement that the wallet received the request and will (or will not) deliver a confirm/response. The actual signed confirmation arrives via confirm/response out-of-band. Carried in a Trust Task document whose type is https://trusttasks.org/spec/confirm/request/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"reason\": {\n          \"description\": \"Required when status is `refused`.\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"enum\": [\n            \"accepted\",\n            \"refused\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"status\"\n      ],\n      \"title\": \"Confirm Request — synchronous ack\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Synchronous acknowledgement that the wallet received the request and will (or will not) deliver a confirm/response. The actual signed confirmation arrives via confirm/response out-of-band. Carried in a Trust Task document whose type is https://trusttasks.org/spec/confirm/request/0.1#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"reason\":{\"description\":\"Required when status is `refused`.\",\"type\":\"string\"},\"status\":{\"enum\":[\"accepted\",\"refused\"],\"type\":\"string\"}},\"required\":[\"status\"],\"title\":\"Confirm Request — synchronous ack\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

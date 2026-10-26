@@ -35,21 +35,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -71,15 +56,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -143,38 +119,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/relationships/list/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "did"
-///  ],
-///  "properties": {
-///    "cursor": {
-///      "type": "string"
-///    },
-///    "did": {
-///      "description": "The member whose relationships to list.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "limit": {
-///      "type": "integer",
-///      "maximum": 200.0,
-///      "minimum": 1.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -196,16 +140,6 @@ impl Payload {
 }
 ///The member whose relationships to list.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The member whose relationships to list.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadDid(::std::string::String);
@@ -265,78 +199,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDid {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "items"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "items": {
-///      "type": "array",
-///      "items": {
-///        "type": "object",
-///        "required": [
-///          "createdAt",
-///          "id",
-///          "issuerDid",
-///          "subjectDid",
-///          "vrcJsonld",
-///          "vrcSha256"
-///        ],
-///        "properties": {
-///          "createdAt": {
-///            "type": "string",
-///            "format": "date-time"
-///          },
-///          "id": {
-///            "type": "string",
-///            "minLength": 1
-///          },
-///          "issuerDid": {
-///            "type": "string",
-///            "minLength": 1
-///          },
-///          "subjectDid": {
-///            "type": "string",
-///            "minLength": 1
-///          },
-///          "vrcJsonld": {
-///            "description": "The relationship credential as JSON-LD (opaque here).",
-///            "type": "object"
-///          },
-///          "vrcSha256": {
-///            "type": "string",
-///            "pattern": "^[0-9a-f]{64}$"
-///          }
-///        },
-///        "additionalProperties": false
-///      }
-///    },
-///    "nextCursor": {
-///      "type": [
-///        "string",
-///        "null"
-///      ]
-///    },
-///    "totalEstimate": {
-///      "type": [
-///        "integer",
-///        "null"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -365,49 +227,6 @@ impl Response {
 }
 ///`ResponseItemsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "createdAt",
-///    "id",
-///    "issuerDid",
-///    "subjectDid",
-///    "vrcJsonld",
-///    "vrcSha256"
-///  ],
-///  "properties": {
-///    "createdAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "id": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "issuerDid": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "subjectDid": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "vrcJsonld": {
-///      "description": "The relationship credential as JSON-LD (opaque here).",
-///      "type": "object"
-///    },
-///    "vrcSha256": {
-///      "type": "string",
-///      "pattern": "^[0-9a-f]{64}$"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -432,15 +251,6 @@ impl ResponseItemsItem {
 }
 ///`ResponseItemsItemId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseItemsItemId(::std::string::String);
@@ -500,15 +310,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseItemsItemId {
 }
 ///`ResponseItemsItemIssuerDid`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseItemsItemIssuerDid(::std::string::String);
@@ -568,15 +369,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseItemsItemIssuerDid {
 }
 ///`ResponseItemsItemSubjectDid`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseItemsItemSubjectDid(::std::string::String);
@@ -636,15 +428,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseItemsItemSubjectDid {
 }
 ///`ResponseItemsItemVrcSha256`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[0-9a-f]{64}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseItemsItemVrcSha256(::std::string::String);
@@ -998,7 +781,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/relationships/list/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"items\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"createdAt\": {\n                \"format\": \"date-time\",\n                \"type\": \"string\"\n              },\n              \"id\": {\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"issuerDid\": {\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"subjectDid\": {\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"vrcJsonld\": {\n                \"description\": \"The relationship credential as JSON-LD (opaque here).\",\n                \"type\": \"object\"\n              },\n              \"vrcSha256\": {\n                \"pattern\": \"^[0-9a-f]{64}$\",\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"id\",\n              \"issuerDid\",\n              \"subjectDid\",\n              \"vrcJsonld\",\n              \"vrcSha256\",\n              \"createdAt\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        },\n        \"nextCursor\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"totalEstimate\": {\n          \"type\": [\n            \"integer\",\n            \"null\"\n          ]\n        }\n      },\n      \"required\": [\n        \"items\"\n      ],\n      \"title\": \"VTC Relationships List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/relationships/list/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"cursor\": {\n      \"type\": \"string\"\n    },\n    \"did\": {\n      \"description\": \"The member whose relationships to list.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"limit\": {\n      \"maximum\": 200,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"did\"\n  ],\n  \"title\": \"VTC Relationships List — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"items\":{\"items\":{\"additionalProperties\":false,\"properties\":{\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"id\":{\"minLength\":1,\"type\":\"string\"},\"issuerDid\":{\"minLength\":1,\"type\":\"string\"},\"subjectDid\":{\"minLength\":1,\"type\":\"string\"},\"vrcJsonld\":{\"description\":\"The relationship credential as JSON-LD (opaque here).\",\"type\":\"object\"},\"vrcSha256\":{\"pattern\":\"^[0-9a-f]{64}$\",\"type\":\"string\"}},\"required\":[\"id\",\"issuerDid\",\"subjectDid\",\"vrcJsonld\",\"vrcSha256\",\"createdAt\"],\"type\":\"object\"},\"type\":\"array\"},\"nextCursor\":{\"type\":[\"string\",\"null\"]},\"totalEstimate\":{\"type\":[\"integer\",\"null\"]}},\"required\":[\"items\"],\"title\":\"VTC Relationships List — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/relationships/list/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"cursor\":{\"type\":\"string\"},\"did\":{\"description\":\"The member whose relationships to list.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"limit\":{\"maximum\":200,\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"did\"],\"title\":\"VTC Relationships List — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1006,7 +789,7 @@ impl crate::Payload for Response {
         "https://trusttasks.org/spec/vtc/relationships/list/0.1#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"items\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"createdAt\": {\n                \"format\": \"date-time\",\n                \"type\": \"string\"\n              },\n              \"id\": {\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"issuerDid\": {\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"subjectDid\": {\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"vrcJsonld\": {\n                \"description\": \"The relationship credential as JSON-LD (opaque here).\",\n                \"type\": \"object\"\n              },\n              \"vrcSha256\": {\n                \"pattern\": \"^[0-9a-f]{64}$\",\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"id\",\n              \"issuerDid\",\n              \"subjectDid\",\n              \"vrcJsonld\",\n              \"vrcSha256\",\n              \"createdAt\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        },\n        \"nextCursor\": {\n          \"type\": [\n            \"string\",\n            \"null\"\n          ]\n        },\n        \"totalEstimate\": {\n          \"type\": [\n            \"integer\",\n            \"null\"\n          ]\n        }\n      },\n      \"required\": [\n        \"items\"\n      ],\n      \"title\": \"VTC Relationships List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"items\":{\"items\":{\"additionalProperties\":false,\"properties\":{\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"id\":{\"minLength\":1,\"type\":\"string\"},\"issuerDid\":{\"minLength\":1,\"type\":\"string\"},\"subjectDid\":{\"minLength\":1,\"type\":\"string\"},\"vrcJsonld\":{\"description\":\"The relationship credential as JSON-LD (opaque here).\",\"type\":\"object\"},\"vrcSha256\":{\"pattern\":\"^[0-9a-f]{64}$\",\"type\":\"string\"}},\"required\":[\"id\",\"issuerDid\",\"subjectDid\",\"vrcJsonld\",\"vrcSha256\",\"createdAt\"],\"type\":\"object\"},\"type\":\"array\"},\"nextCursor\":{\"type\":[\"string\",\"null\"]},\"totalEstimate\":{\"type\":[\"integer\",\"null\"]}},\"required\":[\"items\"],\"title\":\"VTC Relationships List — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

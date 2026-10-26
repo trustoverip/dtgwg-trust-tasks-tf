@@ -42,21 +42,6 @@ This definition constrains the *encoding only*. What the digest is computed over
 
 Restricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that "interoperability is not guaranteed between implementations using such values", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DigestMultibase",
-///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-///  "examples": [
-///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-///  ],
-///  "type": "string",
-///  "minLength": 16,
-///  "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DigestMultibase(::std::string::String);
@@ -125,33 +110,6 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
 }
 ///The two documents a holder ships with the VWC so a verifier can pair it with the session that produced it (witness/session/submit, This response is the outcome evidence). Each is carried exactly as sent or received, never re-serialised.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Evidence",
-///  "description": "The two documents a holder ships with the VWC so a verifier can pair it with the session that produced it (witness/session/submit, This response is the outcome evidence). Each is carried exactly as sent or received, never re-serialised.",
-///  "type": "object",
-///  "required": [
-///    "outcome",
-///    "session"
-///  ],
-///  "properties": {
-///    "outcome": {
-///      "description": "The witness/session/submit #response, as the VTA received it, under the witness's proof. It carries the VWC and its vwcDigestMultibase.",
-///      "type": "object",
-///      "minProperties": 1
-///    },
-///    "session": {
-///      "description": "The witness/session document that opened the session, as the VTA sent it. The VWC's taskContext is its id and its taskDigestMultibase is computed over it.",
-///      "type": "object",
-///      "minProperties": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -168,21 +126,6 @@ impl Evidence {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -204,15 +147,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -276,33 +210,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A membership credential (VMC) held in the credential vault, and the DID it names. When memberDid is absent the VMC names relationshipDid and is presented in the relationship presentation. When memberDid is present the VMC names that DID, and the VTA builds a second presentation — the member presentation — signed by memberDid and bound to the same session, which discloses memberDid to the witness.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Membership",
-///  "description": "A membership credential (VMC) held in the credential vault, and the DID it names. When memberDid is absent the VMC names relationshipDid and is presented in the relationship presentation. When memberDid is present the VMC names that DID, and the VTA builds a second presentation — the member presentation — signed by memberDid and bound to the same session, which discloses memberDid to the witness.",
-///  "type": "object",
-///  "required": [
-///    "credentialId"
-///  ],
-///  "properties": {
-///    "credentialId": {
-///      "description": "The credential-vault handle of the membership credential.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "memberDid": {
-///      "description": "The member DID the membership credential names, when it is not relationshipDid. The VTA must hold a key of it in a context the caller may act in. Naming it is the caller's explicit choice to disclose it to the witness.",
-///      "type": "string",
-///      "pattern": "^did:"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -325,17 +232,6 @@ impl Membership {
 }
 ///The credential-vault handle of the membership credential.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The credential-vault handle of the membership credential.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct MembershipCredentialId(::std::string::String);
@@ -398,16 +294,6 @@ impl<'de> ::serde::Deserialize<'de> for MembershipCredentialId {
 }
 ///The member DID the membership credential names, when it is not relationshipDid. The VTA must hold a key of it in a context the caller may act in. Naming it is the caller's explicit choice to disclose it to the witness.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The member DID the membership credential names, when it is not relationshipDid. The VTA must hold a key of it in a context the caller may act in. Naming it is the caller's explicit choice to disclose it to the witness.",
-///  "type": "string",
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct MembershipMemberDid(::std::string::String);
@@ -469,67 +355,6 @@ impl<'de> ::serde::Deserialize<'de> for MembershipMemberDid {
 }
 ///A client asks its VTA to run a witnessed session for one of its principal's relationships: open a witness/session with the named witness as the relationship DID the VTA holds, present the relationship credential (and, optionally, the membership evidence) from its credential vault, verify the Verifiable Witness Credential the witness returns, and store it in the vault with its evidence.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/witness/request/0.1",
-///  "title": "Payload",
-///  "description": "A client asks its VTA to run a witnessed session for one of its principal's relationships: open a witness/session with the named witness as the relationship DID the VTA holds, present the relationship credential (and, optionally, the membership evidence) from its credential vault, verify the Verifiable Witness Credential the witness returns, and store it in the vault with its evidence.",
-///  "type": "object",
-///  "required": [
-///    "counterpartyDid",
-///    "relationshipCredentialId",
-///    "relationshipDid",
-///    "relationshipThreadId",
-///    "witness"
-///  ],
-///  "properties": {
-///    "counterpartyDid": {
-///      "description": "The other party's relationship DID. With relationshipDid it forms the session's `parties` pair, and it is the subject of the relationship credential presented.",
-///      "type": "string",
-///      "pattern": "^did:"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "membership": {
-///      "description": "The membership evidence to present beside the relationship credential, for a witness whose policy asks for it. Absent, none is presented.",
-///      "$ref": "#/definitions/Membership"
-///    },
-///    "relationshipCredentialId": {
-///      "description": "The credential-vault handle of the relationship credential (VRC) to present: one issued by relationshipDid whose subject is counterpartyDid. A handle, as vault/credentials/query returns one; the credential itself never travels in this request.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "relationshipDid": {
-///      "description": "The principal's relationship DID for this relationship: the participating party, and the issuer of both documents the VTA sends to the witness. The VTA signs them, and the relationship presentation, with a key of this DID it holds in a context the caller may act in; never as itself.",
-///      "type": "string",
-///      "pattern": "^did:"
-///    },
-///    "relationshipThreadId": {
-///      "description": "The threadId of the relationship exchange the session is nested in. The VTA sets it as `parentThreadId` on every document of the session, as witness/session requires of a producer.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "storeAs": {
-///      "description": "The credential-vault handle to store the VWC under. Absent, the VTA derives one. Supplying it lets a caller recognise its own result after an ambiguous failure.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "witness": {
-///      "description": "The witness to run the session with, as its public DID: the recipient of the witness/session and witness/session/submit documents the VTA sends, and the issuer of the VWC it must return. Chosen by the caller, because which witness observes an exchange is the parties' privacy decision (witness/session, Security & Privacy).",
-///      "type": "string",
-///      "pattern": "^did:"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -569,16 +394,6 @@ impl Payload {
 }
 ///The other party's relationship DID. With relationshipDid it forms the session's `parties` pair, and it is the subject of the relationship credential presented.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The other party's relationship DID. With relationshipDid it forms the session's `parties` pair, and it is the subject of the relationship credential presented.",
-///  "type": "string",
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCounterpartyDid(::std::string::String);
@@ -640,17 +455,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCounterpartyDid {
 }
 ///The credential-vault handle of the relationship credential (VRC) to present: one issued by relationshipDid whose subject is counterpartyDid. A handle, as vault/credentials/query returns one; the credential itself never travels in this request.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The credential-vault handle of the relationship credential (VRC) to present: one issued by relationshipDid whose subject is counterpartyDid. A handle, as vault/credentials/query returns one; the credential itself never travels in this request.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadRelationshipCredentialId(::std::string::String);
@@ -713,16 +517,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRelationshipCredentialId {
 }
 ///The principal's relationship DID for this relationship: the participating party, and the issuer of both documents the VTA sends to the witness. The VTA signs them, and the relationship presentation, with a key of this DID it holds in a context the caller may act in; never as itself.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The principal's relationship DID for this relationship: the participating party, and the issuer of both documents the VTA sends to the witness. The VTA signs them, and the relationship presentation, with a key of this DID it holds in a context the caller may act in; never as itself.",
-///  "type": "string",
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadRelationshipDid(::std::string::String);
@@ -784,17 +578,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRelationshipDid {
 }
 ///The threadId of the relationship exchange the session is nested in. The VTA sets it as `parentThreadId` on every document of the session, as witness/session requires of a producer.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The threadId of the relationship exchange the session is nested in. The VTA sets it as `parentThreadId` on every document of the session, as witness/session requires of a producer.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadRelationshipThreadId(::std::string::String);
@@ -857,17 +640,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRelationshipThreadId {
 }
 ///The credential-vault handle to store the VWC under. Absent, the VTA derives one. Supplying it lets a caller recognise its own result after an ambiguous failure.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The credential-vault handle to store the VWC under. Absent, the VTA derives one. Supplying it lets a caller recognise its own result after an ambiguous failure.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadStoreAs(::std::string::String);
@@ -930,16 +702,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadStoreAs {
 }
 ///The witness to run the session with, as its public DID: the recipient of the witness/session and witness/session/submit documents the VTA sends, and the issuer of the VWC it must return. Chosen by the caller, because which witness observes an exchange is the parties' privacy decision (witness/session, Security & Privacy).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The witness to run the session with, as its public DID: the recipient of the witness/session and witness/session/submit documents the VTA sends, and the issuer of the VWC it must return. Chosen by the caller, because which witness observes an exchange is the parties' privacy decision (witness/session, Security & Privacy).",
-///  "type": "string",
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadWitness(::std::string::String);
@@ -1001,47 +763,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadWitness {
 }
 ///The stored VWC's vault handle, its digest, and the evidence documents that carry it. Sent only once the VWC is verified and stored.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The stored VWC's vault handle, its digest, and the evidence documents that carry it. Sent only once the VWC is verified and stored.",
-///  "type": "object",
-///  "required": [
-///    "credentialId",
-///    "evidence",
-///    "vwcDigestMultibase",
-///    "witness"
-///  ],
-///  "properties": {
-///    "credentialId": {
-///      "description": "The credential-vault handle the VWC is now stored under, with its evidence.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "evidence": {
-///      "$ref": "#/definitions/Evidence"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "vwcDigestMultibase": {
-///      "description": "The digest the witness returned for the VWC, which the VTA has checked against the VWC it stored: over the RFC 8785 canonicalization of the VWC, proof included.",
-///      "$ref": "#/definitions/DigestMultibase"
-///    },
-///    "witness": {
-///      "description": "The witness that issued the VWC. Equal to the request's witness: a VWC issued by any other party is refused, not stored.",
-///      "type": "string",
-///      "pattern": "^did:"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1066,17 +787,6 @@ impl Response {
 }
 ///The credential-vault handle the VWC is now stored under, with its evidence.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The credential-vault handle the VWC is now stored under, with its evidence.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseCredentialId(::std::string::String);
@@ -1139,16 +849,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseCredentialId {
 }
 ///The witness that issued the VWC. Equal to the request's witness: a VWC issued by any other party is refused, not stored.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The witness that issued the VWC. Equal to the request's witness: a VWC issued by any other party is refused, not stored.",
-///  "type": "string",
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseWitness(::std::string::String);
@@ -1578,7 +1278,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Evidence\": {\n      \"additionalProperties\": false,\n      \"description\": \"The two documents a holder ships with the VWC so a verifier can pair it with the session that produced it (witness/session/submit, This response is the outcome evidence). Each is carried exactly as sent or received, never re-serialised.\",\n      \"properties\": {\n        \"outcome\": {\n          \"description\": \"The witness/session/submit #response, as the VTA received it, under the witness's proof. It carries the VWC and its vwcDigestMultibase.\",\n          \"minProperties\": 1,\n          \"type\": \"object\"\n        },\n        \"session\": {\n          \"description\": \"The witness/session document that opened the session, as the VTA sent it. The VWC's taskContext is its id and its taskDigestMultibase is computed over it.\",\n          \"minProperties\": 1,\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"session\",\n        \"outcome\"\n      ],\n      \"title\": \"Evidence\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Membership\": {\n      \"additionalProperties\": false,\n      \"description\": \"A membership credential (VMC) held in the credential vault, and the DID it names. When memberDid is absent the VMC names relationshipDid and is presented in the relationship presentation. When memberDid is present the VMC names that DID, and the VTA builds a second presentation — the member presentation — signed by memberDid and bound to the same session, which discloses memberDid to the witness.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"description\": \"The credential-vault handle of the membership credential.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"memberDid\": {\n          \"description\": \"The member DID the membership credential names, when it is not relationshipDid. The VTA must hold a key of it in a context the caller may act in. Naming it is the caller's explicit choice to disclose it to the witness.\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\"\n      ],\n      \"title\": \"Membership\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The stored VWC's vault handle, its digest, and the evidence documents that carry it. Sent only once the VWC is verified and stored.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"description\": \"The credential-vault handle the VWC is now stored under, with its evidence.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"evidence\": {\n          \"$ref\": \"#/$defs/Evidence\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"vwcDigestMultibase\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"The digest the witness returned for the VWC, which the VTA has checked against the VWC it stored: over the RFC 8785 canonicalization of the VWC, proof included.\"\n        },\n        \"witness\": {\n          \"description\": \"The witness that issued the VWC. Equal to the request's witness: a VWC issued by any other party is refused, not stored.\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"witness\",\n        \"vwcDigestMultibase\",\n        \"evidence\"\n      ],\n      \"title\": \"VTA Witness — Request — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/witness/request/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A client asks its VTA to run a witnessed session for one of its principal's relationships: open a witness/session with the named witness as the relationship DID the VTA holds, present the relationship credential (and, optionally, the membership evidence) from its credential vault, verify the Verifiable Witness Credential the witness returns, and store it in the vault with its evidence.\",\n  \"properties\": {\n    \"counterpartyDid\": {\n      \"description\": \"The other party's relationship DID. With relationshipDid it forms the session's `parties` pair, and it is the subject of the relationship credential presented.\",\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"membership\": {\n      \"$ref\": \"#/$defs/Membership\",\n      \"description\": \"The membership evidence to present beside the relationship credential, for a witness whose policy asks for it. Absent, none is presented.\"\n    },\n    \"relationshipCredentialId\": {\n      \"description\": \"The credential-vault handle of the relationship credential (VRC) to present: one issued by relationshipDid whose subject is counterpartyDid. A handle, as vault/credentials/query returns one; the credential itself never travels in this request.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"relationshipDid\": {\n      \"description\": \"The principal's relationship DID for this relationship: the participating party, and the issuer of both documents the VTA sends to the witness. The VTA signs them, and the relationship presentation, with a key of this DID it holds in a context the caller may act in; never as itself.\",\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    },\n    \"relationshipThreadId\": {\n      \"description\": \"The threadId of the relationship exchange the session is nested in. The VTA sets it as `parentThreadId` on every document of the session, as witness/session requires of a producer.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"storeAs\": {\n      \"description\": \"The credential-vault handle to store the VWC under. Absent, the VTA derives one. Supplying it lets a caller recognise its own result after an ambiguous failure.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"witness\": {\n      \"description\": \"The witness to run the session with, as its public DID: the recipient of the witness/session and witness/session/submit documents the VTA sends, and the issuer of the VWC it must return. Chosen by the caller, because which witness observes an exchange is the parties' privacy decision (witness/session, Security & Privacy).\",\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"witness\",\n    \"relationshipDid\",\n    \"counterpartyDid\",\n    \"relationshipThreadId\",\n    \"relationshipCredentialId\"\n  ],\n  \"title\": \"VTA Witness — Request — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Evidence\":{\"additionalProperties\":false,\"description\":\"The two documents a holder ships with the VWC so a verifier can pair it with the session that produced it (witness/session/submit, This response is the outcome evidence). Each is carried exactly as sent or received, never re-serialised.\",\"properties\":{\"outcome\":{\"description\":\"The witness/session/submit #response, as the VTA received it, under the witness's proof. It carries the VWC and its vwcDigestMultibase.\",\"minProperties\":1,\"type\":\"object\"},\"session\":{\"description\":\"The witness/session document that opened the session, as the VTA sent it. The VWC's taskContext is its id and its taskDigestMultibase is computed over it.\",\"minProperties\":1,\"type\":\"object\"}},\"required\":[\"session\",\"outcome\"],\"title\":\"Evidence\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Membership\":{\"additionalProperties\":false,\"description\":\"A membership credential (VMC) held in the credential vault, and the DID it names. When memberDid is absent the VMC names relationshipDid and is presented in the relationship presentation. When memberDid is present the VMC names that DID, and the VTA builds a second presentation — the member presentation — signed by memberDid and bound to the same session, which discloses memberDid to the witness.\",\"properties\":{\"credentialId\":{\"description\":\"The credential-vault handle of the membership credential.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"memberDid\":{\"description\":\"The member DID the membership credential names, when it is not relationshipDid. The VTA must hold a key of it in a context the caller may act in. Naming it is the caller's explicit choice to disclose it to the witness.\",\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"credentialId\"],\"title\":\"Membership\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The stored VWC's vault handle, its digest, and the evidence documents that carry it. Sent only once the VWC is verified and stored.\",\"properties\":{\"credentialId\":{\"description\":\"The credential-vault handle the VWC is now stored under, with its evidence.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"evidence\":{\"$ref\":\"#/$defs/Evidence\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"vwcDigestMultibase\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The digest the witness returned for the VWC, which the VTA has checked against the VWC it stored: over the RFC 8785 canonicalization of the VWC, proof included.\"},\"witness\":{\"description\":\"The witness that issued the VWC. Equal to the request's witness: a VWC issued by any other party is refused, not stored.\",\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"credentialId\",\"witness\",\"vwcDigestMultibase\",\"evidence\"],\"title\":\"VTA Witness — Request — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/witness/request/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A client asks its VTA to run a witnessed session for one of its principal's relationships: open a witness/session with the named witness as the relationship DID the VTA holds, present the relationship credential (and, optionally, the membership evidence) from its credential vault, verify the Verifiable Witness Credential the witness returns, and store it in the vault with its evidence.\",\"properties\":{\"counterpartyDid\":{\"description\":\"The other party's relationship DID. With relationshipDid it forms the session's `parties` pair, and it is the subject of the relationship credential presented.\",\"pattern\":\"^did:\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"membership\":{\"$ref\":\"#/$defs/Membership\",\"description\":\"The membership evidence to present beside the relationship credential, for a witness whose policy asks for it. Absent, none is presented.\"},\"relationshipCredentialId\":{\"description\":\"The credential-vault handle of the relationship credential (VRC) to present: one issued by relationshipDid whose subject is counterpartyDid. A handle, as vault/credentials/query returns one; the credential itself never travels in this request.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"relationshipDid\":{\"description\":\"The principal's relationship DID for this relationship: the participating party, and the issuer of both documents the VTA sends to the witness. The VTA signs them, and the relationship presentation, with a key of this DID it holds in a context the caller may act in; never as itself.\",\"pattern\":\"^did:\",\"type\":\"string\"},\"relationshipThreadId\":{\"description\":\"The threadId of the relationship exchange the session is nested in. The VTA sets it as `parentThreadId` on every document of the session, as witness/session requires of a producer.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"storeAs\":{\"description\":\"The credential-vault handle to store the VWC under. Absent, the VTA derives one. Supplying it lets a caller recognise its own result after an ambiguous failure.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"witness\":{\"description\":\"The witness to run the session with, as its public DID: the recipient of the witness/session and witness/session/submit documents the VTA sends, and the issuer of the VWC it must return. Chosen by the caller, because which witness observes an exchange is the parties' privacy decision (witness/session, Security & Privacy).\",\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"witness\",\"relationshipDid\",\"counterpartyDid\",\"relationshipThreadId\",\"relationshipCredentialId\"],\"title\":\"VTA Witness — Request — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1586,7 +1286,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Evidence\": {\n      \"additionalProperties\": false,\n      \"description\": \"The two documents a holder ships with the VWC so a verifier can pair it with the session that produced it (witness/session/submit, This response is the outcome evidence). Each is carried exactly as sent or received, never re-serialised.\",\n      \"properties\": {\n        \"outcome\": {\n          \"description\": \"The witness/session/submit #response, as the VTA received it, under the witness's proof. It carries the VWC and its vwcDigestMultibase.\",\n          \"minProperties\": 1,\n          \"type\": \"object\"\n        },\n        \"session\": {\n          \"description\": \"The witness/session document that opened the session, as the VTA sent it. The VWC's taskContext is its id and its taskDigestMultibase is computed over it.\",\n          \"minProperties\": 1,\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"session\",\n        \"outcome\"\n      ],\n      \"title\": \"Evidence\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Membership\": {\n      \"additionalProperties\": false,\n      \"description\": \"A membership credential (VMC) held in the credential vault, and the DID it names. When memberDid is absent the VMC names relationshipDid and is presented in the relationship presentation. When memberDid is present the VMC names that DID, and the VTA builds a second presentation — the member presentation — signed by memberDid and bound to the same session, which discloses memberDid to the witness.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"description\": \"The credential-vault handle of the membership credential.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"memberDid\": {\n          \"description\": \"The member DID the membership credential names, when it is not relationshipDid. The VTA must hold a key of it in a context the caller may act in. Naming it is the caller's explicit choice to disclose it to the witness.\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\"\n      ],\n      \"title\": \"Membership\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The stored VWC's vault handle, its digest, and the evidence documents that carry it. Sent only once the VWC is verified and stored.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"description\": \"The credential-vault handle the VWC is now stored under, with its evidence.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"evidence\": {\n          \"$ref\": \"#/$defs/Evidence\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"vwcDigestMultibase\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"The digest the witness returned for the VWC, which the VTA has checked against the VWC it stored: over the RFC 8785 canonicalization of the VWC, proof included.\"\n        },\n        \"witness\": {\n          \"description\": \"The witness that issued the VWC. Equal to the request's witness: a VWC issued by any other party is refused, not stored.\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"witness\",\n        \"vwcDigestMultibase\",\n        \"evidence\"\n      ],\n      \"title\": \"VTA Witness — Request — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Evidence\":{\"additionalProperties\":false,\"description\":\"The two documents a holder ships with the VWC so a verifier can pair it with the session that produced it (witness/session/submit, This response is the outcome evidence). Each is carried exactly as sent or received, never re-serialised.\",\"properties\":{\"outcome\":{\"description\":\"The witness/session/submit #response, as the VTA received it, under the witness's proof. It carries the VWC and its vwcDigestMultibase.\",\"minProperties\":1,\"type\":\"object\"},\"session\":{\"description\":\"The witness/session document that opened the session, as the VTA sent it. The VWC's taskContext is its id and its taskDigestMultibase is computed over it.\",\"minProperties\":1,\"type\":\"object\"}},\"required\":[\"session\",\"outcome\"],\"title\":\"Evidence\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Membership\":{\"additionalProperties\":false,\"description\":\"A membership credential (VMC) held in the credential vault, and the DID it names. When memberDid is absent the VMC names relationshipDid and is presented in the relationship presentation. When memberDid is present the VMC names that DID, and the VTA builds a second presentation — the member presentation — signed by memberDid and bound to the same session, which discloses memberDid to the witness.\",\"properties\":{\"credentialId\":{\"description\":\"The credential-vault handle of the membership credential.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"memberDid\":{\"description\":\"The member DID the membership credential names, when it is not relationshipDid. The VTA must hold a key of it in a context the caller may act in. Naming it is the caller's explicit choice to disclose it to the witness.\",\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"credentialId\"],\"title\":\"Membership\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The stored VWC's vault handle, its digest, and the evidence documents that carry it. Sent only once the VWC is verified and stored.\",\"properties\":{\"credentialId\":{\"description\":\"The credential-vault handle the VWC is now stored under, with its evidence.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"evidence\":{\"$ref\":\"#/$defs/Evidence\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"vwcDigestMultibase\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The digest the witness returned for the VWC, which the VTA has checked against the VWC it stored: over the RFC 8785 canonicalization of the VWC, proof included.\"},\"witness\":{\"description\":\"The witness that issued the VWC. Equal to the request's witness: a VWC issued by any other party is refused, not stored.\",\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"credentialId\",\"witness\",\"vwcDigestMultibase\",\"evidence\"],\"title\":\"VTA Witness — Request — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

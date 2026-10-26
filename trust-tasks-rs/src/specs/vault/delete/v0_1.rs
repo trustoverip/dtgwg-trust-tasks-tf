@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,45 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Tombstone a vault entry. The maintainer SHOULD keep the tombstone for a configured grace period so late-syncing consumers wipe the entry from their caches; after the grace period expires the maintainer MAY garbage-collect.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vault/delete/0.1",
-///  "title": "Payload",
-///  "description": "Tombstone a vault entry. The maintainer SHOULD keep the tombstone for a configured grace period so late-syncing consumers wipe the entry from their caches; after the grace period expires the maintainer MAY garbage-collect.",
-///  "type": "object",
-///  "required": [
-///    "id"
-///  ],
-///  "properties": {
-///    "expectedVersion": {
-///      "description": "Observed version for optimistic-concurrency check. Recommended to supply.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "force": {
-///      "description": "Skip the grace window and hard-delete immediately: the secret bytes are zeroised and the entry is UNRECOVERABLE (equivalent to vault/purge). The default, false, performs a recoverable soft delete — the entry becomes a tombstone, restorable via vault/restore until the sweeper purges it at graceUntil. A consumer MUST NOT present a forced delete to a human as though it were recoverable.",
-///      "default": false,
-///      "type": "boolean"
-///    },
-///    "id": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "reason": {
-///      "description": "Optional human-readable reason recorded in the audit log.",
-///      "type": "string",
-///      "maxLength": 256
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -209,15 +146,6 @@ impl Payload {
 }
 ///`PayloadId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadId(::std::string::String);
@@ -277,16 +205,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadId {
 }
 ///Optional human-readable reason recorded in the audit log.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Optional human-readable reason recorded in the audit log.",
-///  "type": "string",
-///  "maxLength": 256
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadReason(::std::string::String);
@@ -346,40 +264,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "deletedAt",
-///    "graceUntil",
-///    "id"
-///  ],
-///  "properties": {
-///    "deletedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "graceUntil": {
-///      "description": "Time after which the maintainer MAY garbage-collect the tombstone. Late-syncing consumers that connect before this time MUST receive the tombstone via vault/sync and wipe their cache; consumers that connect after this time will simply see the entry as absent.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "id": {
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -400,15 +284,6 @@ impl Response {
 }
 ///`ResponseId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseId(::std::string::String);
@@ -654,7 +529,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"deletedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"graceUntil\": {\n          \"description\": \"Time after which the maintainer MAY garbage-collect the tombstone. Late-syncing consumers that connect before this time MUST receive the tombstone via vault/sync and wipe their cache; consumers that connect after this time will simply see the entry as absent.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"deletedAt\",\n        \"graceUntil\"\n      ],\n      \"title\": \"Vault Delete — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vault/delete/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Tombstone a vault entry. The maintainer SHOULD keep the tombstone for a configured grace period so late-syncing consumers wipe the entry from their caches; after the grace period expires the maintainer MAY garbage-collect.\",\n  \"properties\": {\n    \"expectedVersion\": {\n      \"description\": \"Observed version for optimistic-concurrency check. Recommended to supply.\",\n      \"minimum\": 0,\n      \"type\": \"integer\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"force\": {\n      \"default\": false,\n      \"description\": \"Skip the grace window and hard-delete immediately: the secret bytes are zeroised and the entry is UNRECOVERABLE (equivalent to vault/purge). The default, false, performs a recoverable soft delete — the entry becomes a tombstone, restorable via vault/restore until the sweeper purges it at graceUntil. A consumer MUST NOT present a forced delete to a human as though it were recoverable.\",\n      \"type\": \"boolean\"\n    },\n    \"id\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"reason\": {\n      \"description\": \"Optional human-readable reason recorded in the audit log.\",\n      \"maxLength\": 256,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"id\"\n  ],\n  \"title\": \"Vault Delete — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"deletedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"graceUntil\":{\"description\":\"Time after which the maintainer MAY garbage-collect the tombstone. Late-syncing consumers that connect before this time MUST receive the tombstone via vault/sync and wipe their cache; consumers that connect after this time will simply see the entry as absent.\",\"format\":\"date-time\",\"type\":\"string\"},\"id\":{\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\",\"deletedAt\",\"graceUntil\"],\"title\":\"Vault Delete — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vault/delete/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Tombstone a vault entry. The maintainer SHOULD keep the tombstone for a configured grace period so late-syncing consumers wipe the entry from their caches; after the grace period expires the maintainer MAY garbage-collect.\",\"properties\":{\"expectedVersion\":{\"description\":\"Observed version for optimistic-concurrency check. Recommended to supply.\",\"minimum\":0,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"force\":{\"default\":false,\"description\":\"Skip the grace window and hard-delete immediately: the secret bytes are zeroised and the entry is UNRECOVERABLE (equivalent to vault/purge). The default, false, performs a recoverable soft delete — the entry becomes a tombstone, restorable via vault/restore until the sweeper purges it at graceUntil. A consumer MUST NOT present a forced delete to a human as though it were recoverable.\",\"type\":\"boolean\"},\"id\":{\"minLength\":1,\"type\":\"string\"},\"reason\":{\"description\":\"Optional human-readable reason recorded in the audit log.\",\"maxLength\":256,\"type\":\"string\"}},\"required\":[\"id\"],\"title\":\"Vault Delete — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -663,7 +538,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"deletedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"graceUntil\": {\n          \"description\": \"Time after which the maintainer MAY garbage-collect the tombstone. Late-syncing consumers that connect before this time MUST receive the tombstone via vault/sync and wipe their cache; consumers that connect after this time will simply see the entry as absent.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"id\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"deletedAt\",\n        \"graceUntil\"\n      ],\n      \"title\": \"Vault Delete — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"deletedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"graceUntil\":{\"description\":\"Time after which the maintainer MAY garbage-collect the tombstone. Late-syncing consumers that connect before this time MUST receive the tombstone via vault/sync and wipe their cache; consumers that connect after this time will simply see the entry as absent.\",\"format\":\"date-time\",\"type\":\"string\"},\"id\":{\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\",\"deletedAt\",\"graceUntil\"],\"title\":\"Vault Delete — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

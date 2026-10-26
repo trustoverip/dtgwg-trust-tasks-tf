@@ -34,40 +34,6 @@ pub mod error {
 }
 ///A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "BoardHead",
-///  "description": "A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.",
-///  "type": "object",
-///  "required": [
-///    "electionId",
-///    "issuedAt",
-///    "rootHash",
-///    "treeSize"
-///  ],
-///  "properties": {
-///    "electionId": {
-///      "$ref": "#/definitions/ElectionId"
-///    },
-///    "issuedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "rootHash": {
-///      "description": "The RFC 9162 Merkle tree hash (SHA-256) of the first `treeSize` entries, as a multihash.",
-///      "$ref": "#/definitions/DigestMultibase"
-///    },
-///    "treeSize": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -96,21 +62,6 @@ This definition constrains the *encoding only*. What the digest is computed over
 
 Restricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that "interoperability is not guaranteed between implementations using such values", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DigestMultibase",
-///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-///  "examples": [
-///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-///  ],
-///  "type": "string",
-///  "minLength": 16,
-///  "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DigestMultibase(::std::string::String);
@@ -179,21 +130,6 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
 }
 ///A disjunctive proof that a ciphertext encrypts one value of a public list: one `(c, z)` per value, in the list's order (CONVENTIONS §9.3).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DisjunctiveProof",
-///  "description": "A disjunctive proof that a ciphertext encrypts one value of a public list: one `(c, z)` per value, in the list's order (CONVENTIONS §9.3).",
-///  "type": "array",
-///  "items": {
-///    "$ref": "#/definitions/SigmaProof"
-///  },
-///  "maxItems": 65,
-///  "minItems": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct DisjunctiveProof(pub ::std::vec::Vec<SigmaProof>);
@@ -215,29 +151,6 @@ impl ::std::convert::From<::std::vec::Vec<SigmaProof>> for DisjunctiveProof {
 }
 ///`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ElGamalCiphertext",
-///  "description": "`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).",
-///  "type": "object",
-///  "required": [
-///    "a",
-///    "b"
-///  ],
-///  "properties": {
-///    "a": {
-///      "$ref": "#/definitions/GroupElement"
-///    },
-///    "b": {
-///      "$ref": "#/definitions/GroupElement"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -252,17 +165,6 @@ impl ElGamalCiphertext {
 }
 ///An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ElectionId",
-///  "description": "An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.",
-///  "type": "string",
-///  "pattern": "^[A-Za-z0-9._-]{1,128}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ElectionId(::std::string::String);
@@ -326,38 +228,6 @@ impl<'de> ::serde::Deserialize<'de> for ElectionId {
 }
 ///A tallied-encrypted ballot: one EncryptedQuestion per manifest question, in the manifest's order. Never decrypted (VTI-VOT-064).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "EncryptedBallot",
-///  "description": "A tallied-encrypted ballot: one EncryptedQuestion per manifest question, in the manifest's order. Never decrypted (VTI-VOT-064).",
-///  "type": "object",
-///  "required": [
-///    "electionId",
-///    "manifestDigest",
-///    "questions"
-///  ],
-///  "properties": {
-///    "electionId": {
-///      "$ref": "#/definitions/ElectionId"
-///    },
-///    "manifestDigest": {
-///      "$ref": "#/definitions/DigestMultibase"
-///    },
-///    "questions": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/EncryptedQuestion"
-///      },
-///      "maxItems": 64,
-///      "minItems": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -375,47 +245,6 @@ impl EncryptedBallot {
 }
 ///A cast of a sealed or tallied-encrypted election: exactly one of `sealed` (the Ballot's JCS bytes sealed to the election key) or `encrypted`, with the tag and the attestation over the JCS bytes of whichever is present (CONVENTIONS §3.6, §9.5).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "EncryptedCast",
-///  "description": "A cast of a sealed or tallied-encrypted election: exactly one of `sealed` (the Ballot's JCS bytes sealed to the election key) or `encrypted`, with the tag and the attestation over the JCS bytes of whichever is present (CONVENTIONS §3.6, §9.5).",
-///  "type": "object",
-///  "oneOf": [
-///    {
-///      "required": [
-///        "sealed"
-///      ]
-///    },
-///    {
-///      "required": [
-///        "encrypted"
-///      ]
-///    }
-///  ],
-///  "required": [
-///    "attestation",
-///    "tag"
-///  ],
-///  "properties": {
-///    "attestation": {
-///      "$ref": "#/definitions/Multibase"
-///    },
-///    "encrypted": {
-///      "$ref": "#/definitions/EncryptedBallot"
-///    },
-///    "sealed": {
-///      "$ref": "#/definitions/SealedPayload"
-///    },
-///    "tag": {
-///      "$ref": "#/definitions/Multibase"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged, deny_unknown_fields)]
 #[non_exhaustive]
@@ -433,28 +262,6 @@ pub enum EncryptedCast {
 }
 ///`EncryptedOption`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "EncryptedOption",
-///  "type": "object",
-///  "required": [
-///    "ciphertext",
-///    "proof"
-///  ],
-///  "properties": {
-///    "ciphertext": {
-///      "$ref": "#/definitions/ElGamalCiphertext"
-///    },
-///    "proof": {
-///      "$ref": "#/definitions/DisjunctiveProof"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -469,38 +276,6 @@ impl EncryptedOption {
 }
 ///One choice question of a tallied-encrypted ballot: per option, in the manifest's order, an encryption of 0 or 1 with its proof; and a proof that the selections sum to a count the question admits (CONVENTIONS §9.5).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "EncryptedQuestion",
-///  "description": "One choice question of a tallied-encrypted ballot: per option, in the manifest's order, an encryption of 0 or 1 with its proof; and a proof that the selections sum to a count the question admits (CONVENTIONS §9.5).",
-///  "type": "object",
-///  "required": [
-///    "options",
-///    "question",
-///    "sumProof"
-///  ],
-///  "properties": {
-///    "options": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/EncryptedOption"
-///      },
-///      "maxItems": 64,
-///      "minItems": 1
-///    },
-///    "question": {
-///      "$ref": "#/definitions/Key"
-///    },
-///    "sumProof": {
-///      "$ref": "#/definitions/DisjunctiveProof"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -517,21 +292,6 @@ impl EncryptedQuestion {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -553,15 +313,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -625,19 +376,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "GroupElement",
-///  "description": "A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 2,
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct GroupElement(::std::string::String);
@@ -707,19 +445,6 @@ impl<'de> ::serde::Deserialize<'de> for GroupElement {
 }
 ///A scalar mod the Ristretto group order: 32 canonical little-endian bytes, multibase base58btc (CONVENTIONS §9.1).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "GroupScalar",
-///  "description": "A scalar mod the Ristretto group order: 32 canonical little-endian bytes, multibase base58btc (CONVENTIONS §9.1).",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 2,
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct GroupScalar(::std::string::String);
@@ -789,17 +514,6 @@ impl<'de> ::serde::Deserialize<'de> for GroupScalar {
 }
 ///A question or option key, unique within its manifest or question.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Key",
-///  "description": "A question or option key, unique within its manifest or question.",
-///  "type": "string",
-///  "pattern": "^[A-Za-z0-9._-]{1,64}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Key(::std::string::String);
@@ -861,18 +575,6 @@ impl<'de> ::serde::Deserialize<'de> for Key {
 }
 ///A binary value, multibase base58btc over the suite's canonical (compressed) encoding.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Multibase",
-///  "description": "A binary value, multibase base58btc over the suite's canonical (compressed) encoding.",
-///  "type": "string",
-///  "maxLength": 16384,
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Multibase(::std::string::String);
@@ -939,40 +641,6 @@ impl<'de> ::serde::Deserialize<'de> for Multibase {
 }
 ///A voter casts a sealed or tallied-encrypted ballot, admitted by its PCS attestation and, when tallied-encrypted, by its proofs of validity.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/voting/ballot/cast-encrypted/0.1",
-///  "title": "Payload",
-///  "description": "A voter casts a sealed or tallied-encrypted ballot, admitted by its PCS attestation and, when tallied-encrypted, by its proofs of validity.",
-///  "type": "object",
-///  "required": [
-///    "cast",
-///    "community",
-///    "electionId"
-///  ],
-///  "properties": {
-///    "cast": {
-///      "$ref": "#/definitions/EncryptedCast"
-///    },
-///    "community": {
-///      "description": "The community's DID.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1
-///    },
-///    "electionId": {
-///      "$ref": "#/definitions/ElectionId"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -992,17 +660,6 @@ impl Payload {
 }
 ///The community's DID.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The community's DID.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCommunity(::std::string::String);
@@ -1065,56 +722,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCommunity {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "electionId",
-///    "entryHash",
-///    "head",
-///    "leafIndex",
-///    "outcome",
-///    "receiptToken"
-///  ],
-///  "properties": {
-///    "electionId": {
-///      "$ref": "#/definitions/ElectionId"
-///    },
-///    "entryHash": {
-///      "$ref": "#/definitions/DigestMultibase"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "head": {
-///      "$ref": "#/definitions/BoardHead"
-///    },
-///    "leafIndex": {
-///      "description": "The board index of this cast's `encryptedCast` entry.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "outcome": {
-///      "description": "As voting/ballot/cast.",
-///      "type": "string",
-///      "enum": [
-///        "counted",
-///        "replaced",
-///        "alreadyCounted"
-///      ]
-///    },
-///    "receiptToken": {
-///      "$ref": "#/definitions/Multibase"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1141,20 +748,6 @@ impl Response {
 }
 ///As voting/ballot/cast.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "As voting/ballot/cast.",
-///  "type": "string",
-///  "enum": [
-///    "counted",
-///    "replaced",
-///    "alreadyCounted"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1220,32 +813,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ResponseOutcome {
 }
 ///Bytes sealed to a key: a random group element encrypted as `kem`, and the bytes under ChaCha20-Poly1305 with a key derived from it, multibase base58btc (CONVENTIONS §9.4).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "SealedPayload",
-///  "description": "Bytes sealed to a key: a random group element encrypted as `kem`, and the bytes under ChaCha20-Poly1305 with a key derived from it, multibase base58btc (CONVENTIONS §9.4).",
-///  "type": "object",
-///  "required": [
-///    "body",
-///    "kem"
-///  ],
-///  "properties": {
-///    "body": {
-///      "type": "string",
-///      "maxLength": 131072,
-///      "minLength": 2,
-///      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///    },
-///    "kem": {
-///      "$ref": "#/definitions/ElGamalCiphertext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1260,17 +827,6 @@ impl SealedPayload {
 }
 ///`SealedPayloadBody`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 131072,
-///  "minLength": 2,
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SealedPayloadBody(::std::string::String);
@@ -1340,29 +896,6 @@ impl<'de> ::serde::Deserialize<'de> for SealedPayloadBody {
 }
 ///A non-interactive sigma proof as its challenge and response `(c, z)` (Schnorr or Chaum–Pedersen; CONVENTIONS §9.3).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "SigmaProof",
-///  "description": "A non-interactive sigma proof as its challenge and response `(c, z)` (Schnorr or Chaum–Pedersen; CONVENTIONS §9.3).",
-///  "type": "object",
-///  "required": [
-///    "c",
-///    "z"
-///  ],
-///  "properties": {
-///    "c": {
-///      "$ref": "#/definitions/GroupScalar"
-///    },
-///    "z": {
-///      "$ref": "#/definitions/GroupScalar"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -2023,7 +1556,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"BoardHead\": {\n      \"additionalProperties\": false,\n      \"description\": \"A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.\",\n      \"properties\": {\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"issuedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"rootHash\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"The RFC 9162 Merkle tree hash (SHA-256) of the first `treeSize` entries, as a multihash.\"\n        },\n        \"treeSize\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"treeSize\",\n        \"rootHash\",\n        \"issuedAt\"\n      ],\n      \"title\": \"BoardHead\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"DisjunctiveProof\": {\n      \"description\": \"A disjunctive proof that a ciphertext encrypts one value of a public list: one `(c, z)` per value, in the list's order (CONVENTIONS §9.3).\",\n      \"items\": {\n        \"$ref\": \"#/$defs/SigmaProof\"\n      },\n      \"maxItems\": 65,\n      \"minItems\": 1,\n      \"title\": \"DisjunctiveProof\",\n      \"type\": \"array\"\n    },\n    \"ElGamalCiphertext\": {\n      \"additionalProperties\": false,\n      \"description\": \"`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).\",\n      \"properties\": {\n        \"a\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        },\n        \"b\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        }\n      },\n      \"required\": [\n        \"a\",\n        \"b\"\n      ],\n      \"title\": \"ElGamalCiphertext\",\n      \"type\": \"object\"\n    },\n    \"ElectionId\": {\n      \"description\": \"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,128}$\",\n      \"title\": \"ElectionId\",\n      \"type\": \"string\"\n    },\n    \"EncryptedBallot\": {\n      \"additionalProperties\": false,\n      \"description\": \"A tallied-encrypted ballot: one EncryptedQuestion per manifest question, in the manifest's order. Never decrypted (VTI-VOT-064).\",\n      \"properties\": {\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"manifestDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\"\n        },\n        \"questions\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/EncryptedQuestion\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"manifestDigest\",\n        \"questions\"\n      ],\n      \"title\": \"EncryptedBallot\",\n      \"type\": \"object\"\n    },\n    \"EncryptedCast\": {\n      \"additionalProperties\": false,\n      \"description\": \"A cast of a sealed or tallied-encrypted election: exactly one of `sealed` (the Ballot's JCS bytes sealed to the election key) or `encrypted`, with the tag and the attestation over the JCS bytes of whichever is present (CONVENTIONS §3.6, §9.5).\",\n      \"oneOf\": [\n        {\n          \"required\": [\n            \"sealed\"\n          ]\n        },\n        {\n          \"required\": [\n            \"encrypted\"\n          ]\n        }\n      ],\n      \"properties\": {\n        \"attestation\": {\n          \"$ref\": \"#/$defs/Multibase\"\n        },\n        \"encrypted\": {\n          \"$ref\": \"#/$defs/EncryptedBallot\"\n        },\n        \"sealed\": {\n          \"$ref\": \"#/$defs/SealedPayload\"\n        },\n        \"tag\": {\n          \"$ref\": \"#/$defs/Multibase\"\n        }\n      },\n      \"required\": [\n        \"tag\",\n        \"attestation\"\n      ],\n      \"title\": \"EncryptedCast\",\n      \"type\": \"object\"\n    },\n    \"EncryptedOption\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ciphertext\": {\n          \"$ref\": \"#/$defs/ElGamalCiphertext\"\n        },\n        \"proof\": {\n          \"$ref\": \"#/$defs/DisjunctiveProof\"\n        }\n      },\n      \"required\": [\n        \"ciphertext\",\n        \"proof\"\n      ],\n      \"title\": \"EncryptedOption\",\n      \"type\": \"object\"\n    },\n    \"EncryptedQuestion\": {\n      \"additionalProperties\": false,\n      \"description\": \"One choice question of a tallied-encrypted ballot: per option, in the manifest's order, an encryption of 0 or 1 with its proof; and a proof that the selections sum to a count the question admits (CONVENTIONS §9.5).\",\n      \"properties\": {\n        \"options\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/EncryptedOption\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"question\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"sumProof\": {\n          \"$ref\": \"#/$defs/DisjunctiveProof\"\n        }\n      },\n      \"required\": [\n        \"question\",\n        \"options\",\n        \"sumProof\"\n      ],\n      \"title\": \"EncryptedQuestion\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"GroupElement\": {\n      \"description\": \"A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).\",\n      \"maxLength\": 64,\n      \"minLength\": 2,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"GroupElement\",\n      \"type\": \"string\"\n    },\n    \"GroupScalar\": {\n      \"description\": \"A scalar mod the Ristretto group order: 32 canonical little-endian bytes, multibase base58btc (CONVENTIONS §9.1).\",\n      \"maxLength\": 64,\n      \"minLength\": 2,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"GroupScalar\",\n      \"type\": \"string\"\n    },\n    \"Key\": {\n      \"description\": \"A question or option key, unique within its manifest or question.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,64}$\",\n      \"title\": \"Key\",\n      \"type\": \"string\"\n    },\n    \"Multibase\": {\n      \"description\": \"A binary value, multibase base58btc over the suite's canonical (compressed) encoding.\",\n      \"maxLength\": 16384,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"Multibase\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"entryHash\": {\n          \"$ref\": \"#/$defs/DigestMultibase\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"head\": {\n          \"$ref\": \"#/$defs/BoardHead\"\n        },\n        \"leafIndex\": {\n          \"description\": \"The board index of this cast's `encryptedCast` entry.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"outcome\": {\n          \"description\": \"As voting/ballot/cast.\",\n          \"enum\": [\n            \"counted\",\n            \"replaced\",\n            \"alreadyCounted\"\n          ],\n          \"type\": \"string\"\n        },\n        \"receiptToken\": {\n          \"$ref\": \"#/$defs/Multibase\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"outcome\",\n        \"leafIndex\",\n        \"entryHash\",\n        \"head\",\n        \"receiptToken\"\n      ],\n      \"title\": \"Voting — Ballot — Cast Encrypted — response payload\",\n      \"type\": \"object\"\n    },\n    \"SealedPayload\": {\n      \"additionalProperties\": false,\n      \"description\": \"Bytes sealed to a key: a random group element encrypted as `kem`, and the bytes under ChaCha20-Poly1305 with a key derived from it, multibase base58btc (CONVENTIONS §9.4).\",\n      \"properties\": {\n        \"body\": {\n          \"maxLength\": 131072,\n          \"minLength\": 2,\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        },\n        \"kem\": {\n          \"$ref\": \"#/$defs/ElGamalCiphertext\"\n        }\n      },\n      \"required\": [\n        \"kem\",\n        \"body\"\n      ],\n      \"title\": \"SealedPayload\",\n      \"type\": \"object\"\n    },\n    \"SigmaProof\": {\n      \"additionalProperties\": false,\n      \"description\": \"A non-interactive sigma proof as its challenge and response `(c, z)` (Schnorr or Chaum–Pedersen; CONVENTIONS §9.3).\",\n      \"properties\": {\n        \"c\": {\n          \"$ref\": \"#/$defs/GroupScalar\"\n        },\n        \"z\": {\n          \"$ref\": \"#/$defs/GroupScalar\"\n        }\n      },\n      \"required\": [\n        \"c\",\n        \"z\"\n      ],\n      \"title\": \"SigmaProof\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/voting/ballot/cast-encrypted/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A voter casts a sealed or tallied-encrypted ballot, admitted by its PCS attestation and, when tallied-encrypted, by its proofs of validity.\",\n  \"properties\": {\n    \"cast\": {\n      \"$ref\": \"#/$defs/EncryptedCast\"\n    },\n    \"community\": {\n      \"description\": \"The community's DID.\",\n      \"maxLength\": 2048,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"electionId\": {\n      \"$ref\": \"#/$defs/ElectionId\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"required\": [\n    \"community\",\n    \"electionId\",\n    \"cast\"\n  ],\n  \"title\": \"Voting — Ballot — Cast Encrypted — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"BoardHead\":{\"additionalProperties\":false,\"description\":\"A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.\",\"properties\":{\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"rootHash\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The RFC 9162 Merkle tree hash (SHA-256) of the first `treeSize` entries, as a multihash.\"},\"treeSize\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"electionId\",\"treeSize\",\"rootHash\",\"issuedAt\"],\"title\":\"BoardHead\",\"type\":\"object\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"DisjunctiveProof\":{\"description\":\"A disjunctive proof that a ciphertext encrypts one value of a public list: one `(c, z)` per value, in the list's order (CONVENTIONS §9.3).\",\"items\":{\"$ref\":\"#/$defs/SigmaProof\"},\"maxItems\":65,\"minItems\":1,\"title\":\"DisjunctiveProof\",\"type\":\"array\"},\"ElGamalCiphertext\":{\"additionalProperties\":false,\"description\":\"`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).\",\"properties\":{\"a\":{\"$ref\":\"#/$defs/GroupElement\"},\"b\":{\"$ref\":\"#/$defs/GroupElement\"}},\"required\":[\"a\",\"b\"],\"title\":\"ElGamalCiphertext\",\"type\":\"object\"},\"ElectionId\":{\"description\":\"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\"pattern\":\"^[A-Za-z0-9._-]{1,128}$\",\"title\":\"ElectionId\",\"type\":\"string\"},\"EncryptedBallot\":{\"additionalProperties\":false,\"description\":\"A tallied-encrypted ballot: one EncryptedQuestion per manifest question, in the manifest's order. Never decrypted (VTI-VOT-064).\",\"properties\":{\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"manifestDigest\":{\"$ref\":\"#/$defs/DigestMultibase\"},\"questions\":{\"items\":{\"$ref\":\"#/$defs/EncryptedQuestion\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\"}},\"required\":[\"electionId\",\"manifestDigest\",\"questions\"],\"title\":\"EncryptedBallot\",\"type\":\"object\"},\"EncryptedCast\":{\"additionalProperties\":false,\"description\":\"A cast of a sealed or tallied-encrypted election: exactly one of `sealed` (the Ballot's JCS bytes sealed to the election key) or `encrypted`, with the tag and the attestation over the JCS bytes of whichever is present (CONVENTIONS §3.6, §9.5).\",\"oneOf\":[{\"required\":[\"sealed\"]},{\"required\":[\"encrypted\"]}],\"properties\":{\"attestation\":{\"$ref\":\"#/$defs/Multibase\"},\"encrypted\":{\"$ref\":\"#/$defs/EncryptedBallot\"},\"sealed\":{\"$ref\":\"#/$defs/SealedPayload\"},\"tag\":{\"$ref\":\"#/$defs/Multibase\"}},\"required\":[\"tag\",\"attestation\"],\"title\":\"EncryptedCast\",\"type\":\"object\"},\"EncryptedOption\":{\"additionalProperties\":false,\"properties\":{\"ciphertext\":{\"$ref\":\"#/$defs/ElGamalCiphertext\"},\"proof\":{\"$ref\":\"#/$defs/DisjunctiveProof\"}},\"required\":[\"ciphertext\",\"proof\"],\"title\":\"EncryptedOption\",\"type\":\"object\"},\"EncryptedQuestion\":{\"additionalProperties\":false,\"description\":\"One choice question of a tallied-encrypted ballot: per option, in the manifest's order, an encryption of 0 or 1 with its proof; and a proof that the selections sum to a count the question admits (CONVENTIONS §9.5).\",\"properties\":{\"options\":{\"items\":{\"$ref\":\"#/$defs/EncryptedOption\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\"},\"question\":{\"$ref\":\"#/$defs/Key\"},\"sumProof\":{\"$ref\":\"#/$defs/DisjunctiveProof\"}},\"required\":[\"question\",\"options\",\"sumProof\"],\"title\":\"EncryptedQuestion\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"GroupElement\":{\"description\":\"A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).\",\"maxLength\":64,\"minLength\":2,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"GroupElement\",\"type\":\"string\"},\"GroupScalar\":{\"description\":\"A scalar mod the Ristretto group order: 32 canonical little-endian bytes, multibase base58btc (CONVENTIONS §9.1).\",\"maxLength\":64,\"minLength\":2,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"GroupScalar\",\"type\":\"string\"},\"Key\":{\"description\":\"A question or option key, unique within its manifest or question.\",\"pattern\":\"^[A-Za-z0-9._-]{1,64}$\",\"title\":\"Key\",\"type\":\"string\"},\"Multibase\":{\"description\":\"A binary value, multibase base58btc over the suite's canonical (compressed) encoding.\",\"maxLength\":16384,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"Multibase\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"entryHash\":{\"$ref\":\"#/$defs/DigestMultibase\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"head\":{\"$ref\":\"#/$defs/BoardHead\"},\"leafIndex\":{\"description\":\"The board index of this cast's `encryptedCast` entry.\",\"minimum\":0,\"type\":\"integer\"},\"outcome\":{\"description\":\"As voting/ballot/cast.\",\"enum\":[\"counted\",\"replaced\",\"alreadyCounted\"],\"type\":\"string\"},\"receiptToken\":{\"$ref\":\"#/$defs/Multibase\"}},\"required\":[\"electionId\",\"outcome\",\"leafIndex\",\"entryHash\",\"head\",\"receiptToken\"],\"title\":\"Voting — Ballot — Cast Encrypted — response payload\",\"type\":\"object\"},\"SealedPayload\":{\"additionalProperties\":false,\"description\":\"Bytes sealed to a key: a random group element encrypted as `kem`, and the bytes under ChaCha20-Poly1305 with a key derived from it, multibase base58btc (CONVENTIONS §9.4).\",\"properties\":{\"body\":{\"maxLength\":131072,\"minLength\":2,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"kem\":{\"$ref\":\"#/$defs/ElGamalCiphertext\"}},\"required\":[\"kem\",\"body\"],\"title\":\"SealedPayload\",\"type\":\"object\"},\"SigmaProof\":{\"additionalProperties\":false,\"description\":\"A non-interactive sigma proof as its challenge and response `(c, z)` (Schnorr or Chaum–Pedersen; CONVENTIONS §9.3).\",\"properties\":{\"c\":{\"$ref\":\"#/$defs/GroupScalar\"},\"z\":{\"$ref\":\"#/$defs/GroupScalar\"}},\"required\":[\"c\",\"z\"],\"title\":\"SigmaProof\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/voting/ballot/cast-encrypted/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A voter casts a sealed or tallied-encrypted ballot, admitted by its PCS attestation and, when tallied-encrypted, by its proofs of validity.\",\"properties\":{\"cast\":{\"$ref\":\"#/$defs/EncryptedCast\"},\"community\":{\"description\":\"The community's DID.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"community\",\"electionId\",\"cast\"],\"title\":\"Voting — Ballot — Cast Encrypted — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -2033,7 +1566,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"BoardHead\": {\n      \"additionalProperties\": false,\n      \"description\": \"A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.\",\n      \"properties\": {\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"issuedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"rootHash\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"The RFC 9162 Merkle tree hash (SHA-256) of the first `treeSize` entries, as a multihash.\"\n        },\n        \"treeSize\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"treeSize\",\n        \"rootHash\",\n        \"issuedAt\"\n      ],\n      \"title\": \"BoardHead\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"DisjunctiveProof\": {\n      \"description\": \"A disjunctive proof that a ciphertext encrypts one value of a public list: one `(c, z)` per value, in the list's order (CONVENTIONS §9.3).\",\n      \"items\": {\n        \"$ref\": \"#/$defs/SigmaProof\"\n      },\n      \"maxItems\": 65,\n      \"minItems\": 1,\n      \"title\": \"DisjunctiveProof\",\n      \"type\": \"array\"\n    },\n    \"ElGamalCiphertext\": {\n      \"additionalProperties\": false,\n      \"description\": \"`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).\",\n      \"properties\": {\n        \"a\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        },\n        \"b\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        }\n      },\n      \"required\": [\n        \"a\",\n        \"b\"\n      ],\n      \"title\": \"ElGamalCiphertext\",\n      \"type\": \"object\"\n    },\n    \"ElectionId\": {\n      \"description\": \"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,128}$\",\n      \"title\": \"ElectionId\",\n      \"type\": \"string\"\n    },\n    \"EncryptedBallot\": {\n      \"additionalProperties\": false,\n      \"description\": \"A tallied-encrypted ballot: one EncryptedQuestion per manifest question, in the manifest's order. Never decrypted (VTI-VOT-064).\",\n      \"properties\": {\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"manifestDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\"\n        },\n        \"questions\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/EncryptedQuestion\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"manifestDigest\",\n        \"questions\"\n      ],\n      \"title\": \"EncryptedBallot\",\n      \"type\": \"object\"\n    },\n    \"EncryptedCast\": {\n      \"additionalProperties\": false,\n      \"description\": \"A cast of a sealed or tallied-encrypted election: exactly one of `sealed` (the Ballot's JCS bytes sealed to the election key) or `encrypted`, with the tag and the attestation over the JCS bytes of whichever is present (CONVENTIONS §3.6, §9.5).\",\n      \"oneOf\": [\n        {\n          \"required\": [\n            \"sealed\"\n          ]\n        },\n        {\n          \"required\": [\n            \"encrypted\"\n          ]\n        }\n      ],\n      \"properties\": {\n        \"attestation\": {\n          \"$ref\": \"#/$defs/Multibase\"\n        },\n        \"encrypted\": {\n          \"$ref\": \"#/$defs/EncryptedBallot\"\n        },\n        \"sealed\": {\n          \"$ref\": \"#/$defs/SealedPayload\"\n        },\n        \"tag\": {\n          \"$ref\": \"#/$defs/Multibase\"\n        }\n      },\n      \"required\": [\n        \"tag\",\n        \"attestation\"\n      ],\n      \"title\": \"EncryptedCast\",\n      \"type\": \"object\"\n    },\n    \"EncryptedOption\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ciphertext\": {\n          \"$ref\": \"#/$defs/ElGamalCiphertext\"\n        },\n        \"proof\": {\n          \"$ref\": \"#/$defs/DisjunctiveProof\"\n        }\n      },\n      \"required\": [\n        \"ciphertext\",\n        \"proof\"\n      ],\n      \"title\": \"EncryptedOption\",\n      \"type\": \"object\"\n    },\n    \"EncryptedQuestion\": {\n      \"additionalProperties\": false,\n      \"description\": \"One choice question of a tallied-encrypted ballot: per option, in the manifest's order, an encryption of 0 or 1 with its proof; and a proof that the selections sum to a count the question admits (CONVENTIONS §9.5).\",\n      \"properties\": {\n        \"options\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/EncryptedOption\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"question\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"sumProof\": {\n          \"$ref\": \"#/$defs/DisjunctiveProof\"\n        }\n      },\n      \"required\": [\n        \"question\",\n        \"options\",\n        \"sumProof\"\n      ],\n      \"title\": \"EncryptedQuestion\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"GroupElement\": {\n      \"description\": \"A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).\",\n      \"maxLength\": 64,\n      \"minLength\": 2,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"GroupElement\",\n      \"type\": \"string\"\n    },\n    \"GroupScalar\": {\n      \"description\": \"A scalar mod the Ristretto group order: 32 canonical little-endian bytes, multibase base58btc (CONVENTIONS §9.1).\",\n      \"maxLength\": 64,\n      \"minLength\": 2,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"GroupScalar\",\n      \"type\": \"string\"\n    },\n    \"Key\": {\n      \"description\": \"A question or option key, unique within its manifest or question.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,64}$\",\n      \"title\": \"Key\",\n      \"type\": \"string\"\n    },\n    \"Multibase\": {\n      \"description\": \"A binary value, multibase base58btc over the suite's canonical (compressed) encoding.\",\n      \"maxLength\": 16384,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"Multibase\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"entryHash\": {\n          \"$ref\": \"#/$defs/DigestMultibase\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"head\": {\n          \"$ref\": \"#/$defs/BoardHead\"\n        },\n        \"leafIndex\": {\n          \"description\": \"The board index of this cast's `encryptedCast` entry.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"outcome\": {\n          \"description\": \"As voting/ballot/cast.\",\n          \"enum\": [\n            \"counted\",\n            \"replaced\",\n            \"alreadyCounted\"\n          ],\n          \"type\": \"string\"\n        },\n        \"receiptToken\": {\n          \"$ref\": \"#/$defs/Multibase\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"outcome\",\n        \"leafIndex\",\n        \"entryHash\",\n        \"head\",\n        \"receiptToken\"\n      ],\n      \"title\": \"Voting — Ballot — Cast Encrypted — response payload\",\n      \"type\": \"object\"\n    },\n    \"SealedPayload\": {\n      \"additionalProperties\": false,\n      \"description\": \"Bytes sealed to a key: a random group element encrypted as `kem`, and the bytes under ChaCha20-Poly1305 with a key derived from it, multibase base58btc (CONVENTIONS §9.4).\",\n      \"properties\": {\n        \"body\": {\n          \"maxLength\": 131072,\n          \"minLength\": 2,\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        },\n        \"kem\": {\n          \"$ref\": \"#/$defs/ElGamalCiphertext\"\n        }\n      },\n      \"required\": [\n        \"kem\",\n        \"body\"\n      ],\n      \"title\": \"SealedPayload\",\n      \"type\": \"object\"\n    },\n    \"SigmaProof\": {\n      \"additionalProperties\": false,\n      \"description\": \"A non-interactive sigma proof as its challenge and response `(c, z)` (Schnorr or Chaum–Pedersen; CONVENTIONS §9.3).\",\n      \"properties\": {\n        \"c\": {\n          \"$ref\": \"#/$defs/GroupScalar\"\n        },\n        \"z\": {\n          \"$ref\": \"#/$defs/GroupScalar\"\n        }\n      },\n      \"required\": [\n        \"c\",\n        \"z\"\n      ],\n      \"title\": \"SigmaProof\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"BoardHead\":{\"additionalProperties\":false,\"description\":\"A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.\",\"properties\":{\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"rootHash\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The RFC 9162 Merkle tree hash (SHA-256) of the first `treeSize` entries, as a multihash.\"},\"treeSize\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"electionId\",\"treeSize\",\"rootHash\",\"issuedAt\"],\"title\":\"BoardHead\",\"type\":\"object\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"DisjunctiveProof\":{\"description\":\"A disjunctive proof that a ciphertext encrypts one value of a public list: one `(c, z)` per value, in the list's order (CONVENTIONS §9.3).\",\"items\":{\"$ref\":\"#/$defs/SigmaProof\"},\"maxItems\":65,\"minItems\":1,\"title\":\"DisjunctiveProof\",\"type\":\"array\"},\"ElGamalCiphertext\":{\"additionalProperties\":false,\"description\":\"`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).\",\"properties\":{\"a\":{\"$ref\":\"#/$defs/GroupElement\"},\"b\":{\"$ref\":\"#/$defs/GroupElement\"}},\"required\":[\"a\",\"b\"],\"title\":\"ElGamalCiphertext\",\"type\":\"object\"},\"ElectionId\":{\"description\":\"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\"pattern\":\"^[A-Za-z0-9._-]{1,128}$\",\"title\":\"ElectionId\",\"type\":\"string\"},\"EncryptedBallot\":{\"additionalProperties\":false,\"description\":\"A tallied-encrypted ballot: one EncryptedQuestion per manifest question, in the manifest's order. Never decrypted (VTI-VOT-064).\",\"properties\":{\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"manifestDigest\":{\"$ref\":\"#/$defs/DigestMultibase\"},\"questions\":{\"items\":{\"$ref\":\"#/$defs/EncryptedQuestion\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\"}},\"required\":[\"electionId\",\"manifestDigest\",\"questions\"],\"title\":\"EncryptedBallot\",\"type\":\"object\"},\"EncryptedCast\":{\"additionalProperties\":false,\"description\":\"A cast of a sealed or tallied-encrypted election: exactly one of `sealed` (the Ballot's JCS bytes sealed to the election key) or `encrypted`, with the tag and the attestation over the JCS bytes of whichever is present (CONVENTIONS §3.6, §9.5).\",\"oneOf\":[{\"required\":[\"sealed\"]},{\"required\":[\"encrypted\"]}],\"properties\":{\"attestation\":{\"$ref\":\"#/$defs/Multibase\"},\"encrypted\":{\"$ref\":\"#/$defs/EncryptedBallot\"},\"sealed\":{\"$ref\":\"#/$defs/SealedPayload\"},\"tag\":{\"$ref\":\"#/$defs/Multibase\"}},\"required\":[\"tag\",\"attestation\"],\"title\":\"EncryptedCast\",\"type\":\"object\"},\"EncryptedOption\":{\"additionalProperties\":false,\"properties\":{\"ciphertext\":{\"$ref\":\"#/$defs/ElGamalCiphertext\"},\"proof\":{\"$ref\":\"#/$defs/DisjunctiveProof\"}},\"required\":[\"ciphertext\",\"proof\"],\"title\":\"EncryptedOption\",\"type\":\"object\"},\"EncryptedQuestion\":{\"additionalProperties\":false,\"description\":\"One choice question of a tallied-encrypted ballot: per option, in the manifest's order, an encryption of 0 or 1 with its proof; and a proof that the selections sum to a count the question admits (CONVENTIONS §9.5).\",\"properties\":{\"options\":{\"items\":{\"$ref\":\"#/$defs/EncryptedOption\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\"},\"question\":{\"$ref\":\"#/$defs/Key\"},\"sumProof\":{\"$ref\":\"#/$defs/DisjunctiveProof\"}},\"required\":[\"question\",\"options\",\"sumProof\"],\"title\":\"EncryptedQuestion\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"GroupElement\":{\"description\":\"A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).\",\"maxLength\":64,\"minLength\":2,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"GroupElement\",\"type\":\"string\"},\"GroupScalar\":{\"description\":\"A scalar mod the Ristretto group order: 32 canonical little-endian bytes, multibase base58btc (CONVENTIONS §9.1).\",\"maxLength\":64,\"minLength\":2,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"GroupScalar\",\"type\":\"string\"},\"Key\":{\"description\":\"A question or option key, unique within its manifest or question.\",\"pattern\":\"^[A-Za-z0-9._-]{1,64}$\",\"title\":\"Key\",\"type\":\"string\"},\"Multibase\":{\"description\":\"A binary value, multibase base58btc over the suite's canonical (compressed) encoding.\",\"maxLength\":16384,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"Multibase\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"entryHash\":{\"$ref\":\"#/$defs/DigestMultibase\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"head\":{\"$ref\":\"#/$defs/BoardHead\"},\"leafIndex\":{\"description\":\"The board index of this cast's `encryptedCast` entry.\",\"minimum\":0,\"type\":\"integer\"},\"outcome\":{\"description\":\"As voting/ballot/cast.\",\"enum\":[\"counted\",\"replaced\",\"alreadyCounted\"],\"type\":\"string\"},\"receiptToken\":{\"$ref\":\"#/$defs/Multibase\"}},\"required\":[\"electionId\",\"outcome\",\"leafIndex\",\"entryHash\",\"head\",\"receiptToken\"],\"title\":\"Voting — Ballot — Cast Encrypted — response payload\",\"type\":\"object\"},\"SealedPayload\":{\"additionalProperties\":false,\"description\":\"Bytes sealed to a key: a random group element encrypted as `kem`, and the bytes under ChaCha20-Poly1305 with a key derived from it, multibase base58btc (CONVENTIONS §9.4).\",\"properties\":{\"body\":{\"maxLength\":131072,\"minLength\":2,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"kem\":{\"$ref\":\"#/$defs/ElGamalCiphertext\"}},\"required\":[\"kem\",\"body\"],\"title\":\"SealedPayload\",\"type\":\"object\"},\"SigmaProof\":{\"additionalProperties\":false,\"description\":\"A non-interactive sigma proof as its challenge and response `(c, z)` (Schnorr or Chaum–Pedersen; CONVENTIONS §9.3).\",\"properties\":{\"c\":{\"$ref\":\"#/$defs/GroupScalar\"},\"z\":{\"$ref\":\"#/$defs/GroupScalar\"}},\"required\":[\"c\",\"z\"],\"title\":\"SigmaProof\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

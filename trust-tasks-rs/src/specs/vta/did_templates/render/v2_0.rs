@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,43 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Render a DID template to a DID document. Omit `contextId` to render a global template; set it to render a template scoped to that context (requires access to the context; the VTA MAY fall back to a global template of the same name). Callers supply variables; the VTA injects ambient variables (VTA_DID, VTA_URL, NOW — plus CONTEXT_ID and, if set on the context, CONTEXT_DID when contextId is present) server-side, merges the caller's on top, substitutes every placeholder, and returns the rendered document.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/did-templates/render/2.0",
-///  "title": "Payload",
-///  "description": "Render a DID template to a DID document. Omit `contextId` to render a global template; set it to render a template scoped to that context (requires access to the context; the VTA MAY fall back to a global template of the same name). Callers supply variables; the VTA injects ambient variables (VTA_DID, VTA_URL, NOW — plus CONTEXT_ID and, if set on the context, CONTEXT_DID when contextId is present) server-side, merges the caller's on top, substitutes every placeholder, and returns the rendered document.",
-///  "type": "object",
-///  "required": [
-///    "name"
-///  ],
-///  "properties": {
-///    "contextId": {
-///      "description": "Scope selector. Absent: the global scope. Present: the context whose template is rendered; the caller MUST have access to that context. When present the VTA additionally injects the ambient variables CONTEXT_ID and (if set on the context) CONTEXT_DID.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "name": {
-///      "description": "Resource id — the name of the template to render within the selected scope.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "vars": {
-///      "description": "Caller-supplied template variables, keyed by name. The VTA injects ambient variables (VTA_DID, VTA_URL, NOW; plus CONTEXT_ID / CONTEXT_DID when contextId is present) server-side and merges these on top.",
-///      "default": {},
-///      "type": "object",
-///      "additionalProperties": true
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -206,16 +145,6 @@ impl Payload {
 }
 ///Scope selector. Absent: the global scope. Present: the context whose template is rendered; the caller MUST have access to that context. When present the VTA additionally injects the ambient variables CONTEXT_ID and (if set on the context) CONTEXT_DID.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Scope selector. Absent: the global scope. Present: the context whose template is rendered; the caller MUST have access to that context. When present the VTA additionally injects the ambient variables CONTEXT_ID and (if set on the context) CONTEXT_DID.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadContextId(::std::string::String);
@@ -275,16 +204,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 }
 ///Resource id — the name of the template to render within the selected scope.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Resource id — the name of the template to render within the selected scope.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadName(::std::string::String);
@@ -344,31 +263,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadName {
 }
 ///The rendered DID document.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The rendered DID document.",
-///  "type": "object",
-///  "required": [
-///    "document"
-///  ],
-///  "properties": {
-///    "document": {
-///      "description": "The rendered DID document with all placeholders substituted.",
-///      "type": "object"
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -536,7 +430,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/did-templates/render/2.0";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The rendered DID document.\",\n      \"properties\": {\n        \"document\": {\n          \"description\": \"The rendered DID document with all placeholders substituted.\",\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        }\n      },\n      \"required\": [\n        \"document\"\n      ],\n      \"title\": \"VTA DID-Template Render — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/did-templates/render/2.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Render a DID template to a DID document. Omit `contextId` to render a global template; set it to render a template scoped to that context (requires access to the context; the VTA MAY fall back to a global template of the same name). Callers supply variables; the VTA injects ambient variables (VTA_DID, VTA_URL, NOW — plus CONTEXT_ID and, if set on the context, CONTEXT_DID when contextId is present) server-side, merges the caller's on top, substitutes every placeholder, and returns the rendered document.\",\n  \"properties\": {\n    \"contextId\": {\n      \"description\": \"Scope selector. Absent: the global scope. Present: the context whose template is rendered; the caller MUST have access to that context. When present the VTA additionally injects the ambient variables CONTEXT_ID and (if set on the context) CONTEXT_DID.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"name\": {\n      \"description\": \"Resource id — the name of the template to render within the selected scope.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"vars\": {\n      \"additionalProperties\": true,\n      \"default\": {},\n      \"description\": \"Caller-supplied template variables, keyed by name. The VTA injects ambient variables (VTA_DID, VTA_URL, NOW; plus CONTEXT_ID / CONTEXT_DID when contextId is present) server-side and merges these on top.\",\n      \"type\": \"object\"\n    }\n  },\n  \"required\": [\n    \"name\"\n  ],\n  \"title\": \"VTA DID-Template Render — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The rendered DID document.\",\"properties\":{\"document\":{\"description\":\"The rendered DID document with all placeholders substituted.\",\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"required\":[\"document\"],\"title\":\"VTA DID-Template Render — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/did-templates/render/2.0\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Render a DID template to a DID document. Omit `contextId` to render a global template; set it to render a template scoped to that context (requires access to the context; the VTA MAY fall back to a global template of the same name). Callers supply variables; the VTA injects ambient variables (VTA_DID, VTA_URL, NOW — plus CONTEXT_ID and, if set on the context, CONTEXT_DID when contextId is present) server-side, merges the caller's on top, substitutes every placeholder, and returns the rendered document.\",\"properties\":{\"contextId\":{\"description\":\"Scope selector. Absent: the global scope. Present: the context whose template is rendered; the caller MUST have access to that context. When present the VTA additionally injects the ambient variables CONTEXT_ID and (if set on the context) CONTEXT_DID.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"name\":{\"description\":\"Resource id — the name of the template to render within the selected scope.\",\"minLength\":1,\"type\":\"string\"},\"vars\":{\"additionalProperties\":true,\"default\":{},\"description\":\"Caller-supplied template variables, keyed by name. The VTA injects ambient variables (VTA_DID, VTA_URL, NOW; plus CONTEXT_ID / CONTEXT_DID when contextId is present) server-side and merges these on top.\",\"type\":\"object\"}},\"required\":[\"name\"],\"title\":\"VTA DID-Template Render — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -544,7 +438,7 @@ impl crate::Payload for Response {
         "https://trusttasks.org/spec/vta/did-templates/render/2.0#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The rendered DID document.\",\n      \"properties\": {\n        \"document\": {\n          \"description\": \"The rendered DID document with all placeholders substituted.\",\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        }\n      },\n      \"required\": [\n        \"document\"\n      ],\n      \"title\": \"VTA DID-Template Render — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The rendered DID document.\",\"properties\":{\"document\":{\"description\":\"The rendered DID document with all placeholders substituted.\",\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"}},\"required\":[\"document\"],\"title\":\"VTA DID-Template Render — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

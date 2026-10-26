@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,31 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Request payload for vta/contexts/preview-delete: what deleting this context would destroy, computed without destroying it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/contexts/preview-delete/1.0",
-///  "title": "Payload",
-///  "description": "Request payload for vta/contexts/preview-delete: what deleting this context would destroy, computed without destroying it.",
-///  "type": "object",
-///  "required": [
-///    "id"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "id": {
-///      "description": "Context to preview the deletion of.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -183,16 +134,6 @@ impl Payload {
 }
 ///Context to preview the deletion of.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Context to preview the deletion of.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadId(::std::string::String);
@@ -252,76 +193,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadId {
 }
 ///Success response to vta/contexts/preview-delete. Every array is what WOULD be affected; nothing has been. Type https://trusttasks.org/spec/vta/contexts/preview-delete/1.0#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to vta/contexts/preview-delete. Every array is what WOULD be affected; nothing has been. Type https://trusttasks.org/spec/vta/contexts/preview-delete/1.0#response.",
-///  "type": "object",
-///  "required": [
-///    "aclEntriesRemoved",
-///    "aclEntriesUpdated",
-///    "id",
-///    "keys",
-///    "webvhDids"
-///  ],
-///  "properties": {
-///    "aclEntriesRemoved": {
-///      "description": "Subjects whose ACL entry would be removed outright, because this context was its only scope.",
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      }
-///    },
-///    "aclEntriesUpdated": {
-///      "description": "Subjects whose ACL entry would be narrowed — they hold other scopes and keep them.",
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      }
-///    },
-///    "didTemplates": {
-///      "description": "DID templates scoped to this context that would be removed.",
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      }
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "id": {
-///      "description": "The context previewed.",
-///      "type": "string"
-///    },
-///    "keys": {
-///      "description": "Key ids that would be destroyed. A derived key can be re-derived from the seed; an internally-generated one cannot be recovered by any means, and this list does not distinguish them — a consumer rendering it for a human SHOULD resolve each key before presenting the choice.",
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      }
-///    },
-///    "subContexts": {
-///      "description": "Sub-contexts that would be deleted along with this one, as full paths, deepest first. Deleting a context deletes its whole subtree, so every other array in this response covers the resources of these contexts as well as of the context itself — a consumer rendering the preview for a human MUST show this list, because a caller told only what the named context holds cannot see how much of the tree the deletion reaches. Absent or empty means the context is a leaf.",
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      }
-///    },
-///    "webvhDids": {
-///      "description": "did:webvh DIDs that would stop being served. Anything that recorded one as an issuer or subject is left pointing at nothing.",
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      }
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -561,7 +432,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/contexts/preview-delete/1.0";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/contexts/preview-delete. Every array is what WOULD be affected; nothing has been. Type https://trusttasks.org/spec/vta/contexts/preview-delete/1.0#response.\",\n      \"properties\": {\n        \"aclEntriesRemoved\": {\n          \"description\": \"Subjects whose ACL entry would be removed outright, because this context was its only scope.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"aclEntriesUpdated\": {\n          \"description\": \"Subjects whose ACL entry would be narrowed — they hold other scopes and keep them.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"didTemplates\": {\n          \"description\": \"DID templates scoped to this context that would be removed.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"description\": \"The context previewed.\",\n          \"type\": \"string\"\n        },\n        \"keys\": {\n          \"description\": \"Key ids that would be destroyed. A derived key can be re-derived from the seed; an internally-generated one cannot be recovered by any means, and this list does not distinguish them — a consumer rendering it for a human SHOULD resolve each key before presenting the choice.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"subContexts\": {\n          \"description\": \"Sub-contexts that would be deleted along with this one, as full paths, deepest first. Deleting a context deletes its whole subtree, so every other array in this response covers the resources of these contexts as well as of the context itself — a consumer rendering the preview for a human MUST show this list, because a caller told only what the named context holds cannot see how much of the tree the deletion reaches. Absent or empty means the context is a leaf.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"webvhDids\": {\n          \"description\": \"did:webvh DIDs that would stop being served. Anything that recorded one as an issuer or subject is left pointing at nothing.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"keys\",\n        \"webvhDids\",\n        \"aclEntriesRemoved\",\n        \"aclEntriesUpdated\"\n      ],\n      \"title\": \"VTA Contexts Preview-Delete — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/contexts/preview-delete/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Request payload for vta/contexts/preview-delete: what deleting this context would destroy, computed without destroying it.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"id\": {\n      \"description\": \"Context to preview the deletion of.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"id\"\n  ],\n  \"title\": \"VTA Contexts Preview-Delete — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vta/contexts/preview-delete. Every array is what WOULD be affected; nothing has been. Type https://trusttasks.org/spec/vta/contexts/preview-delete/1.0#response.\",\"properties\":{\"aclEntriesRemoved\":{\"description\":\"Subjects whose ACL entry would be removed outright, because this context was its only scope.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"aclEntriesUpdated\":{\"description\":\"Subjects whose ACL entry would be narrowed — they hold other scopes and keep them.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"didTemplates\":{\"description\":\"DID templates scoped to this context that would be removed.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"description\":\"The context previewed.\",\"type\":\"string\"},\"keys\":{\"description\":\"Key ids that would be destroyed. A derived key can be re-derived from the seed; an internally-generated one cannot be recovered by any means, and this list does not distinguish them — a consumer rendering it for a human SHOULD resolve each key before presenting the choice.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"subContexts\":{\"description\":\"Sub-contexts that would be deleted along with this one, as full paths, deepest first. Deleting a context deletes its whole subtree, so every other array in this response covers the resources of these contexts as well as of the context itself — a consumer rendering the preview for a human MUST show this list, because a caller told only what the named context holds cannot see how much of the tree the deletion reaches. Absent or empty means the context is a leaf.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"webvhDids\":{\"description\":\"did:webvh DIDs that would stop being served. Anything that recorded one as an issuer or subject is left pointing at nothing.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"id\",\"keys\",\"webvhDids\",\"aclEntriesRemoved\",\"aclEntriesUpdated\"],\"title\":\"VTA Contexts Preview-Delete — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/contexts/preview-delete/1.0\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Request payload for vta/contexts/preview-delete: what deleting this context would destroy, computed without destroying it.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"description\":\"Context to preview the deletion of.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\"],\"title\":\"VTA Contexts Preview-Delete — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -569,7 +440,7 @@ impl crate::Payload for Response {
         "https://trusttasks.org/spec/vta/contexts/preview-delete/1.0#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/contexts/preview-delete. Every array is what WOULD be affected; nothing has been. Type https://trusttasks.org/spec/vta/contexts/preview-delete/1.0#response.\",\n      \"properties\": {\n        \"aclEntriesRemoved\": {\n          \"description\": \"Subjects whose ACL entry would be removed outright, because this context was its only scope.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"aclEntriesUpdated\": {\n          \"description\": \"Subjects whose ACL entry would be narrowed — they hold other scopes and keep them.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"didTemplates\": {\n          \"description\": \"DID templates scoped to this context that would be removed.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"description\": \"The context previewed.\",\n          \"type\": \"string\"\n        },\n        \"keys\": {\n          \"description\": \"Key ids that would be destroyed. A derived key can be re-derived from the seed; an internally-generated one cannot be recovered by any means, and this list does not distinguish them — a consumer rendering it for a human SHOULD resolve each key before presenting the choice.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"subContexts\": {\n          \"description\": \"Sub-contexts that would be deleted along with this one, as full paths, deepest first. Deleting a context deletes its whole subtree, so every other array in this response covers the resources of these contexts as well as of the context itself — a consumer rendering the preview for a human MUST show this list, because a caller told only what the named context holds cannot see how much of the tree the deletion reaches. Absent or empty means the context is a leaf.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"webvhDids\": {\n          \"description\": \"did:webvh DIDs that would stop being served. Anything that recorded one as an issuer or subject is left pointing at nothing.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"keys\",\n        \"webvhDids\",\n        \"aclEntriesRemoved\",\n        \"aclEntriesUpdated\"\n      ],\n      \"title\": \"VTA Contexts Preview-Delete — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vta/contexts/preview-delete. Every array is what WOULD be affected; nothing has been. Type https://trusttasks.org/spec/vta/contexts/preview-delete/1.0#response.\",\"properties\":{\"aclEntriesRemoved\":{\"description\":\"Subjects whose ACL entry would be removed outright, because this context was its only scope.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"aclEntriesUpdated\":{\"description\":\"Subjects whose ACL entry would be narrowed — they hold other scopes and keep them.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"didTemplates\":{\"description\":\"DID templates scoped to this context that would be removed.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"description\":\"The context previewed.\",\"type\":\"string\"},\"keys\":{\"description\":\"Key ids that would be destroyed. A derived key can be re-derived from the seed; an internally-generated one cannot be recovered by any means, and this list does not distinguish them — a consumer rendering it for a human SHOULD resolve each key before presenting the choice.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"subContexts\":{\"description\":\"Sub-contexts that would be deleted along with this one, as full paths, deepest first. Deleting a context deletes its whole subtree, so every other array in this response covers the resources of these contexts as well as of the context itself — a consumer rendering the preview for a human MUST show this list, because a caller told only what the named context holds cannot see how much of the tree the deletion reaches. Absent or empty means the context is a leaf.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"webvhDids\":{\"description\":\"did:webvh DIDs that would stop being served. Anything that recorded one as an issuer or subject is left pointing at nothing.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"id\",\"keys\",\"webvhDids\",\"aclEntriesRemoved\",\"aclEntriesUpdated\"],\"title\":\"VTA Contexts Preview-Delete — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

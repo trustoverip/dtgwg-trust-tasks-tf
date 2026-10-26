@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,59 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/relationships/revoke/0.2",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "id"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "id": {
-///      "description": "The relationship to revoke.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "pop": {
-///      "description": "Proof that the caller controls the key behind the relationship's issuerDid, when the document's own proof signer is neither that issuer nor an administrator — i.e. for an edge published under a pairwise relationship DID. A member publishes an edge under a relationship DID, an identifier scoped to one counterparty, which names nobody; this document's own proof says only that a member sent the request, not that they control the edge's issuing key. Omit `pop` when the document's proof signer equals the relationship's issuerDid, or is an administrator: the document's own proof, or the administrator's standing, already establishes authority.",
-///      "type": "object",
-///      "required": [
-///        "documentId",
-///        "proof",
-///        "relationship",
-///        "type"
-///      ],
-///      "properties": {
-///        "documentId": {
-///          "description": "The `id` of the Trust Task document carrying this authorization. Binds the authorization to one document, so a captured one cannot be replayed in another — including by a different member.",
-///          "type": "string"
-///        },
-///        "proof": {
-///          "description": "Data-integrity proof over this object, by a verification method the relationship's issuerDid controls. This is the proof of possession; the members above only bound what it authorizes.",
-///          "type": "object"
-///        },
-///        "relationship": {
-///          "description": "The relationship id this authorization applies to. MUST equal the top-level `id`, so an authorization signed for one edge cannot be presented against another.",
-///          "type": "string"
-///        },
-///        "type": {
-///          "description": "Distinct from vtc/relationships/publish's VrcPublishAuthorization, so a signature made to authorize a publish cannot be replayed here to authorize a revoke.",
-///          "const": "VrcRevokeAuthorization"
-///        }
-///      },
-///      "additionalProperties": false
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -213,16 +136,6 @@ impl Payload {
 }
 ///The relationship to revoke.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The relationship to revoke.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadId(::std::string::String);
@@ -282,40 +195,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadId {
 }
 ///Proof that the caller controls the key behind the relationship's issuerDid, when the document's own proof signer is neither that issuer nor an administrator — i.e. for an edge published under a pairwise relationship DID. A member publishes an edge under a relationship DID, an identifier scoped to one counterparty, which names nobody; this document's own proof says only that a member sent the request, not that they control the edge's issuing key. Omit `pop` when the document's proof signer equals the relationship's issuerDid, or is an administrator: the document's own proof, or the administrator's standing, already establishes authority.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Proof that the caller controls the key behind the relationship's issuerDid, when the document's own proof signer is neither that issuer nor an administrator — i.e. for an edge published under a pairwise relationship DID. A member publishes an edge under a relationship DID, an identifier scoped to one counterparty, which names nobody; this document's own proof says only that a member sent the request, not that they control the edge's issuing key. Omit `pop` when the document's proof signer equals the relationship's issuerDid, or is an administrator: the document's own proof, or the administrator's standing, already establishes authority.",
-///  "type": "object",
-///  "required": [
-///    "documentId",
-///    "proof",
-///    "relationship",
-///    "type"
-///  ],
-///  "properties": {
-///    "documentId": {
-///      "description": "The `id` of the Trust Task document carrying this authorization. Binds the authorization to one document, so a captured one cannot be replayed in another — including by a different member.",
-///      "type": "string"
-///    },
-///    "proof": {
-///      "description": "Data-integrity proof over this object, by a verification method the relationship's issuerDid controls. This is the proof of possession; the members above only bound what it authorizes.",
-///      "type": "object"
-///    },
-///    "relationship": {
-///      "description": "The relationship id this authorization applies to. MUST equal the top-level `id`, so an authorization signed for one edge cannot be presented against another.",
-///      "type": "string"
-///    },
-///    "type": {
-///      "description": "Distinct from vtc/relationships/publish's VrcPublishAuthorization, so a signature made to authorize a publish cannot be replayed here to authorize a revoke.",
-///      "const": "VrcRevokeAuthorization"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -338,29 +217,6 @@ impl PayloadPop {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "id"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "id": {
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -376,15 +232,6 @@ impl Response {
 }
 ///`ResponseId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseId(::std::string::String);
@@ -656,7 +503,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\"\n      ],\n      \"title\": \"VTC Relationships Revoke — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/relationships/revoke/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"id\": {\n      \"description\": \"The relationship to revoke.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"pop\": {\n      \"additionalProperties\": false,\n      \"description\": \"Proof that the caller controls the key behind the relationship's issuerDid, when the document's own proof signer is neither that issuer nor an administrator — i.e. for an edge published under a pairwise relationship DID. A member publishes an edge under a relationship DID, an identifier scoped to one counterparty, which names nobody; this document's own proof says only that a member sent the request, not that they control the edge's issuing key. Omit `pop` when the document's proof signer equals the relationship's issuerDid, or is an administrator: the document's own proof, or the administrator's standing, already establishes authority.\",\n      \"properties\": {\n        \"documentId\": {\n          \"description\": \"The `id` of the Trust Task document carrying this authorization. Binds the authorization to one document, so a captured one cannot be replayed in another — including by a different member.\",\n          \"type\": \"string\"\n        },\n        \"proof\": {\n          \"description\": \"Data-integrity proof over this object, by a verification method the relationship's issuerDid controls. This is the proof of possession; the members above only bound what it authorizes.\",\n          \"type\": \"object\"\n        },\n        \"relationship\": {\n          \"description\": \"The relationship id this authorization applies to. MUST equal the top-level `id`, so an authorization signed for one edge cannot be presented against another.\",\n          \"type\": \"string\"\n        },\n        \"type\": {\n          \"const\": \"VrcRevokeAuthorization\",\n          \"description\": \"Distinct from vtc/relationships/publish's VrcPublishAuthorization, so a signature made to authorize a publish cannot be replayed here to authorize a revoke.\"\n        }\n      },\n      \"required\": [\n        \"type\",\n        \"documentId\",\n        \"relationship\",\n        \"proof\"\n      ],\n      \"type\": \"object\"\n    }\n  },\n  \"required\": [\n    \"id\"\n  ],\n  \"title\": \"VTC Relationships Revoke — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\"],\"title\":\"VTC Relationships Revoke — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/relationships/revoke/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"description\":\"The relationship to revoke.\",\"minLength\":1,\"type\":\"string\"},\"pop\":{\"additionalProperties\":false,\"description\":\"Proof that the caller controls the key behind the relationship's issuerDid, when the document's own proof signer is neither that issuer nor an administrator — i.e. for an edge published under a pairwise relationship DID. A member publishes an edge under a relationship DID, an identifier scoped to one counterparty, which names nobody; this document's own proof says only that a member sent the request, not that they control the edge's issuing key. Omit `pop` when the document's proof signer equals the relationship's issuerDid, or is an administrator: the document's own proof, or the administrator's standing, already establishes authority.\",\"properties\":{\"documentId\":{\"description\":\"The `id` of the Trust Task document carrying this authorization. Binds the authorization to one document, so a captured one cannot be replayed in another — including by a different member.\",\"type\":\"string\"},\"proof\":{\"description\":\"Data-integrity proof over this object, by a verification method the relationship's issuerDid controls. This is the proof of possession; the members above only bound what it authorizes.\",\"type\":\"object\"},\"relationship\":{\"description\":\"The relationship id this authorization applies to. MUST equal the top-level `id`, so an authorization signed for one edge cannot be presented against another.\",\"type\":\"string\"},\"type\":{\"const\":\"VrcRevokeAuthorization\",\"description\":\"Distinct from vtc/relationships/publish's VrcPublishAuthorization, so a signature made to authorize a publish cannot be replayed here to authorize a revoke.\"}},\"required\":[\"type\",\"documentId\",\"relationship\",\"proof\"],\"type\":\"object\"}},\"required\":[\"id\"],\"title\":\"VTC Relationships Revoke — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -666,7 +513,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\"\n      ],\n      \"title\": \"VTC Relationships Revoke — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"minLength\":1,\"type\":\"string\"}},\"required\":[\"id\"],\"title\":\"VTC Relationships Revoke — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

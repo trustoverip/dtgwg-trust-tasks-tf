@@ -35,54 +35,6 @@ pub mod error {
 }
 ///How a self-granted right came to be, and whether another administrator has since ratified it. A record whose `breakGlass` has no `ratifiedBy` is **unratified**: it is live and published like any other right, it does not count toward the last-owner or last-admin invariants, and any community administrator or namespace admin of its namespace may revoke it. Ratification (git-ns/right/ratify) sets `ratifiedBy` and `ratifiedAt`; from then on the record is an ordinary grant, and `breakGlass` stays as its history. Never published to the Trust Registry.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "BreakGlass",
-///  "description": "How a self-granted right came to be, and whether another administrator has since ratified it. A record whose `breakGlass` has no `ratifiedBy` is **unratified**: it is live and published like any other right, it does not count toward the last-owner or last-admin invariants, and any community administrator or namespace admin of its namespace may revoke it. Ratification (git-ns/right/ratify) sets `ratifiedBy` and `ratifiedAt`; from then on the record is an ordinary grant, and `breakGlass` stays as its history. Never published to the Trust Registry.",
-///  "type": "object",
-///  "required": [
-///    "at",
-///    "by",
-///    "justification"
-///  ],
-///  "properties": {
-///    "at": {
-///      "description": "When the VTC recorded the break-glass.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "by": {
-///      "description": "Who broke the glass: always the record's `subject`, restated so the flag reads on its own.",
-///      "$ref": "#/definitions/Did"
-///    },
-///    "effectiveAt": {
-///      "description": "When the right takes effect, where the community's policy imposed a delay. Absent: it took effect at `at`. Until this instant the record confers nothing and is not published, and any administrator who may revoke it may do so.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "justification": {
-///      "description": "The actor's statement of why nobody else could grant this right. Shown to every community administrator, every namespace admin of the namespace and every owner of the resource; kept in the audit record; never published.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1,
-///      "pattern": "\\S"
-///    },
-///    "ratifiedAt": {
-///      "description": "When it was ratified. Present exactly when `ratifiedBy` is.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ratifiedBy": {
-///      "description": "The administrator who ratified the record — never its subject. Absent while unratified.",
-///      "$ref": "#/definitions/Did"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -122,18 +74,6 @@ impl BreakGlass {
 }
 ///The actor's statement of why nobody else could grant this right. Shown to every community administrator, every namespace admin of the namespace and every owner of the resource; kept in the audit record; never published.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The actor's statement of why nobody else could grant this right. Shown to every community administrator, every namespace admin of the namespace and every owner of the resource; kept in the audit record; never published.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1,
-///  "pattern": "\\S"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct BreakGlassJustification(::std::string::String);
@@ -201,18 +141,6 @@ impl<'de> ::serde::Deserialize<'de> for BreakGlassJustification {
 }
 ///A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Did",
-///  "description": "A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Did(::std::string::String);
@@ -286,21 +214,6 @@ impl<'de> ::serde::Deserialize<'de> for Did {
 }
 ///The three rights that carry authority over other people's rights: `git.ns.admin`, `git.repo.create` (which makes its holder the owner of every repository they create) and `git.repo.own`. Separation of duties applies to these: nobody grants one to themselves through git-ns/right/grant, or records one for themselves through any other task that grants on the actor's own authority. The explicit self-grant is git-ns/right/break-glass. `git.repo.maintain` and `git.commit.sign` are not elevated.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ElevatedRight",
-///  "description": "The three rights that carry authority over other people's rights: `git.ns.admin`, `git.repo.create` (which makes its holder the owner of every repository they create) and `git.repo.own`. Separation of duties applies to these: nobody grants one to themselves through git-ns/right/grant, or records one for themselves through any other task that grants on the actor's own authority. The explicit self-grant is git-ns/right/break-glass. `git.repo.maintain` and `git.commit.sign` are not elevated.",
-///  "type": "string",
-///  "enum": [
-///    "git.ns.admin",
-///    "git.repo.create",
-///    "git.repo.own"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -366,21 +279,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ElevatedRight {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -402,15 +300,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -474,50 +363,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///An administrator other than its subject ratifies one unratified break-glass record, turning it into an ordinary grant: it stops being flagged, and starts counting toward the last-owner and last-admin invariants.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/git-ns/right/ratify/0.1",
-///  "title": "Payload",
-///  "description": "An administrator other than its subject ratifies one unratified break-glass record, turning it into an ordinary grant: it stops being flagged, and starts counting toward the last-owner and last-admin invariants.",
-///  "type": "object",
-///  "required": [
-///    "breakGlassAt",
-///    "resource",
-///    "right",
-///    "subject"
-///  ],
-///  "properties": {
-///    "breakGlassAt": {
-///      "description": "The record's `breakGlass.at`, as the ratifier read it. Binds the ratification to the one break-glass the ratifier read and judged, so that it cannot ratify a later one — made after that one was revoked, with a different justification — by the same subject for the same right.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "resource": {
-///      "description": "The resource exactly as recorded.",
-///      "$ref": "#/definitions/Resource"
-///    },
-///    "right": {
-///      "$ref": "#/definitions/ElevatedRight"
-///    },
-///    "statement": {
-///      "description": "Why, in the ratifier's words. Kept in the audit record and carried in the notice; shown to the same people as the justification.",
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "subject": {
-///      "description": "Who broke the glass: the record's subject.",
-///      "$ref": "#/definitions/Did"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -544,16 +389,6 @@ impl Payload {
 }
 ///Why, in the ratifier's words. Kept in the audit record and carried in the notice; shown to the same people as the justification.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Why, in the ratifier's words. Kept in the audit record and carried in the notice; shown to the same people as the justification.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadStatement(::std::string::String);
@@ -613,18 +448,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadStatement {
 }
 ///A forge-qualified resource: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo>` for one repository, all lowercase — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Resource",
-///  "description": "A forge-qualified resource: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo>` for one repository, all lowercase — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.",
-///  "type": "string",
-///  "maxLength": 455,
-///  "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+(?:/[a-z0-9_-][a-z0-9._-]{0,99}){1,2}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Resource(::std::string::String);
@@ -698,30 +521,6 @@ impl<'de> ::serde::Deserialize<'de> for Resource {
 }
 ///The ratified record.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The ratified record.",
-///  "type": "object",
-///  "required": [
-///    "right"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "right": {
-///      "description": "The record, now carrying `breakGlass.ratifiedBy` and `breakGlass.ratifiedAt`.",
-///      "$ref": "#/definitions/RightRecord"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -739,23 +538,6 @@ impl Response {
 }
 ///One of the five git rights. Each string is also the TRQP `action` the VTC publishes the right under in its Trust Registry, so it is carried verbatim. `git.ns.admin` and `git.repo.create` apply to a namespace resource; `git.repo.own` and `git.repo.maintain` to a repository resource; `git.commit.sign` to either.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Right",
-///  "description": "One of the five git rights. Each string is also the TRQP `action` the VTC publishes the right under in its Trust Registry, so it is carried verbatim. `git.ns.admin` and `git.repo.create` apply to a namespace resource; `git.repo.own` and `git.repo.maintain` to a repository resource; `git.commit.sign` to either.",
-///  "type": "string",
-///  "enum": [
-///    "git.ns.admin",
-///    "git.repo.create",
-///    "git.repo.own",
-///    "git.repo.maintain",
-///    "git.commit.sign"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -829,58 +611,6 @@ impl ::std::convert::TryFrom<::std::string::String> for Right {
 }
 ///One recorded right. Implied rights (§4.2 of the rights model: `own` implies `maintain` implies `commit.sign` on the same resource; `ns.admin` implies `repo.create` and `own` across its namespace) are not records and never appear as RightRecords. A record carrying `breakGlass` was given by its subject to themselves through git-ns/right/break-glass; it is a real right, published like any other, and is shown with that flag on every surface that shows the record.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RightRecord",
-///  "description": "One recorded right. Implied rights (§4.2 of the rights model: `own` implies `maintain` implies `commit.sign` on the same resource; `ns.admin` implies `repo.create` and `own` across its namespace) are not records and never appear as RightRecords. A record carrying `breakGlass` was given by its subject to themselves through git-ns/right/break-glass; it is a real right, published like any other, and is shown with that flag on every surface that shows the record.",
-///  "type": "object",
-///  "required": [
-///    "grantedAt",
-///    "grantedBy",
-///    "resource",
-///    "right",
-///    "subject"
-///  ],
-///  "properties": {
-///    "breakGlass": {
-///      "description": "Present exactly when the subject gave themselves this right through git-ns/right/break-glass. Absent for every other record.",
-///      "$ref": "#/definitions/BreakGlass"
-///    },
-///    "expiresAt": {
-///      "description": "When the right lapses. Absent: no expiry.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "grantedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "grantedBy": {
-///      "description": "The actor whose task caused the right: the granter, the creator of a repository (for its first `own`), the adopting admin, the transferring owner, or the binding admin (for the first `git.ns.admin`). The VTC's own DID for a right it derives from its configuration.",
-///      "$ref": "#/definitions/Did"
-///    },
-///    "reason": {
-///      "description": "The granter's free-text reason. Disclosed only to holders of `git.repo.own` on the resource and of `git.ns.admin` over it.",
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "resource": {
-///      "$ref": "#/definitions/Resource"
-///    },
-///    "right": {
-///      "$ref": "#/definitions/Right"
-///    },
-///    "subject": {
-///      "description": "Who holds the right. For `git.commit.sign` this is the DID whose commit signatures the CI check accepts.",
-///      "$ref": "#/definitions/Did"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -919,16 +649,6 @@ impl RightRecord {
 }
 ///The granter's free-text reason. Disclosed only to holders of `git.repo.own` on the resource and of `git.ns.admin` over it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The granter's free-text reason. Disclosed only to holders of `git.repo.own` on the resource and of `git.ns.admin` over it.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RightRecordReason(::std::string::String);
@@ -1428,7 +1148,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"BreakGlass\": {\n      \"additionalProperties\": false,\n      \"description\": \"How a self-granted right came to be, and whether another administrator has since ratified it. A record whose `breakGlass` has no `ratifiedBy` is **unratified**: it is live and published like any other right, it does not count toward the last-owner or last-admin invariants, and any community administrator or namespace admin of its namespace may revoke it. Ratification (git-ns/right/ratify) sets `ratifiedBy` and `ratifiedAt`; from then on the record is an ordinary grant, and `breakGlass` stays as its history. Never published to the Trust Registry.\",\n      \"properties\": {\n        \"at\": {\n          \"description\": \"When the VTC recorded the break-glass.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"by\": {\n          \"$ref\": \"#/$defs/Did\",\n          \"description\": \"Who broke the glass: always the record's `subject`, restated so the flag reads on its own.\"\n        },\n        \"effectiveAt\": {\n          \"description\": \"When the right takes effect, where the community's policy imposed a delay. Absent: it took effect at `at`. Until this instant the record confers nothing and is not published, and any administrator who may revoke it may do so.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"justification\": {\n          \"description\": \"The actor's statement of why nobody else could grant this right. Shown to every community administrator, every namespace admin of the namespace and every owner of the resource; kept in the audit record; never published.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"pattern\": \"\\\\S\",\n          \"type\": \"string\"\n        },\n        \"ratifiedAt\": {\n          \"description\": \"When it was ratified. Present exactly when `ratifiedBy` is.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ratifiedBy\": {\n          \"$ref\": \"#/$defs/Did\",\n          \"description\": \"The administrator who ratified the record — never its subject. Absent while unratified.\"\n        }\n      },\n      \"required\": [\n        \"by\",\n        \"at\",\n        \"justification\"\n      ],\n      \"title\": \"BreakGlass\",\n      \"type\": \"object\"\n    },\n    \"Did\": {\n      \"description\": \"A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.\",\n      \"maxLength\": 2048,\n      \"pattern\": \"^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$\",\n      \"title\": \"Did\",\n      \"type\": \"string\"\n    },\n    \"ElevatedRight\": {\n      \"description\": \"The three rights that carry authority over other people's rights: `git.ns.admin`, `git.repo.create` (which makes its holder the owner of every repository they create) and `git.repo.own`. Separation of duties applies to these: nobody grants one to themselves through git-ns/right/grant, or records one for themselves through any other task that grants on the actor's own authority. The explicit self-grant is git-ns/right/break-glass. `git.repo.maintain` and `git.commit.sign` are not elevated.\",\n      \"enum\": [\n        \"git.ns.admin\",\n        \"git.repo.create\",\n        \"git.repo.own\"\n      ],\n      \"title\": \"ElevatedRight\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Resource\": {\n      \"description\": \"A forge-qualified resource: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo>` for one repository, all lowercase — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.\",\n      \"maxLength\": 455,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+(?:/[a-z0-9_-][a-z0-9._-]{0,99}){1,2}$\",\n      \"title\": \"Resource\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The ratified record.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"right\": {\n          \"$ref\": \"#/$defs/RightRecord\",\n          \"description\": \"The record, now carrying `breakGlass.ratifiedBy` and `breakGlass.ratifiedAt`.\"\n        }\n      },\n      \"required\": [\n        \"right\"\n      ],\n      \"title\": \"Git Namespaces — Ratify Break-Glass — response payload\",\n      \"type\": \"object\"\n    },\n    \"Right\": {\n      \"description\": \"One of the five git rights. Each string is also the TRQP `action` the VTC publishes the right under in its Trust Registry, so it is carried verbatim. `git.ns.admin` and `git.repo.create` apply to a namespace resource; `git.repo.own` and `git.repo.maintain` to a repository resource; `git.commit.sign` to either.\",\n      \"enum\": [\n        \"git.ns.admin\",\n        \"git.repo.create\",\n        \"git.repo.own\",\n        \"git.repo.maintain\",\n        \"git.commit.sign\"\n      ],\n      \"title\": \"Right\",\n      \"type\": \"string\"\n    },\n    \"RightRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"One recorded right. Implied rights (§4.2 of the rights model: `own` implies `maintain` implies `commit.sign` on the same resource; `ns.admin` implies `repo.create` and `own` across its namespace) are not records and never appear as RightRecords. A record carrying `breakGlass` was given by its subject to themselves through git-ns/right/break-glass; it is a real right, published like any other, and is shown with that flag on every surface that shows the record.\",\n      \"properties\": {\n        \"breakGlass\": {\n          \"$ref\": \"#/$defs/BreakGlass\",\n          \"description\": \"Present exactly when the subject gave themselves this right through git-ns/right/break-glass. Absent for every other record.\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the right lapses. Absent: no expiry.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"grantedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"grantedBy\": {\n          \"$ref\": \"#/$defs/Did\",\n          \"description\": \"The actor whose task caused the right: the granter, the creator of a repository (for its first `own`), the adopting admin, the transferring owner, or the binding admin (for the first `git.ns.admin`). The VTC's own DID for a right it derives from its configuration.\"\n        },\n        \"reason\": {\n          \"description\": \"The granter's free-text reason. Disclosed only to holders of `git.repo.own` on the resource and of `git.ns.admin` over it.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"resource\": {\n          \"$ref\": \"#/$defs/Resource\"\n        },\n        \"right\": {\n          \"$ref\": \"#/$defs/Right\"\n        },\n        \"subject\": {\n          \"$ref\": \"#/$defs/Did\",\n          \"description\": \"Who holds the right. For `git.commit.sign` this is the DID whose commit signatures the CI check accepts.\"\n        }\n      },\n      \"required\": [\n        \"subject\",\n        \"right\",\n        \"resource\",\n        \"grantedBy\",\n        \"grantedAt\"\n      ],\n      \"title\": \"RightRecord\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/git-ns/right/ratify/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An administrator other than its subject ratifies one unratified break-glass record, turning it into an ordinary grant: it stops being flagged, and starts counting toward the last-owner and last-admin invariants.\",\n  \"properties\": {\n    \"breakGlassAt\": {\n      \"description\": \"The record's `breakGlass.at`, as the ratifier read it. Binds the ratification to the one break-glass the ratifier read and judged, so that it cannot ratify a later one — made after that one was revoked, with a different justification — by the same subject for the same right.\",\n      \"format\": \"date-time\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"resource\": {\n      \"$ref\": \"#/$defs/Resource\",\n      \"description\": \"The resource exactly as recorded.\"\n    },\n    \"right\": {\n      \"$ref\": \"#/$defs/ElevatedRight\"\n    },\n    \"statement\": {\n      \"description\": \"Why, in the ratifier's words. Kept in the audit record and carried in the notice; shown to the same people as the justification.\",\n      \"maxLength\": 1024,\n      \"type\": \"string\"\n    },\n    \"subject\": {\n      \"$ref\": \"#/$defs/Did\",\n      \"description\": \"Who broke the glass: the record's subject.\"\n    }\n  },\n  \"required\": [\n    \"subject\",\n    \"right\",\n    \"resource\",\n    \"breakGlassAt\"\n  ],\n  \"title\": \"Git Namespaces — Ratify Break-Glass — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"BreakGlass\":{\"additionalProperties\":false,\"description\":\"How a self-granted right came to be, and whether another administrator has since ratified it. A record whose `breakGlass` has no `ratifiedBy` is **unratified**: it is live and published like any other right, it does not count toward the last-owner or last-admin invariants, and any community administrator or namespace admin of its namespace may revoke it. Ratification (git-ns/right/ratify) sets `ratifiedBy` and `ratifiedAt`; from then on the record is an ordinary grant, and `breakGlass` stays as its history. Never published to the Trust Registry.\",\"properties\":{\"at\":{\"description\":\"When the VTC recorded the break-glass.\",\"format\":\"date-time\",\"type\":\"string\"},\"by\":{\"$ref\":\"#/$defs/Did\",\"description\":\"Who broke the glass: always the record's `subject`, restated so the flag reads on its own.\"},\"effectiveAt\":{\"description\":\"When the right takes effect, where the community's policy imposed a delay. Absent: it took effect at `at`. Until this instant the record confers nothing and is not published, and any administrator who may revoke it may do so.\",\"format\":\"date-time\",\"type\":\"string\"},\"justification\":{\"description\":\"The actor's statement of why nobody else could grant this right. Shown to every community administrator, every namespace admin of the namespace and every owner of the resource; kept in the audit record; never published.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"\\\\S\",\"type\":\"string\"},\"ratifiedAt\":{\"description\":\"When it was ratified. Present exactly when `ratifiedBy` is.\",\"format\":\"date-time\",\"type\":\"string\"},\"ratifiedBy\":{\"$ref\":\"#/$defs/Did\",\"description\":\"The administrator who ratified the record — never its subject. Absent while unratified.\"}},\"required\":[\"by\",\"at\",\"justification\"],\"title\":\"BreakGlass\",\"type\":\"object\"},\"Did\":{\"description\":\"A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.\",\"maxLength\":2048,\"pattern\":\"^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$\",\"title\":\"Did\",\"type\":\"string\"},\"ElevatedRight\":{\"description\":\"The three rights that carry authority over other people's rights: `git.ns.admin`, `git.repo.create` (which makes its holder the owner of every repository they create) and `git.repo.own`. Separation of duties applies to these: nobody grants one to themselves through git-ns/right/grant, or records one for themselves through any other task that grants on the actor's own authority. The explicit self-grant is git-ns/right/break-glass. `git.repo.maintain` and `git.commit.sign` are not elevated.\",\"enum\":[\"git.ns.admin\",\"git.repo.create\",\"git.repo.own\"],\"title\":\"ElevatedRight\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Resource\":{\"description\":\"A forge-qualified resource: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo>` for one repository, all lowercase — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.\",\"maxLength\":455,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+(?:/[a-z0-9_-][a-z0-9._-]{0,99}){1,2}$\",\"title\":\"Resource\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The ratified record.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"right\":{\"$ref\":\"#/$defs/RightRecord\",\"description\":\"The record, now carrying `breakGlass.ratifiedBy` and `breakGlass.ratifiedAt`.\"}},\"required\":[\"right\"],\"title\":\"Git Namespaces — Ratify Break-Glass — response payload\",\"type\":\"object\"},\"Right\":{\"description\":\"One of the five git rights. Each string is also the TRQP `action` the VTC publishes the right under in its Trust Registry, so it is carried verbatim. `git.ns.admin` and `git.repo.create` apply to a namespace resource; `git.repo.own` and `git.repo.maintain` to a repository resource; `git.commit.sign` to either.\",\"enum\":[\"git.ns.admin\",\"git.repo.create\",\"git.repo.own\",\"git.repo.maintain\",\"git.commit.sign\"],\"title\":\"Right\",\"type\":\"string\"},\"RightRecord\":{\"additionalProperties\":false,\"description\":\"One recorded right. Implied rights (§4.2 of the rights model: `own` implies `maintain` implies `commit.sign` on the same resource; `ns.admin` implies `repo.create` and `own` across its namespace) are not records and never appear as RightRecords. A record carrying `breakGlass` was given by its subject to themselves through git-ns/right/break-glass; it is a real right, published like any other, and is shown with that flag on every surface that shows the record.\",\"properties\":{\"breakGlass\":{\"$ref\":\"#/$defs/BreakGlass\",\"description\":\"Present exactly when the subject gave themselves this right through git-ns/right/break-glass. Absent for every other record.\"},\"expiresAt\":{\"description\":\"When the right lapses. Absent: no expiry.\",\"format\":\"date-time\",\"type\":\"string\"},\"grantedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"grantedBy\":{\"$ref\":\"#/$defs/Did\",\"description\":\"The actor whose task caused the right: the granter, the creator of a repository (for its first `own`), the adopting admin, the transferring owner, or the binding admin (for the first `git.ns.admin`). The VTC's own DID for a right it derives from its configuration.\"},\"reason\":{\"description\":\"The granter's free-text reason. Disclosed only to holders of `git.repo.own` on the resource and of `git.ns.admin` over it.\",\"maxLength\":1024,\"type\":\"string\"},\"resource\":{\"$ref\":\"#/$defs/Resource\"},\"right\":{\"$ref\":\"#/$defs/Right\"},\"subject\":{\"$ref\":\"#/$defs/Did\",\"description\":\"Who holds the right. For `git.commit.sign` this is the DID whose commit signatures the CI check accepts.\"}},\"required\":[\"subject\",\"right\",\"resource\",\"grantedBy\",\"grantedAt\"],\"title\":\"RightRecord\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/git-ns/right/ratify/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"An administrator other than its subject ratifies one unratified break-glass record, turning it into an ordinary grant: it stops being flagged, and starts counting toward the last-owner and last-admin invariants.\",\"properties\":{\"breakGlassAt\":{\"description\":\"The record's `breakGlass.at`, as the ratifier read it. Binds the ratification to the one break-glass the ratifier read and judged, so that it cannot ratify a later one — made after that one was revoked, with a different justification — by the same subject for the same right.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"resource\":{\"$ref\":\"#/$defs/Resource\",\"description\":\"The resource exactly as recorded.\"},\"right\":{\"$ref\":\"#/$defs/ElevatedRight\"},\"statement\":{\"description\":\"Why, in the ratifier's words. Kept in the audit record and carried in the notice; shown to the same people as the justification.\",\"maxLength\":1024,\"type\":\"string\"},\"subject\":{\"$ref\":\"#/$defs/Did\",\"description\":\"Who broke the glass: the record's subject.\"}},\"required\":[\"subject\",\"right\",\"resource\",\"breakGlassAt\"],\"title\":\"Git Namespaces — Ratify Break-Glass — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1437,7 +1157,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"BreakGlass\": {\n      \"additionalProperties\": false,\n      \"description\": \"How a self-granted right came to be, and whether another administrator has since ratified it. A record whose `breakGlass` has no `ratifiedBy` is **unratified**: it is live and published like any other right, it does not count toward the last-owner or last-admin invariants, and any community administrator or namespace admin of its namespace may revoke it. Ratification (git-ns/right/ratify) sets `ratifiedBy` and `ratifiedAt`; from then on the record is an ordinary grant, and `breakGlass` stays as its history. Never published to the Trust Registry.\",\n      \"properties\": {\n        \"at\": {\n          \"description\": \"When the VTC recorded the break-glass.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"by\": {\n          \"$ref\": \"#/$defs/Did\",\n          \"description\": \"Who broke the glass: always the record's `subject`, restated so the flag reads on its own.\"\n        },\n        \"effectiveAt\": {\n          \"description\": \"When the right takes effect, where the community's policy imposed a delay. Absent: it took effect at `at`. Until this instant the record confers nothing and is not published, and any administrator who may revoke it may do so.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"justification\": {\n          \"description\": \"The actor's statement of why nobody else could grant this right. Shown to every community administrator, every namespace admin of the namespace and every owner of the resource; kept in the audit record; never published.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"pattern\": \"\\\\S\",\n          \"type\": \"string\"\n        },\n        \"ratifiedAt\": {\n          \"description\": \"When it was ratified. Present exactly when `ratifiedBy` is.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ratifiedBy\": {\n          \"$ref\": \"#/$defs/Did\",\n          \"description\": \"The administrator who ratified the record — never its subject. Absent while unratified.\"\n        }\n      },\n      \"required\": [\n        \"by\",\n        \"at\",\n        \"justification\"\n      ],\n      \"title\": \"BreakGlass\",\n      \"type\": \"object\"\n    },\n    \"Did\": {\n      \"description\": \"A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.\",\n      \"maxLength\": 2048,\n      \"pattern\": \"^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$\",\n      \"title\": \"Did\",\n      \"type\": \"string\"\n    },\n    \"ElevatedRight\": {\n      \"description\": \"The three rights that carry authority over other people's rights: `git.ns.admin`, `git.repo.create` (which makes its holder the owner of every repository they create) and `git.repo.own`. Separation of duties applies to these: nobody grants one to themselves through git-ns/right/grant, or records one for themselves through any other task that grants on the actor's own authority. The explicit self-grant is git-ns/right/break-glass. `git.repo.maintain` and `git.commit.sign` are not elevated.\",\n      \"enum\": [\n        \"git.ns.admin\",\n        \"git.repo.create\",\n        \"git.repo.own\"\n      ],\n      \"title\": \"ElevatedRight\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Resource\": {\n      \"description\": \"A forge-qualified resource: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo>` for one repository, all lowercase — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.\",\n      \"maxLength\": 455,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+(?:/[a-z0-9_-][a-z0-9._-]{0,99}){1,2}$\",\n      \"title\": \"Resource\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The ratified record.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"right\": {\n          \"$ref\": \"#/$defs/RightRecord\",\n          \"description\": \"The record, now carrying `breakGlass.ratifiedBy` and `breakGlass.ratifiedAt`.\"\n        }\n      },\n      \"required\": [\n        \"right\"\n      ],\n      \"title\": \"Git Namespaces — Ratify Break-Glass — response payload\",\n      \"type\": \"object\"\n    },\n    \"Right\": {\n      \"description\": \"One of the five git rights. Each string is also the TRQP `action` the VTC publishes the right under in its Trust Registry, so it is carried verbatim. `git.ns.admin` and `git.repo.create` apply to a namespace resource; `git.repo.own` and `git.repo.maintain` to a repository resource; `git.commit.sign` to either.\",\n      \"enum\": [\n        \"git.ns.admin\",\n        \"git.repo.create\",\n        \"git.repo.own\",\n        \"git.repo.maintain\",\n        \"git.commit.sign\"\n      ],\n      \"title\": \"Right\",\n      \"type\": \"string\"\n    },\n    \"RightRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"One recorded right. Implied rights (§4.2 of the rights model: `own` implies `maintain` implies `commit.sign` on the same resource; `ns.admin` implies `repo.create` and `own` across its namespace) are not records and never appear as RightRecords. A record carrying `breakGlass` was given by its subject to themselves through git-ns/right/break-glass; it is a real right, published like any other, and is shown with that flag on every surface that shows the record.\",\n      \"properties\": {\n        \"breakGlass\": {\n          \"$ref\": \"#/$defs/BreakGlass\",\n          \"description\": \"Present exactly when the subject gave themselves this right through git-ns/right/break-glass. Absent for every other record.\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the right lapses. Absent: no expiry.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"grantedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"grantedBy\": {\n          \"$ref\": \"#/$defs/Did\",\n          \"description\": \"The actor whose task caused the right: the granter, the creator of a repository (for its first `own`), the adopting admin, the transferring owner, or the binding admin (for the first `git.ns.admin`). The VTC's own DID for a right it derives from its configuration.\"\n        },\n        \"reason\": {\n          \"description\": \"The granter's free-text reason. Disclosed only to holders of `git.repo.own` on the resource and of `git.ns.admin` over it.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"resource\": {\n          \"$ref\": \"#/$defs/Resource\"\n        },\n        \"right\": {\n          \"$ref\": \"#/$defs/Right\"\n        },\n        \"subject\": {\n          \"$ref\": \"#/$defs/Did\",\n          \"description\": \"Who holds the right. For `git.commit.sign` this is the DID whose commit signatures the CI check accepts.\"\n        }\n      },\n      \"required\": [\n        \"subject\",\n        \"right\",\n        \"resource\",\n        \"grantedBy\",\n        \"grantedAt\"\n      ],\n      \"title\": \"RightRecord\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"BreakGlass\":{\"additionalProperties\":false,\"description\":\"How a self-granted right came to be, and whether another administrator has since ratified it. A record whose `breakGlass` has no `ratifiedBy` is **unratified**: it is live and published like any other right, it does not count toward the last-owner or last-admin invariants, and any community administrator or namespace admin of its namespace may revoke it. Ratification (git-ns/right/ratify) sets `ratifiedBy` and `ratifiedAt`; from then on the record is an ordinary grant, and `breakGlass` stays as its history. Never published to the Trust Registry.\",\"properties\":{\"at\":{\"description\":\"When the VTC recorded the break-glass.\",\"format\":\"date-time\",\"type\":\"string\"},\"by\":{\"$ref\":\"#/$defs/Did\",\"description\":\"Who broke the glass: always the record's `subject`, restated so the flag reads on its own.\"},\"effectiveAt\":{\"description\":\"When the right takes effect, where the community's policy imposed a delay. Absent: it took effect at `at`. Until this instant the record confers nothing and is not published, and any administrator who may revoke it may do so.\",\"format\":\"date-time\",\"type\":\"string\"},\"justification\":{\"description\":\"The actor's statement of why nobody else could grant this right. Shown to every community administrator, every namespace admin of the namespace and every owner of the resource; kept in the audit record; never published.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"\\\\S\",\"type\":\"string\"},\"ratifiedAt\":{\"description\":\"When it was ratified. Present exactly when `ratifiedBy` is.\",\"format\":\"date-time\",\"type\":\"string\"},\"ratifiedBy\":{\"$ref\":\"#/$defs/Did\",\"description\":\"The administrator who ratified the record — never its subject. Absent while unratified.\"}},\"required\":[\"by\",\"at\",\"justification\"],\"title\":\"BreakGlass\",\"type\":\"object\"},\"Did\":{\"description\":\"A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.\",\"maxLength\":2048,\"pattern\":\"^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$\",\"title\":\"Did\",\"type\":\"string\"},\"ElevatedRight\":{\"description\":\"The three rights that carry authority over other people's rights: `git.ns.admin`, `git.repo.create` (which makes its holder the owner of every repository they create) and `git.repo.own`. Separation of duties applies to these: nobody grants one to themselves through git-ns/right/grant, or records one for themselves through any other task that grants on the actor's own authority. The explicit self-grant is git-ns/right/break-glass. `git.repo.maintain` and `git.commit.sign` are not elevated.\",\"enum\":[\"git.ns.admin\",\"git.repo.create\",\"git.repo.own\"],\"title\":\"ElevatedRight\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Resource\":{\"description\":\"A forge-qualified resource: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo>` for one repository, all lowercase — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.\",\"maxLength\":455,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+(?:/[a-z0-9_-][a-z0-9._-]{0,99}){1,2}$\",\"title\":\"Resource\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The ratified record.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"right\":{\"$ref\":\"#/$defs/RightRecord\",\"description\":\"The record, now carrying `breakGlass.ratifiedBy` and `breakGlass.ratifiedAt`.\"}},\"required\":[\"right\"],\"title\":\"Git Namespaces — Ratify Break-Glass — response payload\",\"type\":\"object\"},\"Right\":{\"description\":\"One of the five git rights. Each string is also the TRQP `action` the VTC publishes the right under in its Trust Registry, so it is carried verbatim. `git.ns.admin` and `git.repo.create` apply to a namespace resource; `git.repo.own` and `git.repo.maintain` to a repository resource; `git.commit.sign` to either.\",\"enum\":[\"git.ns.admin\",\"git.repo.create\",\"git.repo.own\",\"git.repo.maintain\",\"git.commit.sign\"],\"title\":\"Right\",\"type\":\"string\"},\"RightRecord\":{\"additionalProperties\":false,\"description\":\"One recorded right. Implied rights (§4.2 of the rights model: `own` implies `maintain` implies `commit.sign` on the same resource; `ns.admin` implies `repo.create` and `own` across its namespace) are not records and never appear as RightRecords. A record carrying `breakGlass` was given by its subject to themselves through git-ns/right/break-glass; it is a real right, published like any other, and is shown with that flag on every surface that shows the record.\",\"properties\":{\"breakGlass\":{\"$ref\":\"#/$defs/BreakGlass\",\"description\":\"Present exactly when the subject gave themselves this right through git-ns/right/break-glass. Absent for every other record.\"},\"expiresAt\":{\"description\":\"When the right lapses. Absent: no expiry.\",\"format\":\"date-time\",\"type\":\"string\"},\"grantedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"grantedBy\":{\"$ref\":\"#/$defs/Did\",\"description\":\"The actor whose task caused the right: the granter, the creator of a repository (for its first `own`), the adopting admin, the transferring owner, or the binding admin (for the first `git.ns.admin`). The VTC's own DID for a right it derives from its configuration.\"},\"reason\":{\"description\":\"The granter's free-text reason. Disclosed only to holders of `git.repo.own` on the resource and of `git.ns.admin` over it.\",\"maxLength\":1024,\"type\":\"string\"},\"resource\":{\"$ref\":\"#/$defs/Resource\"},\"right\":{\"$ref\":\"#/$defs/Right\"},\"subject\":{\"$ref\":\"#/$defs/Did\",\"description\":\"Who holds the right. For `git.commit.sign` this is the DID whose commit signatures the CI check accepts.\"}},\"required\":[\"subject\",\"right\",\"resource\",\"grantedBy\",\"grantedAt\"],\"title\":\"RightRecord\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

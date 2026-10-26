@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,62 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A vetter asks the community to blind-sign its class credential for a vetting period. What the community signs is a commitment it cannot open, so the credential it issues is one it cannot later recognise — which is what lets the vetter attest without being named.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/vetting/vetters/pcs-root/0.1",
-///  "title": "Payload",
-///  "description": "A vetter asks the community to blind-sign its class credential for a vetting period. What the community signs is a commitment it cannot open, so the credential it issues is one it cannot later recognise — which is what lets the vetter attest without being named.",
-///  "type": "object",
-///  "required": [
-///    "id",
-///    "label",
-///    "request"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "id": {
-///      "description": "The vetter's PCS identifier, multibase base58btc. Recorded once and required again at every later label: a member holding two identifiers could be counted twice in one proof.",
-///      "type": "string",
-///      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///    },
-///    "label": {
-///      "description": "The class label asked for, `vetter/<YYYY-MM>`. A community issues under its current label only; a stale client is refused rather than silently served under another.",
-///      "type": "string",
-///      "pattern": "^vetter/[0-9]{4}-[0-9]{2}$"
-///    },
-///    "request": {
-///      "description": "The blinded root request, as the suite serialises it. Opaque to the community beyond verifying it; its members are fixed by the suite named in the criterion's parameters, not by this schema.",
-///      "type": "object",
-///      "required": [
-///        "proof"
-///      ],
-///      "properties": {
-///        "encoding": {
-///          "description": "The issuance encoding the suite carries.",
-///          "type": "string",
-///          "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///        },
-///        "proof": {
-///          "description": "The proof that the commitment is well formed and the requester holds its secret.",
-///          "type": "string",
-///          "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///        },
-///        "t0": {
-///          "description": "The request's tag under the root context.",
-///          "type": "string",
-///          "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///        }
-///      }
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -217,16 +137,6 @@ impl Payload {
 }
 ///The vetter's PCS identifier, multibase base58btc. Recorded once and required again at every later label: a member holding two identifiers could be counted twice in one proof.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The vetter's PCS identifier, multibase base58btc. Recorded once and required again at every later label: a member holding two identifiers could be counted twice in one proof.",
-///  "type": "string",
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadId(::std::string::String);
@@ -290,16 +200,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadId {
 }
 ///The class label asked for, `vetter/<YYYY-MM>`. A community issues under its current label only; a stale client is refused rather than silently served under another.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The class label asked for, `vetter/<YYYY-MM>`. A community issues under its current label only; a stale client is refused rather than silently served under another.",
-///  "type": "string",
-///  "pattern": "^vetter/[0-9]{4}-[0-9]{2}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadLabel(::std::string::String);
@@ -363,35 +263,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadLabel {
 }
 ///The blinded root request, as the suite serialises it. Opaque to the community beyond verifying it; its members are fixed by the suite named in the criterion's parameters, not by this schema.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The blinded root request, as the suite serialises it. Opaque to the community beyond verifying it; its members are fixed by the suite named in the criterion's parameters, not by this schema.",
-///  "type": "object",
-///  "required": [
-///    "proof"
-///  ],
-///  "properties": {
-///    "encoding": {
-///      "description": "The issuance encoding the suite carries.",
-///      "type": "string",
-///      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///    },
-///    "proof": {
-///      "description": "The proof that the commitment is well formed and the requester holds its secret.",
-///      "type": "string",
-///      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///    },
-///    "t0": {
-///      "description": "The request's tag under the root context.",
-///      "type": "string",
-///      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///    }
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
 pub struct PayloadRequest {
@@ -411,16 +282,6 @@ impl PayloadRequest {
 }
 ///The issuance encoding the suite carries.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The issuance encoding the suite carries.",
-///  "type": "string",
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadRequestEncoding(::std::string::String);
@@ -484,16 +345,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRequestEncoding {
 }
 ///The proof that the commitment is well formed and the requester holds its secret.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The proof that the commitment is well formed and the requester holds its secret.",
-///  "type": "string",
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadRequestProof(::std::string::String);
@@ -557,16 +408,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRequestProof {
 }
 ///The request's tag under the root context.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The request's tag under the root context.",
-///  "type": "string",
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadRequestT0(::std::string::String);
@@ -630,37 +471,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRequestT0 {
 }
 ///The blind pre-credential. The vetter unblinds it into a credential the community has never seen.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The blind pre-credential. The vetter unblinds it into a credential the community has never seen.",
-///  "type": "object",
-///  "required": [
-///    "label",
-///    "preCredential"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "label": {
-///      "description": "The label signed under — the one asked for.",
-///      "type": "string",
-///      "pattern": "^vetter/[0-9]{4}-[0-9]{2}$"
-///    },
-///    "preCredential": {
-///      "description": "The pre-credential, multibase base58btc. Useless to anyone but the holder of the request's blinding state.",
-///      "type": "string",
-///      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -680,16 +490,6 @@ impl Response {
 }
 ///The label signed under — the one asked for.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The label signed under — the one asked for.",
-///  "type": "string",
-///  "pattern": "^vetter/[0-9]{4}-[0-9]{2}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseLabel(::std::string::String);
@@ -753,16 +553,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseLabel {
 }
 ///The pre-credential, multibase base58btc. Useless to anyone but the holder of the request's blinding state.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The pre-credential, multibase base58btc. Useless to anyone but the holder of the request's blinding state.",
-///  "type": "string",
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponsePreCredential(::std::string::String);
@@ -1053,7 +843,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The blind pre-credential. The vetter unblinds it into a credential the community has never seen.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"label\": {\n          \"description\": \"The label signed under — the one asked for.\",\n          \"pattern\": \"^vetter/[0-9]{4}-[0-9]{2}$\",\n          \"type\": \"string\"\n        },\n        \"preCredential\": {\n          \"description\": \"The pre-credential, multibase base58btc. Useless to anyone but the holder of the request's blinding state.\",\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"label\",\n        \"preCredential\"\n      ],\n      \"title\": \"VTC Vetting PCS Root Credential — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/vetting/vetters/pcs-root/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A vetter asks the community to blind-sign its class credential for a vetting period. What the community signs is a commitment it cannot open, so the credential it issues is one it cannot later recognise — which is what lets the vetter attest without being named.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"id\": {\n      \"description\": \"The vetter's PCS identifier, multibase base58btc. Recorded once and required again at every later label: a member holding two identifiers could be counted twice in one proof.\",\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"type\": \"string\"\n    },\n    \"label\": {\n      \"description\": \"The class label asked for, `vetter/<YYYY-MM>`. A community issues under its current label only; a stale client is refused rather than silently served under another.\",\n      \"pattern\": \"^vetter/[0-9]{4}-[0-9]{2}$\",\n      \"type\": \"string\"\n    },\n    \"request\": {\n      \"description\": \"The blinded root request, as the suite serialises it. Opaque to the community beyond verifying it; its members are fixed by the suite named in the criterion's parameters, not by this schema.\",\n      \"properties\": {\n        \"encoding\": {\n          \"description\": \"The issuance encoding the suite carries.\",\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        },\n        \"proof\": {\n          \"description\": \"The proof that the commitment is well formed and the requester holds its secret.\",\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        },\n        \"t0\": {\n          \"description\": \"The request's tag under the root context.\",\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"proof\"\n      ],\n      \"type\": \"object\"\n    }\n  },\n  \"required\": [\n    \"label\",\n    \"id\",\n    \"request\"\n  ],\n  \"title\": \"VTC — Vetting PCS Root Credential — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The blind pre-credential. The vetter unblinds it into a credential the community has never seen.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"label\":{\"description\":\"The label signed under — the one asked for.\",\"pattern\":\"^vetter/[0-9]{4}-[0-9]{2}$\",\"type\":\"string\"},\"preCredential\":{\"description\":\"The pre-credential, multibase base58btc. Useless to anyone but the holder of the request's blinding state.\",\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"}},\"required\":[\"label\",\"preCredential\"],\"title\":\"VTC Vetting PCS Root Credential — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/vetting/vetters/pcs-root/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A vetter asks the community to blind-sign its class credential for a vetting period. What the community signs is a commitment it cannot open, so the credential it issues is one it cannot later recognise — which is what lets the vetter attest without being named.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"description\":\"The vetter's PCS identifier, multibase base58btc. Recorded once and required again at every later label: a member holding two identifiers could be counted twice in one proof.\",\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"label\":{\"description\":\"The class label asked for, `vetter/<YYYY-MM>`. A community issues under its current label only; a stale client is refused rather than silently served under another.\",\"pattern\":\"^vetter/[0-9]{4}-[0-9]{2}$\",\"type\":\"string\"},\"request\":{\"description\":\"The blinded root request, as the suite serialises it. Opaque to the community beyond verifying it; its members are fixed by the suite named in the criterion's parameters, not by this schema.\",\"properties\":{\"encoding\":{\"description\":\"The issuance encoding the suite carries.\",\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"proof\":{\"description\":\"The proof that the commitment is well formed and the requester holds its secret.\",\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"t0\":{\"description\":\"The request's tag under the root context.\",\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"}},\"required\":[\"proof\"],\"type\":\"object\"}},\"required\":[\"label\",\"id\",\"request\"],\"title\":\"VTC — Vetting PCS Root Credential — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1063,7 +853,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The blind pre-credential. The vetter unblinds it into a credential the community has never seen.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"label\": {\n          \"description\": \"The label signed under — the one asked for.\",\n          \"pattern\": \"^vetter/[0-9]{4}-[0-9]{2}$\",\n          \"type\": \"string\"\n        },\n        \"preCredential\": {\n          \"description\": \"The pre-credential, multibase base58btc. Useless to anyone but the holder of the request's blinding state.\",\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"label\",\n        \"preCredential\"\n      ],\n      \"title\": \"VTC Vetting PCS Root Credential — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The blind pre-credential. The vetter unblinds it into a credential the community has never seen.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"label\":{\"description\":\"The label signed under — the one asked for.\",\"pattern\":\"^vetter/[0-9]{4}-[0-9]{2}$\",\"type\":\"string\"},\"preCredential\":{\"description\":\"The pre-credential, multibase base58btc. Useless to anyone but the holder of the request's blinding state.\",\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"}},\"required\":[\"label\",\"preCredential\"],\"title\":\"VTC Vetting PCS Root Credential — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

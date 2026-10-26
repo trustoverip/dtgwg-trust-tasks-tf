@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,56 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/registry/records/list/0.2",
-///  "title": "Payload",
-///  "type": "object",
-///  "properties": {
-///    "action": {
-///      "description": "Filter to records for this action.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "authorityId": {
-///      "description": "Filter to records asserted by this authority.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "cursor": {
-///      "description": "An opaque continuation token from a previous response's `nextCursor`; a responder MUST NOT accept a cursor it did not issue.",
-///      "type": "string"
-///    },
-///    "entityId": {
-///      "description": "Filter to records about this entity.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "limit": {
-///      "description": "The most items to return, at most 200; the responder chooses a default (50) and MAY return fewer.",
-///      "type": "integer",
-///      "maximum": 200.0,
-///      "minimum": 1.0
-///    },
-///    "resource": {
-///      "description": "Filter to records for this resource.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "source": {
-///      "description": "Which view to enumerate. Defaults to `registry`.",
-///      "$ref": "#/definitions/Source"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -249,16 +175,6 @@ impl Payload {
 }
 ///Filter to records for this action.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Filter to records for this action.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadAction(::std::string::String);
@@ -318,16 +234,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadAction {
 }
 ///Filter to records asserted by this authority.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Filter to records asserted by this authority.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadAuthorityId(::std::string::String);
@@ -387,16 +293,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadAuthorityId {
 }
 ///Filter to records about this entity.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Filter to records about this entity.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadEntityId(::std::string::String);
@@ -456,16 +352,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadEntityId {
 }
 ///Filter to records for this resource.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Filter to records for this resource.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadResource(::std::string::String);
@@ -525,66 +411,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadResource {
 }
 ///`Record`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "action",
-///    "authorityId",
-///    "entityId",
-///    "recordType",
-///    "resource"
-///  ],
-///  "properties": {
-///    "action": {
-///      "description": "The action the assertion covers.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "authorityId": {
-///      "description": "The authority asserting it.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "authorized": {
-///      "description": "Present on authorization records: whether the action+resource authorization is confirmed. Absent on other record types — absent is not `false`.",
-///      "type": [
-///        "boolean",
-///        "null"
-///      ]
-///    },
-///    "entityId": {
-///      "description": "The entity the record is about.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "recognized": {
-///      "description": "Present on recognition records: whether the action+resource is recognised. Absent on other record types — absent is not `false`.",
-///      "type": [
-///        "boolean",
-///        "null"
-///      ]
-///    },
-///    "recordType": {
-///      "description": "Record discriminator, as the trust registry states it.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "resource": {
-///      "description": "The resource the assertion covers.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -618,16 +444,6 @@ impl Record {
 }
 ///The action the assertion covers.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The action the assertion covers.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RecordAction(::std::string::String);
@@ -687,16 +503,6 @@ impl<'de> ::serde::Deserialize<'de> for RecordAction {
 }
 ///The authority asserting it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The authority asserting it.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RecordAuthorityId(::std::string::String);
@@ -756,16 +562,6 @@ impl<'de> ::serde::Deserialize<'de> for RecordAuthorityId {
 }
 ///The entity the record is about.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The entity the record is about.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RecordEntityId(::std::string::String);
@@ -825,16 +621,6 @@ impl<'de> ::serde::Deserialize<'de> for RecordEntityId {
 }
 ///Record discriminator, as the trust registry states it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Record discriminator, as the trust registry states it.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RecordRecordType(::std::string::String);
@@ -894,16 +680,6 @@ impl<'de> ::serde::Deserialize<'de> for RecordRecordType {
 }
 ///The resource the assertion covers.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The resource the assertion covers.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RecordResource(::std::string::String);
@@ -963,41 +739,6 @@ impl<'de> ::serde::Deserialize<'de> for RecordResource {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "items",
-///    "source"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "items": {
-///      "description": "The matching records, in the maintainer's stable enumeration order.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Record"
-///      }
-///    },
-///    "nextCursor": {
-///      "description": "Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`.",
-///      "type": "string"
-///    },
-///    "source": {
-///      "description": "Which view these items came from, echoed so a consumer never has to infer it from the request it thinks it sent.",
-///      "$ref": "#/definitions/Source"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1023,19 +764,6 @@ impl Response {
 }
 ///`registry` enumerates the trust registry itself; `local` enumerates the community's own record of what it published. They are different questions and a consumer MUST NOT treat one as a cache of the other.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`registry` enumerates the trust registry itself; `local` enumerates the community's own record of what it published. They are different questions and a consumer MUST NOT treat one as a cache of the other.",
-///  "type": "string",
-///  "enum": [
-///    "registry",
-///    "local"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1475,7 +1203,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/registry/records/list/0.2";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Record\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"action\": {\n          \"description\": \"The action the assertion covers.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"authorityId\": {\n          \"description\": \"The authority asserting it.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"authorized\": {\n          \"description\": \"Present on authorization records: whether the action+resource authorization is confirmed. Absent on other record types — absent is not `false`.\",\n          \"type\": [\n            \"boolean\",\n            \"null\"\n          ]\n        },\n        \"entityId\": {\n          \"description\": \"The entity the record is about.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"recognized\": {\n          \"description\": \"Present on recognition records: whether the action+resource is recognised. Absent on other record types — absent is not `false`.\",\n          \"type\": [\n            \"boolean\",\n            \"null\"\n          ]\n        },\n        \"recordType\": {\n          \"description\": \"Record discriminator, as the trust registry states it.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"resource\": {\n          \"description\": \"The resource the assertion covers.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"entityId\",\n        \"authorityId\",\n        \"action\",\n        \"resource\",\n        \"recordType\"\n      ],\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"items\": {\n          \"description\": \"The matching records, in the maintainer's stable enumeration order.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Record\"\n          },\n          \"type\": \"array\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`.\",\n          \"type\": \"string\"\n        },\n        \"source\": {\n          \"$ref\": \"#/$defs/Source\",\n          \"description\": \"Which view these items came from, echoed so a consumer never has to infer it from the request it thinks it sent.\"\n        }\n      },\n      \"required\": [\n        \"items\",\n        \"source\"\n      ],\n      \"title\": \"VTC Registry Records List — response payload\",\n      \"type\": \"object\"\n    },\n    \"Source\": {\n      \"description\": \"`registry` enumerates the trust registry itself; `local` enumerates the community's own record of what it published. They are different questions and a consumer MUST NOT treat one as a cache of the other.\",\n      \"enum\": [\n        \"registry\",\n        \"local\"\n      ],\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/registry/records/list/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"action\": {\n      \"description\": \"Filter to records for this action.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"authorityId\": {\n      \"description\": \"Filter to records asserted by this authority.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"cursor\": {\n      \"description\": \"An opaque continuation token from a previous response's `nextCursor`; a responder MUST NOT accept a cursor it did not issue.\",\n      \"type\": \"string\"\n    },\n    \"entityId\": {\n      \"description\": \"Filter to records about this entity.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"limit\": {\n      \"description\": \"The most items to return, at most 200; the responder chooses a default (50) and MAY return fewer.\",\n      \"maximum\": 200,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"resource\": {\n      \"description\": \"Filter to records for this resource.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"source\": {\n      \"$ref\": \"#/$defs/Source\",\n      \"description\": \"Which view to enumerate. Defaults to `registry`.\"\n    }\n  },\n  \"title\": \"VTC Registry Records List — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Record\":{\"additionalProperties\":false,\"properties\":{\"action\":{\"description\":\"The action the assertion covers.\",\"minLength\":1,\"type\":\"string\"},\"authorityId\":{\"description\":\"The authority asserting it.\",\"minLength\":1,\"type\":\"string\"},\"authorized\":{\"description\":\"Present on authorization records: whether the action+resource authorization is confirmed. Absent on other record types — absent is not `false`.\",\"type\":[\"boolean\",\"null\"]},\"entityId\":{\"description\":\"The entity the record is about.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"recognized\":{\"description\":\"Present on recognition records: whether the action+resource is recognised. Absent on other record types — absent is not `false`.\",\"type\":[\"boolean\",\"null\"]},\"recordType\":{\"description\":\"Record discriminator, as the trust registry states it.\",\"minLength\":1,\"type\":\"string\"},\"resource\":{\"description\":\"The resource the assertion covers.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"entityId\",\"authorityId\",\"action\",\"resource\",\"recordType\"],\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"items\":{\"description\":\"The matching records, in the maintainer's stable enumeration order.\",\"items\":{\"$ref\":\"#/$defs/Record\"},\"type\":\"array\"},\"nextCursor\":{\"description\":\"Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`.\",\"type\":\"string\"},\"source\":{\"$ref\":\"#/$defs/Source\",\"description\":\"Which view these items came from, echoed so a consumer never has to infer it from the request it thinks it sent.\"}},\"required\":[\"items\",\"source\"],\"title\":\"VTC Registry Records List — response payload\",\"type\":\"object\"},\"Source\":{\"description\":\"`registry` enumerates the trust registry itself; `local` enumerates the community's own record of what it published. They are different questions and a consumer MUST NOT treat one as a cache of the other.\",\"enum\":[\"registry\",\"local\"],\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/vtc/registry/records/list/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"action\":{\"description\":\"Filter to records for this action.\",\"minLength\":1,\"type\":\"string\"},\"authorityId\":{\"description\":\"Filter to records asserted by this authority.\",\"minLength\":1,\"type\":\"string\"},\"cursor\":{\"description\":\"An opaque continuation token from a previous response's `nextCursor`; a responder MUST NOT accept a cursor it did not issue.\",\"type\":\"string\"},\"entityId\":{\"description\":\"Filter to records about this entity.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"limit\":{\"description\":\"The most items to return, at most 200; the responder chooses a default (50) and MAY return fewer.\",\"maximum\":200,\"minimum\":1,\"type\":\"integer\"},\"resource\":{\"description\":\"Filter to records for this resource.\",\"minLength\":1,\"type\":\"string\"},\"source\":{\"$ref\":\"#/$defs/Source\",\"description\":\"Which view to enumerate. Defaults to `registry`.\"}},\"title\":\"VTC Registry Records List — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1483,7 +1211,7 @@ impl crate::Payload for Response {
         "https://trusttasks.org/spec/vtc/registry/records/list/0.2#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Record\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"action\": {\n          \"description\": \"The action the assertion covers.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"authorityId\": {\n          \"description\": \"The authority asserting it.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"authorized\": {\n          \"description\": \"Present on authorization records: whether the action+resource authorization is confirmed. Absent on other record types — absent is not `false`.\",\n          \"type\": [\n            \"boolean\",\n            \"null\"\n          ]\n        },\n        \"entityId\": {\n          \"description\": \"The entity the record is about.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"recognized\": {\n          \"description\": \"Present on recognition records: whether the action+resource is recognised. Absent on other record types — absent is not `false`.\",\n          \"type\": [\n            \"boolean\",\n            \"null\"\n          ]\n        },\n        \"recordType\": {\n          \"description\": \"Record discriminator, as the trust registry states it.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"resource\": {\n          \"description\": \"The resource the assertion covers.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"entityId\",\n        \"authorityId\",\n        \"action\",\n        \"resource\",\n        \"recordType\"\n      ],\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"items\": {\n          \"description\": \"The matching records, in the maintainer's stable enumeration order.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/Record\"\n          },\n          \"type\": \"array\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`.\",\n          \"type\": \"string\"\n        },\n        \"source\": {\n          \"$ref\": \"#/$defs/Source\",\n          \"description\": \"Which view these items came from, echoed so a consumer never has to infer it from the request it thinks it sent.\"\n        }\n      },\n      \"required\": [\n        \"items\",\n        \"source\"\n      ],\n      \"title\": \"VTC Registry Records List — response payload\",\n      \"type\": \"object\"\n    },\n    \"Source\": {\n      \"description\": \"`registry` enumerates the trust registry itself; `local` enumerates the community's own record of what it published. They are different questions and a consumer MUST NOT treat one as a cache of the other.\",\n      \"enum\": [\n        \"registry\",\n        \"local\"\n      ],\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Record\":{\"additionalProperties\":false,\"properties\":{\"action\":{\"description\":\"The action the assertion covers.\",\"minLength\":1,\"type\":\"string\"},\"authorityId\":{\"description\":\"The authority asserting it.\",\"minLength\":1,\"type\":\"string\"},\"authorized\":{\"description\":\"Present on authorization records: whether the action+resource authorization is confirmed. Absent on other record types — absent is not `false`.\",\"type\":[\"boolean\",\"null\"]},\"entityId\":{\"description\":\"The entity the record is about.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"recognized\":{\"description\":\"Present on recognition records: whether the action+resource is recognised. Absent on other record types — absent is not `false`.\",\"type\":[\"boolean\",\"null\"]},\"recordType\":{\"description\":\"Record discriminator, as the trust registry states it.\",\"minLength\":1,\"type\":\"string\"},\"resource\":{\"description\":\"The resource the assertion covers.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"entityId\",\"authorityId\",\"action\",\"resource\",\"recordType\"],\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"items\":{\"description\":\"The matching records, in the maintainer's stable enumeration order.\",\"items\":{\"$ref\":\"#/$defs/Record\"},\"type\":\"array\"},\"nextCursor\":{\"description\":\"Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`.\",\"type\":\"string\"},\"source\":{\"$ref\":\"#/$defs/Source\",\"description\":\"Which view these items came from, echoed so a consumer never has to infer it from the request it thinks it sent.\"}},\"required\":[\"items\",\"source\"],\"title\":\"VTC Registry Records List — response payload\",\"type\":\"object\"},\"Source\":{\"description\":\"`registry` enumerates the trust registry itself; `local` enumerates the community's own record of what it published. They are different questions and a consumer MUST NOT treat one as a cache of the other.\",\"enum\":[\"registry\",\"local\"],\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

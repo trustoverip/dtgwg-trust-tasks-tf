@@ -34,17 +34,6 @@ pub mod error {
 }
 ///A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried exactly as it was sent or received, never re-serialised: a task digest and a proof are taken over its members, and a re-serialised copy reproduces neither reliably. Typed as an open object so every member survives; the checks that give it meaning belong to the task that reads it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "EvidenceDocument",
-///  "description": "A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried exactly as it was sent or received, never re-serialised: a task digest and a proof are taken over its members, and a re-serialised copy reproduces neither reliably. Typed as an open object so every member survives; the checks that give it meaning belong to the task that reads it.",
-///  "type": "object",
-///  "minProperties": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct EvidenceDocument(pub ::serde_json::Map<::std::string::String, ::serde_json::Value>);
@@ -70,21 +59,6 @@ impl ::std::convert::From<::serde_json::Map<::std::string::String, ::serde_json:
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -106,15 +80,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -178,31 +143,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///One witnessing session's outcome evidence. `session` is the initiating witness/session document; `outcome` is the terminal witness/session/submit #response that the initiating document's own specification declares as its outcome evidence, under the witness's proof, delivering the VWC and its vwcDigestMultibase. A consumer pairs them with a presented VWC by SPEC §4.9.4's four checks and the witnessing checks of witness/session/submit (This response is the outcome evidence).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "OutcomeEvidence",
-///  "description": "One witnessing session's outcome evidence. `session` is the initiating witness/session document; `outcome` is the terminal witness/session/submit #response that the initiating document's own specification declares as its outcome evidence, under the witness's proof, delivering the VWC and its vwcDigestMultibase. A consumer pairs them with a presented VWC by SPEC §4.9.4's four checks and the witnessing checks of witness/session/submit (This response is the outcome evidence).",
-///  "type": "object",
-///  "required": [
-///    "outcome",
-///    "session"
-///  ],
-///  "properties": {
-///    "outcome": {
-///      "description": "The witness/session/submit #response that closed the session, under the witness's proof. It carries the VWC and its vwcDigestMultibase.",
-///      "$ref": "#/definitions/EvidenceDocument"
-///    },
-///    "session": {
-///      "description": "The witness/session document that opened the session. The VWC's taskContext is its id and its taskDigestMultibase is computed over it (SPEC §4.9.3).",
-///      "$ref": "#/definitions/EvidenceDocument"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -219,44 +159,6 @@ impl OutcomeEvidence {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/members/personhood/assert/0.2",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "did",
-///    "presentation"
-///  ],
-///  "properties": {
-///    "did": {
-///      "description": "The member asserting personhood; MUST equal the presentation's holder.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "outcomeEvidence": {
-///      "description": "OPTIONAL. The outcome evidence of the witnessing sessions that the Verifiable Witness Credentials in presentation cite: one entry per VWC the member wants counted, each the witness/session document the VWC's taskContext names and the witness/session/submit #response that delivered it, exactly as stored, never re-serialised. A VWC with no paired entry counts for nothing; an entry pairing with no VWC in presentation is ignored.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/OutcomeEvidence"
-///      },
-///      "maxItems": 16,
-///      "minItems": 1
-///    },
-///    "presentation": {
-///      "description": "A W3C Verifiable Presentation (opaque here). Its holder MUST match did, its proof.challenge MUST be the paired challengeId, and it MUST carry at least one credential satisfying the community's active personhood policy. A Verifiable Witness Credential in it counts only with paired outcomeEvidence.",
-///      "type": "object"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -282,16 +184,6 @@ impl Payload {
 }
 ///The member asserting personhood; MUST equal the presentation's holder.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The member asserting personhood; MUST equal the presentation's holder.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadDid(::std::string::String);
@@ -351,45 +243,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDid {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "did",
-///    "personhood",
-///    "roleVac",
-///    "vmc"
-///  ],
-///  "properties": {
-///    "did": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "personhood": {
-///      "description": "Always true on success — the flag flipped or stayed asserted.",
-///      "type": "boolean",
-///      "const": true
-///    },
-///    "roleVac": {
-///      "description": "Re-issued role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\"role:<name>\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues.",
-///      "type": "object"
-///    },
-///    "vmc": {
-///      "description": "Re-issued membership credential carrying the asserted personhood (opaque here).",
-///      "type": "object"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -412,15 +265,6 @@ impl Response {
 }
 ///`ResponseDid`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseDid(::std::string::String);
@@ -731,7 +575,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"EvidenceDocument\": {\n      \"description\": \"A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried exactly as it was sent or received, never re-serialised: a task digest and a proof are taken over its members, and a re-serialised copy reproduces neither reliably. Typed as an open object so every member survives; the checks that give it meaning belong to the task that reads it.\",\n      \"minProperties\": 1,\n      \"title\": \"EvidenceDocument\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"OutcomeEvidence\": {\n      \"additionalProperties\": false,\n      \"description\": \"One witnessing session's outcome evidence. `session` is the initiating witness/session document; `outcome` is the terminal witness/session/submit #response that the initiating document's own specification declares as its outcome evidence, under the witness's proof, delivering the VWC and its vwcDigestMultibase. A consumer pairs them with a presented VWC by SPEC §4.9.4's four checks and the witnessing checks of witness/session/submit (This response is the outcome evidence).\",\n      \"properties\": {\n        \"outcome\": {\n          \"$ref\": \"#/$defs/EvidenceDocument\",\n          \"description\": \"The witness/session/submit #response that closed the session, under the witness's proof. It carries the VWC and its vwcDigestMultibase.\"\n        },\n        \"session\": {\n          \"$ref\": \"#/$defs/EvidenceDocument\",\n          \"description\": \"The witness/session document that opened the session. The VWC's taskContext is its id and its taskDigestMultibase is computed over it (SPEC §4.9.3).\"\n        }\n      },\n      \"required\": [\n        \"session\",\n        \"outcome\"\n      ],\n      \"title\": \"OutcomeEvidence\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"did\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"personhood\": {\n          \"const\": true,\n          \"description\": \"Always true on success — the flag flipped or stayed asserted.\",\n          \"type\": \"boolean\"\n        },\n        \"roleVac\": {\n          \"description\": \"Re-issued role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\\\"role:<name>\\\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues.\",\n          \"type\": \"object\"\n        },\n        \"vmc\": {\n          \"description\": \"Re-issued membership credential carrying the asserted personhood (opaque here).\",\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"personhood\",\n        \"vmc\",\n        \"roleVac\"\n      ],\n      \"title\": \"VTC Members Personhood-Assert — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/members/personhood/assert/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"did\": {\n      \"description\": \"The member asserting personhood; MUST equal the presentation's holder.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"outcomeEvidence\": {\n      \"description\": \"OPTIONAL. The outcome evidence of the witnessing sessions that the Verifiable Witness Credentials in presentation cite: one entry per VWC the member wants counted, each the witness/session document the VWC's taskContext names and the witness/session/submit #response that delivered it, exactly as stored, never re-serialised. A VWC with no paired entry counts for nothing; an entry pairing with no VWC in presentation is ignored.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/OutcomeEvidence\"\n      },\n      \"maxItems\": 16,\n      \"minItems\": 1,\n      \"type\": \"array\"\n    },\n    \"presentation\": {\n      \"description\": \"A W3C Verifiable Presentation (opaque here). Its holder MUST match did, its proof.challenge MUST be the paired challengeId, and it MUST carry at least one credential satisfying the community's active personhood policy. A Verifiable Witness Credential in it counts only with paired outcomeEvidence.\",\n      \"type\": \"object\"\n    }\n  },\n  \"required\": [\n    \"did\",\n    \"presentation\"\n  ],\n  \"title\": \"VTC Members Personhood-Assert — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"EvidenceDocument\":{\"description\":\"A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried exactly as it was sent or received, never re-serialised: a task digest and a proof are taken over its members, and a re-serialised copy reproduces neither reliably. Typed as an open object so every member survives; the checks that give it meaning belong to the task that reads it.\",\"minProperties\":1,\"title\":\"EvidenceDocument\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"OutcomeEvidence\":{\"additionalProperties\":false,\"description\":\"One witnessing session's outcome evidence. `session` is the initiating witness/session document; `outcome` is the terminal witness/session/submit #response that the initiating document's own specification declares as its outcome evidence, under the witness's proof, delivering the VWC and its vwcDigestMultibase. A consumer pairs them with a presented VWC by SPEC §4.9.4's four checks and the witnessing checks of witness/session/submit (This response is the outcome evidence).\",\"properties\":{\"outcome\":{\"$ref\":\"#/$defs/EvidenceDocument\",\"description\":\"The witness/session/submit #response that closed the session, under the witness's proof. It carries the VWC and its vwcDigestMultibase.\"},\"session\":{\"$ref\":\"#/$defs/EvidenceDocument\",\"description\":\"The witness/session document that opened the session. The VWC's taskContext is its id and its taskDigestMultibase is computed over it (SPEC §4.9.3).\"}},\"required\":[\"session\",\"outcome\"],\"title\":\"OutcomeEvidence\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"did\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"personhood\":{\"const\":true,\"description\":\"Always true on success — the flag flipped or stayed asserted.\",\"type\":\"boolean\"},\"roleVac\":{\"description\":\"Re-issued role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\\\"role:<name>\\\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues.\",\"type\":\"object\"},\"vmc\":{\"description\":\"Re-issued membership credential carrying the asserted personhood (opaque here).\",\"type\":\"object\"}},\"required\":[\"did\",\"personhood\",\"vmc\",\"roleVac\"],\"title\":\"VTC Members Personhood-Assert — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/members/personhood/assert/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"did\":{\"description\":\"The member asserting personhood; MUST equal the presentation's holder.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"outcomeEvidence\":{\"description\":\"OPTIONAL. The outcome evidence of the witnessing sessions that the Verifiable Witness Credentials in presentation cite: one entry per VWC the member wants counted, each the witness/session document the VWC's taskContext names and the witness/session/submit #response that delivered it, exactly as stored, never re-serialised. A VWC with no paired entry counts for nothing; an entry pairing with no VWC in presentation is ignored.\",\"items\":{\"$ref\":\"#/$defs/OutcomeEvidence\"},\"maxItems\":16,\"minItems\":1,\"type\":\"array\"},\"presentation\":{\"description\":\"A W3C Verifiable Presentation (opaque here). Its holder MUST match did, its proof.challenge MUST be the paired challengeId, and it MUST carry at least one credential satisfying the community's active personhood policy. A Verifiable Witness Credential in it counts only with paired outcomeEvidence.\",\"type\":\"object\"}},\"required\":[\"did\",\"presentation\"],\"title\":\"VTC Members Personhood-Assert — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -741,7 +585,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"EvidenceDocument\": {\n      \"description\": \"A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried exactly as it was sent or received, never re-serialised: a task digest and a proof are taken over its members, and a re-serialised copy reproduces neither reliably. Typed as an open object so every member survives; the checks that give it meaning belong to the task that reads it.\",\n      \"minProperties\": 1,\n      \"title\": \"EvidenceDocument\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"OutcomeEvidence\": {\n      \"additionalProperties\": false,\n      \"description\": \"One witnessing session's outcome evidence. `session` is the initiating witness/session document; `outcome` is the terminal witness/session/submit #response that the initiating document's own specification declares as its outcome evidence, under the witness's proof, delivering the VWC and its vwcDigestMultibase. A consumer pairs them with a presented VWC by SPEC §4.9.4's four checks and the witnessing checks of witness/session/submit (This response is the outcome evidence).\",\n      \"properties\": {\n        \"outcome\": {\n          \"$ref\": \"#/$defs/EvidenceDocument\",\n          \"description\": \"The witness/session/submit #response that closed the session, under the witness's proof. It carries the VWC and its vwcDigestMultibase.\"\n        },\n        \"session\": {\n          \"$ref\": \"#/$defs/EvidenceDocument\",\n          \"description\": \"The witness/session document that opened the session. The VWC's taskContext is its id and its taskDigestMultibase is computed over it (SPEC §4.9.3).\"\n        }\n      },\n      \"required\": [\n        \"session\",\n        \"outcome\"\n      ],\n      \"title\": \"OutcomeEvidence\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"did\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"personhood\": {\n          \"const\": true,\n          \"description\": \"Always true on success — the flag flipped or stayed asserted.\",\n          \"type\": \"boolean\"\n        },\n        \"roleVac\": {\n          \"description\": \"Re-issued role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\\\"role:<name>\\\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues.\",\n          \"type\": \"object\"\n        },\n        \"vmc\": {\n          \"description\": \"Re-issued membership credential carrying the asserted personhood (opaque here).\",\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"did\",\n        \"personhood\",\n        \"vmc\",\n        \"roleVac\"\n      ],\n      \"title\": \"VTC Members Personhood-Assert — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"EvidenceDocument\":{\"description\":\"A whole Trust Task document — `id`, `type`, `payload` and every other member, `proof` included — carried exactly as it was sent or received, never re-serialised: a task digest and a proof are taken over its members, and a re-serialised copy reproduces neither reliably. Typed as an open object so every member survives; the checks that give it meaning belong to the task that reads it.\",\"minProperties\":1,\"title\":\"EvidenceDocument\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"OutcomeEvidence\":{\"additionalProperties\":false,\"description\":\"One witnessing session's outcome evidence. `session` is the initiating witness/session document; `outcome` is the terminal witness/session/submit #response that the initiating document's own specification declares as its outcome evidence, under the witness's proof, delivering the VWC and its vwcDigestMultibase. A consumer pairs them with a presented VWC by SPEC §4.9.4's four checks and the witnessing checks of witness/session/submit (This response is the outcome evidence).\",\"properties\":{\"outcome\":{\"$ref\":\"#/$defs/EvidenceDocument\",\"description\":\"The witness/session/submit #response that closed the session, under the witness's proof. It carries the VWC and its vwcDigestMultibase.\"},\"session\":{\"$ref\":\"#/$defs/EvidenceDocument\",\"description\":\"The witness/session document that opened the session. The VWC's taskContext is its id and its taskDigestMultibase is computed over it (SPEC §4.9.3).\"}},\"required\":[\"session\",\"outcome\"],\"title\":\"OutcomeEvidence\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"did\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"personhood\":{\"const\":true,\"description\":\"Always true on success — the flag flipped or stayed asserted.\",\"type\":\"boolean\"},\"roleVac\":{\"description\":\"Re-issued role credential (opaque here): a Verifiable Authority Credential (`type` including `AuthorityCredential`) issued by the community with `issuerScope` `public`, whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\\\"role:<name>\\\"] }` — the shape vtc/vetting/vetters/grant/0.1 issues.\",\"type\":\"object\"},\"vmc\":{\"description\":\"Re-issued membership credential carrying the asserted personhood (opaque here).\",\"type\":\"object\"}},\"required\":[\"did\",\"personhood\",\"vmc\",\"roleVac\"],\"title\":\"VTC Members Personhood-Assert — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

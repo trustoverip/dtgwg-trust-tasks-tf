@@ -35,52 +35,6 @@ pub mod error {
 }
 ///One difference between the forge's observed state and the VTC's projection of a repository.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DriftItem",
-///  "description": "One difference between the forge's observed state and the VTC's projection of a repository.",
-///  "type": "object",
-///  "required": [
-///    "resource",
-///    "type"
-///  ],
-///  "properties": {
-///    "account": {
-///      "description": "Whose role differs, for the three role types.",
-///      "$ref": "#/definitions/ForgeAccount"
-///    },
-///    "expected": {
-///      "description": "What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing.",
-///      "type": "string",
-///      "maxLength": 256
-///    },
-///    "observed": {
-///      "description": "What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.",
-///      "type": "string",
-///      "maxLength": 256
-///    },
-///    "resource": {
-///      "$ref": "#/definitions/RepoResource"
-///    },
-///    "type": {
-///      "description": "`roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.",
-///      "type": "string",
-///      "enum": [
-///        "roleAdded",
-///        "roleRemoved",
-///        "roleChanged",
-///        "requiredCheckMissing",
-///        "protectionWeakened",
-///        "bootstrapMissing"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -106,16 +60,6 @@ impl DriftItem {
 }
 ///What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing.",
-///  "type": "string",
-///  "maxLength": 256
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DriftItemExpected(::std::string::String);
@@ -175,16 +119,6 @@ impl<'de> ::serde::Deserialize<'de> for DriftItemExpected {
 }
 ///What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.",
-///  "type": "string",
-///  "maxLength": 256
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DriftItemObserved(::std::string::String);
@@ -244,23 +178,6 @@ impl<'de> ::serde::Deserialize<'de> for DriftItemObserved {
 }
 ///`roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.",
-///  "type": "string",
-///  "enum": [
-///    "roleAdded",
-///    "roleRemoved",
-///    "roleChanged",
-///    "requiredCheckMissing",
-///    "protectionWeakened",
-///    "bootstrapMissing"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -338,21 +255,6 @@ impl ::std::convert::TryFrom<::std::string::String> for DriftItemType {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -374,15 +276,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -446,36 +339,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ForgeAccount",
-///  "description": "A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.",
-///  "type": "object",
-///  "required": [
-///    "forge",
-///    "id",
-///    "login"
-///  ],
-///  "properties": {
-///    "forge": {
-///      "$ref": "#/definitions/ForgeHost"
-///    },
-///    "id": {
-///      "$ref": "#/definitions/ForgeId"
-///    },
-///    "login": {
-///      "description": "The account's current login, as the forge reported it when last seen. Display only.",
-///      "type": "string",
-///      "maxLength": 100,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -492,17 +355,6 @@ impl ForgeAccount {
 }
 ///The account's current login, as the forge reported it when last seen. Display only.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The account's current login, as the forge reported it when last seen. Display only.",
-///  "type": "string",
-///  "maxLength": 100,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ForgeAccountLogin(::std::string::String);
@@ -565,231 +417,6 @@ impl<'de> ::serde::Deserialize<'de> for ForgeAccountLogin {
 }
 ///One forge-neutral event, discriminated by `type`. The specification's event table says what each type means and what the VTC does with it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ForgeEvent",
-///  "description": "One forge-neutral event, discriminated by `type`. The specification's event table says what each type means and what the VTC does with it.",
-///  "type": "object",
-///  "oneOf": [
-///    {
-///      "title": "RepoRenamed",
-///      "type": "object",
-///      "required": [
-///        "forgeId",
-///        "from",
-///        "to",
-///        "type"
-///      ],
-///      "properties": {
-///        "forgeId": {
-///          "$ref": "#/definitions/ForgeId"
-///        },
-///        "from": {
-///          "$ref": "#/definitions/RepoResource"
-///        },
-///        "to": {
-///          "$ref": "#/definitions/RepoResource"
-///        },
-///        "type": {
-///          "const": "repoRenamed"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "RepoTransferred",
-///      "type": "object",
-///      "required": [
-///        "forgeId",
-///        "from",
-///        "to",
-///        "type"
-///      ],
-///      "properties": {
-///        "forgeId": {
-///          "$ref": "#/definitions/ForgeId"
-///        },
-///        "from": {
-///          "$ref": "#/definitions/RepoResource"
-///        },
-///        "to": {
-///          "$ref": "#/definitions/RepoResource"
-///        },
-///        "type": {
-///          "const": "repoTransferred"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "RepoCreatedUnmanaged",
-///      "type": "object",
-///      "required": [
-///        "forgeId",
-///        "resource",
-///        "type"
-///      ],
-///      "properties": {
-///        "forgeId": {
-///          "$ref": "#/definitions/ForgeId"
-///        },
-///        "resource": {
-///          "$ref": "#/definitions/RepoResource"
-///        },
-///        "type": {
-///          "const": "repoCreatedUnmanaged"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "RepoDeleted",
-///      "type": "object",
-///      "required": [
-///        "forgeId",
-///        "resource",
-///        "type"
-///      ],
-///      "properties": {
-///        "forgeId": {
-///          "$ref": "#/definitions/ForgeId"
-///        },
-///        "resource": {
-///          "$ref": "#/definitions/RepoResource"
-///        },
-///        "type": {
-///          "const": "repoDeleted"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "RoleChanged",
-///      "type": "object",
-///      "required": [
-///        "account",
-///        "forgeId",
-///        "resource",
-///        "type"
-///      ],
-///      "properties": {
-///        "account": {
-///          "$ref": "#/definitions/ForgeAccount"
-///        },
-///        "forgeId": {
-///          "$ref": "#/definitions/ForgeId"
-///        },
-///        "resource": {
-///          "$ref": "#/definitions/RepoResource"
-///        },
-///        "role": {
-///          "description": "The role the account now holds. Absent: the account holds no role now.",
-///          "$ref": "#/definitions/ForgeRole"
-///        },
-///        "type": {
-///          "const": "roleChanged"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "ProtectionChanged",
-///      "type": "object",
-///      "required": [
-///        "forgeId",
-///        "requiredCheck",
-///        "resource",
-///        "type"
-///      ],
-///      "properties": {
-///        "forgeId": {
-///          "$ref": "#/definitions/ForgeId"
-///        },
-///        "requiredCheck": {
-///          "description": "Whether the forge still refuses merges without a passing verify-trust check, with no bypass.",
-///          "type": "boolean"
-///        },
-///        "resource": {
-///          "$ref": "#/definitions/RepoResource"
-///        },
-///        "type": {
-///          "const": "protectionChanged"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "InstallationRemoved",
-///      "type": "object",
-///      "required": [
-///        "type"
-///      ],
-///      "properties": {
-///        "type": {
-///          "const": "installationRemoved"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "AccountLinked",
-///      "type": "object",
-///      "required": [
-///        "account",
-///        "jobId",
-///        "type"
-///      ],
-///      "properties": {
-///        "account": {
-///          "$ref": "#/definitions/ForgeAccount"
-///        },
-///        "jobId": {
-///          "description": "The beginAccountLink job.",
-///          "$ref": "#/definitions/JobId"
-///        },
-///        "type": {
-///          "const": "accountLinked"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "BindCompleted",
-///      "type": "object",
-///      "required": [
-///        "jobId",
-///        "kind",
-///        "ownerId",
-///        "type"
-///      ],
-///      "properties": {
-///        "jobId": {
-///          "description": "The beginBind job.",
-///          "$ref": "#/definitions/JobId"
-///        },
-///        "kind": {
-///          "type": "string",
-///          "enum": [
-///            "organization",
-///            "user"
-///          ]
-///        },
-///        "ownerId": {
-///          "description": "The forge's id for the owner, which survives renames.",
-///          "$ref": "#/definitions/ForgeId"
-///        },
-///        "type": {
-///          "const": "bindCompleted"
-///        }
-///      },
-///      "additionalProperties": false
-///    }
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(tag = "type", deny_unknown_fields)]
 #[non_exhaustive]
@@ -869,18 +496,6 @@ pub enum ForgeEvent {
 }
 ///`ForgeEventKind`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "enum": [
-///    "organization",
-///    "user"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -942,19 +557,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ForgeEventKind {
 }
 ///The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, or a self-hosted Forgejo instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ForgeHost",
-///  "description": "The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, or a self-hosted Forgejo instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.",
-///  "type": "string",
-///  "maxLength": 253,
-///  "minLength": 3,
-///  "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ForgeHost(::std::string::String);
@@ -1030,18 +632,6 @@ impl<'de> ::serde::Deserialize<'de> for ForgeHost {
 }
 ///An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub and Forgejo ids are decimal integers written as strings (`"812736451"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ForgeId",
-///  "description": "An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub and Forgejo ids are decimal integers written as strings (`\"812736451\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ForgeId(::std::string::String);
@@ -1104,17 +694,6 @@ impl<'de> ::serde::Deserialize<'de> for ForgeId {
 }
 ///A role in the forge's own vocabulary (`maintain`, `write`).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "A role in the forge's own vocabulary (`maintain`, `write`).",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ForgeRole(::std::string::String);
@@ -1177,17 +756,6 @@ impl<'de> ::serde::Deserialize<'de> for ForgeRole {
 }
 ///The VTC's identifier for a job, unique across the VTC's jobs.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The VTC's identifier for a job, unique across the VTC's jobs.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct JobId(::std::string::String);
@@ -1250,18 +818,6 @@ impl<'de> ::serde::Deserialize<'de> for JobId {
 }
 ///The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "NamespaceId",
-///  "description": "The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct NamespaceId(::std::string::String);
@@ -1324,41 +880,6 @@ impl<'de> ::serde::Deserialize<'de> for NamespaceId {
 }
 ///The bridge tells the VTC something happened on the forge — translated from the forge's webhook or found by an inspection sweep — together with any drift it now sees.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/git-ns/bridge/event/0.1",
-///  "title": "Payload",
-///  "description": "The bridge tells the VTC something happened on the forge — translated from the forge's webhook or found by an inspection sweep — together with any drift it now sees.",
-///  "type": "object",
-///  "required": [
-///    "event",
-///    "namespace"
-///  ],
-///  "properties": {
-///    "drift": {
-///      "description": "The complete outstanding drift for each repository the event concerns, replacing what the VTC held for those repositories. Absent: the event changes no repository's drift.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/DriftItem"
-///      }
-///    },
-///    "event": {
-///      "$ref": "#/definitions/ForgeEvent"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "namespace": {
-///      "description": "The namespace the event happened in.",
-///      "$ref": "#/definitions/NamespaceId"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1380,18 +901,6 @@ impl Payload {
 }
 ///A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo>`, lowercase.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RepoResource",
-///  "description": "A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo>`, lowercase.",
-///  "type": "string",
-///  "maxLength": 455,
-///  "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,99}/[a-z0-9_-][a-z0-9._-]{0,99}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RepoResource(::std::string::String);
@@ -1465,23 +974,6 @@ impl<'de> ::serde::Deserialize<'de> for RepoResource {
 }
 ///The VTC has recorded the event. Nothing else is returned.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The VTC has recorded the event. Nothing else is returned.",
-///  "type": "object",
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1798,7 +1290,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DriftItem\": {\n      \"additionalProperties\": false,\n      \"description\": \"One difference between the forge's observed state and the VTC's projection of a repository.\",\n      \"properties\": {\n        \"account\": {\n          \"$ref\": \"#/$defs/ForgeAccount\",\n          \"description\": \"Whose role differs, for the three role types.\"\n        },\n        \"expected\": {\n          \"description\": \"What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"observed\": {\n          \"description\": \"What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"resource\": {\n          \"$ref\": \"#/$defs/RepoResource\"\n        },\n        \"type\": {\n          \"description\": \"`roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.\",\n          \"enum\": [\n            \"roleAdded\",\n            \"roleRemoved\",\n            \"roleChanged\",\n            \"requiredCheckMissing\",\n            \"protectionWeakened\",\n            \"bootstrapMissing\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"type\",\n        \"resource\"\n      ],\n      \"title\": \"DriftItem\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ForgeAccount\": {\n      \"additionalProperties\": false,\n      \"description\": \"A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.\",\n      \"properties\": {\n        \"forge\": {\n          \"$ref\": \"#/$defs/ForgeHost\"\n        },\n        \"id\": {\n          \"$ref\": \"#/$defs/ForgeId\"\n        },\n        \"login\": {\n          \"description\": \"The account's current login, as the forge reported it when last seen. Display only.\",\n          \"maxLength\": 100,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"forge\",\n        \"id\",\n        \"login\"\n      ],\n      \"title\": \"ForgeAccount\",\n      \"type\": \"object\"\n    },\n    \"ForgeEvent\": {\n      \"description\": \"One forge-neutral event, discriminated by `type`. The specification's event table says what each type means and what the VTC does with it.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"forgeId\": {\n              \"$ref\": \"#/$defs/ForgeId\"\n            },\n            \"from\": {\n              \"$ref\": \"#/$defs/RepoResource\"\n            },\n            \"to\": {\n              \"$ref\": \"#/$defs/RepoResource\"\n            },\n            \"type\": {\n              \"const\": \"repoRenamed\"\n            }\n          },\n          \"required\": [\n            \"type\",\n            \"forgeId\",\n            \"from\",\n            \"to\"\n          ],\n          \"title\": \"RepoRenamed\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"forgeId\": {\n              \"$ref\": \"#/$defs/ForgeId\"\n            },\n            \"from\": {\n              \"$ref\": \"#/$defs/RepoResource\"\n            },\n            \"to\": {\n              \"$ref\": \"#/$defs/RepoResource\"\n            },\n            \"type\": {\n              \"const\": \"repoTransferred\"\n            }\n          },\n          \"required\": [\n            \"type\",\n            \"forgeId\",\n            \"from\",\n            \"to\"\n          ],\n          \"title\": \"RepoTransferred\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"forgeId\": {\n              \"$ref\": \"#/$defs/ForgeId\"\n            },\n            \"resource\": {\n              \"$ref\": \"#/$defs/RepoResource\"\n            },\n            \"type\": {\n              \"const\": \"repoCreatedUnmanaged\"\n            }\n          },\n          \"required\": [\n            \"type\",\n            \"forgeId\",\n            \"resource\"\n          ],\n          \"title\": \"RepoCreatedUnmanaged\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"forgeId\": {\n              \"$ref\": \"#/$defs/ForgeId\"\n            },\n            \"resource\": {\n              \"$ref\": \"#/$defs/RepoResource\"\n            },\n            \"type\": {\n              \"const\": \"repoDeleted\"\n            }\n          },\n          \"required\": [\n            \"type\",\n            \"forgeId\",\n            \"resource\"\n          ],\n          \"title\": \"RepoDeleted\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"account\": {\n              \"$ref\": \"#/$defs/ForgeAccount\"\n            },\n            \"forgeId\": {\n              \"$ref\": \"#/$defs/ForgeId\"\n            },\n            \"resource\": {\n              \"$ref\": \"#/$defs/RepoResource\"\n            },\n            \"role\": {\n              \"$ref\": \"#/$defs/ForgeRole\",\n              \"description\": \"The role the account now holds. Absent: the account holds no role now.\"\n            },\n            \"type\": {\n              \"const\": \"roleChanged\"\n            }\n          },\n          \"required\": [\n            \"type\",\n            \"forgeId\",\n            \"resource\",\n            \"account\"\n          ],\n          \"title\": \"RoleChanged\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"forgeId\": {\n              \"$ref\": \"#/$defs/ForgeId\"\n            },\n            \"requiredCheck\": {\n              \"description\": \"Whether the forge still refuses merges without a passing verify-trust check, with no bypass.\",\n              \"type\": \"boolean\"\n            },\n            \"resource\": {\n              \"$ref\": \"#/$defs/RepoResource\"\n            },\n            \"type\": {\n              \"const\": \"protectionChanged\"\n            }\n          },\n          \"required\": [\n            \"type\",\n            \"forgeId\",\n            \"resource\",\n            \"requiredCheck\"\n          ],\n          \"title\": \"ProtectionChanged\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"type\": {\n              \"const\": \"installationRemoved\"\n            }\n          },\n          \"required\": [\n            \"type\"\n          ],\n          \"title\": \"InstallationRemoved\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"account\": {\n              \"$ref\": \"#/$defs/ForgeAccount\"\n            },\n            \"jobId\": {\n              \"$ref\": \"#/$defs/JobId\",\n              \"description\": \"The beginAccountLink job.\"\n            },\n            \"type\": {\n              \"const\": \"accountLinked\"\n            }\n          },\n          \"required\": [\n            \"type\",\n            \"jobId\",\n            \"account\"\n          ],\n          \"title\": \"AccountLinked\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"jobId\": {\n              \"$ref\": \"#/$defs/JobId\",\n              \"description\": \"The beginBind job.\"\n            },\n            \"kind\": {\n              \"enum\": [\n                \"organization\",\n                \"user\"\n              ],\n              \"type\": \"string\"\n            },\n            \"ownerId\": {\n              \"$ref\": \"#/$defs/ForgeId\",\n              \"description\": \"The forge's id for the owner, which survives renames.\"\n            },\n            \"type\": {\n              \"const\": \"bindCompleted\"\n            }\n          },\n          \"required\": [\n            \"type\",\n            \"jobId\",\n            \"ownerId\",\n            \"kind\"\n          ],\n          \"title\": \"BindCompleted\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"ForgeEvent\",\n      \"type\": \"object\"\n    },\n    \"ForgeHost\": {\n      \"description\": \"The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, or a self-hosted Forgejo instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.\",\n      \"maxLength\": 253,\n      \"minLength\": 3,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$\",\n      \"title\": \"ForgeHost\",\n      \"type\": \"string\"\n    },\n    \"ForgeId\": {\n      \"description\": \"An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub and Forgejo ids are decimal integers written as strings (`\\\"812736451\\\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"title\": \"ForgeId\",\n      \"type\": \"string\"\n    },\n    \"ForgeRole\": {\n      \"description\": \"A role in the forge's own vocabulary (`maintain`, `write`).\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"JobId\": {\n      \"description\": \"The VTC's identifier for a job, unique across the VTC's jobs.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"NamespaceId\": {\n      \"description\": \"The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"title\": \"NamespaceId\",\n      \"type\": \"string\"\n    },\n    \"RepoResource\": {\n      \"description\": \"A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo>`, lowercase.\",\n      \"maxLength\": 455,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,99}/[a-z0-9_-][a-z0-9._-]{0,99}$\",\n      \"title\": \"RepoResource\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The VTC has recorded the event. Nothing else is returned.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [],\n      \"title\": \"Git Namespaces — Bridge Event — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/git-ns/bridge/event/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"The bridge tells the VTC something happened on the forge — translated from the forge's webhook or found by an inspection sweep — together with any drift it now sees.\",\n  \"properties\": {\n    \"drift\": {\n      \"description\": \"The complete outstanding drift for each repository the event concerns, replacing what the VTC held for those repositories. Absent: the event changes no repository's drift.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/DriftItem\"\n      },\n      \"type\": \"array\"\n    },\n    \"event\": {\n      \"$ref\": \"#/$defs/ForgeEvent\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"namespace\": {\n      \"$ref\": \"#/$defs/NamespaceId\",\n      \"description\": \"The namespace the event happened in.\"\n    }\n  },\n  \"required\": [\n    \"namespace\",\n    \"event\"\n  ],\n  \"title\": \"Git Namespaces — Bridge Event — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"DriftItem\":{\"additionalProperties\":false,\"description\":\"One difference between the forge's observed state and the VTC's projection of a repository.\",\"properties\":{\"account\":{\"$ref\":\"#/$defs/ForgeAccount\",\"description\":\"Whose role differs, for the three role types.\"},\"expected\":{\"description\":\"What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing.\",\"maxLength\":256,\"type\":\"string\"},\"observed\":{\"description\":\"What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.\",\"maxLength\":256,\"type\":\"string\"},\"resource\":{\"$ref\":\"#/$defs/RepoResource\"},\"type\":{\"description\":\"`roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.\",\"enum\":[\"roleAdded\",\"roleRemoved\",\"roleChanged\",\"requiredCheckMissing\",\"protectionWeakened\",\"bootstrapMissing\"],\"type\":\"string\"}},\"required\":[\"type\",\"resource\"],\"title\":\"DriftItem\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ForgeAccount\":{\"additionalProperties\":false,\"description\":\"A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.\",\"properties\":{\"forge\":{\"$ref\":\"#/$defs/ForgeHost\"},\"id\":{\"$ref\":\"#/$defs/ForgeId\"},\"login\":{\"description\":\"The account's current login, as the forge reported it when last seen. Display only.\",\"maxLength\":100,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"forge\",\"id\",\"login\"],\"title\":\"ForgeAccount\",\"type\":\"object\"},\"ForgeEvent\":{\"description\":\"One forge-neutral event, discriminated by `type`. The specification's event table says what each type means and what the VTC does with it.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"forgeId\":{\"$ref\":\"#/$defs/ForgeId\"},\"from\":{\"$ref\":\"#/$defs/RepoResource\"},\"to\":{\"$ref\":\"#/$defs/RepoResource\"},\"type\":{\"const\":\"repoRenamed\"}},\"required\":[\"type\",\"forgeId\",\"from\",\"to\"],\"title\":\"RepoRenamed\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"forgeId\":{\"$ref\":\"#/$defs/ForgeId\"},\"from\":{\"$ref\":\"#/$defs/RepoResource\"},\"to\":{\"$ref\":\"#/$defs/RepoResource\"},\"type\":{\"const\":\"repoTransferred\"}},\"required\":[\"type\",\"forgeId\",\"from\",\"to\"],\"title\":\"RepoTransferred\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"forgeId\":{\"$ref\":\"#/$defs/ForgeId\"},\"resource\":{\"$ref\":\"#/$defs/RepoResource\"},\"type\":{\"const\":\"repoCreatedUnmanaged\"}},\"required\":[\"type\",\"forgeId\",\"resource\"],\"title\":\"RepoCreatedUnmanaged\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"forgeId\":{\"$ref\":\"#/$defs/ForgeId\"},\"resource\":{\"$ref\":\"#/$defs/RepoResource\"},\"type\":{\"const\":\"repoDeleted\"}},\"required\":[\"type\",\"forgeId\",\"resource\"],\"title\":\"RepoDeleted\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"account\":{\"$ref\":\"#/$defs/ForgeAccount\"},\"forgeId\":{\"$ref\":\"#/$defs/ForgeId\"},\"resource\":{\"$ref\":\"#/$defs/RepoResource\"},\"role\":{\"$ref\":\"#/$defs/ForgeRole\",\"description\":\"The role the account now holds. Absent: the account holds no role now.\"},\"type\":{\"const\":\"roleChanged\"}},\"required\":[\"type\",\"forgeId\",\"resource\",\"account\"],\"title\":\"RoleChanged\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"forgeId\":{\"$ref\":\"#/$defs/ForgeId\"},\"requiredCheck\":{\"description\":\"Whether the forge still refuses merges without a passing verify-trust check, with no bypass.\",\"type\":\"boolean\"},\"resource\":{\"$ref\":\"#/$defs/RepoResource\"},\"type\":{\"const\":\"protectionChanged\"}},\"required\":[\"type\",\"forgeId\",\"resource\",\"requiredCheck\"],\"title\":\"ProtectionChanged\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"type\":{\"const\":\"installationRemoved\"}},\"required\":[\"type\"],\"title\":\"InstallationRemoved\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"account\":{\"$ref\":\"#/$defs/ForgeAccount\"},\"jobId\":{\"$ref\":\"#/$defs/JobId\",\"description\":\"The beginAccountLink job.\"},\"type\":{\"const\":\"accountLinked\"}},\"required\":[\"type\",\"jobId\",\"account\"],\"title\":\"AccountLinked\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"jobId\":{\"$ref\":\"#/$defs/JobId\",\"description\":\"The beginBind job.\"},\"kind\":{\"enum\":[\"organization\",\"user\"],\"type\":\"string\"},\"ownerId\":{\"$ref\":\"#/$defs/ForgeId\",\"description\":\"The forge's id for the owner, which survives renames.\"},\"type\":{\"const\":\"bindCompleted\"}},\"required\":[\"type\",\"jobId\",\"ownerId\",\"kind\"],\"title\":\"BindCompleted\",\"type\":\"object\"}],\"title\":\"ForgeEvent\",\"type\":\"object\"},\"ForgeHost\":{\"description\":\"The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, or a self-hosted Forgejo instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.\",\"maxLength\":253,\"minLength\":3,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$\",\"title\":\"ForgeHost\",\"type\":\"string\"},\"ForgeId\":{\"description\":\"An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub and Forgejo ids are decimal integers written as strings (`\\\"812736451\\\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.\",\"maxLength\":64,\"minLength\":1,\"title\":\"ForgeId\",\"type\":\"string\"},\"ForgeRole\":{\"description\":\"A role in the forge's own vocabulary (`maintain`, `write`).\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"JobId\":{\"description\":\"The VTC's identifier for a job, unique across the VTC's jobs.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"NamespaceId\":{\"description\":\"The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.\",\"maxLength\":128,\"minLength\":1,\"title\":\"NamespaceId\",\"type\":\"string\"},\"RepoResource\":{\"description\":\"A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo>`, lowercase.\",\"maxLength\":455,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,99}/[a-z0-9_-][a-z0-9._-]{0,99}$\",\"title\":\"RepoResource\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The VTC has recorded the event. Nothing else is returned.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[],\"title\":\"Git Namespaces — Bridge Event — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/git-ns/bridge/event/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The bridge tells the VTC something happened on the forge — translated from the forge's webhook or found by an inspection sweep — together with any drift it now sees.\",\"properties\":{\"drift\":{\"description\":\"The complete outstanding drift for each repository the event concerns, replacing what the VTC held for those repositories. Absent: the event changes no repository's drift.\",\"items\":{\"$ref\":\"#/$defs/DriftItem\"},\"type\":\"array\"},\"event\":{\"$ref\":\"#/$defs/ForgeEvent\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"namespace\":{\"$ref\":\"#/$defs/NamespaceId\",\"description\":\"The namespace the event happened in.\"}},\"required\":[\"namespace\",\"event\"],\"title\":\"Git Namespaces — Bridge Event — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1807,7 +1299,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DriftItem\": {\n      \"additionalProperties\": false,\n      \"description\": \"One difference between the forge's observed state and the VTC's projection of a repository.\",\n      \"properties\": {\n        \"account\": {\n          \"$ref\": \"#/$defs/ForgeAccount\",\n          \"description\": \"Whose role differs, for the three role types.\"\n        },\n        \"expected\": {\n          \"description\": \"What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"observed\": {\n          \"description\": \"What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"resource\": {\n          \"$ref\": \"#/$defs/RepoResource\"\n        },\n        \"type\": {\n          \"description\": \"`roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.\",\n          \"enum\": [\n            \"roleAdded\",\n            \"roleRemoved\",\n            \"roleChanged\",\n            \"requiredCheckMissing\",\n            \"protectionWeakened\",\n            \"bootstrapMissing\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"type\",\n        \"resource\"\n      ],\n      \"title\": \"DriftItem\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ForgeAccount\": {\n      \"additionalProperties\": false,\n      \"description\": \"A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.\",\n      \"properties\": {\n        \"forge\": {\n          \"$ref\": \"#/$defs/ForgeHost\"\n        },\n        \"id\": {\n          \"$ref\": \"#/$defs/ForgeId\"\n        },\n        \"login\": {\n          \"description\": \"The account's current login, as the forge reported it when last seen. Display only.\",\n          \"maxLength\": 100,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"forge\",\n        \"id\",\n        \"login\"\n      ],\n      \"title\": \"ForgeAccount\",\n      \"type\": \"object\"\n    },\n    \"ForgeEvent\": {\n      \"description\": \"One forge-neutral event, discriminated by `type`. The specification's event table says what each type means and what the VTC does with it.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"forgeId\": {\n              \"$ref\": \"#/$defs/ForgeId\"\n            },\n            \"from\": {\n              \"$ref\": \"#/$defs/RepoResource\"\n            },\n            \"to\": {\n              \"$ref\": \"#/$defs/RepoResource\"\n            },\n            \"type\": {\n              \"const\": \"repoRenamed\"\n            }\n          },\n          \"required\": [\n            \"type\",\n            \"forgeId\",\n            \"from\",\n            \"to\"\n          ],\n          \"title\": \"RepoRenamed\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"forgeId\": {\n              \"$ref\": \"#/$defs/ForgeId\"\n            },\n            \"from\": {\n              \"$ref\": \"#/$defs/RepoResource\"\n            },\n            \"to\": {\n              \"$ref\": \"#/$defs/RepoResource\"\n            },\n            \"type\": {\n              \"const\": \"repoTransferred\"\n            }\n          },\n          \"required\": [\n            \"type\",\n            \"forgeId\",\n            \"from\",\n            \"to\"\n          ],\n          \"title\": \"RepoTransferred\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"forgeId\": {\n              \"$ref\": \"#/$defs/ForgeId\"\n            },\n            \"resource\": {\n              \"$ref\": \"#/$defs/RepoResource\"\n            },\n            \"type\": {\n              \"const\": \"repoCreatedUnmanaged\"\n            }\n          },\n          \"required\": [\n            \"type\",\n            \"forgeId\",\n            \"resource\"\n          ],\n          \"title\": \"RepoCreatedUnmanaged\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"forgeId\": {\n              \"$ref\": \"#/$defs/ForgeId\"\n            },\n            \"resource\": {\n              \"$ref\": \"#/$defs/RepoResource\"\n            },\n            \"type\": {\n              \"const\": \"repoDeleted\"\n            }\n          },\n          \"required\": [\n            \"type\",\n            \"forgeId\",\n            \"resource\"\n          ],\n          \"title\": \"RepoDeleted\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"account\": {\n              \"$ref\": \"#/$defs/ForgeAccount\"\n            },\n            \"forgeId\": {\n              \"$ref\": \"#/$defs/ForgeId\"\n            },\n            \"resource\": {\n              \"$ref\": \"#/$defs/RepoResource\"\n            },\n            \"role\": {\n              \"$ref\": \"#/$defs/ForgeRole\",\n              \"description\": \"The role the account now holds. Absent: the account holds no role now.\"\n            },\n            \"type\": {\n              \"const\": \"roleChanged\"\n            }\n          },\n          \"required\": [\n            \"type\",\n            \"forgeId\",\n            \"resource\",\n            \"account\"\n          ],\n          \"title\": \"RoleChanged\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"forgeId\": {\n              \"$ref\": \"#/$defs/ForgeId\"\n            },\n            \"requiredCheck\": {\n              \"description\": \"Whether the forge still refuses merges without a passing verify-trust check, with no bypass.\",\n              \"type\": \"boolean\"\n            },\n            \"resource\": {\n              \"$ref\": \"#/$defs/RepoResource\"\n            },\n            \"type\": {\n              \"const\": \"protectionChanged\"\n            }\n          },\n          \"required\": [\n            \"type\",\n            \"forgeId\",\n            \"resource\",\n            \"requiredCheck\"\n          ],\n          \"title\": \"ProtectionChanged\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"type\": {\n              \"const\": \"installationRemoved\"\n            }\n          },\n          \"required\": [\n            \"type\"\n          ],\n          \"title\": \"InstallationRemoved\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"account\": {\n              \"$ref\": \"#/$defs/ForgeAccount\"\n            },\n            \"jobId\": {\n              \"$ref\": \"#/$defs/JobId\",\n              \"description\": \"The beginAccountLink job.\"\n            },\n            \"type\": {\n              \"const\": \"accountLinked\"\n            }\n          },\n          \"required\": [\n            \"type\",\n            \"jobId\",\n            \"account\"\n          ],\n          \"title\": \"AccountLinked\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"jobId\": {\n              \"$ref\": \"#/$defs/JobId\",\n              \"description\": \"The beginBind job.\"\n            },\n            \"kind\": {\n              \"enum\": [\n                \"organization\",\n                \"user\"\n              ],\n              \"type\": \"string\"\n            },\n            \"ownerId\": {\n              \"$ref\": \"#/$defs/ForgeId\",\n              \"description\": \"The forge's id for the owner, which survives renames.\"\n            },\n            \"type\": {\n              \"const\": \"bindCompleted\"\n            }\n          },\n          \"required\": [\n            \"type\",\n            \"jobId\",\n            \"ownerId\",\n            \"kind\"\n          ],\n          \"title\": \"BindCompleted\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"ForgeEvent\",\n      \"type\": \"object\"\n    },\n    \"ForgeHost\": {\n      \"description\": \"The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, or a self-hosted Forgejo instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.\",\n      \"maxLength\": 253,\n      \"minLength\": 3,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$\",\n      \"title\": \"ForgeHost\",\n      \"type\": \"string\"\n    },\n    \"ForgeId\": {\n      \"description\": \"An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub and Forgejo ids are decimal integers written as strings (`\\\"812736451\\\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"title\": \"ForgeId\",\n      \"type\": \"string\"\n    },\n    \"ForgeRole\": {\n      \"description\": \"A role in the forge's own vocabulary (`maintain`, `write`).\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"JobId\": {\n      \"description\": \"The VTC's identifier for a job, unique across the VTC's jobs.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"NamespaceId\": {\n      \"description\": \"The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"title\": \"NamespaceId\",\n      \"type\": \"string\"\n    },\n    \"RepoResource\": {\n      \"description\": \"A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo>`, lowercase.\",\n      \"maxLength\": 455,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,99}/[a-z0-9_-][a-z0-9._-]{0,99}$\",\n      \"title\": \"RepoResource\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The VTC has recorded the event. Nothing else is returned.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [],\n      \"title\": \"Git Namespaces — Bridge Event — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"DriftItem\":{\"additionalProperties\":false,\"description\":\"One difference between the forge's observed state and the VTC's projection of a repository.\",\"properties\":{\"account\":{\"$ref\":\"#/$defs/ForgeAccount\",\"description\":\"Whose role differs, for the three role types.\"},\"expected\":{\"description\":\"What the projection calls for, in the forge's own vocabulary. Absent when the projection calls for nothing.\",\"maxLength\":256,\"type\":\"string\"},\"observed\":{\"description\":\"What the forge shows, in the forge's own vocabulary (a role name such as `maintain`, a setting name). Absent when nothing is there.\",\"maxLength\":256,\"type\":\"string\"},\"resource\":{\"$ref\":\"#/$defs/RepoResource\"},\"type\":{\"description\":\"`roleAdded` — someone holds a forge role the projection does not give them. `roleRemoved` — a projected role is missing. `roleChanged` — a projected role is present at another level. `requiredCheckMissing` — the verify-trust check is no longer required. `protectionWeakened` — branch protection or a ruleset is weaker than the projection in another way (force-push allowed, bypass actors added). `bootstrapMissing` — a bootstrap file or variable is gone.\",\"enum\":[\"roleAdded\",\"roleRemoved\",\"roleChanged\",\"requiredCheckMissing\",\"protectionWeakened\",\"bootstrapMissing\"],\"type\":\"string\"}},\"required\":[\"type\",\"resource\"],\"title\":\"DriftItem\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ForgeAccount\":{\"additionalProperties\":false,\"description\":\"A person's account on one forge. `id` is authoritative; `login` is for display only, because logins can be renamed and re-registered.\",\"properties\":{\"forge\":{\"$ref\":\"#/$defs/ForgeHost\"},\"id\":{\"$ref\":\"#/$defs/ForgeId\"},\"login\":{\"description\":\"The account's current login, as the forge reported it when last seen. Display only.\",\"maxLength\":100,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"forge\",\"id\",\"login\"],\"title\":\"ForgeAccount\",\"type\":\"object\"},\"ForgeEvent\":{\"description\":\"One forge-neutral event, discriminated by `type`. The specification's event table says what each type means and what the VTC does with it.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"forgeId\":{\"$ref\":\"#/$defs/ForgeId\"},\"from\":{\"$ref\":\"#/$defs/RepoResource\"},\"to\":{\"$ref\":\"#/$defs/RepoResource\"},\"type\":{\"const\":\"repoRenamed\"}},\"required\":[\"type\",\"forgeId\",\"from\",\"to\"],\"title\":\"RepoRenamed\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"forgeId\":{\"$ref\":\"#/$defs/ForgeId\"},\"from\":{\"$ref\":\"#/$defs/RepoResource\"},\"to\":{\"$ref\":\"#/$defs/RepoResource\"},\"type\":{\"const\":\"repoTransferred\"}},\"required\":[\"type\",\"forgeId\",\"from\",\"to\"],\"title\":\"RepoTransferred\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"forgeId\":{\"$ref\":\"#/$defs/ForgeId\"},\"resource\":{\"$ref\":\"#/$defs/RepoResource\"},\"type\":{\"const\":\"repoCreatedUnmanaged\"}},\"required\":[\"type\",\"forgeId\",\"resource\"],\"title\":\"RepoCreatedUnmanaged\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"forgeId\":{\"$ref\":\"#/$defs/ForgeId\"},\"resource\":{\"$ref\":\"#/$defs/RepoResource\"},\"type\":{\"const\":\"repoDeleted\"}},\"required\":[\"type\",\"forgeId\",\"resource\"],\"title\":\"RepoDeleted\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"account\":{\"$ref\":\"#/$defs/ForgeAccount\"},\"forgeId\":{\"$ref\":\"#/$defs/ForgeId\"},\"resource\":{\"$ref\":\"#/$defs/RepoResource\"},\"role\":{\"$ref\":\"#/$defs/ForgeRole\",\"description\":\"The role the account now holds. Absent: the account holds no role now.\"},\"type\":{\"const\":\"roleChanged\"}},\"required\":[\"type\",\"forgeId\",\"resource\",\"account\"],\"title\":\"RoleChanged\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"forgeId\":{\"$ref\":\"#/$defs/ForgeId\"},\"requiredCheck\":{\"description\":\"Whether the forge still refuses merges without a passing verify-trust check, with no bypass.\",\"type\":\"boolean\"},\"resource\":{\"$ref\":\"#/$defs/RepoResource\"},\"type\":{\"const\":\"protectionChanged\"}},\"required\":[\"type\",\"forgeId\",\"resource\",\"requiredCheck\"],\"title\":\"ProtectionChanged\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"type\":{\"const\":\"installationRemoved\"}},\"required\":[\"type\"],\"title\":\"InstallationRemoved\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"account\":{\"$ref\":\"#/$defs/ForgeAccount\"},\"jobId\":{\"$ref\":\"#/$defs/JobId\",\"description\":\"The beginAccountLink job.\"},\"type\":{\"const\":\"accountLinked\"}},\"required\":[\"type\",\"jobId\",\"account\"],\"title\":\"AccountLinked\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"jobId\":{\"$ref\":\"#/$defs/JobId\",\"description\":\"The beginBind job.\"},\"kind\":{\"enum\":[\"organization\",\"user\"],\"type\":\"string\"},\"ownerId\":{\"$ref\":\"#/$defs/ForgeId\",\"description\":\"The forge's id for the owner, which survives renames.\"},\"type\":{\"const\":\"bindCompleted\"}},\"required\":[\"type\",\"jobId\",\"ownerId\",\"kind\"],\"title\":\"BindCompleted\",\"type\":\"object\"}],\"title\":\"ForgeEvent\",\"type\":\"object\"},\"ForgeHost\":{\"description\":\"The lowercased DNS host of a forge: `github.com`, a GitHub Enterprise Server host, `codeberg.org`, or a self-hosted Forgejo instance such as `git.example.org`. No scheme, no port, no path. The host is a segment of every resource, so a right never crosses forges.\",\"maxLength\":253,\"minLength\":3,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$\",\"title\":\"ForgeHost\",\"type\":\"string\"},\"ForgeId\":{\"description\":\"An identifier the forge itself assigns — a repository id, a user or organisation id — carried as a string so a forge whose ids are not numbers needs no new version. GitHub and Forgejo ids are decimal integers written as strings (`\\\"812736451\\\"`). Unlike a name, it survives renames and transfers, which is why rights and bindings are keyed by it.\",\"maxLength\":64,\"minLength\":1,\"title\":\"ForgeId\",\"type\":\"string\"},\"ForgeRole\":{\"description\":\"A role in the forge's own vocabulary (`maintain`, `write`).\",\"maxLength\":64,\"minLength\":1,\"type\":\"string\"},\"JobId\":{\"description\":\"The VTC's identifier for a job, unique across the VTC's jobs.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"NamespaceId\":{\"description\":\"The VTC's opaque identifier for a namespace, assigned when it is bound. Stable for the life of the binding; never reused for another binding.\",\"maxLength\":128,\"minLength\":1,\"title\":\"NamespaceId\",\"type\":\"string\"},\"RepoResource\":{\"description\":\"A forge-qualified resource naming exactly one repository: `<forge-host>/<owner>/<repo>`, lowercase.\",\"maxLength\":455,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,99}/[a-z0-9_-][a-z0-9._-]{0,99}$\",\"title\":\"RepoResource\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The VTC has recorded the event. Nothing else is returned.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[],\"title\":\"Git Namespaces — Bridge Event — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

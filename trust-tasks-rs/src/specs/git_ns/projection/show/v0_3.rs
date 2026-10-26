@@ -34,49 +34,6 @@ pub mod error {
 }
 ///The record's context as published: what the TRQP record has no member of its own for. Not itself governed by this specification — it is the projector's internal shape, carried through unchanged, and a consumer MUST treat unrecognised members as opaque rather than failing on them.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Context",
-///  "description": "The record's context as published: what the TRQP record has no member of its own for. Not itself governed by this specification — it is the projector's internal shape, carried through unchanged, and a consumer MUST treat unrecognised members as opaque rather than failing on them.",
-///  "type": "object",
-///  "required": [
-///    "framework"
-///  ],
-///  "properties": {
-///    "activeFrom": {
-///      "description": "When the underlying right took effect. Absent for a role-derived tuple, which has no grant time of its own.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "activeTo": {
-///      "description": "When the underlying right expires. Absent: no expiry, or the longest of two merged sources' expiries once neither is absent.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "framework": {
-///      "description": "The Trust Task type URI the record was published under — this specification's framework constant for a recorded or implied right, or the fixed `git-trust/grant/0.1` URI for a role-derived one.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1
-///    },
-///    "impliedBy": {
-///      "description": "Present when this tuple publishes a right implied by another recorded right (a repository's `git.commit.sign` implied by its `git.repo.own`, or a namespace's implied rights). Names the right that implies it.",
-///      "$ref": "#/definitions/Right"
-///    },
-///    "origin": {
-///      "description": "Present, and always `roleDerived`, exactly for a v0.1 `[hooks.git-trust] grant_on_role` tuple. Absent for a tuple sourced from a recorded or implied right.",
-///      "type": "string",
-///      "enum": [
-///        "roleDerived"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -115,17 +72,6 @@ impl Context {
 }
 ///The Trust Task type URI the record was published under — this specification's framework constant for a recorded or implied right, or the fixed `git-trust/grant/0.1` URI for a role-derived one.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The Trust Task type URI the record was published under — this specification's framework constant for a recorded or implied right, or the fixed `git-trust/grant/0.1` URI for a role-derived one.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ContextFramework(::std::string::String);
@@ -188,18 +134,6 @@ impl<'de> ::serde::Deserialize<'de> for ContextFramework {
 }
 ///Present, and always `roleDerived`, exactly for a v0.1 `[hooks.git-trust] grant_on_role` tuple. Absent for a tuple sourced from a recorded or implied right.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Present, and always `roleDerived`, exactly for a v0.1 `[hooks.git-trust] grant_on_role` tuple. Absent for a tuple sourced from a recorded or implied right.",
-///  "type": "string",
-///  "enum": [
-///    "roleDerived"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -257,18 +191,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ContextOrigin {
 }
 ///A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Did",
-///  "description": "A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Did(::std::string::String);
@@ -342,21 +264,6 @@ impl<'de> ::serde::Deserialize<'de> for Did {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -378,15 +285,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -450,37 +348,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A community administrator reads what the VTC has published (and what it still owes) to the Trust Registry for its git namespaces. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/git-ns/projection/show/0.3",
-///  "title": "Payload",
-///  "description": "A community administrator reads what the VTC has published (and what it still owes) to the Trust Registry for its git namespaces. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "properties": {
-///    "cursor": {
-///      "description": "Opaque continuation token from a previous response's `nextCursor`. A consumer supplying a `cursor` MUST NOT also change `resource` from the request that produced it — start a fresh query instead.",
-///      "type": "string"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "limit": {
-///      "description": "Maximum published records to return in this page. A VTC clamps to 1..=500 (default 100).",
-///      "type": "integer",
-///      "maximum": 500.0,
-///      "minimum": 1.0
-///    },
-///    "resource": {
-///      "description": "Only published records on this resource or inside it. Absent: every resource.",
-///      "$ref": "#/definitions/Resource"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -514,45 +381,6 @@ impl Payload {
 }
 ///One record the VTC has published to the Trust Registry.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "PublishedRow",
-///  "description": "One record the VTC has published to the Trust Registry.",
-///  "type": "object",
-///  "required": [
-///    "action",
-///    "context",
-///    "entity",
-///    "publishedAt",
-///    "resource"
-///  ],
-///  "properties": {
-///    "action": {
-///      "description": "The TRQP action the record is published under.",
-///      "$ref": "#/definitions/Right"
-///    },
-///    "context": {
-///      "$ref": "#/definitions/Context"
-///    },
-///    "entity": {
-///      "description": "The DID the record is about — the right's subject.",
-///      "$ref": "#/definitions/Did"
-///    },
-///    "publishedAt": {
-///      "description": "When the VTC last wrote this record to the registry.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "resource": {
-///      "$ref": "#/definitions/Resource"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -574,18 +402,6 @@ impl PublishedRow {
 }
 ///A forge-qualified resource, all lowercase: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo-path>` for one repository — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. On a forge with nested groups (GitLab) the repository path holds the subgroups between the top-level owner and the project: `gitlab.com/acme/platform/tools/cli` is one repository of the namespace `gitlab.com/acme`, and a subgroup such as `gitlab.com/acme/platform` is not a resource. A repository path has 1 to 21 segments (GitLab: 20 levels of subgroup and the project); GitHub and Forgejo repository paths are always one. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Resource",
-///  "description": "A forge-qualified resource, all lowercase: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo-path>` for one repository — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. On a forge with nested groups (GitLab) the repository path holds the subgroups between the top-level owner and the project: `gitlab.com/acme/platform/tools/cli` is one repository of the namespace `gitlab.com/acme`, and a subgroup such as `gitlab.com/acme/platform` is not a resource. A repository path has 1 to 21 segments (GitLab: 20 levels of subgroup and the project); GitHub and Forgejo repository paths are always one. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.",
-///  "type": "string",
-///  "maxLength": 5885,
-///  "pattern": "^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,254}(?:/[a-z0-9_-][a-z0-9._-]{0,254}){0,21}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Resource(::std::string::String);
@@ -659,48 +475,6 @@ impl<'de> ::serde::Deserialize<'de> for Resource {
 }
 ///What is published, and how far it is from what the VTC's records currently call for.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "What is published, and how far it is from what the VTC's records currently call for.",
-///  "type": "object",
-///  "required": [
-///    "pendingChanges",
-///    "published",
-///    "registryConfigured"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "nextCursor": {
-///      "description": "Continuation token for the next page of `published`; pass it back as the request's `cursor`. Absent on the last page — never `null`.",
-///      "type": "string"
-///    },
-///    "pendingChanges": {
-///      "description": "How many records the next reconciliation pass will add, remove or replace to bring the registry into line with the VTC's current rights — across the whole VTC, regardless of `resource` or paging. Zero means the registry already matches.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "published": {
-///      "description": "Records matching `resource`, as the VTC's own mirror of what it last published, ordered by `resource` then `action` then `entity`.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/PublishedRow"
-///      }
-///    },
-///    "registryConfigured": {
-///      "description": "Whether this VTC can publish at all — a Trust Registry and its own publishing DID are configured. `false`: `published` is only what was last published before publishing was unconfigured, and `pendingChanges` still counts against the VTC's current records.",
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -730,23 +504,6 @@ impl Response {
 }
 ///One of the five git rights. Each string is also the TRQP `action` the VTC publishes the right under in its Trust Registry, so it is carried verbatim. `git.ns.admin` and `git.repo.create` apply to a namespace resource; `git.repo.own` and `git.repo.maintain` to a repository resource; `git.commit.sign` to either.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Right",
-///  "description": "One of the five git rights. Each string is also the TRQP `action` the VTC publishes the right under in its Trust Registry, so it is carried verbatim. `git.ns.admin` and `git.repo.create` apply to a namespace resource; `git.repo.own` and `git.repo.maintain` to a repository resource; `git.commit.sign` to either.",
-///  "type": "string",
-///  "enum": [
-///    "git.ns.admin",
-///    "git.repo.create",
-///    "git.repo.own",
-///    "git.repo.maintain",
-///    "git.commit.sign"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1216,7 +973,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Context\": {\n      \"additionalProperties\": false,\n      \"description\": \"The record's context as published: what the TRQP record has no member of its own for. Not itself governed by this specification — it is the projector's internal shape, carried through unchanged, and a consumer MUST treat unrecognised members as opaque rather than failing on them.\",\n      \"properties\": {\n        \"activeFrom\": {\n          \"description\": \"When the underlying right took effect. Absent for a role-derived tuple, which has no grant time of its own.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"activeTo\": {\n          \"description\": \"When the underlying right expires. Absent: no expiry, or the longest of two merged sources' expiries once neither is absent.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"framework\": {\n          \"description\": \"The Trust Task type URI the record was published under — this specification's framework constant for a recorded or implied right, or the fixed `git-trust/grant/0.1` URI for a role-derived one.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"impliedBy\": {\n          \"$ref\": \"#/$defs/Right\",\n          \"description\": \"Present when this tuple publishes a right implied by another recorded right (a repository's `git.commit.sign` implied by its `git.repo.own`, or a namespace's implied rights). Names the right that implies it.\"\n        },\n        \"origin\": {\n          \"description\": \"Present, and always `roleDerived`, exactly for a v0.1 `[hooks.git-trust] grant_on_role` tuple. Absent for a tuple sourced from a recorded or implied right.\",\n          \"enum\": [\n            \"roleDerived\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"framework\"\n      ],\n      \"title\": \"Context\",\n      \"type\": \"object\"\n    },\n    \"Did\": {\n      \"description\": \"A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.\",\n      \"maxLength\": 2048,\n      \"pattern\": \"^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$\",\n      \"title\": \"Did\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"PublishedRow\": {\n      \"additionalProperties\": false,\n      \"description\": \"One record the VTC has published to the Trust Registry.\",\n      \"properties\": {\n        \"action\": {\n          \"$ref\": \"#/$defs/Right\",\n          \"description\": \"The TRQP action the record is published under.\"\n        },\n        \"context\": {\n          \"$ref\": \"#/$defs/Context\"\n        },\n        \"entity\": {\n          \"$ref\": \"#/$defs/Did\",\n          \"description\": \"The DID the record is about — the right's subject.\"\n        },\n        \"publishedAt\": {\n          \"description\": \"When the VTC last wrote this record to the registry.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"resource\": {\n          \"$ref\": \"#/$defs/Resource\"\n        }\n      },\n      \"required\": [\n        \"entity\",\n        \"action\",\n        \"resource\",\n        \"context\",\n        \"publishedAt\"\n      ],\n      \"title\": \"PublishedRow\",\n      \"type\": \"object\"\n    },\n    \"Resource\": {\n      \"description\": \"A forge-qualified resource, all lowercase: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo-path>` for one repository — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. On a forge with nested groups (GitLab) the repository path holds the subgroups between the top-level owner and the project: `gitlab.com/acme/platform/tools/cli` is one repository of the namespace `gitlab.com/acme`, and a subgroup such as `gitlab.com/acme/platform` is not a resource. A repository path has 1 to 21 segments (GitLab: 20 levels of subgroup and the project); GitHub and Forgejo repository paths are always one. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.\",\n      \"maxLength\": 5885,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,254}(?:/[a-z0-9_-][a-z0-9._-]{0,254}){0,21}$\",\n      \"title\": \"Resource\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"What is published, and how far it is from what the VTC's records currently call for.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Continuation token for the next page of `published`; pass it back as the request's `cursor`. Absent on the last page — never `null`.\",\n          \"type\": \"string\"\n        },\n        \"pendingChanges\": {\n          \"description\": \"How many records the next reconciliation pass will add, remove or replace to bring the registry into line with the VTC's current rights — across the whole VTC, regardless of `resource` or paging. Zero means the registry already matches.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"published\": {\n          \"description\": \"Records matching `resource`, as the VTC's own mirror of what it last published, ordered by `resource` then `action` then `entity`.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/PublishedRow\"\n          },\n          \"type\": \"array\"\n        },\n        \"registryConfigured\": {\n          \"description\": \"Whether this VTC can publish at all — a Trust Registry and its own publishing DID are configured. `false`: `published` is only what was last published before publishing was unconfigured, and `pendingChanges` still counts against the VTC's current records.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"registryConfigured\",\n        \"published\",\n        \"pendingChanges\"\n      ],\n      \"title\": \"Git Namespaces — Show Trust Registry Projection — response payload\",\n      \"type\": \"object\"\n    },\n    \"Right\": {\n      \"description\": \"One of the five git rights. Each string is also the TRQP `action` the VTC publishes the right under in its Trust Registry, so it is carried verbatim. `git.ns.admin` and `git.repo.create` apply to a namespace resource; `git.repo.own` and `git.repo.maintain` to a repository resource; `git.commit.sign` to either.\",\n      \"enum\": [\n        \"git.ns.admin\",\n        \"git.repo.create\",\n        \"git.repo.own\",\n        \"git.repo.maintain\",\n        \"git.commit.sign\"\n      ],\n      \"title\": \"Right\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/git-ns/projection/show/0.3\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A community administrator reads what the VTC has published (and what it still owes) to the Trust Registry for its git namespaces. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"cursor\": {\n      \"description\": \"Opaque continuation token from a previous response's `nextCursor`. A consumer supplying a `cursor` MUST NOT also change `resource` from the request that produced it — start a fresh query instead.\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"limit\": {\n      \"description\": \"Maximum published records to return in this page. A VTC clamps to 1..=500 (default 100).\",\n      \"maximum\": 500,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"resource\": {\n      \"$ref\": \"#/$defs/Resource\",\n      \"description\": \"Only published records on this resource or inside it. Absent: every resource.\"\n    }\n  },\n  \"title\": \"Git Namespaces — Show Trust Registry Projection — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Context\":{\"additionalProperties\":false,\"description\":\"The record's context as published: what the TRQP record has no member of its own for. Not itself governed by this specification — it is the projector's internal shape, carried through unchanged, and a consumer MUST treat unrecognised members as opaque rather than failing on them.\",\"properties\":{\"activeFrom\":{\"description\":\"When the underlying right took effect. Absent for a role-derived tuple, which has no grant time of its own.\",\"format\":\"date-time\",\"type\":\"string\"},\"activeTo\":{\"description\":\"When the underlying right expires. Absent: no expiry, or the longest of two merged sources' expiries once neither is absent.\",\"format\":\"date-time\",\"type\":\"string\"},\"framework\":{\"description\":\"The Trust Task type URI the record was published under — this specification's framework constant for a recorded or implied right, or the fixed `git-trust/grant/0.1` URI for a role-derived one.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"impliedBy\":{\"$ref\":\"#/$defs/Right\",\"description\":\"Present when this tuple publishes a right implied by another recorded right (a repository's `git.commit.sign` implied by its `git.repo.own`, or a namespace's implied rights). Names the right that implies it.\"},\"origin\":{\"description\":\"Present, and always `roleDerived`, exactly for a v0.1 `[hooks.git-trust] grant_on_role` tuple. Absent for a tuple sourced from a recorded or implied right.\",\"enum\":[\"roleDerived\"],\"type\":\"string\"}},\"required\":[\"framework\"],\"title\":\"Context\",\"type\":\"object\"},\"Did\":{\"description\":\"A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.\",\"maxLength\":2048,\"pattern\":\"^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$\",\"title\":\"Did\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"PublishedRow\":{\"additionalProperties\":false,\"description\":\"One record the VTC has published to the Trust Registry.\",\"properties\":{\"action\":{\"$ref\":\"#/$defs/Right\",\"description\":\"The TRQP action the record is published under.\"},\"context\":{\"$ref\":\"#/$defs/Context\"},\"entity\":{\"$ref\":\"#/$defs/Did\",\"description\":\"The DID the record is about — the right's subject.\"},\"publishedAt\":{\"description\":\"When the VTC last wrote this record to the registry.\",\"format\":\"date-time\",\"type\":\"string\"},\"resource\":{\"$ref\":\"#/$defs/Resource\"}},\"required\":[\"entity\",\"action\",\"resource\",\"context\",\"publishedAt\"],\"title\":\"PublishedRow\",\"type\":\"object\"},\"Resource\":{\"description\":\"A forge-qualified resource, all lowercase: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo-path>` for one repository — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. On a forge with nested groups (GitLab) the repository path holds the subgroups between the top-level owner and the project: `gitlab.com/acme/platform/tools/cli` is one repository of the namespace `gitlab.com/acme`, and a subgroup such as `gitlab.com/acme/platform` is not a resource. A repository path has 1 to 21 segments (GitLab: 20 levels of subgroup and the project); GitHub and Forgejo repository paths are always one. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.\",\"maxLength\":5885,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,254}(?:/[a-z0-9_-][a-z0-9._-]{0,254}){0,21}$\",\"title\":\"Resource\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"What is published, and how far it is from what the VTC's records currently call for.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"nextCursor\":{\"description\":\"Continuation token for the next page of `published`; pass it back as the request's `cursor`. Absent on the last page — never `null`.\",\"type\":\"string\"},\"pendingChanges\":{\"description\":\"How many records the next reconciliation pass will add, remove or replace to bring the registry into line with the VTC's current rights — across the whole VTC, regardless of `resource` or paging. Zero means the registry already matches.\",\"minimum\":0,\"type\":\"integer\"},\"published\":{\"description\":\"Records matching `resource`, as the VTC's own mirror of what it last published, ordered by `resource` then `action` then `entity`.\",\"items\":{\"$ref\":\"#/$defs/PublishedRow\"},\"type\":\"array\"},\"registryConfigured\":{\"description\":\"Whether this VTC can publish at all — a Trust Registry and its own publishing DID are configured. `false`: `published` is only what was last published before publishing was unconfigured, and `pendingChanges` still counts against the VTC's current records.\",\"type\":\"boolean\"}},\"required\":[\"registryConfigured\",\"published\",\"pendingChanges\"],\"title\":\"Git Namespaces — Show Trust Registry Projection — response payload\",\"type\":\"object\"},\"Right\":{\"description\":\"One of the five git rights. Each string is also the TRQP `action` the VTC publishes the right under in its Trust Registry, so it is carried verbatim. `git.ns.admin` and `git.repo.create` apply to a namespace resource; `git.repo.own` and `git.repo.maintain` to a repository resource; `git.commit.sign` to either.\",\"enum\":[\"git.ns.admin\",\"git.repo.create\",\"git.repo.own\",\"git.repo.maintain\",\"git.commit.sign\"],\"title\":\"Right\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/git-ns/projection/show/0.3\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A community administrator reads what the VTC has published (and what it still owes) to the Trust Registry for its git namespaces. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"cursor\":{\"description\":\"Opaque continuation token from a previous response's `nextCursor`. A consumer supplying a `cursor` MUST NOT also change `resource` from the request that produced it — start a fresh query instead.\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"limit\":{\"description\":\"Maximum published records to return in this page. A VTC clamps to 1..=500 (default 100).\",\"maximum\":500,\"minimum\":1,\"type\":\"integer\"},\"resource\":{\"$ref\":\"#/$defs/Resource\",\"description\":\"Only published records on this resource or inside it. Absent: every resource.\"}},\"title\":\"Git Namespaces — Show Trust Registry Projection — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1225,7 +982,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Context\": {\n      \"additionalProperties\": false,\n      \"description\": \"The record's context as published: what the TRQP record has no member of its own for. Not itself governed by this specification — it is the projector's internal shape, carried through unchanged, and a consumer MUST treat unrecognised members as opaque rather than failing on them.\",\n      \"properties\": {\n        \"activeFrom\": {\n          \"description\": \"When the underlying right took effect. Absent for a role-derived tuple, which has no grant time of its own.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"activeTo\": {\n          \"description\": \"When the underlying right expires. Absent: no expiry, or the longest of two merged sources' expiries once neither is absent.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"framework\": {\n          \"description\": \"The Trust Task type URI the record was published under — this specification's framework constant for a recorded or implied right, or the fixed `git-trust/grant/0.1` URI for a role-derived one.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"impliedBy\": {\n          \"$ref\": \"#/$defs/Right\",\n          \"description\": \"Present when this tuple publishes a right implied by another recorded right (a repository's `git.commit.sign` implied by its `git.repo.own`, or a namespace's implied rights). Names the right that implies it.\"\n        },\n        \"origin\": {\n          \"description\": \"Present, and always `roleDerived`, exactly for a v0.1 `[hooks.git-trust] grant_on_role` tuple. Absent for a tuple sourced from a recorded or implied right.\",\n          \"enum\": [\n            \"roleDerived\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"framework\"\n      ],\n      \"title\": \"Context\",\n      \"type\": \"object\"\n    },\n    \"Did\": {\n      \"description\": \"A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.\",\n      \"maxLength\": 2048,\n      \"pattern\": \"^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$\",\n      \"title\": \"Did\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"PublishedRow\": {\n      \"additionalProperties\": false,\n      \"description\": \"One record the VTC has published to the Trust Registry.\",\n      \"properties\": {\n        \"action\": {\n          \"$ref\": \"#/$defs/Right\",\n          \"description\": \"The TRQP action the record is published under.\"\n        },\n        \"context\": {\n          \"$ref\": \"#/$defs/Context\"\n        },\n        \"entity\": {\n          \"$ref\": \"#/$defs/Did\",\n          \"description\": \"The DID the record is about — the right's subject.\"\n        },\n        \"publishedAt\": {\n          \"description\": \"When the VTC last wrote this record to the registry.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"resource\": {\n          \"$ref\": \"#/$defs/Resource\"\n        }\n      },\n      \"required\": [\n        \"entity\",\n        \"action\",\n        \"resource\",\n        \"context\",\n        \"publishedAt\"\n      ],\n      \"title\": \"PublishedRow\",\n      \"type\": \"object\"\n    },\n    \"Resource\": {\n      \"description\": \"A forge-qualified resource, all lowercase: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo-path>` for one repository — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. On a forge with nested groups (GitLab) the repository path holds the subgroups between the top-level owner and the project: `gitlab.com/acme/platform/tools/cli` is one repository of the namespace `gitlab.com/acme`, and a subgroup such as `gitlab.com/acme/platform` is not a resource. A repository path has 1 to 21 segments (GitLab: 20 levels of subgroup and the project); GitHub and Forgejo repository paths are always one. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.\",\n      \"maxLength\": 5885,\n      \"pattern\": \"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,254}(?:/[a-z0-9_-][a-z0-9._-]{0,254}){0,21}$\",\n      \"title\": \"Resource\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"What is published, and how far it is from what the VTC's records currently call for.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Continuation token for the next page of `published`; pass it back as the request's `cursor`. Absent on the last page — never `null`.\",\n          \"type\": \"string\"\n        },\n        \"pendingChanges\": {\n          \"description\": \"How many records the next reconciliation pass will add, remove or replace to bring the registry into line with the VTC's current rights — across the whole VTC, regardless of `resource` or paging. Zero means the registry already matches.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"published\": {\n          \"description\": \"Records matching `resource`, as the VTC's own mirror of what it last published, ordered by `resource` then `action` then `entity`.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/PublishedRow\"\n          },\n          \"type\": \"array\"\n        },\n        \"registryConfigured\": {\n          \"description\": \"Whether this VTC can publish at all — a Trust Registry and its own publishing DID are configured. `false`: `published` is only what was last published before publishing was unconfigured, and `pendingChanges` still counts against the VTC's current records.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"registryConfigured\",\n        \"published\",\n        \"pendingChanges\"\n      ],\n      \"title\": \"Git Namespaces — Show Trust Registry Projection — response payload\",\n      \"type\": \"object\"\n    },\n    \"Right\": {\n      \"description\": \"One of the five git rights. Each string is also the TRQP `action` the VTC publishes the right under in its Trust Registry, so it is carried verbatim. `git.ns.admin` and `git.repo.create` apply to a namespace resource; `git.repo.own` and `git.repo.maintain` to a repository resource; `git.commit.sign` to either.\",\n      \"enum\": [\n        \"git.ns.admin\",\n        \"git.repo.create\",\n        \"git.repo.own\",\n        \"git.repo.maintain\",\n        \"git.commit.sign\"\n      ],\n      \"title\": \"Right\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Context\":{\"additionalProperties\":false,\"description\":\"The record's context as published: what the TRQP record has no member of its own for. Not itself governed by this specification — it is the projector's internal shape, carried through unchanged, and a consumer MUST treat unrecognised members as opaque rather than failing on them.\",\"properties\":{\"activeFrom\":{\"description\":\"When the underlying right took effect. Absent for a role-derived tuple, which has no grant time of its own.\",\"format\":\"date-time\",\"type\":\"string\"},\"activeTo\":{\"description\":\"When the underlying right expires. Absent: no expiry, or the longest of two merged sources' expiries once neither is absent.\",\"format\":\"date-time\",\"type\":\"string\"},\"framework\":{\"description\":\"The Trust Task type URI the record was published under — this specification's framework constant for a recorded or implied right, or the fixed `git-trust/grant/0.1` URI for a role-derived one.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"impliedBy\":{\"$ref\":\"#/$defs/Right\",\"description\":\"Present when this tuple publishes a right implied by another recorded right (a repository's `git.commit.sign` implied by its `git.repo.own`, or a namespace's implied rights). Names the right that implies it.\"},\"origin\":{\"description\":\"Present, and always `roleDerived`, exactly for a v0.1 `[hooks.git-trust] grant_on_role` tuple. Absent for a tuple sourced from a recorded or implied right.\",\"enum\":[\"roleDerived\"],\"type\":\"string\"}},\"required\":[\"framework\"],\"title\":\"Context\",\"type\":\"object\"},\"Did\":{\"description\":\"A bare DID in the W3C DID Core syntax (§3.1): `did:`, a method name of lowercase letters and digits, `:`, and a method-specific id of colon-separated segments drawn from `A-Z a-z 0-9 . - _` and percent-encoded octets, the last segment non-empty. A DID URL is not a DID: no path, query or fragment (`/`, `?`, `#`), so a verification-method id such as `did:key:z6Mk…#z6Mk…` is refused. Compared by exact string equality — no case folding or percent-decoding. A consumer MUST still treat the value as data: the pattern keeps shell metacharacters, whitespace and quotes out of the wire form, but it does not make a DID safe to splice into a command or markup.\",\"maxLength\":2048,\"pattern\":\"^did:[a-z0-9]+:(?:(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})*:)*(?:[A-Za-z0-9._-]|%[0-9A-Fa-f]{2})+$\",\"title\":\"Did\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"PublishedRow\":{\"additionalProperties\":false,\"description\":\"One record the VTC has published to the Trust Registry.\",\"properties\":{\"action\":{\"$ref\":\"#/$defs/Right\",\"description\":\"The TRQP action the record is published under.\"},\"context\":{\"$ref\":\"#/$defs/Context\"},\"entity\":{\"$ref\":\"#/$defs/Did\",\"description\":\"The DID the record is about — the right's subject.\"},\"publishedAt\":{\"description\":\"When the VTC last wrote this record to the registry.\",\"format\":\"date-time\",\"type\":\"string\"},\"resource\":{\"$ref\":\"#/$defs/Resource\"}},\"required\":[\"entity\",\"action\",\"resource\",\"context\",\"publishedAt\"],\"title\":\"PublishedRow\",\"type\":\"object\"},\"Resource\":{\"description\":\"A forge-qualified resource, all lowercase: `<forge-host>/<owner>` for a namespace, or `<forge-host>/<owner>/<repo-path>` for one repository — `github.com/acme`, `github.com/acme/widgets`, `codeberg.org/acme`. On a forge with nested groups (GitLab) the repository path holds the subgroups between the top-level owner and the project: `gitlab.com/acme/platform/tools/cli` is one repository of the namespace `gitlab.com/acme`, and a subgroup such as `gitlab.com/acme/platform` is not a resource. A repository path has 1 to 21 segments (GitLab: 20 levels of subgroup and the project); GitHub and Forgejo repository paths are always one. The forge is never implied: `acme/widgets` alone is not a resource. Containment is by whole segment: `github.com/acme` contains `github.com/acme/widgets` and does not contain `github.com/acme-labs/x` or `codeberg.org/acme/widgets`.\",\"maxLength\":5885,\"pattern\":\"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\\\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+/[a-z0-9_-][a-z0-9._-]{0,254}(?:/[a-z0-9_-][a-z0-9._-]{0,254}){0,21}$\",\"title\":\"Resource\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"What is published, and how far it is from what the VTC's records currently call for.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"nextCursor\":{\"description\":\"Continuation token for the next page of `published`; pass it back as the request's `cursor`. Absent on the last page — never `null`.\",\"type\":\"string\"},\"pendingChanges\":{\"description\":\"How many records the next reconciliation pass will add, remove or replace to bring the registry into line with the VTC's current rights — across the whole VTC, regardless of `resource` or paging. Zero means the registry already matches.\",\"minimum\":0,\"type\":\"integer\"},\"published\":{\"description\":\"Records matching `resource`, as the VTC's own mirror of what it last published, ordered by `resource` then `action` then `entity`.\",\"items\":{\"$ref\":\"#/$defs/PublishedRow\"},\"type\":\"array\"},\"registryConfigured\":{\"description\":\"Whether this VTC can publish at all — a Trust Registry and its own publishing DID are configured. `false`: `published` is only what was last published before publishing was unconfigured, and `pendingChanges` still counts against the VTC's current records.\",\"type\":\"boolean\"}},\"required\":[\"registryConfigured\",\"published\",\"pendingChanges\"],\"title\":\"Git Namespaces — Show Trust Registry Projection — response payload\",\"type\":\"object\"},\"Right\":{\"description\":\"One of the five git rights. Each string is also the TRQP `action` the VTC publishes the right under in its Trust Registry, so it is carried verbatim. `git.ns.admin` and `git.repo.create` apply to a namespace resource; `git.repo.own` and `git.repo.maintain` to a repository resource; `git.commit.sign` to either.\",\"enum\":[\"git.ns.admin\",\"git.repo.create\",\"git.repo.own\",\"git.repo.maintain\",\"git.commit.sign\"],\"title\":\"Right\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

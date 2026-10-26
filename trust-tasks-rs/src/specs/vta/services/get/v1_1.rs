@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,29 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Request payload for vta/services/get. Reads one transport's current state.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/services/get/1.1",
-///  "title": "Payload",
-///  "description": "Request payload for vta/services/get. Reads one transport's current state.",
-///  "type": "object",
-///  "required": [
-///    "service"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "service": {
-///      "$ref": "#/definitions/ServiceKind"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -180,29 +133,6 @@ impl Payload {
 }
 ///Success response to vta/services/get. Type https://trusttasks.org/spec/vta/services/get/1.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to vta/services/get. Type https://trusttasks.org/spec/vta/services/get/1.1#response.",
-///  "type": "object",
-///  "required": [
-///    "state"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "state": {
-///      "$ref": "#/definitions/ServiceState"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -218,22 +148,6 @@ impl Response {
 }
 ///Which transport a task is acting on. This is the discriminator: it selects which member of `config` is meaningful, and a payload naming one kind with another's config is malformed rather than merely ignored.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ServiceKind",
-///  "description": "Which transport a task is acting on. This is the discriminator: it selects which member of `config` is meaningful, and a payload naming one kind with another's config is malformed rather than merely ignored.",
-///  "type": "string",
-///  "enum": [
-///    "didcomm",
-///    "rest",
-///    "tsp",
-///    "webauthn"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -303,46 +217,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ServiceKind {
 }
 ///What the agent currently advertises for one service. `enabled` is the only member every kind carries; the rest are kind-specific and absent when they do not apply. Note that `enabled: false` and an absent entry are different: the first says the agent knows about this transport and is not advertising it, the second says it has never been configured.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ServiceState",
-///  "description": "What the agent currently advertises for one service. `enabled` is the only member every kind carries; the rest are kind-specific and absent when they do not apply. Note that `enabled: false` and an absent entry are different: the first says the agent knows about this transport and is not advertising it, the second says it has never been configured.",
-///  "type": "object",
-///  "required": [
-///    "enabled",
-///    "kind"
-///  ],
-///  "properties": {
-///    "drainEndsAt": {
-///      "description": "RFC 3339 instant at which a scheduled drain completes. Present only while a `didcomm` mediator is draining — see `vta/services/drain/list`.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "enabled": {
-///      "description": "Whether the agent currently advertises this transport in its DID document.",
-///      "type": "boolean"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "kind": {
-///      "$ref": "#/definitions/ServiceKind"
-///    },
-///    "mediatorDid": {
-///      "description": "The mediator this transport routes through. Present for `didcomm` and `tsp`.",
-///      "type": "string"
-///    },
-///    "url": {
-///      "description": "The advertised endpoint. Present for `rest` and `webauthn`.",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -607,14 +481,14 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/services/get/1.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/services/get. Type https://trusttasks.org/spec/vta/services/get/1.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"state\": {\n          \"$ref\": \"#/$defs/ServiceState\"\n        }\n      },\n      \"required\": [\n        \"state\"\n      ],\n      \"title\": \"VTA Services — Get — response payload\",\n      \"type\": \"object\"\n    },\n    \"ServiceKind\": {\n      \"description\": \"Which transport a task is acting on. This is the discriminator: it selects which member of `config` is meaningful, and a payload naming one kind with another's config is malformed rather than merely ignored.\",\n      \"enum\": [\n        \"didcomm\",\n        \"rest\",\n        \"tsp\",\n        \"webauthn\"\n      ],\n      \"title\": \"ServiceKind\",\n      \"type\": \"string\"\n    },\n    \"ServiceState\": {\n      \"additionalProperties\": false,\n      \"description\": \"What the agent currently advertises for one service. `enabled` is the only member every kind carries; the rest are kind-specific and absent when they do not apply. Note that `enabled: false` and an absent entry are different: the first says the agent knows about this transport and is not advertising it, the second says it has never been configured.\",\n      \"properties\": {\n        \"drainEndsAt\": {\n          \"description\": \"RFC 3339 instant at which a scheduled drain completes. Present only while a `didcomm` mediator is draining — see `vta/services/drain/list`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"enabled\": {\n          \"description\": \"Whether the agent currently advertises this transport in its DID document.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"kind\": {\n          \"$ref\": \"#/$defs/ServiceKind\"\n        },\n        \"mediatorDid\": {\n          \"description\": \"The mediator this transport routes through. Present for `didcomm` and `tsp`.\",\n          \"type\": \"string\"\n        },\n        \"url\": {\n          \"description\": \"The advertised endpoint. Present for `rest` and `webauthn`.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"enabled\"\n      ],\n      \"title\": \"ServiceState\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/services/get/1.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Request payload for vta/services/get. Reads one transport's current state.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"service\": {\n      \"$ref\": \"#/$defs/ServiceKind\"\n    }\n  },\n  \"required\": [\n    \"service\"\n  ],\n  \"title\": \"VTA Services — Get — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vta/services/get. Type https://trusttasks.org/spec/vta/services/get/1.1#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"state\":{\"$ref\":\"#/$defs/ServiceState\"}},\"required\":[\"state\"],\"title\":\"VTA Services — Get — response payload\",\"type\":\"object\"},\"ServiceKind\":{\"description\":\"Which transport a task is acting on. This is the discriminator: it selects which member of `config` is meaningful, and a payload naming one kind with another's config is malformed rather than merely ignored.\",\"enum\":[\"didcomm\",\"rest\",\"tsp\",\"webauthn\"],\"title\":\"ServiceKind\",\"type\":\"string\"},\"ServiceState\":{\"additionalProperties\":false,\"description\":\"What the agent currently advertises for one service. `enabled` is the only member every kind carries; the rest are kind-specific and absent when they do not apply. Note that `enabled: false` and an absent entry are different: the first says the agent knows about this transport and is not advertising it, the second says it has never been configured.\",\"properties\":{\"drainEndsAt\":{\"description\":\"RFC 3339 instant at which a scheduled drain completes. Present only while a `didcomm` mediator is draining — see `vta/services/drain/list`.\",\"format\":\"date-time\",\"type\":\"string\"},\"enabled\":{\"description\":\"Whether the agent currently advertises this transport in its DID document.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"kind\":{\"$ref\":\"#/$defs/ServiceKind\"},\"mediatorDid\":{\"description\":\"The mediator this transport routes through. Present for `didcomm` and `tsp`.\",\"type\":\"string\"},\"url\":{\"description\":\"The advertised endpoint. Present for `rest` and `webauthn`.\",\"type\":\"string\"}},\"required\":[\"kind\",\"enabled\"],\"title\":\"ServiceState\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/services/get/1.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Request payload for vta/services/get. Reads one transport's current state.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"service\":{\"$ref\":\"#/$defs/ServiceKind\"}},\"required\":[\"service\"],\"title\":\"VTA Services — Get — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vta/services/get/1.1#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to vta/services/get. Type https://trusttasks.org/spec/vta/services/get/1.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"state\": {\n          \"$ref\": \"#/$defs/ServiceState\"\n        }\n      },\n      \"required\": [\n        \"state\"\n      ],\n      \"title\": \"VTA Services — Get — response payload\",\n      \"type\": \"object\"\n    },\n    \"ServiceKind\": {\n      \"description\": \"Which transport a task is acting on. This is the discriminator: it selects which member of `config` is meaningful, and a payload naming one kind with another's config is malformed rather than merely ignored.\",\n      \"enum\": [\n        \"didcomm\",\n        \"rest\",\n        \"tsp\",\n        \"webauthn\"\n      ],\n      \"title\": \"ServiceKind\",\n      \"type\": \"string\"\n    },\n    \"ServiceState\": {\n      \"additionalProperties\": false,\n      \"description\": \"What the agent currently advertises for one service. `enabled` is the only member every kind carries; the rest are kind-specific and absent when they do not apply. Note that `enabled: false` and an absent entry are different: the first says the agent knows about this transport and is not advertising it, the second says it has never been configured.\",\n      \"properties\": {\n        \"drainEndsAt\": {\n          \"description\": \"RFC 3339 instant at which a scheduled drain completes. Present only while a `didcomm` mediator is draining — see `vta/services/drain/list`.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"enabled\": {\n          \"description\": \"Whether the agent currently advertises this transport in its DID document.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"kind\": {\n          \"$ref\": \"#/$defs/ServiceKind\"\n        },\n        \"mediatorDid\": {\n          \"description\": \"The mediator this transport routes through. Present for `didcomm` and `tsp`.\",\n          \"type\": \"string\"\n        },\n        \"url\": {\n          \"description\": \"The advertised endpoint. Present for `rest` and `webauthn`.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"kind\",\n        \"enabled\"\n      ],\n      \"title\": \"ServiceState\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to vta/services/get. Type https://trusttasks.org/spec/vta/services/get/1.1#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"state\":{\"$ref\":\"#/$defs/ServiceState\"}},\"required\":[\"state\"],\"title\":\"VTA Services — Get — response payload\",\"type\":\"object\"},\"ServiceKind\":{\"description\":\"Which transport a task is acting on. This is the discriminator: it selects which member of `config` is meaningful, and a payload naming one kind with another's config is malformed rather than merely ignored.\",\"enum\":[\"didcomm\",\"rest\",\"tsp\",\"webauthn\"],\"title\":\"ServiceKind\",\"type\":\"string\"},\"ServiceState\":{\"additionalProperties\":false,\"description\":\"What the agent currently advertises for one service. `enabled` is the only member every kind carries; the rest are kind-specific and absent when they do not apply. Note that `enabled: false` and an absent entry are different: the first says the agent knows about this transport and is not advertising it, the second says it has never been configured.\",\"properties\":{\"drainEndsAt\":{\"description\":\"RFC 3339 instant at which a scheduled drain completes. Present only while a `didcomm` mediator is draining — see `vta/services/drain/list`.\",\"format\":\"date-time\",\"type\":\"string\"},\"enabled\":{\"description\":\"Whether the agent currently advertises this transport in its DID document.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"kind\":{\"$ref\":\"#/$defs/ServiceKind\"},\"mediatorDid\":{\"description\":\"The mediator this transport routes through. Present for `didcomm` and `tsp`.\",\"type\":\"string\"},\"url\":{\"description\":\"The advertised endpoint. Present for `rest` and `webauthn`.\",\"type\":\"string\"}},\"required\":[\"kind\",\"enabled\"],\"title\":\"ServiceState\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

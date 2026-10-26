@@ -34,18 +34,6 @@ pub mod error {
 }
 ///Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "CredentialId",
-///  "description": "Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.",
-///  "type": "string",
-///  "minLength": 1,
-///  "$anchor": "credentialId"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CredentialId(::std::string::String);
@@ -105,21 +93,6 @@ impl<'de> ::serde::Deserialize<'de> for CredentialId {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -141,15 +114,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -213,34 +177,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/endorsements/revoke/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "endorsementId"
-///  ],
-///  "properties": {
-///    "endorsementId": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "reason": {
-///      "description": "Optional human-readable rationale, recorded for audit.",
-///      "type": "string",
-///      "maxLength": 1024
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -260,15 +196,6 @@ impl Payload {
 }
 ///`PayloadEndorsementId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadEndorsementId(::std::string::String);
@@ -328,16 +255,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadEndorsementId {
 }
 ///Optional human-readable rationale, recorded for audit.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Optional human-readable rationale, recorded for audit.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadReason(::std::string::String);
@@ -397,40 +314,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "endorsementId",
-///    "revocation",
-///    "statusListIndex"
-///  ],
-///  "properties": {
-///    "endorsementId": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "revocation": {
-///      "description": "The registry-wide revocation receipt for the underlying credential — the statement credential, or a vetter role credential (VAC).",
-///      "$ref": "#/definitions/RevocationReceipt"
-///    },
-///    "statusListIndex": {
-///      "description": "The status-list slot whose bit was flipped, so a verifier can confirm the published effect.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -452,15 +335,6 @@ impl Response {
 }
 ///`ResponseEndorsementId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseEndorsementId(::std::string::String);
@@ -523,32 +397,6 @@ The receipt for a successful revocation. Consumers MUST report the family's `alr
 
 The counterpart to IssuedCredential: both concern a credential's lifecycle at its issuer.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RevocationReceipt",
-///  "description": "The receipt for a successful revocation. Consumers MUST report the family's `alreadyRevoked` / `already_revoked` error when the credential was already revoked, rather than returning a second receipt silently — the caller has to be able to distinguish \"I revoked it now\" from \"it was already gone\".\n\nThe counterpart to IssuedCredential: both concern a credential's lifecycle at its issuer.",
-///  "type": "object",
-///  "required": [
-///    "credentialId",
-///    "revokedAt"
-///  ],
-///  "properties": {
-///    "credentialId": {
-///      "$ref": "#/definitions/CredentialId"
-///    },
-///    "revokedAt": {
-///      "description": "When the revocation was recorded.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "revocationReceipt"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -777,7 +625,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CredentialId\": {\n      \"$anchor\": \"credentialId\",\n      \"description\": \"Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.\",\n      \"minLength\": 1,\n      \"title\": \"CredentialId\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"endorsementId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"revocation\": {\n          \"$ref\": \"#/$defs/RevocationReceipt\",\n          \"description\": \"The registry-wide revocation receipt for the underlying credential — the statement credential, or a vetter role credential (VAC).\"\n        },\n        \"statusListIndex\": {\n          \"description\": \"The status-list slot whose bit was flipped, so a verifier can confirm the published effect.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"endorsementId\",\n        \"revocation\",\n        \"statusListIndex\"\n      ],\n      \"title\": \"VTC Endorsements Revoke — response payload\",\n      \"type\": \"object\"\n    },\n    \"RevocationReceipt\": {\n      \"$anchor\": \"revocationReceipt\",\n      \"additionalProperties\": false,\n      \"description\": \"The receipt for a successful revocation. Consumers MUST report the family's `alreadyRevoked` / `already_revoked` error when the credential was already revoked, rather than returning a second receipt silently — the caller has to be able to distinguish \\\"I revoked it now\\\" from \\\"it was already gone\\\".\\n\\nThe counterpart to IssuedCredential: both concern a credential's lifecycle at its issuer.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"$ref\": \"#/$defs/CredentialId\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the revocation was recorded.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"revokedAt\"\n      ],\n      \"title\": \"RevocationReceipt\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/endorsements/revoke/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"endorsementId\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"reason\": {\n      \"description\": \"Optional human-readable rationale, recorded for audit.\",\n      \"maxLength\": 1024,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"endorsementId\"\n  ],\n  \"title\": \"VTC Endorsements Revoke — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"CredentialId\":{\"$anchor\":\"credentialId\",\"description\":\"Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.\",\"minLength\":1,\"title\":\"CredentialId\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"endorsementId\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"revocation\":{\"$ref\":\"#/$defs/RevocationReceipt\",\"description\":\"The registry-wide revocation receipt for the underlying credential — the statement credential, or a vetter role credential (VAC).\"},\"statusListIndex\":{\"description\":\"The status-list slot whose bit was flipped, so a verifier can confirm the published effect.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"endorsementId\",\"revocation\",\"statusListIndex\"],\"title\":\"VTC Endorsements Revoke — response payload\",\"type\":\"object\"},\"RevocationReceipt\":{\"$anchor\":\"revocationReceipt\",\"additionalProperties\":false,\"description\":\"The receipt for a successful revocation. Consumers MUST report the family's `alreadyRevoked` / `already_revoked` error when the credential was already revoked, rather than returning a second receipt silently — the caller has to be able to distinguish \\\"I revoked it now\\\" from \\\"it was already gone\\\".\\n\\nThe counterpart to IssuedCredential: both concern a credential's lifecycle at its issuer.\",\"properties\":{\"credentialId\":{\"$ref\":\"#/$defs/CredentialId\"},\"revokedAt\":{\"description\":\"When the revocation was recorded.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"credentialId\",\"revokedAt\"],\"title\":\"RevocationReceipt\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/endorsements/revoke/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"endorsementId\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"reason\":{\"description\":\"Optional human-readable rationale, recorded for audit.\",\"maxLength\":1024,\"type\":\"string\"}},\"required\":[\"endorsementId\"],\"title\":\"VTC Endorsements Revoke — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -787,7 +635,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CredentialId\": {\n      \"$anchor\": \"credentialId\",\n      \"description\": \"Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.\",\n      \"minLength\": 1,\n      \"title\": \"CredentialId\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"endorsementId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"revocation\": {\n          \"$ref\": \"#/$defs/RevocationReceipt\",\n          \"description\": \"The registry-wide revocation receipt for the underlying credential — the statement credential, or a vetter role credential (VAC).\"\n        },\n        \"statusListIndex\": {\n          \"description\": \"The status-list slot whose bit was flipped, so a verifier can confirm the published effect.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"endorsementId\",\n        \"revocation\",\n        \"statusListIndex\"\n      ],\n      \"title\": \"VTC Endorsements Revoke — response payload\",\n      \"type\": \"object\"\n    },\n    \"RevocationReceipt\": {\n      \"$anchor\": \"revocationReceipt\",\n      \"additionalProperties\": false,\n      \"description\": \"The receipt for a successful revocation. Consumers MUST report the family's `alreadyRevoked` / `already_revoked` error when the credential was already revoked, rather than returning a second receipt silently — the caller has to be able to distinguish \\\"I revoked it now\\\" from \\\"it was already gone\\\".\\n\\nThe counterpart to IssuedCredential: both concern a credential's lifecycle at its issuer.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"$ref\": \"#/$defs/CredentialId\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the revocation was recorded.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"revokedAt\"\n      ],\n      \"title\": \"RevocationReceipt\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"CredentialId\":{\"$anchor\":\"credentialId\",\"description\":\"Stable identifier for an issued credential — the handle for revocation and audit. Opaque to the holder: it MUST be echoed verbatim when revoking and MUST NOT be parsed.\",\"minLength\":1,\"title\":\"CredentialId\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"endorsementId\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"revocation\":{\"$ref\":\"#/$defs/RevocationReceipt\",\"description\":\"The registry-wide revocation receipt for the underlying credential — the statement credential, or a vetter role credential (VAC).\"},\"statusListIndex\":{\"description\":\"The status-list slot whose bit was flipped, so a verifier can confirm the published effect.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"endorsementId\",\"revocation\",\"statusListIndex\"],\"title\":\"VTC Endorsements Revoke — response payload\",\"type\":\"object\"},\"RevocationReceipt\":{\"$anchor\":\"revocationReceipt\",\"additionalProperties\":false,\"description\":\"The receipt for a successful revocation. Consumers MUST report the family's `alreadyRevoked` / `already_revoked` error when the credential was already revoked, rather than returning a second receipt silently — the caller has to be able to distinguish \\\"I revoked it now\\\" from \\\"it was already gone\\\".\\n\\nThe counterpart to IssuedCredential: both concern a credential's lifecycle at its issuer.\",\"properties\":{\"credentialId\":{\"$ref\":\"#/$defs/CredentialId\"},\"revokedAt\":{\"description\":\"When the revocation was recorded.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"credentialId\",\"revokedAt\"],\"title\":\"RevocationReceipt\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

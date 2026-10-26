@@ -34,53 +34,6 @@ pub mod error {
 }
 ///One of the holder's lists, as their agent keeps it. A list is context-scoped, like the contacts it holds: it may hold contacts known by any persona in its context, and contacts from any number of communities, but never a contact of another context.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ContactList",
-///  "description": "One of the holder's lists, as their agent keeps it. A list is context-scoped, like the contacts it holds: it may hold contacts known by any persona in its context, and contacts from any number of communities, but never a contact of another context.",
-///  "type": "object",
-///  "required": [
-///    "contactCount",
-///    "createdAt",
-///    "listId",
-///    "name",
-///    "order",
-///    "updatedAt"
-///  ],
-///  "properties": {
-///    "colour": {
-///      "$ref": "#/definitions/ListColour"
-///    },
-///    "contactCount": {
-///      "description": "How many of the context's contacts are on the list now.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "createdAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "listId": {
-///      "$ref": "#/definitions/ListId"
-///    },
-///    "name": {
-///      "$ref": "#/definitions/ListName"
-///    },
-///    "order": {
-///      "$ref": "#/definitions/ListOrder"
-///    },
-///    "updatedAt": {
-///      "description": "When the list's name, colour or order last changed. Adding a contact to the list or removing one does not move it.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -107,21 +60,6 @@ impl ContactList {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -143,15 +81,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -215,17 +144,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A colour the holder picked for a list, as a six-digit lowercase sRGB hex value (`#1f8a70`). A rendering hint: a consumer MAY map it to the nearest colour of its own palette that keeps contrast in light and dark themes, and MUST NOT rely on colour alone to tell lists apart.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ListColour",
-///  "description": "A colour the holder picked for a list, as a six-digit lowercase sRGB hex value (`#1f8a70`). A rendering hint: a consumer MAY map it to the nearest colour of its own palette that keeps contrast in light and dark themes, and MUST NOT rely on colour alone to tell lists apart.",
-///  "type": "string",
-///  "pattern": "^#[0-9a-f]{6}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ListColour(::std::string::String);
@@ -287,17 +205,6 @@ impl<'de> ::serde::Deserialize<'de> for ListColour {
 }
 ///Identifier of one of the holder's contact lists: a ULID in Crockford base32, uppercase, assigned by the agent when the list is created. Meaningful only inside the context that holds the list; it is never sent to anyone but the holder's own clients.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ListId",
-///  "description": "Identifier of one of the holder's contact lists: a ULID in Crockford base32, uppercase, assigned by the agent when the list is created. Meaningful only inside the context that holds the list; it is never sent to anyone but the holder's own clients.",
-///  "type": "string",
-///  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ListId(::std::string::String);
@@ -361,19 +268,6 @@ impl<'de> ::serde::Deserialize<'de> for ListId {
 }
 ///The holder's name for one of their lists ("Mentors", "Met at the spring meetup"), on one line: no control characters. Unique within a context, compared exactly.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ListName",
-///  "description": "The holder's name for one of their lists (\"Mentors\", \"Met at the spring meetup\"), on one line: no control characters. Unique within a context, compared exactly.",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 1,
-///  "pattern": "^[^\\u0000-\\u001F\\u007F]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ListName(::std::string::String);
@@ -443,18 +337,6 @@ impl<'de> ::serde::Deserialize<'de> for ListName {
 }
 ///Where the holder wants a list among their lists: ascending, ties broken by `name`. A sort key, not a position, so moving one list does not renumber the others; gaps are expected.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ListOrder",
-///  "description": "Where the holder wants a list among their lists: ascending, ties broken by `name`. A sort key, not a position, so moving one list does not renumber the others; gaps are expected.",
-///  "type": "integer",
-///  "maximum": 1000000.0,
-///  "minimum": 0.0
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct ListOrder(pub i64);
@@ -499,60 +381,6 @@ impl ::std::fmt::Display for ListOrder {
 }
 ///Create one of the holder's contact lists, or rename, recolour or reorder an existing one. Without `listId`: create, and `name` is required. With `listId`: update; each detail given replaces the stored one, `removeColour` removes the colour, and each detail absent is unchanged. Membership is not changed here — a contact's lists are set with persona/contact/put 1.1. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/persona/contact/lists/put/1.1",
-///  "title": "Payload",
-///  "description": "Create one of the holder's contact lists, or rename, recolour or reorder an existing one. Without `listId`: create, and `name` is required. With `listId`: update; each detail given replaces the stored one, `removeColour` removes the colour, and each detail absent is unchanged. Membership is not changed here — a contact's lists are set with persona/contact/put 1.1. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "contextId"
-///  ],
-///  "properties": {
-///    "colour": {
-///      "description": "The list's colour, replacing any it had. Absent: unchanged (none, on a create).",
-///      "$ref": "#/definitions/ListColour"
-///    },
-///    "contextId": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "listId": {
-///      "description": "The list to update. Absent: create a new list, whose identifier the agent assigns and returns.",
-///      "$ref": "#/definitions/ListId"
-///    },
-///    "name": {
-///      "description": "The list's name. Required to create; on an update, replaces the name. Unique within the context.",
-///      "$ref": "#/definitions/ListName"
-///    },
-///    "order": {
-///      "description": "Where the list sorts among the holder's lists. Absent on a create: after every existing list.",
-///      "$ref": "#/definitions/ListOrder"
-///    },
-///    "removeColour": {
-///      "description": "Remove the list's colour. Update only. Only `true` is accepted.",
-///      "type": "boolean",
-///      "const": true
-///    }
-///  },
-///  "additionalProperties": false,
-///  "dependentSchemas": {
-///    "removeColour": {
-///      "not": {
-///        "required": [
-///          "colour"
-///        ]
-///      }
-///    }
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -592,15 +420,6 @@ impl Payload {
 }
 ///`PayloadContextId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadContextId(::std::string::String);
@@ -660,39 +479,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadContextId {
 }
 ///Success response to persona/contact/lists/put. Type https://trusttasks.org/spec/persona/contact/lists/put/1.1#response. The list as it now stands.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to persona/contact/lists/put. Type https://trusttasks.org/spec/persona/contact/lists/put/1.1#response. The list as it now stands.",
-///  "type": "object",
-///  "required": [
-///    "changed",
-///    "list",
-///    "wasCreated"
-///  ],
-///  "properties": {
-///    "changed": {
-///      "description": "True when this request created the list or changed any detail of it. False when every detail given already matched.",
-///      "type": "boolean"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "list": {
-///      "$ref": "#/definitions/ContactList"
-///    },
-///    "wasCreated": {
-///      "description": "True when this request created the list.",
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1051,7 +837,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ContactList\": {\n      \"additionalProperties\": false,\n      \"description\": \"One of the holder's lists, as their agent keeps it. A list is context-scoped, like the contacts it holds: it may hold contacts known by any persona in its context, and contacts from any number of communities, but never a contact of another context.\",\n      \"properties\": {\n        \"colour\": {\n          \"$ref\": \"#/$defs/ListColour\"\n        },\n        \"contactCount\": {\n          \"description\": \"How many of the context's contacts are on the list now.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"listId\": {\n          \"$ref\": \"#/$defs/ListId\"\n        },\n        \"name\": {\n          \"$ref\": \"#/$defs/ListName\"\n        },\n        \"order\": {\n          \"$ref\": \"#/$defs/ListOrder\"\n        },\n        \"updatedAt\": {\n          \"description\": \"When the list's name, colour or order last changed. Adding a contact to the list or removing one does not move it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"listId\",\n        \"name\",\n        \"order\",\n        \"contactCount\",\n        \"createdAt\",\n        \"updatedAt\"\n      ],\n      \"title\": \"ContactList\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ListColour\": {\n      \"description\": \"A colour the holder picked for a list, as a six-digit lowercase sRGB hex value (`#1f8a70`). A rendering hint: a consumer MAY map it to the nearest colour of its own palette that keeps contrast in light and dark themes, and MUST NOT rely on colour alone to tell lists apart.\",\n      \"pattern\": \"^#[0-9a-f]{6}$\",\n      \"title\": \"ListColour\",\n      \"type\": \"string\"\n    },\n    \"ListId\": {\n      \"description\": \"Identifier of one of the holder's contact lists: a ULID in Crockford base32, uppercase, assigned by the agent when the list is created. Meaningful only inside the context that holds the list; it is never sent to anyone but the holder's own clients.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"ListId\",\n      \"type\": \"string\"\n    },\n    \"ListName\": {\n      \"description\": \"The holder's name for one of their lists (\\\"Mentors\\\", \\\"Met at the spring meetup\\\"), on one line: no control characters. Unique within a context, compared exactly.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[^\\\\u0000-\\\\u001F\\\\u007F]+$\",\n      \"title\": \"ListName\",\n      \"type\": \"string\"\n    },\n    \"ListOrder\": {\n      \"description\": \"Where the holder wants a list among their lists: ascending, ties broken by `name`. A sort key, not a position, so moving one list does not renumber the others; gaps are expected.\",\n      \"maximum\": 1000000,\n      \"minimum\": 0,\n      \"title\": \"ListOrder\",\n      \"type\": \"integer\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/contact/lists/put. Type https://trusttasks.org/spec/persona/contact/lists/put/1.1#response. The list as it now stands.\",\n      \"properties\": {\n        \"changed\": {\n          \"description\": \"True when this request created the list or changed any detail of it. False when every detail given already matched.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"list\": {\n          \"$ref\": \"#/$defs/ContactList\"\n        },\n        \"wasCreated\": {\n          \"description\": \"True when this request created the list.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"list\",\n        \"wasCreated\",\n        \"changed\"\n      ],\n      \"title\": \"Persona Contact Lists Put — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/persona/contact/lists/put/1.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"dependentSchemas\": {\n    \"removeColour\": {\n      \"not\": {\n        \"required\": [\n          \"colour\"\n        ]\n      }\n    }\n  },\n  \"description\": \"Create one of the holder's contact lists, or rename, recolour or reorder an existing one. Without `listId`: create, and `name` is required. With `listId`: update; each detail given replaces the stored one, `removeColour` removes the colour, and each detail absent is unchanged. Membership is not changed here — a contact's lists are set with persona/contact/put 1.1. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"oneOf\": [\n    {\n      \"not\": {\n        \"anyOf\": [\n          {\n            \"required\": [\n              \"listId\"\n            ]\n          },\n          {\n            \"required\": [\n              \"removeColour\"\n            ]\n          }\n        ]\n      },\n      \"required\": [\n        \"name\"\n      ]\n    },\n    {\n      \"anyOf\": [\n        {\n          \"required\": [\n            \"name\"\n          ]\n        },\n        {\n          \"required\": [\n            \"colour\"\n          ]\n        },\n        {\n          \"required\": [\n            \"removeColour\"\n          ]\n        },\n        {\n          \"required\": [\n            \"order\"\n          ]\n        }\n      ],\n      \"required\": [\n        \"listId\"\n      ]\n    }\n  ],\n  \"properties\": {\n    \"colour\": {\n      \"$ref\": \"#/$defs/ListColour\",\n      \"description\": \"The list's colour, replacing any it had. Absent: unchanged (none, on a create).\"\n    },\n    \"contextId\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"listId\": {\n      \"$ref\": \"#/$defs/ListId\",\n      \"description\": \"The list to update. Absent: create a new list, whose identifier the agent assigns and returns.\"\n    },\n    \"name\": {\n      \"$ref\": \"#/$defs/ListName\",\n      \"description\": \"The list's name. Required to create; on an update, replaces the name. Unique within the context.\"\n    },\n    \"order\": {\n      \"$ref\": \"#/$defs/ListOrder\",\n      \"description\": \"Where the list sorts among the holder's lists. Absent on a create: after every existing list.\"\n    },\n    \"removeColour\": {\n      \"const\": true,\n      \"description\": \"Remove the list's colour. Update only. Only `true` is accepted.\",\n      \"type\": \"boolean\"\n    }\n  },\n  \"required\": [\n    \"contextId\"\n  ],\n  \"title\": \"Persona Contact Lists Put — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"ContactList\":{\"additionalProperties\":false,\"description\":\"One of the holder's lists, as their agent keeps it. A list is context-scoped, like the contacts it holds: it may hold contacts known by any persona in its context, and contacts from any number of communities, but never a contact of another context.\",\"properties\":{\"colour\":{\"$ref\":\"#/$defs/ListColour\"},\"contactCount\":{\"description\":\"How many of the context's contacts are on the list now.\",\"minimum\":0,\"type\":\"integer\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"listId\":{\"$ref\":\"#/$defs/ListId\"},\"name\":{\"$ref\":\"#/$defs/ListName\"},\"order\":{\"$ref\":\"#/$defs/ListOrder\"},\"updatedAt\":{\"description\":\"When the list's name, colour or order last changed. Adding a contact to the list or removing one does not move it.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"listId\",\"name\",\"order\",\"contactCount\",\"createdAt\",\"updatedAt\"],\"title\":\"ContactList\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ListColour\":{\"description\":\"A colour the holder picked for a list, as a six-digit lowercase sRGB hex value (`#1f8a70`). A rendering hint: a consumer MAY map it to the nearest colour of its own palette that keeps contrast in light and dark themes, and MUST NOT rely on colour alone to tell lists apart.\",\"pattern\":\"^#[0-9a-f]{6}$\",\"title\":\"ListColour\",\"type\":\"string\"},\"ListId\":{\"description\":\"Identifier of one of the holder's contact lists: a ULID in Crockford base32, uppercase, assigned by the agent when the list is created. Meaningful only inside the context that holds the list; it is never sent to anyone but the holder's own clients.\",\"pattern\":\"^[0-9A-HJKMNP-TV-Z]{26}$\",\"title\":\"ListId\",\"type\":\"string\"},\"ListName\":{\"description\":\"The holder's name for one of their lists (\\\"Mentors\\\", \\\"Met at the spring meetup\\\"), on one line: no control characters. Unique within a context, compared exactly.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[^\\\\u0000-\\\\u001F\\\\u007F]+$\",\"title\":\"ListName\",\"type\":\"string\"},\"ListOrder\":{\"description\":\"Where the holder wants a list among their lists: ascending, ties broken by `name`. A sort key, not a position, so moving one list does not renumber the others; gaps are expected.\",\"maximum\":1000000,\"minimum\":0,\"title\":\"ListOrder\",\"type\":\"integer\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to persona/contact/lists/put. Type https://trusttasks.org/spec/persona/contact/lists/put/1.1#response. The list as it now stands.\",\"properties\":{\"changed\":{\"description\":\"True when this request created the list or changed any detail of it. False when every detail given already matched.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"list\":{\"$ref\":\"#/$defs/ContactList\"},\"wasCreated\":{\"description\":\"True when this request created the list.\",\"type\":\"boolean\"}},\"required\":[\"list\",\"wasCreated\",\"changed\"],\"title\":\"Persona Contact Lists Put — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/persona/contact/lists/put/1.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"dependentSchemas\":{\"removeColour\":{\"not\":{\"required\":[\"colour\"]}}},\"description\":\"Create one of the holder's contact lists, or rename, recolour or reorder an existing one. Without `listId`: create, and `name` is required. With `listId`: update; each detail given replaces the stored one, `removeColour` removes the colour, and each detail absent is unchanged. Membership is not changed here — a contact's lists are set with persona/contact/put 1.1. The outer document members are owned by the framework — SPEC §6.3.\",\"oneOf\":[{\"not\":{\"anyOf\":[{\"required\":[\"listId\"]},{\"required\":[\"removeColour\"]}]},\"required\":[\"name\"]},{\"anyOf\":[{\"required\":[\"name\"]},{\"required\":[\"colour\"]},{\"required\":[\"removeColour\"]},{\"required\":[\"order\"]}],\"required\":[\"listId\"]}],\"properties\":{\"colour\":{\"$ref\":\"#/$defs/ListColour\",\"description\":\"The list's colour, replacing any it had. Absent: unchanged (none, on a create).\"},\"contextId\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"listId\":{\"$ref\":\"#/$defs/ListId\",\"description\":\"The list to update. Absent: create a new list, whose identifier the agent assigns and returns.\"},\"name\":{\"$ref\":\"#/$defs/ListName\",\"description\":\"The list's name. Required to create; on an update, replaces the name. Unique within the context.\"},\"order\":{\"$ref\":\"#/$defs/ListOrder\",\"description\":\"Where the list sorts among the holder's lists. Absent on a create: after every existing list.\"},\"removeColour\":{\"const\":true,\"description\":\"Remove the list's colour. Update only. Only `true` is accepted.\",\"type\":\"boolean\"}},\"required\":[\"contextId\"],\"title\":\"Persona Contact Lists Put — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1061,7 +847,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ContactList\": {\n      \"additionalProperties\": false,\n      \"description\": \"One of the holder's lists, as their agent keeps it. A list is context-scoped, like the contacts it holds: it may hold contacts known by any persona in its context, and contacts from any number of communities, but never a contact of another context.\",\n      \"properties\": {\n        \"colour\": {\n          \"$ref\": \"#/$defs/ListColour\"\n        },\n        \"contactCount\": {\n          \"description\": \"How many of the context's contacts are on the list now.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"listId\": {\n          \"$ref\": \"#/$defs/ListId\"\n        },\n        \"name\": {\n          \"$ref\": \"#/$defs/ListName\"\n        },\n        \"order\": {\n          \"$ref\": \"#/$defs/ListOrder\"\n        },\n        \"updatedAt\": {\n          \"description\": \"When the list's name, colour or order last changed. Adding a contact to the list or removing one does not move it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"listId\",\n        \"name\",\n        \"order\",\n        \"contactCount\",\n        \"createdAt\",\n        \"updatedAt\"\n      ],\n      \"title\": \"ContactList\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ListColour\": {\n      \"description\": \"A colour the holder picked for a list, as a six-digit lowercase sRGB hex value (`#1f8a70`). A rendering hint: a consumer MAY map it to the nearest colour of its own palette that keeps contrast in light and dark themes, and MUST NOT rely on colour alone to tell lists apart.\",\n      \"pattern\": \"^#[0-9a-f]{6}$\",\n      \"title\": \"ListColour\",\n      \"type\": \"string\"\n    },\n    \"ListId\": {\n      \"description\": \"Identifier of one of the holder's contact lists: a ULID in Crockford base32, uppercase, assigned by the agent when the list is created. Meaningful only inside the context that holds the list; it is never sent to anyone but the holder's own clients.\",\n      \"pattern\": \"^[0-9A-HJKMNP-TV-Z]{26}$\",\n      \"title\": \"ListId\",\n      \"type\": \"string\"\n    },\n    \"ListName\": {\n      \"description\": \"The holder's name for one of their lists (\\\"Mentors\\\", \\\"Met at the spring meetup\\\"), on one line: no control characters. Unique within a context, compared exactly.\",\n      \"maxLength\": 64,\n      \"minLength\": 1,\n      \"pattern\": \"^[^\\\\u0000-\\\\u001F\\\\u007F]+$\",\n      \"title\": \"ListName\",\n      \"type\": \"string\"\n    },\n    \"ListOrder\": {\n      \"description\": \"Where the holder wants a list among their lists: ascending, ties broken by `name`. A sort key, not a position, so moving one list does not renumber the others; gaps are expected.\",\n      \"maximum\": 1000000,\n      \"minimum\": 0,\n      \"title\": \"ListOrder\",\n      \"type\": \"integer\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Success response to persona/contact/lists/put. Type https://trusttasks.org/spec/persona/contact/lists/put/1.1#response. The list as it now stands.\",\n      \"properties\": {\n        \"changed\": {\n          \"description\": \"True when this request created the list or changed any detail of it. False when every detail given already matched.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"list\": {\n          \"$ref\": \"#/$defs/ContactList\"\n        },\n        \"wasCreated\": {\n          \"description\": \"True when this request created the list.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"list\",\n        \"wasCreated\",\n        \"changed\"\n      ],\n      \"title\": \"Persona Contact Lists Put — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"ContactList\":{\"additionalProperties\":false,\"description\":\"One of the holder's lists, as their agent keeps it. A list is context-scoped, like the contacts it holds: it may hold contacts known by any persona in its context, and contacts from any number of communities, but never a contact of another context.\",\"properties\":{\"colour\":{\"$ref\":\"#/$defs/ListColour\"},\"contactCount\":{\"description\":\"How many of the context's contacts are on the list now.\",\"minimum\":0,\"type\":\"integer\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"listId\":{\"$ref\":\"#/$defs/ListId\"},\"name\":{\"$ref\":\"#/$defs/ListName\"},\"order\":{\"$ref\":\"#/$defs/ListOrder\"},\"updatedAt\":{\"description\":\"When the list's name, colour or order last changed. Adding a contact to the list or removing one does not move it.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"listId\",\"name\",\"order\",\"contactCount\",\"createdAt\",\"updatedAt\"],\"title\":\"ContactList\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ListColour\":{\"description\":\"A colour the holder picked for a list, as a six-digit lowercase sRGB hex value (`#1f8a70`). A rendering hint: a consumer MAY map it to the nearest colour of its own palette that keeps contrast in light and dark themes, and MUST NOT rely on colour alone to tell lists apart.\",\"pattern\":\"^#[0-9a-f]{6}$\",\"title\":\"ListColour\",\"type\":\"string\"},\"ListId\":{\"description\":\"Identifier of one of the holder's contact lists: a ULID in Crockford base32, uppercase, assigned by the agent when the list is created. Meaningful only inside the context that holds the list; it is never sent to anyone but the holder's own clients.\",\"pattern\":\"^[0-9A-HJKMNP-TV-Z]{26}$\",\"title\":\"ListId\",\"type\":\"string\"},\"ListName\":{\"description\":\"The holder's name for one of their lists (\\\"Mentors\\\", \\\"Met at the spring meetup\\\"), on one line: no control characters. Unique within a context, compared exactly.\",\"maxLength\":64,\"minLength\":1,\"pattern\":\"^[^\\\\u0000-\\\\u001F\\\\u007F]+$\",\"title\":\"ListName\",\"type\":\"string\"},\"ListOrder\":{\"description\":\"Where the holder wants a list among their lists: ascending, ties broken by `name`. A sort key, not a position, so moving one list does not renumber the others; gaps are expected.\",\"maximum\":1000000,\"minimum\":0,\"title\":\"ListOrder\",\"type\":\"integer\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Success response to persona/contact/lists/put. Type https://trusttasks.org/spec/persona/contact/lists/put/1.1#response. The list as it now stands.\",\"properties\":{\"changed\":{\"description\":\"True when this request created the list or changed any detail of it. False when every detail given already matched.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"list\":{\"$ref\":\"#/$defs/ContactList\"},\"wasCreated\":{\"description\":\"True when this request created the list.\",\"type\":\"boolean\"}},\"required\":[\"list\",\"wasCreated\",\"changed\"],\"title\":\"Persona Contact Lists Put — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

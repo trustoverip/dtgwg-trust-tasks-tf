@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,77 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///One observed step in the life of one message at the mediator. Carries metadata only — never a message body.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "MonitorEvent",
-///  "description": "One observed step in the life of one message at the mediator. Carries metadata only — never a message body.",
-///  "type": "object",
-///  "required": [
-///    "channel",
-///    "direction",
-///    "occurredAt",
-///    "protocol",
-///    "stage"
-///  ],
-///  "properties": {
-///    "channel": {
-///      "$ref": "#/definitions/TrafficChannel"
-///    },
-///    "direction": {
-///      "$ref": "#/definitions/TrafficDirection"
-///    },
-///    "from": {
-///      "description": "The sender, where the mediator knows it.",
-///      "$ref": "#/definitions/Vid"
-///    },
-///    "latencyMs": {
-///      "description": "For `delivered` and `forwarded`: milliseconds since the message was stored.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "messageType": {
-///      "description": "The plaintext message type, present only when the mediator itself was the addressee and read it (a routing forward, a pickup request, a trust-task type URI, a trust ping). Absent for end-to-end-encrypted traffic the mediator only relays.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    },
-///    "msgId": {
-///      "description": "The stored message's identifier, once it has one; correlates the events of one message and matches MessageMeta.msgId.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "occurredAt": {
-///      "description": "When the step happened, with sub-second precision where the mediator has it.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "outcome": {
-///      "description": "Present when stage is `refused`, and on any other stage that failed.",
-///      "$ref": "#/definitions/TrafficOutcome"
-///    },
-///    "protocol": {
-///      "$ref": "#/definitions/WireProtocol"
-///    },
-///    "size": {
-///      "description": "Frame size in bytes.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "stage": {
-///      "$ref": "#/definitions/TrafficStage"
-///    },
-///    "to": {
-///      "description": "The recipient, where the mediator knows it.",
-///      "$ref": "#/definitions/Vid"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -265,17 +170,6 @@ impl MonitorEvent {
 }
 ///The plaintext message type, present only when the mediator itself was the addressee and read it (a routing forward, a pickup request, a trust-task type URI, a trust ping). Absent for end-to-end-encrypted traffic the mediator only relays.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The plaintext message type, present only when the mediator itself was the addressee and read it (a routing forward, a pickup request, a trust-task type URI, a trust ping). Absent for end-to-end-encrypted traffic the mediator only relays.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct MonitorEventMessageType(::std::string::String);
@@ -338,17 +232,6 @@ impl<'de> ::serde::Deserialize<'de> for MonitorEventMessageType {
 }
 ///The stored message's identifier, once it has one; correlates the events of one message and matches MessageMeta.msgId.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The stored message's identifier, once it has one; correlates the events of one message and matches MessageMeta.msgId.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct MonitorEventMsgId(::std::string::String);
@@ -411,57 +294,6 @@ impl<'de> ::serde::Deserialize<'de> for MonitorEventMsgId {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/messaging/monitor/event/0.2",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "dropped",
-///    "events",
-///    "expiresAt",
-///    "seq",
-///    "subscriptionId"
-///  ],
-///  "properties": {
-///    "dropped": {
-///      "description": "Events that matched the filter but were discarded since the previous batch — rate ceiling exceeded or subscriber not connected.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "events": {
-///      "description": "Events in the order the mediator observed them. May be empty on a heartbeat batch.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/MonitorEvent"
-///      },
-///      "maxItems": 500
-///    },
-///    "expiresAt": {
-///      "description": "The subscription's current expiry, so the subscriber can renew before it lapses.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "seq": {
-///      "description": "Batch sequence number, starting at 1 and increasing by exactly 1 per batch within a subscription. A gap means batches were lost in transit.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "subscriptionId": {
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -488,15 +320,6 @@ impl Payload {
 }
 ///`PayloadSubscriptionId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadSubscriptionId(::std::string::String);
@@ -556,22 +379,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubscriptionId {
 }
 ///How the traffic reached or left the mediator. `peerMediator` is mediator-to-mediator forwarding.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "TrafficChannel",
-///  "description": "How the traffic reached or left the mediator. `peerMediator` is mediator-to-mediator forwarding.",
-///  "type": "string",
-///  "enum": [
-///    "websocket",
-///    "rest",
-///    "peerMediator",
-///    "internal"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -641,21 +448,6 @@ impl ::std::convert::TryFrom<::std::string::String> for TrafficChannel {
 }
 ///`inbound`: arriving at the mediator. `outbound`: leaving it (delivery to a recipient, or a forward to another mediator). `internal`: a state change with no wire traffic (expiry, deletion, purge).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "TrafficDirection",
-///  "description": "`inbound`: arriving at the mediator. `outbound`: leaving it (delivery to a recipient, or a forward to another mediator). `internal`: a state change with no wire traffic (expiry, deletion, purge).",
-///  "type": "string",
-///  "enum": [
-///    "inbound",
-///    "outbound",
-///    "internal"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -721,33 +513,6 @@ impl ::std::convert::TryFrom<::std::string::String> for TrafficDirection {
 }
 ///Why a frame was refused or failed.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "TrafficOutcome",
-///  "description": "Why a frame was refused or failed.",
-///  "type": "object",
-///  "required": [
-///    "code"
-///  ],
-///  "properties": {
-///    "code": {
-///      "description": "The stable error code the mediator returned to the sender (a trust-task-error or problem-report code).",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "detail": {
-///      "description": "Short human-readable explanation. Not machine-parsed.",
-///      "type": "string",
-///      "maxLength": 1024
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -765,17 +530,6 @@ impl TrafficOutcome {
 }
 ///The stable error code the mediator returned to the sender (a trust-task-error or problem-report code).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The stable error code the mediator returned to the sender (a trust-task-error or problem-report code).",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct TrafficOutcomeCode(::std::string::String);
@@ -838,16 +592,6 @@ impl<'de> ::serde::Deserialize<'de> for TrafficOutcomeCode {
 }
 ///Short human-readable explanation. Not machine-parsed.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Short human-readable explanation. Not machine-parsed.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct TrafficOutcomeDetail(::std::string::String);
@@ -907,26 +651,6 @@ impl<'de> ::serde::Deserialize<'de> for TrafficOutcomeDetail {
 }
 ///What happened. `received`: a frame arrived. `stored`: it was queued for a local account. `delivered`: handed to its recipient. `forwarded`: relayed to another mediator. `refused`: rejected (see the event's `outcome`). `deleted`: removed by its recipient or an administrator. `expired`: removed by expiry. `purged`: removed by a queue purge.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "TrafficStage",
-///  "description": "What happened. `received`: a frame arrived. `stored`: it was queued for a local account. `delivered`: handed to its recipient. `forwarded`: relayed to another mediator. `refused`: rejected (see the event's `outcome`). `deleted`: removed by its recipient or an administrator. `expired`: removed by expiry. `purged`: removed by a queue purge.",
-///  "type": "string",
-///  "enum": [
-///    "received",
-///    "stored",
-///    "delivered",
-///    "forwarded",
-///    "refused",
-///    "deleted",
-///    "expired",
-///    "purged"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1012,17 +736,6 @@ impl ::std::convert::TryFrom<::std::string::String> for TrafficStage {
 }
 ///A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Vid",
-///  "description": "A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Vid(::std::string::String);
@@ -1082,22 +795,6 @@ impl<'de> ::serde::Deserialize<'de> for Vid {
 }
 ///The protocol a message travelled in, as the mediator detected it from the wire form. `didcomm` is DIDComm v2 (JWE/JWS); `didcommV1` is a DIDComm v1 envelope; `tsp` is a Trust Spanning Protocol message; `other` is anything the mediator could not classify.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "WireProtocol",
-///  "description": "The protocol a message travelled in, as the mediator detected it from the wire form. `didcomm` is DIDComm v2 (JWE/JWS); `didcommV1` is a DIDComm v1 envelope; `tsp` is a Trust Spanning Protocol message; `other` is anything the mediator could not classify.",
-///  "type": "string",
-///  "enum": [
-///    "didcomm",
-///    "didcommV1",
-///    "tsp",
-///    "other"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1543,7 +1240,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"MonitorEvent\": {\n      \"additionalProperties\": false,\n      \"description\": \"One observed step in the life of one message at the mediator. Carries metadata only — never a message body.\",\n      \"properties\": {\n        \"channel\": {\n          \"$ref\": \"#/$defs/TrafficChannel\"\n        },\n        \"direction\": {\n          \"$ref\": \"#/$defs/TrafficDirection\"\n        },\n        \"from\": {\n          \"$ref\": \"#/$defs/Vid\",\n          \"description\": \"The sender, where the mediator knows it.\"\n        },\n        \"latencyMs\": {\n          \"description\": \"For `delivered` and `forwarded`: milliseconds since the message was stored.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"messageType\": {\n          \"description\": \"The plaintext message type, present only when the mediator itself was the addressee and read it (a routing forward, a pickup request, a trust-task type URI, a trust ping). Absent for end-to-end-encrypted traffic the mediator only relays.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"msgId\": {\n          \"description\": \"The stored message's identifier, once it has one; correlates the events of one message and matches MessageMeta.msgId.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"occurredAt\": {\n          \"description\": \"When the step happened, with sub-second precision where the mediator has it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"outcome\": {\n          \"$ref\": \"#/$defs/TrafficOutcome\",\n          \"description\": \"Present when stage is `refused`, and on any other stage that failed.\"\n        },\n        \"protocol\": {\n          \"$ref\": \"#/$defs/WireProtocol\"\n        },\n        \"size\": {\n          \"description\": \"Frame size in bytes.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"stage\": {\n          \"$ref\": \"#/$defs/TrafficStage\"\n        },\n        \"to\": {\n          \"$ref\": \"#/$defs/Vid\",\n          \"description\": \"The recipient, where the mediator knows it.\"\n        }\n      },\n      \"required\": [\n        \"occurredAt\",\n        \"direction\",\n        \"stage\",\n        \"channel\",\n        \"protocol\"\n      ],\n      \"title\": \"MonitorEvent\",\n      \"type\": \"object\"\n    },\n    \"TrafficChannel\": {\n      \"description\": \"How the traffic reached or left the mediator. `peerMediator` is mediator-to-mediator forwarding.\",\n      \"enum\": [\n        \"websocket\",\n        \"rest\",\n        \"peerMediator\",\n        \"internal\"\n      ],\n      \"title\": \"TrafficChannel\",\n      \"type\": \"string\"\n    },\n    \"TrafficDirection\": {\n      \"description\": \"`inbound`: arriving at the mediator. `outbound`: leaving it (delivery to a recipient, or a forward to another mediator). `internal`: a state change with no wire traffic (expiry, deletion, purge).\",\n      \"enum\": [\n        \"inbound\",\n        \"outbound\",\n        \"internal\"\n      ],\n      \"title\": \"TrafficDirection\",\n      \"type\": \"string\"\n    },\n    \"TrafficOutcome\": {\n      \"additionalProperties\": false,\n      \"description\": \"Why a frame was refused or failed.\",\n      \"properties\": {\n        \"code\": {\n          \"description\": \"The stable error code the mediator returned to the sender (a trust-task-error or problem-report code).\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"detail\": {\n          \"description\": \"Short human-readable explanation. Not machine-parsed.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"code\"\n      ],\n      \"title\": \"TrafficOutcome\",\n      \"type\": \"object\"\n    },\n    \"TrafficStage\": {\n      \"description\": \"What happened. `received`: a frame arrived. `stored`: it was queued for a local account. `delivered`: handed to its recipient. `forwarded`: relayed to another mediator. `refused`: rejected (see the event's `outcome`). `deleted`: removed by its recipient or an administrator. `expired`: removed by expiry. `purged`: removed by a queue purge.\",\n      \"enum\": [\n        \"received\",\n        \"stored\",\n        \"delivered\",\n        \"forwarded\",\n        \"refused\",\n        \"deleted\",\n        \"expired\",\n        \"purged\"\n      ],\n      \"title\": \"TrafficStage\",\n      \"type\": \"string\"\n    },\n    \"Vid\": {\n      \"description\": \"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\n      \"minLength\": 1,\n      \"title\": \"Vid\",\n      \"type\": \"string\"\n    },\n    \"WireProtocol\": {\n      \"description\": \"The protocol a message travelled in, as the mediator detected it from the wire form. `didcomm` is DIDComm v2 (JWE/JWS); `didcommV1` is a DIDComm v1 envelope; `tsp` is a Trust Spanning Protocol message; `other` is anything the mediator could not classify.\",\n      \"enum\": [\n        \"didcomm\",\n        \"didcommV1\",\n        \"tsp\",\n        \"other\"\n      ],\n      \"title\": \"WireProtocol\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/messaging/monitor/event/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"dropped\": {\n      \"description\": \"Events that matched the filter but were discarded since the previous batch — rate ceiling exceeded or subscriber not connected.\",\n      \"minimum\": 0,\n      \"type\": \"integer\"\n    },\n    \"events\": {\n      \"description\": \"Events in the order the mediator observed them. May be empty on a heartbeat batch.\",\n      \"items\": {\n        \"$ref\": \"#/$defs/MonitorEvent\"\n      },\n      \"maxItems\": 500,\n      \"type\": \"array\"\n    },\n    \"expiresAt\": {\n      \"description\": \"The subscription's current expiry, so the subscriber can renew before it lapses.\",\n      \"format\": \"date-time\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"seq\": {\n      \"description\": \"Batch sequence number, starting at 1 and increasing by exactly 1 per batch within a subscription. A gap means batches were lost in transit.\",\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"subscriptionId\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"subscriptionId\",\n    \"seq\",\n    \"events\",\n    \"dropped\",\n    \"expiresAt\"\n  ],\n  \"title\": \"Messaging — Traffic Monitor Event — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"MonitorEvent\":{\"additionalProperties\":false,\"description\":\"One observed step in the life of one message at the mediator. Carries metadata only — never a message body.\",\"properties\":{\"channel\":{\"$ref\":\"#/$defs/TrafficChannel\"},\"direction\":{\"$ref\":\"#/$defs/TrafficDirection\"},\"from\":{\"$ref\":\"#/$defs/Vid\",\"description\":\"The sender, where the mediator knows it.\"},\"latencyMs\":{\"description\":\"For `delivered` and `forwarded`: milliseconds since the message was stored.\",\"minimum\":0,\"type\":\"integer\"},\"messageType\":{\"description\":\"The plaintext message type, present only when the mediator itself was the addressee and read it (a routing forward, a pickup request, a trust-task type URI, a trust ping). Absent for end-to-end-encrypted traffic the mediator only relays.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"msgId\":{\"description\":\"The stored message's identifier, once it has one; correlates the events of one message and matches MessageMeta.msgId.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"occurredAt\":{\"description\":\"When the step happened, with sub-second precision where the mediator has it.\",\"format\":\"date-time\",\"type\":\"string\"},\"outcome\":{\"$ref\":\"#/$defs/TrafficOutcome\",\"description\":\"Present when stage is `refused`, and on any other stage that failed.\"},\"protocol\":{\"$ref\":\"#/$defs/WireProtocol\"},\"size\":{\"description\":\"Frame size in bytes.\",\"minimum\":0,\"type\":\"integer\"},\"stage\":{\"$ref\":\"#/$defs/TrafficStage\"},\"to\":{\"$ref\":\"#/$defs/Vid\",\"description\":\"The recipient, where the mediator knows it.\"}},\"required\":[\"occurredAt\",\"direction\",\"stage\",\"channel\",\"protocol\"],\"title\":\"MonitorEvent\",\"type\":\"object\"},\"TrafficChannel\":{\"description\":\"How the traffic reached or left the mediator. `peerMediator` is mediator-to-mediator forwarding.\",\"enum\":[\"websocket\",\"rest\",\"peerMediator\",\"internal\"],\"title\":\"TrafficChannel\",\"type\":\"string\"},\"TrafficDirection\":{\"description\":\"`inbound`: arriving at the mediator. `outbound`: leaving it (delivery to a recipient, or a forward to another mediator). `internal`: a state change with no wire traffic (expiry, deletion, purge).\",\"enum\":[\"inbound\",\"outbound\",\"internal\"],\"title\":\"TrafficDirection\",\"type\":\"string\"},\"TrafficOutcome\":{\"additionalProperties\":false,\"description\":\"Why a frame was refused or failed.\",\"properties\":{\"code\":{\"description\":\"The stable error code the mediator returned to the sender (a trust-task-error or problem-report code).\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"detail\":{\"description\":\"Short human-readable explanation. Not machine-parsed.\",\"maxLength\":1024,\"type\":\"string\"}},\"required\":[\"code\"],\"title\":\"TrafficOutcome\",\"type\":\"object\"},\"TrafficStage\":{\"description\":\"What happened. `received`: a frame arrived. `stored`: it was queued for a local account. `delivered`: handed to its recipient. `forwarded`: relayed to another mediator. `refused`: rejected (see the event's `outcome`). `deleted`: removed by its recipient or an administrator. `expired`: removed by expiry. `purged`: removed by a queue purge.\",\"enum\":[\"received\",\"stored\",\"delivered\",\"forwarded\",\"refused\",\"deleted\",\"expired\",\"purged\"],\"title\":\"TrafficStage\",\"type\":\"string\"},\"Vid\":{\"description\":\"A Verifiable Identifier (SPEC §4.8). For a mediator-served account this is the account's controlling DID, carried verbatim and compared by exact string equality. For privacy — and because some mediators key accounts by a one-way hash and never hold the full DID — a stable hash of the DID (e.g. its SHA-256 digest) is an equally valid value here: producer and consumer simply agree on the same opaque identifier and compare by exact string equality. The field carries whichever form the issuing mediator uses.\",\"minLength\":1,\"title\":\"Vid\",\"type\":\"string\"},\"WireProtocol\":{\"description\":\"The protocol a message travelled in, as the mediator detected it from the wire form. `didcomm` is DIDComm v2 (JWE/JWS); `didcommV1` is a DIDComm v1 envelope; `tsp` is a Trust Spanning Protocol message; `other` is anything the mediator could not classify.\",\"enum\":[\"didcomm\",\"didcommV1\",\"tsp\",\"other\"],\"title\":\"WireProtocol\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/messaging/monitor/event/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"dropped\":{\"description\":\"Events that matched the filter but were discarded since the previous batch — rate ceiling exceeded or subscriber not connected.\",\"minimum\":0,\"type\":\"integer\"},\"events\":{\"description\":\"Events in the order the mediator observed them. May be empty on a heartbeat batch.\",\"items\":{\"$ref\":\"#/$defs/MonitorEvent\"},\"maxItems\":500,\"type\":\"array\"},\"expiresAt\":{\"description\":\"The subscription's current expiry, so the subscriber can renew before it lapses.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"seq\":{\"description\":\"Batch sequence number, starting at 1 and increasing by exactly 1 per batch within a subscription. A gap means batches were lost in transit.\",\"minimum\":1,\"type\":\"integer\"},\"subscriptionId\":{\"minLength\":1,\"type\":\"string\"}},\"required\":[\"subscriptionId\",\"seq\",\"events\",\"dropped\",\"expiresAt\"],\"title\":\"Messaging — Traffic Monitor Event — payload\",\"type\":\"object\"}\n",
     );
 }
 /// The earlier `MAJOR.MINOR` of this slug that this version declares it

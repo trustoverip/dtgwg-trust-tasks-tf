@@ -34,40 +34,6 @@ pub mod error {
 }
 ///A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "BoardHead",
-///  "description": "A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.",
-///  "type": "object",
-///  "required": [
-///    "electionId",
-///    "issuedAt",
-///    "rootHash",
-///    "treeSize"
-///  ],
-///  "properties": {
-///    "electionId": {
-///      "$ref": "#/definitions/ElectionId"
-///    },
-///    "issuedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "rootHash": {
-///      "description": "The RFC 9162 Merkle tree hash (SHA-256) of the first `treeSize` entries, as a multihash.",
-///      "$ref": "#/definitions/DigestMultibase"
-///    },
-///    "treeSize": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -96,21 +62,6 @@ This definition constrains the *encoding only*. What the digest is computed over
 
 Restricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that "interoperability is not guaranteed between implementations using such values", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DigestMultibase",
-///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-///  "examples": [
-///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-///  ],
-///  "type": "string",
-///  "minLength": 16,
-///  "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DigestMultibase(::std::string::String);
@@ -179,17 +130,6 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
 }
 ///An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ElectionId",
-///  "description": "An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.",
-///  "type": "string",
-///  "pattern": "^[A-Za-z0-9._-]{1,128}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ElectionId(::std::string::String);
@@ -253,46 +193,6 @@ impl<'de> ::serde::Deserialize<'de> for ElectionId {
 }
 ///An election's result, computable by anyone who can read its board from the board and the registration alone (VTI-VOT-070).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ElectionResult",
-///  "description": "An election's result, computable by anyone who can read its board from the board and the registration alone (VTI-VOT-070).",
-///  "type": "object",
-///  "required": [
-///    "ballotsCounted",
-///    "electionId",
-///    "head",
-///    "manifestDigest",
-///    "questions"
-///  ],
-///  "properties": {
-///    "ballotsCounted": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "electionId": {
-///      "$ref": "#/definitions/ElectionId"
-///    },
-///    "head": {
-///      "description": "The head of the board as it stood at close: the result counts exactly its entries.",
-///      "$ref": "#/definitions/BoardHead"
-///    },
-///    "manifestDigest": {
-///      "$ref": "#/definitions/DigestMultibase"
-///    },
-///    "questions": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/QuestionResult"
-///      }
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -314,23 +214,6 @@ impl ElectionResult {
 }
 ///`ElectionState`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ElectionState",
-///  "type": "string",
-///  "enum": [
-///    "registered",
-///    "registration",
-///    "voting",
-///    "closed",
-///    "tallied",
-///    "cancelled"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -408,21 +291,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ElectionState {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -444,15 +312,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -516,17 +375,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A question or option key, unique within its manifest or question.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Key",
-///  "description": "A question or option key, unique within its manifest or question.",
-///  "type": "string",
-///  "pattern": "^[A-Za-z0-9._-]{1,64}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Key(::std::string::String);
@@ -588,36 +436,6 @@ impl<'de> ::serde::Deserialize<'de> for Key {
 }
 ///Reads an election's result once tallied, or its running totals while voting is open where the manifest allows them.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/voting/result/show/0.1",
-///  "title": "Payload",
-///  "description": "Reads an election's result once tallied, or its running totals while voting is open where the manifest allows them.",
-///  "type": "object",
-///  "required": [
-///    "community",
-///    "electionId"
-///  ],
-///  "properties": {
-///    "community": {
-///      "description": "The community's DID.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1
-///    },
-///    "electionId": {
-///      "$ref": "#/definitions/ElectionId"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -636,17 +454,6 @@ impl Payload {
 }
 ///The community's DID.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The community's DID.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCommunity(::std::string::String);
@@ -709,86 +516,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCommunity {
 }
 ///One question's totals. `choice`: selections per option. `ranking`: per option, how many ballots placed it at each position (index 0 = first). `score`: per option, the sum and the number of ballots that scored it. `text`: the answers, in board order, withheld (`withheld: true`) below the manifest's `textReleaseThreshold`. `abstained` counts ballots that left the question unanswered.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "QuestionResult",
-///  "description": "One question's totals. `choice`: selections per option. `ranking`: per option, how many ballots placed it at each position (index 0 = first). `score`: per option, the sum and the number of ballots that scored it. `text`: the answers, in board order, withheld (`withheld: true`) below the manifest's `textReleaseThreshold`. `abstained` counts ballots that left the question unanswered.",
-///  "type": "object",
-///  "required": [
-///    "abstained",
-///    "question"
-///  ],
-///  "properties": {
-///    "abstained": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "choice": {
-///      "type": "object",
-///      "additionalProperties": {
-///        "type": "integer",
-///        "minimum": 0.0
-///      },
-///      "propertyNames": {
-///        "$ref": "#/definitions/Key"
-///      }
-///    },
-///    "question": {
-///      "$ref": "#/definitions/Key"
-///    },
-///    "ranking": {
-///      "type": "object",
-///      "additionalProperties": {
-///        "type": "array",
-///        "items": {
-///          "type": "integer",
-///          "minimum": 0.0
-///        }
-///      },
-///      "propertyNames": {
-///        "$ref": "#/definitions/Key"
-///      }
-///    },
-///    "score": {
-///      "type": "object",
-///      "additionalProperties": {
-///        "type": "object",
-///        "required": [
-///          "count",
-///          "sum"
-///        ],
-///        "properties": {
-///          "count": {
-///            "type": "integer",
-///            "minimum": 0.0
-///          },
-///          "sum": {
-///            "type": "integer"
-///          }
-///        },
-///        "additionalProperties": false
-///      },
-///      "propertyNames": {
-///        "$ref": "#/definitions/Key"
-///      }
-///    },
-///    "text": {
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 4096
-///      }
-///    },
-///    "withheld": {
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -822,28 +549,6 @@ impl QuestionResult {
 }
 ///`QuestionResultScoreValue`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "count",
-///    "sum"
-///  ],
-///  "properties": {
-///    "count": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "sum": {
-///      "type": "integer"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -858,15 +563,6 @@ impl QuestionResultScoreValue {
 }
 ///`QuestionResultTextItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 4096
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct QuestionResultTextItem(::std::string::String);
@@ -926,37 +622,6 @@ impl<'de> ::serde::Deserialize<'de> for QuestionResultTextItem {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "provisional",
-///    "result",
-///    "state"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "provisional": {
-///      "description": "True for running totals of an election still open for voting; false for the result the ballot box tallied after close.",
-///      "type": "boolean"
-///    },
-///    "result": {
-///      "$ref": "#/definitions/ElectionResult"
-///    },
-///    "state": {
-///      "$ref": "#/definitions/ElectionState"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1500,14 +1165,14 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/voting/result/show/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"BoardHead\": {\n      \"additionalProperties\": false,\n      \"description\": \"A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.\",\n      \"properties\": {\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"issuedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"rootHash\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"The RFC 9162 Merkle tree hash (SHA-256) of the first `treeSize` entries, as a multihash.\"\n        },\n        \"treeSize\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"treeSize\",\n        \"rootHash\",\n        \"issuedAt\"\n      ],\n      \"title\": \"BoardHead\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"ElectionId\": {\n      \"description\": \"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,128}$\",\n      \"title\": \"ElectionId\",\n      \"type\": \"string\"\n    },\n    \"ElectionResult\": {\n      \"additionalProperties\": false,\n      \"description\": \"An election's result, computable by anyone who can read its board from the board and the registration alone (VTI-VOT-070).\",\n      \"properties\": {\n        \"ballotsCounted\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"head\": {\n          \"$ref\": \"#/$defs/BoardHead\",\n          \"description\": \"The head of the board as it stood at close: the result counts exactly its entries.\"\n        },\n        \"manifestDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\"\n        },\n        \"questions\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/QuestionResult\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"manifestDigest\",\n        \"ballotsCounted\",\n        \"questions\",\n        \"head\"\n      ],\n      \"title\": \"ElectionResult\",\n      \"type\": \"object\"\n    },\n    \"ElectionState\": {\n      \"enum\": [\n        \"registered\",\n        \"registration\",\n        \"voting\",\n        \"closed\",\n        \"tallied\",\n        \"cancelled\"\n      ],\n      \"title\": \"ElectionState\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Key\": {\n      \"description\": \"A question or option key, unique within its manifest or question.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,64}$\",\n      \"title\": \"Key\",\n      \"type\": \"string\"\n    },\n    \"QuestionResult\": {\n      \"additionalProperties\": false,\n      \"description\": \"One question's totals. `choice`: selections per option. `ranking`: per option, how many ballots placed it at each position (index 0 = first). `score`: per option, the sum and the number of ballots that scored it. `text`: the answers, in board order, withheld (`withheld: true`) below the manifest's `textReleaseThreshold`. `abstained` counts ballots that left the question unanswered.\",\n      \"properties\": {\n        \"abstained\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"choice\": {\n          \"additionalProperties\": {\n            \"minimum\": 0,\n            \"type\": \"integer\"\n          },\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"object\"\n        },\n        \"question\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"ranking\": {\n          \"additionalProperties\": {\n            \"items\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"type\": \"array\"\n          },\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"object\"\n        },\n        \"score\": {\n          \"additionalProperties\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"count\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"sum\": {\n                \"type\": \"integer\"\n              }\n            },\n            \"required\": [\n              \"sum\",\n              \"count\"\n            ],\n            \"type\": \"object\"\n          },\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"object\"\n        },\n        \"text\": {\n          \"items\": {\n            \"maxLength\": 4096,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"withheld\": {\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"question\",\n        \"abstained\"\n      ],\n      \"title\": \"QuestionResult\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"provisional\": {\n          \"description\": \"True for running totals of an election still open for voting; false for the result the ballot box tallied after close.\",\n          \"type\": \"boolean\"\n        },\n        \"result\": {\n          \"$ref\": \"#/$defs/ElectionResult\"\n        },\n        \"state\": {\n          \"$ref\": \"#/$defs/ElectionState\"\n        }\n      },\n      \"required\": [\n        \"result\",\n        \"provisional\",\n        \"state\"\n      ],\n      \"title\": \"Voting — Result Show — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/voting/result/show/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Reads an election's result once tallied, or its running totals while voting is open where the manifest allows them.\",\n  \"properties\": {\n    \"community\": {\n      \"description\": \"The community's DID.\",\n      \"maxLength\": 2048,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"electionId\": {\n      \"$ref\": \"#/$defs/ElectionId\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"required\": [\n    \"community\",\n    \"electionId\"\n  ],\n  \"title\": \"Voting — Result Show — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"BoardHead\":{\"additionalProperties\":false,\"description\":\"A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.\",\"properties\":{\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"rootHash\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The RFC 9162 Merkle tree hash (SHA-256) of the first `treeSize` entries, as a multihash.\"},\"treeSize\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"electionId\",\"treeSize\",\"rootHash\",\"issuedAt\"],\"title\":\"BoardHead\",\"type\":\"object\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"ElectionId\":{\"description\":\"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\"pattern\":\"^[A-Za-z0-9._-]{1,128}$\",\"title\":\"ElectionId\",\"type\":\"string\"},\"ElectionResult\":{\"additionalProperties\":false,\"description\":\"An election's result, computable by anyone who can read its board from the board and the registration alone (VTI-VOT-070).\",\"properties\":{\"ballotsCounted\":{\"minimum\":0,\"type\":\"integer\"},\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"head\":{\"$ref\":\"#/$defs/BoardHead\",\"description\":\"The head of the board as it stood at close: the result counts exactly its entries.\"},\"manifestDigest\":{\"$ref\":\"#/$defs/DigestMultibase\"},\"questions\":{\"items\":{\"$ref\":\"#/$defs/QuestionResult\"},\"type\":\"array\"}},\"required\":[\"electionId\",\"manifestDigest\",\"ballotsCounted\",\"questions\",\"head\"],\"title\":\"ElectionResult\",\"type\":\"object\"},\"ElectionState\":{\"enum\":[\"registered\",\"registration\",\"voting\",\"closed\",\"tallied\",\"cancelled\"],\"title\":\"ElectionState\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Key\":{\"description\":\"A question or option key, unique within its manifest or question.\",\"pattern\":\"^[A-Za-z0-9._-]{1,64}$\",\"title\":\"Key\",\"type\":\"string\"},\"QuestionResult\":{\"additionalProperties\":false,\"description\":\"One question's totals. `choice`: selections per option. `ranking`: per option, how many ballots placed it at each position (index 0 = first). `score`: per option, the sum and the number of ballots that scored it. `text`: the answers, in board order, withheld (`withheld: true`) below the manifest's `textReleaseThreshold`. `abstained` counts ballots that left the question unanswered.\",\"properties\":{\"abstained\":{\"minimum\":0,\"type\":\"integer\"},\"choice\":{\"additionalProperties\":{\"minimum\":0,\"type\":\"integer\"},\"propertyNames\":{\"$ref\":\"#/$defs/Key\"},\"type\":\"object\"},\"question\":{\"$ref\":\"#/$defs/Key\"},\"ranking\":{\"additionalProperties\":{\"items\":{\"minimum\":0,\"type\":\"integer\"},\"type\":\"array\"},\"propertyNames\":{\"$ref\":\"#/$defs/Key\"},\"type\":\"object\"},\"score\":{\"additionalProperties\":{\"additionalProperties\":false,\"properties\":{\"count\":{\"minimum\":0,\"type\":\"integer\"},\"sum\":{\"type\":\"integer\"}},\"required\":[\"sum\",\"count\"],\"type\":\"object\"},\"propertyNames\":{\"$ref\":\"#/$defs/Key\"},\"type\":\"object\"},\"text\":{\"items\":{\"maxLength\":4096,\"type\":\"string\"},\"type\":\"array\"},\"withheld\":{\"type\":\"boolean\"}},\"required\":[\"question\",\"abstained\"],\"title\":\"QuestionResult\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"provisional\":{\"description\":\"True for running totals of an election still open for voting; false for the result the ballot box tallied after close.\",\"type\":\"boolean\"},\"result\":{\"$ref\":\"#/$defs/ElectionResult\"},\"state\":{\"$ref\":\"#/$defs/ElectionState\"}},\"required\":[\"result\",\"provisional\",\"state\"],\"title\":\"Voting — Result Show — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/voting/result/show/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Reads an election's result once tallied, or its running totals while voting is open where the manifest allows them.\",\"properties\":{\"community\":{\"description\":\"The community's DID.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"community\",\"electionId\"],\"title\":\"Voting — Result Show — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/voting/result/show/0.1#response";
     const IS_PROOF_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"BoardHead\": {\n      \"additionalProperties\": false,\n      \"description\": \"A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.\",\n      \"properties\": {\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"issuedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"rootHash\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"The RFC 9162 Merkle tree hash (SHA-256) of the first `treeSize` entries, as a multihash.\"\n        },\n        \"treeSize\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"treeSize\",\n        \"rootHash\",\n        \"issuedAt\"\n      ],\n      \"title\": \"BoardHead\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"ElectionId\": {\n      \"description\": \"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,128}$\",\n      \"title\": \"ElectionId\",\n      \"type\": \"string\"\n    },\n    \"ElectionResult\": {\n      \"additionalProperties\": false,\n      \"description\": \"An election's result, computable by anyone who can read its board from the board and the registration alone (VTI-VOT-070).\",\n      \"properties\": {\n        \"ballotsCounted\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"head\": {\n          \"$ref\": \"#/$defs/BoardHead\",\n          \"description\": \"The head of the board as it stood at close: the result counts exactly its entries.\"\n        },\n        \"manifestDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\"\n        },\n        \"questions\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/QuestionResult\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"manifestDigest\",\n        \"ballotsCounted\",\n        \"questions\",\n        \"head\"\n      ],\n      \"title\": \"ElectionResult\",\n      \"type\": \"object\"\n    },\n    \"ElectionState\": {\n      \"enum\": [\n        \"registered\",\n        \"registration\",\n        \"voting\",\n        \"closed\",\n        \"tallied\",\n        \"cancelled\"\n      ],\n      \"title\": \"ElectionState\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Key\": {\n      \"description\": \"A question or option key, unique within its manifest or question.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,64}$\",\n      \"title\": \"Key\",\n      \"type\": \"string\"\n    },\n    \"QuestionResult\": {\n      \"additionalProperties\": false,\n      \"description\": \"One question's totals. `choice`: selections per option. `ranking`: per option, how many ballots placed it at each position (index 0 = first). `score`: per option, the sum and the number of ballots that scored it. `text`: the answers, in board order, withheld (`withheld: true`) below the manifest's `textReleaseThreshold`. `abstained` counts ballots that left the question unanswered.\",\n      \"properties\": {\n        \"abstained\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"choice\": {\n          \"additionalProperties\": {\n            \"minimum\": 0,\n            \"type\": \"integer\"\n          },\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"object\"\n        },\n        \"question\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"ranking\": {\n          \"additionalProperties\": {\n            \"items\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"type\": \"array\"\n          },\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"object\"\n        },\n        \"score\": {\n          \"additionalProperties\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"count\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"sum\": {\n                \"type\": \"integer\"\n              }\n            },\n            \"required\": [\n              \"sum\",\n              \"count\"\n            ],\n            \"type\": \"object\"\n          },\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"object\"\n        },\n        \"text\": {\n          \"items\": {\n            \"maxLength\": 4096,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"withheld\": {\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"question\",\n        \"abstained\"\n      ],\n      \"title\": \"QuestionResult\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"provisional\": {\n          \"description\": \"True for running totals of an election still open for voting; false for the result the ballot box tallied after close.\",\n          \"type\": \"boolean\"\n        },\n        \"result\": {\n          \"$ref\": \"#/$defs/ElectionResult\"\n        },\n        \"state\": {\n          \"$ref\": \"#/$defs/ElectionState\"\n        }\n      },\n      \"required\": [\n        \"result\",\n        \"provisional\",\n        \"state\"\n      ],\n      \"title\": \"Voting — Result Show — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"BoardHead\":{\"additionalProperties\":false,\"description\":\"A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.\",\"properties\":{\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"rootHash\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The RFC 9162 Merkle tree hash (SHA-256) of the first `treeSize` entries, as a multihash.\"},\"treeSize\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"electionId\",\"treeSize\",\"rootHash\",\"issuedAt\"],\"title\":\"BoardHead\",\"type\":\"object\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"ElectionId\":{\"description\":\"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\"pattern\":\"^[A-Za-z0-9._-]{1,128}$\",\"title\":\"ElectionId\",\"type\":\"string\"},\"ElectionResult\":{\"additionalProperties\":false,\"description\":\"An election's result, computable by anyone who can read its board from the board and the registration alone (VTI-VOT-070).\",\"properties\":{\"ballotsCounted\":{\"minimum\":0,\"type\":\"integer\"},\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"head\":{\"$ref\":\"#/$defs/BoardHead\",\"description\":\"The head of the board as it stood at close: the result counts exactly its entries.\"},\"manifestDigest\":{\"$ref\":\"#/$defs/DigestMultibase\"},\"questions\":{\"items\":{\"$ref\":\"#/$defs/QuestionResult\"},\"type\":\"array\"}},\"required\":[\"electionId\",\"manifestDigest\",\"ballotsCounted\",\"questions\",\"head\"],\"title\":\"ElectionResult\",\"type\":\"object\"},\"ElectionState\":{\"enum\":[\"registered\",\"registration\",\"voting\",\"closed\",\"tallied\",\"cancelled\"],\"title\":\"ElectionState\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Key\":{\"description\":\"A question or option key, unique within its manifest or question.\",\"pattern\":\"^[A-Za-z0-9._-]{1,64}$\",\"title\":\"Key\",\"type\":\"string\"},\"QuestionResult\":{\"additionalProperties\":false,\"description\":\"One question's totals. `choice`: selections per option. `ranking`: per option, how many ballots placed it at each position (index 0 = first). `score`: per option, the sum and the number of ballots that scored it. `text`: the answers, in board order, withheld (`withheld: true`) below the manifest's `textReleaseThreshold`. `abstained` counts ballots that left the question unanswered.\",\"properties\":{\"abstained\":{\"minimum\":0,\"type\":\"integer\"},\"choice\":{\"additionalProperties\":{\"minimum\":0,\"type\":\"integer\"},\"propertyNames\":{\"$ref\":\"#/$defs/Key\"},\"type\":\"object\"},\"question\":{\"$ref\":\"#/$defs/Key\"},\"ranking\":{\"additionalProperties\":{\"items\":{\"minimum\":0,\"type\":\"integer\"},\"type\":\"array\"},\"propertyNames\":{\"$ref\":\"#/$defs/Key\"},\"type\":\"object\"},\"score\":{\"additionalProperties\":{\"additionalProperties\":false,\"properties\":{\"count\":{\"minimum\":0,\"type\":\"integer\"},\"sum\":{\"type\":\"integer\"}},\"required\":[\"sum\",\"count\"],\"type\":\"object\"},\"propertyNames\":{\"$ref\":\"#/$defs/Key\"},\"type\":\"object\"},\"text\":{\"items\":{\"maxLength\":4096,\"type\":\"string\"},\"type\":\"array\"},\"withheld\":{\"type\":\"boolean\"}},\"required\":[\"question\",\"abstained\"],\"title\":\"QuestionResult\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"provisional\":{\"description\":\"True for running totals of an election still open for voting; false for the result the ballot box tallied after close.\",\"type\":\"boolean\"},\"result\":{\"$ref\":\"#/$defs/ElectionResult\"},\"state\":{\"$ref\":\"#/$defs/ElectionState\"}},\"required\":[\"result\",\"provisional\",\"state\"],\"title\":\"Voting — Result Show — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

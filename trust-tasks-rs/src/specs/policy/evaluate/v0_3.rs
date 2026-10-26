@@ -34,61 +34,6 @@ pub mod error {
 }
 ///Discriminator: is this consumer a user-driven Companion or a headless Service?
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ConsumerKind",
-///  "description": "Discriminator: is this consumer a user-driven Companion or a headless Service?",
-///  "oneOf": [
-///    {
-///      "title": "Companion",
-///      "type": "object",
-///      "required": [
-///        "formFactor",
-///        "kind"
-///      ],
-///      "properties": {
-///        "formFactor": {
-///          "type": "string",
-///          "enum": [
-///            "browser",
-///            "mobile",
-///            "desktop"
-///          ]
-///        },
-///        "kind": {
-///          "const": "companion"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "Service",
-///      "type": "object",
-///      "required": [
-///        "kind",
-///        "serviceKind"
-///      ],
-///      "properties": {
-///        "kind": {
-///          "const": "service"
-///        },
-///        "serviceKind": {
-///          "type": "string",
-///          "enum": [
-///            "mediator",
-///            "aiAgent",
-///            "daemon"
-///          ]
-///        }
-///      },
-///      "additionalProperties": false
-///    }
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(tag = "kind", deny_unknown_fields)]
 #[non_exhaustive]
@@ -108,19 +53,6 @@ pub enum ConsumerKind {
 }
 ///`ConsumerKindFormFactor`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "enum": [
-///    "browser",
-///    "mobile",
-///    "desktop"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -186,19 +118,6 @@ impl ::std::convert::TryFrom<::std::string::String> for ConsumerKindFormFactor {
 }
 ///`ConsumerKindServiceKind`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "enum": [
-///    "mediator",
-///    "aiAgent",
-///    "daemon"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -271,21 +190,6 @@ This definition constrains the *encoding only*. What the digest is computed over
 
 Restricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that "interoperability is not guaranteed between implementations using such values", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DigestMultibase",
-///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-///  "examples": [
-///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-///  ],
-///  "type": "string",
-///  "minLength": 16,
-///  "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DigestMultibase(::std::string::String);
@@ -354,21 +258,6 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -390,15 +279,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -462,43 +342,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Dry-run a policy decision against a synthetic PolicyInput. Returns the policy decision plus a trace of which policy modules matched and which rules fired. Used by the policy-editor UI to verify changes before save and by admins to diagnose unexpected outcomes. 0.3 evaluates against the generalised PolicyInput (any Trust Task, carrying typeUri + side-effect/exposure classes) and can return the `requireConsent` decision.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/policy/evaluate/0.3",
-///  "title": "Payload",
-///  "description": "Dry-run a policy decision against a synthetic PolicyInput. Returns the policy decision plus a trace of which policy modules matched and which rules fired. Used by the policy-editor UI to verify changes before save and by admins to diagnose unexpected outcomes. 0.3 evaluates against the generalised PolicyInput (any Trust Task, carrying typeUri + side-effect/exposure classes) and can return the `requireConsent` decision.",
-///  "type": "object",
-///  "required": [
-///    "input"
-///  ],
-///  "properties": {
-///    "candidateModule": {
-///      "description": "Optional — when supplied, evaluate as if this Rego source were active (e.g. preview a pending upsert). The candidate is layered into the evaluator at the priority specified by `candidatePriority` (default 1000) for this call only.",
-///      "type": "string"
-///    },
-///    "candidatePriority": {
-///      "default": 1000,
-///      "type": "integer",
-///      "maximum": 1000.0,
-///      "minimum": 0.0
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "includeTrace": {
-///      "default": false,
-///      "type": "boolean"
-///    },
-///    "input": {
-///      "$ref": "#/definitions/PolicyInput"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -528,96 +371,6 @@ impl Payload {
 }
 ///`PolicyDecision`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "PolicyDecision",
-///  "type": "object",
-///  "required": [
-///    "decision"
-///  ],
-///  "properties": {
-///    "decision": {
-///      "type": "string",
-///      "enum": [
-///        "allow",
-///        "deny",
-///        "requireStepUp",
-///        "requireConsent"
-///      ]
-///    },
-///    "explanation": {
-///      "description": "Human-readable explanation for diagnostic display.",
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "mode": {
-///      "description": "Vault-flow-specific. When decision == \"allow\" for a proxy-login/release request, whether the maintainer should proxy-login or release-for-fill. Default: proxy. Ignored for other task kinds.",
-///      "type": "string",
-///      "enum": [
-///        "proxy",
-///        "fill"
-///      ]
-///    },
-///    "requireConsent": {
-///      "description": "When decision == \"requireConsent\", the approver constraint the enforcement point MUST satisfy — a signed consent decision from the named set, bound to the request's payloadDigest — before executing.",
-///      "type": "object",
-///      "required": [
-///        "approverSet"
-///      ],
-///      "properties": {
-///        "approverSet": {
-///          "description": "Named set of enrolled approver devices permitted to approve this task (resolved by the enforcement point against its device registry).",
-///          "type": "string"
-///        },
-///        "excludeRequester": {
-///          "description": "When true, the device that issued the request MUST NOT be accepted as the approver — forcing cross-device approval so a compromised requesting device cannot self-approve.",
-///          "default": false,
-///          "type": "boolean"
-///        },
-///        "minApprovals": {
-///          "description": "Number of distinct approvers from the set required before the task may execute.",
-///          "default": 1,
-///          "type": "integer",
-///          "minimum": 1.0
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "stepUp": {
-///      "description": "When decision == \"requireStepUp\", which method to demand.",
-///      "type": "object",
-///      "required": [
-///        "method"
-///      ],
-///      "properties": {
-///        "method": {
-///          "type": "string",
-///          "enum": [
-///            "webauthnUv",
-///            "pushApproval",
-///            "totp"
-///          ]
-///        },
-///        "ttlSeconds": {
-///          "type": "integer",
-///          "minimum": 1.0
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "ttlSecondsCap": {
-///      "description": "When decision == \"allow\", maximum lifetime of any issued session blob / released secret.",
-///      "type": "integer",
-///      "maximum": 86400.0,
-///      "minimum": 1.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -656,20 +409,6 @@ impl PolicyDecision {
 }
 ///`PolicyDecisionDecision`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "enum": [
-///    "allow",
-///    "deny",
-///    "requireStepUp",
-///    "requireConsent"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -739,16 +478,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PolicyDecisionDecision {
 }
 ///Human-readable explanation for diagnostic display.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Human-readable explanation for diagnostic display.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PolicyDecisionExplanation(::std::string::String);
@@ -808,19 +537,6 @@ impl<'de> ::serde::Deserialize<'de> for PolicyDecisionExplanation {
 }
 ///Vault-flow-specific. When decision == "allow" for a proxy-login/release request, whether the maintainer should proxy-login or release-for-fill. Default: proxy. Ignored for other task kinds.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Vault-flow-specific. When decision == \"allow\" for a proxy-login/release request, whether the maintainer should proxy-login or release-for-fill. Default: proxy. Ignored for other task kinds.",
-///  "type": "string",
-///  "enum": [
-///    "proxy",
-///    "fill"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -882,36 +598,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PolicyDecisionMode {
 }
 ///When decision == "requireConsent", the approver constraint the enforcement point MUST satisfy — a signed consent decision from the named set, bound to the request's payloadDigest — before executing.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "When decision == \"requireConsent\", the approver constraint the enforcement point MUST satisfy — a signed consent decision from the named set, bound to the request's payloadDigest — before executing.",
-///  "type": "object",
-///  "required": [
-///    "approverSet"
-///  ],
-///  "properties": {
-///    "approverSet": {
-///      "description": "Named set of enrolled approver devices permitted to approve this task (resolved by the enforcement point against its device registry).",
-///      "type": "string"
-///    },
-///    "excludeRequester": {
-///      "description": "When true, the device that issued the request MUST NOT be accepted as the approver — forcing cross-device approval so a compromised requesting device cannot self-approve.",
-///      "default": false,
-///      "type": "boolean"
-///    },
-///    "minApprovals": {
-///      "description": "Number of distinct approvers from the set required before the task may execute.",
-///      "default": 1,
-///      "type": "integer",
-///      "minimum": 1.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -936,33 +622,6 @@ impl PolicyDecisionRequireConsent {
 }
 ///When decision == "requireStepUp", which method to demand.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "When decision == \"requireStepUp\", which method to demand.",
-///  "type": "object",
-///  "required": [
-///    "method"
-///  ],
-///  "properties": {
-///    "method": {
-///      "type": "string",
-///      "enum": [
-///        "webauthnUv",
-///        "pushApproval",
-///        "totp"
-///      ]
-///    },
-///    "ttlSeconds": {
-///      "type": "integer",
-///      "minimum": 1.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -982,19 +641,6 @@ impl PolicyDecisionStepUp {
 }
 ///`PolicyDecisionStepUpMethod`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "enum": [
-///    "webauthnUv",
-///    "pushApproval",
-///    "totp"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1060,122 +706,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PolicyDecisionStepUpMeth
 }
 ///The structured input fed to a policy evaluator before dispatching a task. Generalised in 0.3 from the vault-flow triad to any Trust Task: `request.typeUri` identifies the task and `request.sideEffects` / `request.exposure` carry the authoritative SPEC §7.3 classifications the evaluator derives from the compiled handler.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "PolicyInput",
-///  "description": "The structured input fed to a policy evaluator before dispatching a task. Generalised in 0.3 from the vault-flow triad to any Trust Task: `request.typeUri` identifies the task and `request.sideEffects` / `request.exposure` carry the authoritative SPEC §7.3 classifications the evaluator derives from the compiled handler.",
-///  "type": "object",
-///  "required": [
-///    "consumer",
-///    "contextId",
-///    "request",
-///    "site"
-///  ],
-///  "properties": {
-///    "consumer": {
-///      "type": "object",
-///      "required": [
-///        "did"
-///      ],
-///      "properties": {
-///        "deviceId": {
-///          "type": "string"
-///        },
-///        "did": {
-///          "type": "string"
-///        },
-///        "kind": {
-///          "$ref": "#/definitions/ConsumerKind"
-///        },
-///        "lastUserVerificationAt": {
-///          "type": "string",
-///          "format": "date-time"
-///        },
-///        "networkClass": {
-///          "type": "string",
-///          "enum": [
-///            "unknown",
-///            "home",
-///            "corp",
-///            "public",
-///            "vpn"
-///          ]
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "contextId": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "request": {
-///      "type": "object",
-///      "required": [
-///        "exposure",
-///        "sideEffects",
-///        "typeUri"
-///      ],
-///      "properties": {
-///        "exposure": {
-///          "description": "Authoritative exposure class (SPEC §7.3 item 14), likewise derived from the compiled handler. `discloses` is the sensitivity of returned data; `actsAsSubject` is whether the subject's authority is exercised.",
-///          "type": "object",
-///          "required": [
-///            "actsAsSubject",
-///            "discloses"
-///          ],
-///          "properties": {
-///            "actsAsSubject": {
-///              "type": "boolean"
-///            },
-///            "discloses": {
-///              "type": "string",
-///              "enum": [
-///                "none",
-///                "metadata",
-///                "secret"
-///              ]
-///            }
-///          },
-///          "additionalProperties": false
-///        },
-///        "kind": {
-///          "description": "Optional coarse category retained from 0.2 (`proxyLogin` | `release` | `stepUpResponse` | …) for policies that switch on it. `typeUri` is authoritative in 0.3.",
-///          "type": "string"
-///        },
-///        "payloadDigest": {
-///          "description": "Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the payload, salted with the request challenge, present when a delegated-execution consent flow must bind approval to this exact payload. Absent when no consent binding is in play.",
-///          "$ref": "#/definitions/DigestMultibase"
-///        },
-///        "sideEffects": {
-///          "description": "Authoritative integrity class (SPEC §7.3 item 13). The evaluator MUST derive this from the compiled handler it is about to invoke, not from the wire — the registry's declared value is advisory only.",
-///          "type": "string",
-///          "enum": [
-///            "none",
-///            "mutating",
-///            "destructive"
-///          ]
-///        },
-///        "subject": {
-///          "description": "The identifier the task acts on — the value at the spec's `subjectPath` (usually a DID). The evaluator checks the consumer's authority to act on this subject. Absent for subjectless tasks (discovery, list).",
-///          "type": "string"
-///        },
-///        "typeUri": {
-///          "description": "Type URI of the task being authorized — the evaluator's primary discriminator (e.g. https://trusttasks.org/spec/did-management/did/delete/0.1).",
-///          "type": "string"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "site": {
-///      "$ref": "#/definitions/SiteTarget"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1193,43 +723,6 @@ impl PolicyInput {
 }
 ///`PolicyInputConsumer`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "did"
-///  ],
-///  "properties": {
-///    "deviceId": {
-///      "type": "string"
-///    },
-///    "did": {
-///      "type": "string"
-///    },
-///    "kind": {
-///      "$ref": "#/definitions/ConsumerKind"
-///    },
-///    "lastUserVerificationAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "networkClass": {
-///      "type": "string",
-///      "enum": [
-///        "unknown",
-///        "home",
-///        "corp",
-///        "public",
-///        "vpn"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1263,21 +756,6 @@ impl PolicyInputConsumer {
 }
 ///`PolicyInputConsumerNetworkClass`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "enum": [
-///    "unknown",
-///    "home",
-///    "corp",
-///    "public",
-///    "vpn"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1351,15 +829,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PolicyInputConsumerNetwo
 }
 ///`PolicyInputContextId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PolicyInputContextId(::std::string::String);
@@ -1419,69 +888,6 @@ impl<'de> ::serde::Deserialize<'de> for PolicyInputContextId {
 }
 ///`PolicyInputRequest`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "exposure",
-///    "sideEffects",
-///    "typeUri"
-///  ],
-///  "properties": {
-///    "exposure": {
-///      "description": "Authoritative exposure class (SPEC §7.3 item 14), likewise derived from the compiled handler. `discloses` is the sensitivity of returned data; `actsAsSubject` is whether the subject's authority is exercised.",
-///      "type": "object",
-///      "required": [
-///        "actsAsSubject",
-///        "discloses"
-///      ],
-///      "properties": {
-///        "actsAsSubject": {
-///          "type": "boolean"
-///        },
-///        "discloses": {
-///          "type": "string",
-///          "enum": [
-///            "none",
-///            "metadata",
-///            "secret"
-///          ]
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "kind": {
-///      "description": "Optional coarse category retained from 0.2 (`proxyLogin` | `release` | `stepUpResponse` | …) for policies that switch on it. `typeUri` is authoritative in 0.3.",
-///      "type": "string"
-///    },
-///    "payloadDigest": {
-///      "description": "Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the payload, salted with the request challenge, present when a delegated-execution consent flow must bind approval to this exact payload. Absent when no consent binding is in play.",
-///      "$ref": "#/definitions/DigestMultibase"
-///    },
-///    "sideEffects": {
-///      "description": "Authoritative integrity class (SPEC §7.3 item 13). The evaluator MUST derive this from the compiled handler it is about to invoke, not from the wire — the registry's declared value is advisory only.",
-///      "type": "string",
-///      "enum": [
-///        "none",
-///        "mutating",
-///        "destructive"
-///      ]
-///    },
-///    "subject": {
-///      "description": "The identifier the task acts on — the value at the spec's `subjectPath` (usually a DID). The evaluator checks the consumer's authority to act on this subject. Absent for subjectless tasks (discovery, list).",
-///      "type": "string"
-///    },
-///    "typeUri": {
-///      "description": "Type URI of the task being authorized — the evaluator's primary discriminator (e.g. https://trusttasks.org/spec/did-management/did/delete/0.1).",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1514,33 +920,6 @@ impl PolicyInputRequest {
 }
 ///Authoritative exposure class (SPEC §7.3 item 14), likewise derived from the compiled handler. `discloses` is the sensitivity of returned data; `actsAsSubject` is whether the subject's authority is exercised.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Authoritative exposure class (SPEC §7.3 item 14), likewise derived from the compiled handler. `discloses` is the sensitivity of returned data; `actsAsSubject` is whether the subject's authority is exercised.",
-///  "type": "object",
-///  "required": [
-///    "actsAsSubject",
-///    "discloses"
-///  ],
-///  "properties": {
-///    "actsAsSubject": {
-///      "type": "boolean"
-///    },
-///    "discloses": {
-///      "type": "string",
-///      "enum": [
-///        "none",
-///        "metadata",
-///        "secret"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1556,19 +935,6 @@ impl PolicyInputRequestExposure {
 }
 ///`PolicyInputRequestExposureDiscloses`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "enum": [
-///    "none",
-///    "metadata",
-///    "secret"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1634,20 +1000,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PolicyInputRequestExposu
 }
 ///Authoritative integrity class (SPEC §7.3 item 13). The evaluator MUST derive this from the compiled handler it is about to invoke, not from the wire — the registry's declared value is advisory only.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Authoritative integrity class (SPEC §7.3 item 13). The evaluator MUST derive this from the compiled handler it is about to invoke, not from the wire — the registry's declared value is advisory only.",
-///  "type": "string",
-///  "enum": [
-///    "none",
-///    "mutating",
-///    "destructive"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1713,43 +1065,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PolicyInputRequestSideEf
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "decision"
-///  ],
-///  "properties": {
-///    "decision": {
-///      "$ref": "#/definitions/PolicyDecision"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "matchedPolicies": {
-///      "description": "Ids (or `candidate` for the dry-run module) of the policies that returned a non-null decision, in evaluation order. The first is the winning policy.",
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      }
-///    },
-///    "trace": {
-///      "description": "Rego evaluator trace lines when `includeTrace: true`. Maintainer-defined format; primarily for human debugging.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 1024
-///      }
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1775,15 +1090,6 @@ impl Response {
 }
 ///`ResponseTraceItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseTraceItem(::std::string::String);
@@ -1843,112 +1149,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseTraceItem {
 }
 ///A single binding target for a vault entry. Tagged union over the discriminator `kind`. A VaultEntry's `targets` array MAY mix any number of these.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "SiteTarget",
-///  "description": "A single binding target for a vault entry. Tagged union over the discriminator `kind`. A VaultEntry's `targets` array MAY mix any number of these.",
-///  "oneOf": [
-///    {
-///      "title": "WebOrigin",
-///      "type": "object",
-///      "required": [
-///        "kind",
-///        "origin"
-///      ],
-///      "properties": {
-///        "kind": {
-///          "const": "webOrigin"
-///        },
-///        "origin": {
-///          "description": "Web origin per RFC 6454 (scheme + host + optional port), e.g. \"https://github.com\". Compared by exact string equality after canonicalisation (lowercase host, default port elided). Consumers wanting subdomain coverage SHOULD add multiple targets, not encode a wildcard.",
-///          "type": "string",
-///          "format": "uri"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "Did",
-///      "type": "object",
-///      "required": [
-///        "did",
-///        "kind"
-///      ],
-///      "properties": {
-///        "did": {
-///          "description": "DID identifying the relying party (e.g. did:web:rp.example). The vault maintainer is responsible for any DID resolution required to act on this entry.",
-///          "type": "string",
-///          "minLength": 1
-///        },
-///        "kind": {
-///          "const": "did"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "IosApp",
-///      "type": "object",
-///      "required": [
-///        "bundleId",
-///        "kind"
-///      ],
-///      "properties": {
-///        "bundleId": {
-///          "description": "iOS bundle identifier in reverse-DNS form (e.g. \"com.github.stwalkerster.codehub\"). Compared by exact string equality. Matches when an iOS Companion identifies the requesting app via its bundle id (typically via the OS Credential Manager integration).",
-///          "type": "string",
-///          "minLength": 1,
-///          "pattern": "^[A-Za-z0-9.-]+$"
-///        },
-///        "kind": {
-///          "const": "iosApp"
-///        },
-///        "teamId": {
-///          "description": "Optional Apple Developer Team identifier (10-character alphanumeric). When supplied, the maintainer SHOULD also verify the team id of the requesting app before matching — defense in depth against bundle-id squatting on jailbroken devices.",
-///          "type": "string",
-///          "minLength": 1,
-///          "pattern": "^[A-Z0-9]+$"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "AndroidApp",
-///      "type": "object",
-///      "required": [
-///        "kind",
-///        "packageName",
-///        "sha256CertFingerprints"
-///      ],
-///      "properties": {
-///        "kind": {
-///          "const": "androidApp"
-///        },
-///        "packageName": {
-///          "description": "Android package name in reverse-DNS form (e.g. \"com.github.android\").",
-///          "type": "string",
-///          "minLength": 1,
-///          "pattern": "^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+$"
-///        },
-///        "sha256CertFingerprints": {
-///          "description": "SHA-256 fingerprints of the app's signing certificates, in colon-separated hex (the format `apksigner` and the Play Console emit). At least one fingerprint MUST be present. The maintainer matches when ANY of the provided fingerprints matches the requesting app's signature — this supports apps signed by multiple keys (e.g. during certificate rotation via Play App Signing).",
-///          "type": "array",
-///          "items": {
-///            "type": "string",
-///            "pattern": "^[0-9A-F]{2}(:[0-9A-F]{2}){31}$"
-///          },
-///          "minItems": 1,
-///          "uniqueItems": true
-///        }
-///      },
-///      "additionalProperties": false
-///    }
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(tag = "kind", deny_unknown_fields)]
 #[non_exhaustive]
@@ -1992,17 +1192,6 @@ pub enum SiteTarget {
 }
 ///iOS bundle identifier in reverse-DNS form (e.g. "com.github.stwalkerster.codehub"). Compared by exact string equality. Matches when an iOS Companion identifies the requesting app via its bundle id (typically via the OS Credential Manager integration).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "iOS bundle identifier in reverse-DNS form (e.g. \"com.github.stwalkerster.codehub\"). Compared by exact string equality. Matches when an iOS Companion identifies the requesting app via its bundle id (typically via the OS Credential Manager integration).",
-///  "type": "string",
-///  "minLength": 1,
-///  "pattern": "^[A-Za-z0-9.-]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SiteTargetBundleId(::std::string::String);
@@ -2067,16 +1256,6 @@ impl<'de> ::serde::Deserialize<'de> for SiteTargetBundleId {
 }
 ///DID identifying the relying party (e.g. did:web:rp.example). The vault maintainer is responsible for any DID resolution required to act on this entry.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "DID identifying the relying party (e.g. did:web:rp.example). The vault maintainer is responsible for any DID resolution required to act on this entry.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SiteTargetDid(::std::string::String);
@@ -2136,17 +1315,6 @@ impl<'de> ::serde::Deserialize<'de> for SiteTargetDid {
 }
 ///Android package name in reverse-DNS form (e.g. "com.github.android").
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Android package name in reverse-DNS form (e.g. \"com.github.android\").",
-///  "type": "string",
-///  "minLength": 1,
-///  "pattern": "^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SiteTargetPackageName(::std::string::String);
@@ -2216,15 +1384,6 @@ impl<'de> ::serde::Deserialize<'de> for SiteTargetPackageName {
 }
 ///`SiteTargetSha256CertFingerprintsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[0-9A-F]{2}(:[0-9A-F]{2}){31}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SiteTargetSha256CertFingerprintsItem(::std::string::String);
@@ -2288,17 +1447,6 @@ impl<'de> ::serde::Deserialize<'de> for SiteTargetSha256CertFingerprintsItem {
 }
 ///Optional Apple Developer Team identifier (10-character alphanumeric). When supplied, the maintainer SHOULD also verify the team id of the requesting app before matching — defense in depth against bundle-id squatting on jailbroken devices.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Optional Apple Developer Team identifier (10-character alphanumeric). When supplied, the maintainer SHOULD also verify the team id of the requesting app before matching — defense in depth against bundle-id squatting on jailbroken devices.",
-///  "type": "string",
-///  "minLength": 1,
-///  "pattern": "^[A-Z0-9]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SiteTargetTeamId(::std::string::String);
@@ -3185,14 +2333,14 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/policy/evaluate/0.3";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ConsumerKind\": {\n      \"description\": \"Discriminator: is this consumer a user-driven Companion or a headless Service?\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"formFactor\": {\n              \"enum\": [\n                \"browser\",\n                \"mobile\",\n                \"desktop\"\n              ],\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"companion\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"formFactor\"\n          ],\n          \"title\": \"Companion\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"service\"\n            },\n            \"serviceKind\": {\n              \"enum\": [\n                \"mediator\",\n                \"aiAgent\",\n                \"daemon\"\n              ],\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"serviceKind\"\n          ],\n          \"title\": \"Service\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"ConsumerKind\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"PolicyDecision\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"decision\": {\n          \"enum\": [\n            \"allow\",\n            \"deny\",\n            \"requireStepUp\",\n            \"requireConsent\"\n          ],\n          \"type\": \"string\"\n        },\n        \"explanation\": {\n          \"description\": \"Human-readable explanation for diagnostic display.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"mode\": {\n          \"description\": \"Vault-flow-specific. When decision == \\\"allow\\\" for a proxy-login/release request, whether the maintainer should proxy-login or release-for-fill. Default: proxy. Ignored for other task kinds.\",\n          \"enum\": [\n            \"proxy\",\n            \"fill\"\n          ],\n          \"type\": \"string\"\n        },\n        \"requireConsent\": {\n          \"additionalProperties\": false,\n          \"description\": \"When decision == \\\"requireConsent\\\", the approver constraint the enforcement point MUST satisfy — a signed consent decision from the named set, bound to the request's payloadDigest — before executing.\",\n          \"properties\": {\n            \"approverSet\": {\n              \"description\": \"Named set of enrolled approver devices permitted to approve this task (resolved by the enforcement point against its device registry).\",\n              \"type\": \"string\"\n            },\n            \"excludeRequester\": {\n              \"default\": false,\n              \"description\": \"When true, the device that issued the request MUST NOT be accepted as the approver — forcing cross-device approval so a compromised requesting device cannot self-approve.\",\n              \"type\": \"boolean\"\n            },\n            \"minApprovals\": {\n              \"default\": 1,\n              \"description\": \"Number of distinct approvers from the set required before the task may execute.\",\n              \"minimum\": 1,\n              \"type\": \"integer\"\n            }\n          },\n          \"required\": [\n            \"approverSet\"\n          ],\n          \"type\": \"object\"\n        },\n        \"stepUp\": {\n          \"additionalProperties\": false,\n          \"description\": \"When decision == \\\"requireStepUp\\\", which method to demand.\",\n          \"properties\": {\n            \"method\": {\n              \"enum\": [\n                \"webauthnUv\",\n                \"pushApproval\",\n                \"totp\"\n              ],\n              \"type\": \"string\"\n            },\n            \"ttlSeconds\": {\n              \"minimum\": 1,\n              \"type\": \"integer\"\n            }\n          },\n          \"required\": [\n            \"method\"\n          ],\n          \"type\": \"object\"\n        },\n        \"ttlSecondsCap\": {\n          \"description\": \"When decision == \\\"allow\\\", maximum lifetime of any issued session blob / released secret.\",\n          \"maximum\": 86400,\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"decision\"\n      ],\n      \"title\": \"PolicyDecision\",\n      \"type\": \"object\"\n    },\n    \"PolicyInput\": {\n      \"additionalProperties\": false,\n      \"description\": \"The structured input fed to a policy evaluator before dispatching a task. Generalised in 0.3 from the vault-flow triad to any Trust Task: `request.typeUri` identifies the task and `request.sideEffects` / `request.exposure` carry the authoritative SPEC §7.3 classifications the evaluator derives from the compiled handler.\",\n      \"properties\": {\n        \"consumer\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"deviceId\": {\n              \"type\": \"string\"\n            },\n            \"did\": {\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"$ref\": \"#/$defs/ConsumerKind\"\n            },\n            \"lastUserVerificationAt\": {\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"networkClass\": {\n              \"enum\": [\n                \"unknown\",\n                \"home\",\n                \"corp\",\n                \"public\",\n                \"vpn\"\n              ],\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"did\"\n          ],\n          \"type\": \"object\"\n        },\n        \"contextId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"request\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"exposure\": {\n              \"additionalProperties\": false,\n              \"description\": \"Authoritative exposure class (SPEC §7.3 item 14), likewise derived from the compiled handler. `discloses` is the sensitivity of returned data; `actsAsSubject` is whether the subject's authority is exercised.\",\n              \"properties\": {\n                \"actsAsSubject\": {\n                  \"type\": \"boolean\"\n                },\n                \"discloses\": {\n                  \"enum\": [\n                    \"none\",\n                    \"metadata\",\n                    \"secret\"\n                  ],\n                  \"type\": \"string\"\n                }\n              },\n              \"required\": [\n                \"discloses\",\n                \"actsAsSubject\"\n              ],\n              \"type\": \"object\"\n            },\n            \"kind\": {\n              \"description\": \"Optional coarse category retained from 0.2 (`proxyLogin` | `release` | `stepUpResponse` | …) for policies that switch on it. `typeUri` is authoritative in 0.3.\",\n              \"type\": \"string\"\n            },\n            \"payloadDigest\": {\n              \"$ref\": \"#/$defs/DigestMultibase\",\n              \"description\": \"Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the payload, salted with the request challenge, present when a delegated-execution consent flow must bind approval to this exact payload. Absent when no consent binding is in play.\"\n            },\n            \"sideEffects\": {\n              \"description\": \"Authoritative integrity class (SPEC §7.3 item 13). The evaluator MUST derive this from the compiled handler it is about to invoke, not from the wire — the registry's declared value is advisory only.\",\n              \"enum\": [\n                \"none\",\n                \"mutating\",\n                \"destructive\"\n              ],\n              \"type\": \"string\"\n            },\n            \"subject\": {\n              \"description\": \"The identifier the task acts on — the value at the spec's `subjectPath` (usually a DID). The evaluator checks the consumer's authority to act on this subject. Absent for subjectless tasks (discovery, list).\",\n              \"type\": \"string\"\n            },\n            \"typeUri\": {\n              \"description\": \"Type URI of the task being authorized — the evaluator's primary discriminator (e.g. https://trusttasks.org/spec/did-management/did/delete/0.1).\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"typeUri\",\n            \"sideEffects\",\n            \"exposure\"\n          ],\n          \"type\": \"object\"\n        },\n        \"site\": {\n          \"$ref\": \"#/$defs/SiteTarget\"\n        }\n      },\n      \"required\": [\n        \"request\",\n        \"site\",\n        \"contextId\",\n        \"consumer\"\n      ],\n      \"title\": \"PolicyInput\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"decision\": {\n          \"$ref\": \"#/$defs/PolicyDecision\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"matchedPolicies\": {\n          \"description\": \"Ids (or `candidate` for the dry-run module) of the policies that returned a non-null decision, in evaluation order. The first is the winning policy.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"trace\": {\n          \"description\": \"Rego evaluator trace lines when `includeTrace: true`. Maintainer-defined format; primarily for human debugging.\",\n          \"items\": {\n            \"maxLength\": 1024,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"decision\"\n      ],\n      \"title\": \"Policy Evaluate — response payload\",\n      \"type\": \"object\"\n    },\n    \"SiteTarget\": {\n      \"description\": \"A single binding target for a vault entry. Tagged union over the discriminator `kind`. A VaultEntry's `targets` array MAY mix any number of these.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"webOrigin\"\n            },\n            \"origin\": {\n              \"description\": \"Web origin per RFC 6454 (scheme + host + optional port), e.g. \\\"https://github.com\\\". Compared by exact string equality after canonicalisation (lowercase host, default port elided). Consumers wanting subdomain coverage SHOULD add multiple targets, not encode a wildcard.\",\n              \"format\": \"uri\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"origin\"\n          ],\n          \"title\": \"WebOrigin\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"did\": {\n              \"description\": \"DID identifying the relying party (e.g. did:web:rp.example). The vault maintainer is responsible for any DID resolution required to act on this entry.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"did\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"did\"\n          ],\n          \"title\": \"Did\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"bundleId\": {\n              \"description\": \"iOS bundle identifier in reverse-DNS form (e.g. \\\"com.github.stwalkerster.codehub\\\"). Compared by exact string equality. Matches when an iOS Companion identifies the requesting app via its bundle id (typically via the OS Credential Manager integration).\",\n              \"minLength\": 1,\n              \"pattern\": \"^[A-Za-z0-9.-]+$\",\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"iosApp\"\n            },\n            \"teamId\": {\n              \"description\": \"Optional Apple Developer Team identifier (10-character alphanumeric). When supplied, the maintainer SHOULD also verify the team id of the requesting app before matching — defense in depth against bundle-id squatting on jailbroken devices.\",\n              \"minLength\": 1,\n              \"pattern\": \"^[A-Z0-9]+$\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"bundleId\"\n          ],\n          \"title\": \"IosApp\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"androidApp\"\n            },\n            \"packageName\": {\n              \"description\": \"Android package name in reverse-DNS form (e.g. \\\"com.github.android\\\").\",\n              \"minLength\": 1,\n              \"pattern\": \"^[A-Za-z][A-Za-z0-9_]*(\\\\.[A-Za-z][A-Za-z0-9_]*)+$\",\n              \"type\": \"string\"\n            },\n            \"sha256CertFingerprints\": {\n              \"description\": \"SHA-256 fingerprints of the app's signing certificates, in colon-separated hex (the format `apksigner` and the Play Console emit). At least one fingerprint MUST be present. The maintainer matches when ANY of the provided fingerprints matches the requesting app's signature — this supports apps signed by multiple keys (e.g. during certificate rotation via Play App Signing).\",\n              \"items\": {\n                \"pattern\": \"^[0-9A-F]{2}(:[0-9A-F]{2}){31}$\",\n                \"type\": \"string\"\n              },\n              \"minItems\": 1,\n              \"type\": \"array\",\n              \"uniqueItems\": true\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"packageName\",\n            \"sha256CertFingerprints\"\n          ],\n          \"title\": \"AndroidApp\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"SiteTarget\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/policy/evaluate/0.3\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Dry-run a policy decision against a synthetic PolicyInput. Returns the policy decision plus a trace of which policy modules matched and which rules fired. Used by the policy-editor UI to verify changes before save and by admins to diagnose unexpected outcomes. 0.3 evaluates against the generalised PolicyInput (any Trust Task, carrying typeUri + side-effect/exposure classes) and can return the `requireConsent` decision.\",\n  \"properties\": {\n    \"candidateModule\": {\n      \"description\": \"Optional — when supplied, evaluate as if this Rego source were active (e.g. preview a pending upsert). The candidate is layered into the evaluator at the priority specified by `candidatePriority` (default 1000) for this call only.\",\n      \"type\": \"string\"\n    },\n    \"candidatePriority\": {\n      \"default\": 1000,\n      \"maximum\": 1000,\n      \"minimum\": 0,\n      \"type\": \"integer\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"includeTrace\": {\n      \"default\": false,\n      \"type\": \"boolean\"\n    },\n    \"input\": {\n      \"$ref\": \"#/$defs/PolicyInput\"\n    }\n  },\n  \"required\": [\n    \"input\"\n  ],\n  \"title\": \"Policy Evaluate — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"ConsumerKind\":{\"description\":\"Discriminator: is this consumer a user-driven Companion or a headless Service?\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"formFactor\":{\"enum\":[\"browser\",\"mobile\",\"desktop\"],\"type\":\"string\"},\"kind\":{\"const\":\"companion\"}},\"required\":[\"kind\",\"formFactor\"],\"title\":\"Companion\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"service\"},\"serviceKind\":{\"enum\":[\"mediator\",\"aiAgent\",\"daemon\"],\"type\":\"string\"}},\"required\":[\"kind\",\"serviceKind\"],\"title\":\"Service\",\"type\":\"object\"}],\"title\":\"ConsumerKind\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"PolicyDecision\":{\"additionalProperties\":false,\"properties\":{\"decision\":{\"enum\":[\"allow\",\"deny\",\"requireStepUp\",\"requireConsent\"],\"type\":\"string\"},\"explanation\":{\"description\":\"Human-readable explanation for diagnostic display.\",\"maxLength\":1024,\"type\":\"string\"},\"mode\":{\"description\":\"Vault-flow-specific. When decision == \\\"allow\\\" for a proxy-login/release request, whether the maintainer should proxy-login or release-for-fill. Default: proxy. Ignored for other task kinds.\",\"enum\":[\"proxy\",\"fill\"],\"type\":\"string\"},\"requireConsent\":{\"additionalProperties\":false,\"description\":\"When decision == \\\"requireConsent\\\", the approver constraint the enforcement point MUST satisfy — a signed consent decision from the named set, bound to the request's payloadDigest — before executing.\",\"properties\":{\"approverSet\":{\"description\":\"Named set of enrolled approver devices permitted to approve this task (resolved by the enforcement point against its device registry).\",\"type\":\"string\"},\"excludeRequester\":{\"default\":false,\"description\":\"When true, the device that issued the request MUST NOT be accepted as the approver — forcing cross-device approval so a compromised requesting device cannot self-approve.\",\"type\":\"boolean\"},\"minApprovals\":{\"default\":1,\"description\":\"Number of distinct approvers from the set required before the task may execute.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"approverSet\"],\"type\":\"object\"},\"stepUp\":{\"additionalProperties\":false,\"description\":\"When decision == \\\"requireStepUp\\\", which method to demand.\",\"properties\":{\"method\":{\"enum\":[\"webauthnUv\",\"pushApproval\",\"totp\"],\"type\":\"string\"},\"ttlSeconds\":{\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"method\"],\"type\":\"object\"},\"ttlSecondsCap\":{\"description\":\"When decision == \\\"allow\\\", maximum lifetime of any issued session blob / released secret.\",\"maximum\":86400,\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"decision\"],\"title\":\"PolicyDecision\",\"type\":\"object\"},\"PolicyInput\":{\"additionalProperties\":false,\"description\":\"The structured input fed to a policy evaluator before dispatching a task. Generalised in 0.3 from the vault-flow triad to any Trust Task: `request.typeUri` identifies the task and `request.sideEffects` / `request.exposure` carry the authoritative SPEC §7.3 classifications the evaluator derives from the compiled handler.\",\"properties\":{\"consumer\":{\"additionalProperties\":false,\"properties\":{\"deviceId\":{\"type\":\"string\"},\"did\":{\"type\":\"string\"},\"kind\":{\"$ref\":\"#/$defs/ConsumerKind\"},\"lastUserVerificationAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"networkClass\":{\"enum\":[\"unknown\",\"home\",\"corp\",\"public\",\"vpn\"],\"type\":\"string\"}},\"required\":[\"did\"],\"type\":\"object\"},\"contextId\":{\"minLength\":1,\"type\":\"string\"},\"request\":{\"additionalProperties\":false,\"properties\":{\"exposure\":{\"additionalProperties\":false,\"description\":\"Authoritative exposure class (SPEC §7.3 item 14), likewise derived from the compiled handler. `discloses` is the sensitivity of returned data; `actsAsSubject` is whether the subject's authority is exercised.\",\"properties\":{\"actsAsSubject\":{\"type\":\"boolean\"},\"discloses\":{\"enum\":[\"none\",\"metadata\",\"secret\"],\"type\":\"string\"}},\"required\":[\"discloses\",\"actsAsSubject\"],\"type\":\"object\"},\"kind\":{\"description\":\"Optional coarse category retained from 0.2 (`proxyLogin` | `release` | `stepUpResponse` | …) for policies that switch on it. `typeUri` is authoritative in 0.3.\",\"type\":\"string\"},\"payloadDigest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the payload, salted with the request challenge, present when a delegated-execution consent flow must bind approval to this exact payload. Absent when no consent binding is in play.\"},\"sideEffects\":{\"description\":\"Authoritative integrity class (SPEC §7.3 item 13). The evaluator MUST derive this from the compiled handler it is about to invoke, not from the wire — the registry's declared value is advisory only.\",\"enum\":[\"none\",\"mutating\",\"destructive\"],\"type\":\"string\"},\"subject\":{\"description\":\"The identifier the task acts on — the value at the spec's `subjectPath` (usually a DID). The evaluator checks the consumer's authority to act on this subject. Absent for subjectless tasks (discovery, list).\",\"type\":\"string\"},\"typeUri\":{\"description\":\"Type URI of the task being authorized — the evaluator's primary discriminator (e.g. https://trusttasks.org/spec/did-management/did/delete/0.1).\",\"type\":\"string\"}},\"required\":[\"typeUri\",\"sideEffects\",\"exposure\"],\"type\":\"object\"},\"site\":{\"$ref\":\"#/$defs/SiteTarget\"}},\"required\":[\"request\",\"site\",\"contextId\",\"consumer\"],\"title\":\"PolicyInput\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"decision\":{\"$ref\":\"#/$defs/PolicyDecision\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"matchedPolicies\":{\"description\":\"Ids (or `candidate` for the dry-run module) of the policies that returned a non-null decision, in evaluation order. The first is the winning policy.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"trace\":{\"description\":\"Rego evaluator trace lines when `includeTrace: true`. Maintainer-defined format; primarily for human debugging.\",\"items\":{\"maxLength\":1024,\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"decision\"],\"title\":\"Policy Evaluate — response payload\",\"type\":\"object\"},\"SiteTarget\":{\"description\":\"A single binding target for a vault entry. Tagged union over the discriminator `kind`. A VaultEntry's `targets` array MAY mix any number of these.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"webOrigin\"},\"origin\":{\"description\":\"Web origin per RFC 6454 (scheme + host + optional port), e.g. \\\"https://github.com\\\". Compared by exact string equality after canonicalisation (lowercase host, default port elided). Consumers wanting subdomain coverage SHOULD add multiple targets, not encode a wildcard.\",\"format\":\"uri\",\"type\":\"string\"}},\"required\":[\"kind\",\"origin\"],\"title\":\"WebOrigin\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"did\":{\"description\":\"DID identifying the relying party (e.g. did:web:rp.example). The vault maintainer is responsible for any DID resolution required to act on this entry.\",\"minLength\":1,\"type\":\"string\"},\"kind\":{\"const\":\"did\"}},\"required\":[\"kind\",\"did\"],\"title\":\"Did\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"bundleId\":{\"description\":\"iOS bundle identifier in reverse-DNS form (e.g. \\\"com.github.stwalkerster.codehub\\\"). Compared by exact string equality. Matches when an iOS Companion identifies the requesting app via its bundle id (typically via the OS Credential Manager integration).\",\"minLength\":1,\"pattern\":\"^[A-Za-z0-9.-]+$\",\"type\":\"string\"},\"kind\":{\"const\":\"iosApp\"},\"teamId\":{\"description\":\"Optional Apple Developer Team identifier (10-character alphanumeric). When supplied, the maintainer SHOULD also verify the team id of the requesting app before matching — defense in depth against bundle-id squatting on jailbroken devices.\",\"minLength\":1,\"pattern\":\"^[A-Z0-9]+$\",\"type\":\"string\"}},\"required\":[\"kind\",\"bundleId\"],\"title\":\"IosApp\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"androidApp\"},\"packageName\":{\"description\":\"Android package name in reverse-DNS form (e.g. \\\"com.github.android\\\").\",\"minLength\":1,\"pattern\":\"^[A-Za-z][A-Za-z0-9_]*(\\\\.[A-Za-z][A-Za-z0-9_]*)+$\",\"type\":\"string\"},\"sha256CertFingerprints\":{\"description\":\"SHA-256 fingerprints of the app's signing certificates, in colon-separated hex (the format `apksigner` and the Play Console emit). At least one fingerprint MUST be present. The maintainer matches when ANY of the provided fingerprints matches the requesting app's signature — this supports apps signed by multiple keys (e.g. during certificate rotation via Play App Signing).\",\"items\":{\"pattern\":\"^[0-9A-F]{2}(:[0-9A-F]{2}){31}$\",\"type\":\"string\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"kind\",\"packageName\",\"sha256CertFingerprints\"],\"title\":\"AndroidApp\",\"type\":\"object\"}],\"title\":\"SiteTarget\"}},\"$id\":\"https://trusttasks.org/spec/policy/evaluate/0.3\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Dry-run a policy decision against a synthetic PolicyInput. Returns the policy decision plus a trace of which policy modules matched and which rules fired. Used by the policy-editor UI to verify changes before save and by admins to diagnose unexpected outcomes. 0.3 evaluates against the generalised PolicyInput (any Trust Task, carrying typeUri + side-effect/exposure classes) and can return the `requireConsent` decision.\",\"properties\":{\"candidateModule\":{\"description\":\"Optional — when supplied, evaluate as if this Rego source were active (e.g. preview a pending upsert). The candidate is layered into the evaluator at the priority specified by `candidatePriority` (default 1000) for this call only.\",\"type\":\"string\"},\"candidatePriority\":{\"default\":1000,\"maximum\":1000,\"minimum\":0,\"type\":\"integer\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"includeTrace\":{\"default\":false,\"type\":\"boolean\"},\"input\":{\"$ref\":\"#/$defs/PolicyInput\"}},\"required\":[\"input\"],\"title\":\"Policy Evaluate — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/policy/evaluate/0.3#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ConsumerKind\": {\n      \"description\": \"Discriminator: is this consumer a user-driven Companion or a headless Service?\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"formFactor\": {\n              \"enum\": [\n                \"browser\",\n                \"mobile\",\n                \"desktop\"\n              ],\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"companion\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"formFactor\"\n          ],\n          \"title\": \"Companion\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"service\"\n            },\n            \"serviceKind\": {\n              \"enum\": [\n                \"mediator\",\n                \"aiAgent\",\n                \"daemon\"\n              ],\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"serviceKind\"\n          ],\n          \"title\": \"Service\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"ConsumerKind\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"PolicyDecision\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"decision\": {\n          \"enum\": [\n            \"allow\",\n            \"deny\",\n            \"requireStepUp\",\n            \"requireConsent\"\n          ],\n          \"type\": \"string\"\n        },\n        \"explanation\": {\n          \"description\": \"Human-readable explanation for diagnostic display.\",\n          \"maxLength\": 1024,\n          \"type\": \"string\"\n        },\n        \"mode\": {\n          \"description\": \"Vault-flow-specific. When decision == \\\"allow\\\" for a proxy-login/release request, whether the maintainer should proxy-login or release-for-fill. Default: proxy. Ignored for other task kinds.\",\n          \"enum\": [\n            \"proxy\",\n            \"fill\"\n          ],\n          \"type\": \"string\"\n        },\n        \"requireConsent\": {\n          \"additionalProperties\": false,\n          \"description\": \"When decision == \\\"requireConsent\\\", the approver constraint the enforcement point MUST satisfy — a signed consent decision from the named set, bound to the request's payloadDigest — before executing.\",\n          \"properties\": {\n            \"approverSet\": {\n              \"description\": \"Named set of enrolled approver devices permitted to approve this task (resolved by the enforcement point against its device registry).\",\n              \"type\": \"string\"\n            },\n            \"excludeRequester\": {\n              \"default\": false,\n              \"description\": \"When true, the device that issued the request MUST NOT be accepted as the approver — forcing cross-device approval so a compromised requesting device cannot self-approve.\",\n              \"type\": \"boolean\"\n            },\n            \"minApprovals\": {\n              \"default\": 1,\n              \"description\": \"Number of distinct approvers from the set required before the task may execute.\",\n              \"minimum\": 1,\n              \"type\": \"integer\"\n            }\n          },\n          \"required\": [\n            \"approverSet\"\n          ],\n          \"type\": \"object\"\n        },\n        \"stepUp\": {\n          \"additionalProperties\": false,\n          \"description\": \"When decision == \\\"requireStepUp\\\", which method to demand.\",\n          \"properties\": {\n            \"method\": {\n              \"enum\": [\n                \"webauthnUv\",\n                \"pushApproval\",\n                \"totp\"\n              ],\n              \"type\": \"string\"\n            },\n            \"ttlSeconds\": {\n              \"minimum\": 1,\n              \"type\": \"integer\"\n            }\n          },\n          \"required\": [\n            \"method\"\n          ],\n          \"type\": \"object\"\n        },\n        \"ttlSecondsCap\": {\n          \"description\": \"When decision == \\\"allow\\\", maximum lifetime of any issued session blob / released secret.\",\n          \"maximum\": 86400,\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"decision\"\n      ],\n      \"title\": \"PolicyDecision\",\n      \"type\": \"object\"\n    },\n    \"PolicyInput\": {\n      \"additionalProperties\": false,\n      \"description\": \"The structured input fed to a policy evaluator before dispatching a task. Generalised in 0.3 from the vault-flow triad to any Trust Task: `request.typeUri` identifies the task and `request.sideEffects` / `request.exposure` carry the authoritative SPEC §7.3 classifications the evaluator derives from the compiled handler.\",\n      \"properties\": {\n        \"consumer\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"deviceId\": {\n              \"type\": \"string\"\n            },\n            \"did\": {\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"$ref\": \"#/$defs/ConsumerKind\"\n            },\n            \"lastUserVerificationAt\": {\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"networkClass\": {\n              \"enum\": [\n                \"unknown\",\n                \"home\",\n                \"corp\",\n                \"public\",\n                \"vpn\"\n              ],\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"did\"\n          ],\n          \"type\": \"object\"\n        },\n        \"contextId\": {\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"request\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"exposure\": {\n              \"additionalProperties\": false,\n              \"description\": \"Authoritative exposure class (SPEC §7.3 item 14), likewise derived from the compiled handler. `discloses` is the sensitivity of returned data; `actsAsSubject` is whether the subject's authority is exercised.\",\n              \"properties\": {\n                \"actsAsSubject\": {\n                  \"type\": \"boolean\"\n                },\n                \"discloses\": {\n                  \"enum\": [\n                    \"none\",\n                    \"metadata\",\n                    \"secret\"\n                  ],\n                  \"type\": \"string\"\n                }\n              },\n              \"required\": [\n                \"discloses\",\n                \"actsAsSubject\"\n              ],\n              \"type\": \"object\"\n            },\n            \"kind\": {\n              \"description\": \"Optional coarse category retained from 0.2 (`proxyLogin` | `release` | `stepUpResponse` | …) for policies that switch on it. `typeUri` is authoritative in 0.3.\",\n              \"type\": \"string\"\n            },\n            \"payloadDigest\": {\n              \"$ref\": \"#/$defs/DigestMultibase\",\n              \"description\": \"Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the payload, salted with the request challenge, present when a delegated-execution consent flow must bind approval to this exact payload. Absent when no consent binding is in play.\"\n            },\n            \"sideEffects\": {\n              \"description\": \"Authoritative integrity class (SPEC §7.3 item 13). The evaluator MUST derive this from the compiled handler it is about to invoke, not from the wire — the registry's declared value is advisory only.\",\n              \"enum\": [\n                \"none\",\n                \"mutating\",\n                \"destructive\"\n              ],\n              \"type\": \"string\"\n            },\n            \"subject\": {\n              \"description\": \"The identifier the task acts on — the value at the spec's `subjectPath` (usually a DID). The evaluator checks the consumer's authority to act on this subject. Absent for subjectless tasks (discovery, list).\",\n              \"type\": \"string\"\n            },\n            \"typeUri\": {\n              \"description\": \"Type URI of the task being authorized — the evaluator's primary discriminator (e.g. https://trusttasks.org/spec/did-management/did/delete/0.1).\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"typeUri\",\n            \"sideEffects\",\n            \"exposure\"\n          ],\n          \"type\": \"object\"\n        },\n        \"site\": {\n          \"$ref\": \"#/$defs/SiteTarget\"\n        }\n      },\n      \"required\": [\n        \"request\",\n        \"site\",\n        \"contextId\",\n        \"consumer\"\n      ],\n      \"title\": \"PolicyInput\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"decision\": {\n          \"$ref\": \"#/$defs/PolicyDecision\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"matchedPolicies\": {\n          \"description\": \"Ids (or `candidate` for the dry-run module) of the policies that returned a non-null decision, in evaluation order. The first is the winning policy.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"trace\": {\n          \"description\": \"Rego evaluator trace lines when `includeTrace: true`. Maintainer-defined format; primarily for human debugging.\",\n          \"items\": {\n            \"maxLength\": 1024,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"decision\"\n      ],\n      \"title\": \"Policy Evaluate — response payload\",\n      \"type\": \"object\"\n    },\n    \"SiteTarget\": {\n      \"description\": \"A single binding target for a vault entry. Tagged union over the discriminator `kind`. A VaultEntry's `targets` array MAY mix any number of these.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"webOrigin\"\n            },\n            \"origin\": {\n              \"description\": \"Web origin per RFC 6454 (scheme + host + optional port), e.g. \\\"https://github.com\\\". Compared by exact string equality after canonicalisation (lowercase host, default port elided). Consumers wanting subdomain coverage SHOULD add multiple targets, not encode a wildcard.\",\n              \"format\": \"uri\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"origin\"\n          ],\n          \"title\": \"WebOrigin\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"did\": {\n              \"description\": \"DID identifying the relying party (e.g. did:web:rp.example). The vault maintainer is responsible for any DID resolution required to act on this entry.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"did\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"did\"\n          ],\n          \"title\": \"Did\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"bundleId\": {\n              \"description\": \"iOS bundle identifier in reverse-DNS form (e.g. \\\"com.github.stwalkerster.codehub\\\"). Compared by exact string equality. Matches when an iOS Companion identifies the requesting app via its bundle id (typically via the OS Credential Manager integration).\",\n              \"minLength\": 1,\n              \"pattern\": \"^[A-Za-z0-9.-]+$\",\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"const\": \"iosApp\"\n            },\n            \"teamId\": {\n              \"description\": \"Optional Apple Developer Team identifier (10-character alphanumeric). When supplied, the maintainer SHOULD also verify the team id of the requesting app before matching — defense in depth against bundle-id squatting on jailbroken devices.\",\n              \"minLength\": 1,\n              \"pattern\": \"^[A-Z0-9]+$\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"bundleId\"\n          ],\n          \"title\": \"IosApp\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"androidApp\"\n            },\n            \"packageName\": {\n              \"description\": \"Android package name in reverse-DNS form (e.g. \\\"com.github.android\\\").\",\n              \"minLength\": 1,\n              \"pattern\": \"^[A-Za-z][A-Za-z0-9_]*(\\\\.[A-Za-z][A-Za-z0-9_]*)+$\",\n              \"type\": \"string\"\n            },\n            \"sha256CertFingerprints\": {\n              \"description\": \"SHA-256 fingerprints of the app's signing certificates, in colon-separated hex (the format `apksigner` and the Play Console emit). At least one fingerprint MUST be present. The maintainer matches when ANY of the provided fingerprints matches the requesting app's signature — this supports apps signed by multiple keys (e.g. during certificate rotation via Play App Signing).\",\n              \"items\": {\n                \"pattern\": \"^[0-9A-F]{2}(:[0-9A-F]{2}){31}$\",\n                \"type\": \"string\"\n              },\n              \"minItems\": 1,\n              \"type\": \"array\",\n              \"uniqueItems\": true\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"packageName\",\n            \"sha256CertFingerprints\"\n          ],\n          \"title\": \"AndroidApp\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"SiteTarget\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"ConsumerKind\":{\"description\":\"Discriminator: is this consumer a user-driven Companion or a headless Service?\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"formFactor\":{\"enum\":[\"browser\",\"mobile\",\"desktop\"],\"type\":\"string\"},\"kind\":{\"const\":\"companion\"}},\"required\":[\"kind\",\"formFactor\"],\"title\":\"Companion\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"service\"},\"serviceKind\":{\"enum\":[\"mediator\",\"aiAgent\",\"daemon\"],\"type\":\"string\"}},\"required\":[\"kind\",\"serviceKind\"],\"title\":\"Service\",\"type\":\"object\"}],\"title\":\"ConsumerKind\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"PolicyDecision\":{\"additionalProperties\":false,\"properties\":{\"decision\":{\"enum\":[\"allow\",\"deny\",\"requireStepUp\",\"requireConsent\"],\"type\":\"string\"},\"explanation\":{\"description\":\"Human-readable explanation for diagnostic display.\",\"maxLength\":1024,\"type\":\"string\"},\"mode\":{\"description\":\"Vault-flow-specific. When decision == \\\"allow\\\" for a proxy-login/release request, whether the maintainer should proxy-login or release-for-fill. Default: proxy. Ignored for other task kinds.\",\"enum\":[\"proxy\",\"fill\"],\"type\":\"string\"},\"requireConsent\":{\"additionalProperties\":false,\"description\":\"When decision == \\\"requireConsent\\\", the approver constraint the enforcement point MUST satisfy — a signed consent decision from the named set, bound to the request's payloadDigest — before executing.\",\"properties\":{\"approverSet\":{\"description\":\"Named set of enrolled approver devices permitted to approve this task (resolved by the enforcement point against its device registry).\",\"type\":\"string\"},\"excludeRequester\":{\"default\":false,\"description\":\"When true, the device that issued the request MUST NOT be accepted as the approver — forcing cross-device approval so a compromised requesting device cannot self-approve.\",\"type\":\"boolean\"},\"minApprovals\":{\"default\":1,\"description\":\"Number of distinct approvers from the set required before the task may execute.\",\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"approverSet\"],\"type\":\"object\"},\"stepUp\":{\"additionalProperties\":false,\"description\":\"When decision == \\\"requireStepUp\\\", which method to demand.\",\"properties\":{\"method\":{\"enum\":[\"webauthnUv\",\"pushApproval\",\"totp\"],\"type\":\"string\"},\"ttlSeconds\":{\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"method\"],\"type\":\"object\"},\"ttlSecondsCap\":{\"description\":\"When decision == \\\"allow\\\", maximum lifetime of any issued session blob / released secret.\",\"maximum\":86400,\"minimum\":1,\"type\":\"integer\"}},\"required\":[\"decision\"],\"title\":\"PolicyDecision\",\"type\":\"object\"},\"PolicyInput\":{\"additionalProperties\":false,\"description\":\"The structured input fed to a policy evaluator before dispatching a task. Generalised in 0.3 from the vault-flow triad to any Trust Task: `request.typeUri` identifies the task and `request.sideEffects` / `request.exposure` carry the authoritative SPEC §7.3 classifications the evaluator derives from the compiled handler.\",\"properties\":{\"consumer\":{\"additionalProperties\":false,\"properties\":{\"deviceId\":{\"type\":\"string\"},\"did\":{\"type\":\"string\"},\"kind\":{\"$ref\":\"#/$defs/ConsumerKind\"},\"lastUserVerificationAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"networkClass\":{\"enum\":[\"unknown\",\"home\",\"corp\",\"public\",\"vpn\"],\"type\":\"string\"}},\"required\":[\"did\"],\"type\":\"object\"},\"contextId\":{\"minLength\":1,\"type\":\"string\"},\"request\":{\"additionalProperties\":false,\"properties\":{\"exposure\":{\"additionalProperties\":false,\"description\":\"Authoritative exposure class (SPEC §7.3 item 14), likewise derived from the compiled handler. `discloses` is the sensitivity of returned data; `actsAsSubject` is whether the subject's authority is exercised.\",\"properties\":{\"actsAsSubject\":{\"type\":\"boolean\"},\"discloses\":{\"enum\":[\"none\",\"metadata\",\"secret\"],\"type\":\"string\"}},\"required\":[\"discloses\",\"actsAsSubject\"],\"type\":\"object\"},\"kind\":{\"description\":\"Optional coarse category retained from 0.2 (`proxyLogin` | `release` | `stepUpResponse` | …) for policies that switch on it. `typeUri` is authoritative in 0.3.\",\"type\":\"string\"},\"payloadDigest\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"Multibase-encoded multihash over the RFC 8785 (JCS) canonicalization of the payload, salted with the request challenge, present when a delegated-execution consent flow must bind approval to this exact payload. Absent when no consent binding is in play.\"},\"sideEffects\":{\"description\":\"Authoritative integrity class (SPEC §7.3 item 13). The evaluator MUST derive this from the compiled handler it is about to invoke, not from the wire — the registry's declared value is advisory only.\",\"enum\":[\"none\",\"mutating\",\"destructive\"],\"type\":\"string\"},\"subject\":{\"description\":\"The identifier the task acts on — the value at the spec's `subjectPath` (usually a DID). The evaluator checks the consumer's authority to act on this subject. Absent for subjectless tasks (discovery, list).\",\"type\":\"string\"},\"typeUri\":{\"description\":\"Type URI of the task being authorized — the evaluator's primary discriminator (e.g. https://trusttasks.org/spec/did-management/did/delete/0.1).\",\"type\":\"string\"}},\"required\":[\"typeUri\",\"sideEffects\",\"exposure\"],\"type\":\"object\"},\"site\":{\"$ref\":\"#/$defs/SiteTarget\"}},\"required\":[\"request\",\"site\",\"contextId\",\"consumer\"],\"title\":\"PolicyInput\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"decision\":{\"$ref\":\"#/$defs/PolicyDecision\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"matchedPolicies\":{\"description\":\"Ids (or `candidate` for the dry-run module) of the policies that returned a non-null decision, in evaluation order. The first is the winning policy.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"trace\":{\"description\":\"Rego evaluator trace lines when `includeTrace: true`. Maintainer-defined format; primarily for human debugging.\",\"items\":{\"maxLength\":1024,\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"decision\"],\"title\":\"Policy Evaluate — response payload\",\"type\":\"object\"},\"SiteTarget\":{\"description\":\"A single binding target for a vault entry. Tagged union over the discriminator `kind`. A VaultEntry's `targets` array MAY mix any number of these.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"webOrigin\"},\"origin\":{\"description\":\"Web origin per RFC 6454 (scheme + host + optional port), e.g. \\\"https://github.com\\\". Compared by exact string equality after canonicalisation (lowercase host, default port elided). Consumers wanting subdomain coverage SHOULD add multiple targets, not encode a wildcard.\",\"format\":\"uri\",\"type\":\"string\"}},\"required\":[\"kind\",\"origin\"],\"title\":\"WebOrigin\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"did\":{\"description\":\"DID identifying the relying party (e.g. did:web:rp.example). The vault maintainer is responsible for any DID resolution required to act on this entry.\",\"minLength\":1,\"type\":\"string\"},\"kind\":{\"const\":\"did\"}},\"required\":[\"kind\",\"did\"],\"title\":\"Did\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"bundleId\":{\"description\":\"iOS bundle identifier in reverse-DNS form (e.g. \\\"com.github.stwalkerster.codehub\\\"). Compared by exact string equality. Matches when an iOS Companion identifies the requesting app via its bundle id (typically via the OS Credential Manager integration).\",\"minLength\":1,\"pattern\":\"^[A-Za-z0-9.-]+$\",\"type\":\"string\"},\"kind\":{\"const\":\"iosApp\"},\"teamId\":{\"description\":\"Optional Apple Developer Team identifier (10-character alphanumeric). When supplied, the maintainer SHOULD also verify the team id of the requesting app before matching — defense in depth against bundle-id squatting on jailbroken devices.\",\"minLength\":1,\"pattern\":\"^[A-Z0-9]+$\",\"type\":\"string\"}},\"required\":[\"kind\",\"bundleId\"],\"title\":\"IosApp\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"androidApp\"},\"packageName\":{\"description\":\"Android package name in reverse-DNS form (e.g. \\\"com.github.android\\\").\",\"minLength\":1,\"pattern\":\"^[A-Za-z][A-Za-z0-9_]*(\\\\.[A-Za-z][A-Za-z0-9_]*)+$\",\"type\":\"string\"},\"sha256CertFingerprints\":{\"description\":\"SHA-256 fingerprints of the app's signing certificates, in colon-separated hex (the format `apksigner` and the Play Console emit). At least one fingerprint MUST be present. The maintainer matches when ANY of the provided fingerprints matches the requesting app's signature — this supports apps signed by multiple keys (e.g. during certificate rotation via Play App Signing).\",\"items\":{\"pattern\":\"^[0-9A-F]{2}(:[0-9A-F]{2}){31}$\",\"type\":\"string\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true}},\"required\":[\"kind\",\"packageName\",\"sha256CertFingerprints\"],\"title\":\"AndroidApp\",\"type\":\"object\"}],\"title\":\"SiteTarget\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

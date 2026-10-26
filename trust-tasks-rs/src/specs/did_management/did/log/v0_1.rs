@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,40 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/did-management/did/log/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "mnemonic"
-///  ],
-///  "properties": {
-///    "domain": {
-///      "description": "Disambiguates `mnemonic` per the category conventions. Absent means the domain is resolved by the category's chain.",
-///      "type": "string",
-///      "maxLength": 253,
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "mnemonic": {
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    },
-///    "raw": {
-///      "description": "When true, the response also carries the stored artifacts verbatim. Absent or false means parsed entries only.",
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -197,17 +139,6 @@ impl Payload {
 }
 ///Disambiguates `mnemonic` per the category conventions. Absent means the domain is resolved by the category's chain.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Disambiguates `mnemonic` per the category conventions. Absent means the domain is resolved by the category's chain.",
-///  "type": "string",
-///  "maxLength": 253,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadDomain(::std::string::String);
@@ -270,16 +201,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDomain {
 }
 ///`PayloadMnemonic`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadMnemonic(::std::string::String);
@@ -342,73 +263,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadMnemonic {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "entries",
-///    "method",
-///    "mnemonic"
-///  ],
-///  "properties": {
-///    "entries": {
-///      "description": "The slot's history, oldest first. For did:webvh, one per log line; for a method with no log (did:web) a single entry for the current document; for did:webs one per establishment event that changed the document.",
-///      "type": "array",
-///      "items": {
-///        "type": "object",
-///        "required": [
-///          "state"
-///        ],
-///        "properties": {
-///          "parameters": {
-///            "description": "The method's parameters as of this entry (did:webvh log parameters). Absent for a method that has none.",
-///            "type": "object"
-///          },
-///          "state": {
-///            "description": "The DID document as of this entry.",
-///            "type": "object"
-///          },
-///          "versionId": {
-///            "description": "The entry's version identifier. Absent for a method that has none.",
-///            "type": "string"
-///          },
-///          "versionTime": {
-///            "description": "When the entry was made, as the entry states it. Absent for a method that records none.",
-///            "type": "string",
-///            "format": "date-time"
-///          }
-///        },
-///        "additionalProperties": false
-///      }
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "logContent": {
-///      "description": "The stored primary artifact verbatim — did.jsonl for did:webvh, the key event stream for did:webs, did.json for did:web. Present iff the request set raw: true.",
-///      "type": "string"
-///    },
-///    "method": {
-///      "description": "The slot's DID method (`webvh`, `web`, `webs`, …). Determines what an entry is.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "mnemonic": {
-///      "type": "string"
-///    },
-///    "witnessContent": {
-///      "description": "The stored did-witness.json verbatim. Present iff the request set raw: true and the slot holds witness proofs.",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -442,37 +296,6 @@ impl Response {
 }
 ///`ResponseEntriesItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "state"
-///  ],
-///  "properties": {
-///    "parameters": {
-///      "description": "The method's parameters as of this entry (did:webvh log parameters). Absent for a method that has none.",
-///      "type": "object"
-///    },
-///    "state": {
-///      "description": "The DID document as of this entry.",
-///      "type": "object"
-///    },
-///    "versionId": {
-///      "description": "The entry's version identifier. Absent for a method that has none.",
-///      "type": "string"
-///    },
-///    "versionTime": {
-///      "description": "When the entry was made, as the entry states it. Absent for a method that records none.",
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -504,16 +327,6 @@ impl ResponseEntriesItem {
 }
 ///The slot's DID method (`webvh`, `web`, `webs`, …). Determines what an entry is.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The slot's DID method (`webvh`, `web`, `webs`, …). Determines what an entry is.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseMethod(::std::string::String);
@@ -879,7 +692,7 @@ impl crate::Payload for Payload {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"entries\": {\n          \"description\": \"The slot's history, oldest first. For did:webvh, one per log line; for a method with no log (did:web) a single entry for the current document; for did:webs one per establishment event that changed the document.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"parameters\": {\n                \"description\": \"The method's parameters as of this entry (did:webvh log parameters). Absent for a method that has none.\",\n                \"type\": \"object\"\n              },\n              \"state\": {\n                \"description\": \"The DID document as of this entry.\",\n                \"type\": \"object\"\n              },\n              \"versionId\": {\n                \"description\": \"The entry's version identifier. Absent for a method that has none.\",\n                \"type\": \"string\"\n              },\n              \"versionTime\": {\n                \"description\": \"When the entry was made, as the entry states it. Absent for a method that records none.\",\n                \"format\": \"date-time\",\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"state\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"logContent\": {\n          \"description\": \"The stored primary artifact verbatim — did.jsonl for did:webvh, the key event stream for did:webs, did.json for did:web. Present iff the request set raw: true.\",\n          \"type\": \"string\"\n        },\n        \"method\": {\n          \"description\": \"The slot's DID method (`webvh`, `web`, `webs`, …). Determines what an entry is.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"mnemonic\": {\n          \"type\": \"string\"\n        },\n        \"witnessContent\": {\n          \"description\": \"The stored did-witness.json verbatim. Present iff the request set raw: true and the slot holds witness proofs.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"mnemonic\",\n        \"method\",\n        \"entries\"\n      ],\n      \"title\": \"DID Log — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/did-management/did/log/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"domain\": {\n      \"description\": \"Disambiguates `mnemonic` per the category conventions. Absent means the domain is resolved by the category's chain.\",\n      \"maxLength\": 253,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"mnemonic\": {\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"raw\": {\n      \"description\": \"When true, the response also carries the stored artifacts verbatim. Absent or false means parsed entries only.\",\n      \"type\": \"boolean\"\n    }\n  },\n  \"required\": [\n    \"mnemonic\"\n  ],\n  \"title\": \"DID Log — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"entries\":{\"description\":\"The slot's history, oldest first. For did:webvh, one per log line; for a method with no log (did:web) a single entry for the current document; for did:webs one per establishment event that changed the document.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"parameters\":{\"description\":\"The method's parameters as of this entry (did:webvh log parameters). Absent for a method that has none.\",\"type\":\"object\"},\"state\":{\"description\":\"The DID document as of this entry.\",\"type\":\"object\"},\"versionId\":{\"description\":\"The entry's version identifier. Absent for a method that has none.\",\"type\":\"string\"},\"versionTime\":{\"description\":\"When the entry was made, as the entry states it. Absent for a method that records none.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"state\"],\"type\":\"object\"},\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"logContent\":{\"description\":\"The stored primary artifact verbatim — did.jsonl for did:webvh, the key event stream for did:webs, did.json for did:web. Present iff the request set raw: true.\",\"type\":\"string\"},\"method\":{\"description\":\"The slot's DID method (`webvh`, `web`, `webs`, …). Determines what an entry is.\",\"minLength\":1,\"type\":\"string\"},\"mnemonic\":{\"type\":\"string\"},\"witnessContent\":{\"description\":\"The stored did-witness.json verbatim. Present iff the request set raw: true and the slot holds witness proofs.\",\"type\":\"string\"}},\"required\":[\"mnemonic\",\"method\",\"entries\"],\"title\":\"DID Log — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/did-management/did/log/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"domain\":{\"description\":\"Disambiguates `mnemonic` per the category conventions. Absent means the domain is resolved by the category's chain.\",\"maxLength\":253,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"mnemonic\":{\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"raw\":{\"description\":\"When true, the response also carries the stored artifacts verbatim. Absent or false means parsed entries only.\",\"type\":\"boolean\"}},\"required\":[\"mnemonic\"],\"title\":\"DID Log — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -888,7 +701,7 @@ impl crate::Payload for Response {
     const IS_PROOF_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"entries\": {\n          \"description\": \"The slot's history, oldest first. For did:webvh, one per log line; for a method with no log (did:web) a single entry for the current document; for did:webs one per establishment event that changed the document.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"parameters\": {\n                \"description\": \"The method's parameters as of this entry (did:webvh log parameters). Absent for a method that has none.\",\n                \"type\": \"object\"\n              },\n              \"state\": {\n                \"description\": \"The DID document as of this entry.\",\n                \"type\": \"object\"\n              },\n              \"versionId\": {\n                \"description\": \"The entry's version identifier. Absent for a method that has none.\",\n                \"type\": \"string\"\n              },\n              \"versionTime\": {\n                \"description\": \"When the entry was made, as the entry states it. Absent for a method that records none.\",\n                \"format\": \"date-time\",\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"state\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"logContent\": {\n          \"description\": \"The stored primary artifact verbatim — did.jsonl for did:webvh, the key event stream for did:webs, did.json for did:web. Present iff the request set raw: true.\",\n          \"type\": \"string\"\n        },\n        \"method\": {\n          \"description\": \"The slot's DID method (`webvh`, `web`, `webs`, …). Determines what an entry is.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"mnemonic\": {\n          \"type\": \"string\"\n        },\n        \"witnessContent\": {\n          \"description\": \"The stored did-witness.json verbatim. Present iff the request set raw: true and the slot holds witness proofs.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"mnemonic\",\n        \"method\",\n        \"entries\"\n      ],\n      \"title\": \"DID Log — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"entries\":{\"description\":\"The slot's history, oldest first. For did:webvh, one per log line; for a method with no log (did:web) a single entry for the current document; for did:webs one per establishment event that changed the document.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"parameters\":{\"description\":\"The method's parameters as of this entry (did:webvh log parameters). Absent for a method that has none.\",\"type\":\"object\"},\"state\":{\"description\":\"The DID document as of this entry.\",\"type\":\"object\"},\"versionId\":{\"description\":\"The entry's version identifier. Absent for a method that has none.\",\"type\":\"string\"},\"versionTime\":{\"description\":\"When the entry was made, as the entry states it. Absent for a method that records none.\",\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"state\"],\"type\":\"object\"},\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"logContent\":{\"description\":\"The stored primary artifact verbatim — did.jsonl for did:webvh, the key event stream for did:webs, did.json for did:web. Present iff the request set raw: true.\",\"type\":\"string\"},\"method\":{\"description\":\"The slot's DID method (`webvh`, `web`, `webs`, …). Determines what an entry is.\",\"minLength\":1,\"type\":\"string\"},\"mnemonic\":{\"type\":\"string\"},\"witnessContent\":{\"description\":\"The stored did-witness.json verbatim. Present iff the request set raw: true and the slot holds witness proofs.\",\"type\":\"string\"}},\"required\":[\"mnemonic\",\"method\",\"entries\"],\"title\":\"DID Log — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

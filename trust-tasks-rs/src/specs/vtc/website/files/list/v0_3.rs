@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,32 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/website/files/list/0.3",
-///  "title": "Payload",
-///  "type": "object",
-///  "properties": {
-///    "cursor": {
-///      "description": "An opaque continuation token from a previous response's `nextCursor`; a responder MUST NOT accept a cursor it did not issue.",
-///      "type": "string"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "limit": {
-///      "description": "The most items to return, at most 1000; the responder chooses a default and MAY return fewer.",
-///      "type": "integer",
-///      "maximum": 1000.0,
-///      "minimum": 1.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -197,62 +147,6 @@ impl Payload {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "items"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "items": {
-///      "description": "Files under the site root, excluding hidden files and blocklisted extensions.",
-///      "type": "array",
-///      "items": {
-///        "type": "object",
-///        "required": [
-///          "path",
-///          "size"
-///        ],
-///        "properties": {
-///          "etag": {
-///            "description": "An opaque content hash for the file, matching the `ETag` a direct read of the same path returns. Lets a client detect a change — or confirm one it just wrote — without downloading the body, which is why the listing carries it rather than making the caller fetch each file to compare.",
-///            "type": "string",
-///            "minLength": 1
-///          },
-///          "path": {
-///            "description": "Path relative to the site root.",
-///            "type": "string",
-///            "minLength": 1
-///          },
-///          "size": {
-///            "description": "File size in bytes.",
-///            "type": "integer",
-///            "minimum": 0.0
-///          },
-///          "updatedAt": {
-///            "type": "string",
-///            "format": "date-time"
-///          }
-///        },
-///        "additionalProperties": false
-///      }
-///    },
-///    "nextCursor": {
-///      "description": "Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`.",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -276,40 +170,6 @@ impl Response {
 }
 ///`ResponseItemsItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "path",
-///    "size"
-///  ],
-///  "properties": {
-///    "etag": {
-///      "description": "An opaque content hash for the file, matching the `ETag` a direct read of the same path returns. Lets a client detect a change — or confirm one it just wrote — without downloading the body, which is why the listing carries it rather than making the caller fetch each file to compare.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "path": {
-///      "description": "Path relative to the site root.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "size": {
-///      "description": "File size in bytes.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "updatedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -335,16 +195,6 @@ impl ResponseItemsItem {
 }
 ///An opaque content hash for the file, matching the `ETag` a direct read of the same path returns. Lets a client detect a change — or confirm one it just wrote — without downloading the body, which is why the listing carries it rather than making the caller fetch each file to compare.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "An opaque content hash for the file, matching the `ETag` a direct read of the same path returns. Lets a client detect a change — or confirm one it just wrote — without downloading the body, which is why the listing carries it rather than making the caller fetch each file to compare.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseItemsItemEtag(::std::string::String);
@@ -404,16 +254,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseItemsItemEtag {
 }
 ///Path relative to the site root.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Path relative to the site root.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseItemsItemPath(::std::string::String);
@@ -710,7 +550,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/website/files/list/0.3";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"items\": {\n          \"description\": \"Files under the site root, excluding hidden files and blocklisted extensions.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"etag\": {\n                \"description\": \"An opaque content hash for the file, matching the `ETag` a direct read of the same path returns. Lets a client detect a change — or confirm one it just wrote — without downloading the body, which is why the listing carries it rather than making the caller fetch each file to compare.\",\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"path\": {\n                \"description\": \"Path relative to the site root.\",\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"size\": {\n                \"description\": \"File size in bytes.\",\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"updatedAt\": {\n                \"format\": \"date-time\",\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"path\",\n              \"size\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"items\"\n      ],\n      \"title\": \"VTC Website Files List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/website/files/list/0.3\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"cursor\": {\n      \"description\": \"An opaque continuation token from a previous response's `nextCursor`; a responder MUST NOT accept a cursor it did not issue.\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"limit\": {\n      \"description\": \"The most items to return, at most 1000; the responder chooses a default and MAY return fewer.\",\n      \"maximum\": 1000,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    }\n  },\n  \"title\": \"VTC Website Files List — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"items\":{\"description\":\"Files under the site root, excluding hidden files and blocklisted extensions.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"etag\":{\"description\":\"An opaque content hash for the file, matching the `ETag` a direct read of the same path returns. Lets a client detect a change — or confirm one it just wrote — without downloading the body, which is why the listing carries it rather than making the caller fetch each file to compare.\",\"minLength\":1,\"type\":\"string\"},\"path\":{\"description\":\"Path relative to the site root.\",\"minLength\":1,\"type\":\"string\"},\"size\":{\"description\":\"File size in bytes.\",\"minimum\":0,\"type\":\"integer\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"path\",\"size\"],\"type\":\"object\"},\"type\":\"array\"},\"nextCursor\":{\"description\":\"Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`.\",\"type\":\"string\"}},\"required\":[\"items\"],\"title\":\"VTC Website Files List — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/website/files/list/0.3\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"cursor\":{\"description\":\"An opaque continuation token from a previous response's `nextCursor`; a responder MUST NOT accept a cursor it did not issue.\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"limit\":{\"description\":\"The most items to return, at most 1000; the responder chooses a default and MAY return fewer.\",\"maximum\":1000,\"minimum\":1,\"type\":\"integer\"}},\"title\":\"VTC Website Files List — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -718,7 +558,7 @@ impl crate::Payload for Response {
         "https://trusttasks.org/spec/vtc/website/files/list/0.3#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"items\": {\n          \"description\": \"Files under the site root, excluding hidden files and blocklisted extensions.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"etag\": {\n                \"description\": \"An opaque content hash for the file, matching the `ETag` a direct read of the same path returns. Lets a client detect a change — or confirm one it just wrote — without downloading the body, which is why the listing carries it rather than making the caller fetch each file to compare.\",\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"path\": {\n                \"description\": \"Path relative to the site root.\",\n                \"minLength\": 1,\n                \"type\": \"string\"\n              },\n              \"size\": {\n                \"description\": \"File size in bytes.\",\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"updatedAt\": {\n                \"format\": \"date-time\",\n                \"type\": \"string\"\n              }\n            },\n            \"required\": [\n              \"path\",\n              \"size\"\n            ],\n            \"type\": \"object\"\n          },\n          \"type\": \"array\"\n        },\n        \"nextCursor\": {\n          \"description\": \"Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"items\"\n      ],\n      \"title\": \"VTC Website Files List — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"items\":{\"description\":\"Files under the site root, excluding hidden files and blocklisted extensions.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"etag\":{\"description\":\"An opaque content hash for the file, matching the `ETag` a direct read of the same path returns. Lets a client detect a change — or confirm one it just wrote — without downloading the body, which is why the listing carries it rather than making the caller fetch each file to compare.\",\"minLength\":1,\"type\":\"string\"},\"path\":{\"description\":\"Path relative to the site root.\",\"minLength\":1,\"type\":\"string\"},\"size\":{\"description\":\"File size in bytes.\",\"minimum\":0,\"type\":\"integer\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"path\",\"size\"],\"type\":\"object\"},\"type\":\"array\"},\"nextCursor\":{\"description\":\"Continuation token for the next page; pass it back as `cursor`. Absent on the last page — never `null`.\",\"type\":\"string\"}},\"required\":[\"items\"],\"title\":\"VTC Website Files List — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

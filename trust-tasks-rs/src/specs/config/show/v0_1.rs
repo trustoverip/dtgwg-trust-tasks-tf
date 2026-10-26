@@ -34,43 +34,6 @@ pub mod error {
 }
 ///One runtime configuration key as the maintainer currently sees it, after resolving whatever layered overlay it uses.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ConfigField",
-///  "description": "One runtime configuration key as the maintainer currently sees it, after resolving whatever layered overlay it uses.",
-///  "type": "object",
-///  "required": [
-///    "key",
-///    "requiresRestart",
-///    "source",
-///    "value"
-///  ],
-///  "properties": {
-///    "key": {
-///      "description": "The configuration key, e.g. `server.port` or `log.level`.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "requiresRestart": {
-///      "description": "True when a change to this key takes effect only after a restart, rather than on the next read.",
-///      "type": "boolean"
-///    },
-///    "source": {
-///      "description": "Which layer supplied the effective value. An opaque maintainer-defined label — the framework does not enumerate it. A maintainer with a layered overlay reports the winning layer (e.g. `env`, `db`, `toml`, `default`); one without layers reports its single source.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "value": {
-///      "description": "The effective value. Any JSON scalar the key holds (string, number, boolean, or null). A maintainer MUST redact the value of a secret-bearing key (see the spec) rather than return it here."
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "configField"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -92,16 +55,6 @@ impl ConfigField {
 }
 ///The configuration key, e.g. `server.port` or `log.level`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The configuration key, e.g. `server.port` or `log.level`.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ConfigFieldKey(::std::string::String);
@@ -161,16 +114,6 @@ impl<'de> ::serde::Deserialize<'de> for ConfigFieldKey {
 }
 ///Which layer supplied the effective value. An opaque maintainer-defined label — the framework does not enumerate it. A maintainer with a layered overlay reports the winning layer (e.g. `env`, `db`, `toml`, `default`); one without layers reports its single source.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Which layer supplied the effective value. An opaque maintainer-defined label — the framework does not enumerate it. A maintainer with a layered overlay reports the winning layer (e.g. `env`, `db`, `toml`, `default`); one without layers reports its single source.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ConfigFieldSource(::std::string::String);
@@ -230,21 +173,6 @@ impl<'de> ::serde::Deserialize<'de> for ConfigFieldSource {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -266,15 +194,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -338,32 +257,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/config/show/0.1",
-///  "title": "Payload",
-///  "type": "object",
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "keys": {
-///      "description": "Return only these keys. Omitted = return every registered key.",
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "minLength": 1
-///      },
-///      "minItems": 1,
-///      "uniqueItems": true
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -389,15 +282,6 @@ impl Payload {
 }
 ///`PayloadKeysItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadKeysItem(::std::string::String);
@@ -457,32 +341,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadKeysItem {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "fields"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "fields": {
-///      "description": "The effective value of each requested (or every) configuration key.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/ConfigField"
-///      }
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -693,14 +551,14 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/config/show/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ConfigField\": {\n      \"$anchor\": \"configField\",\n      \"additionalProperties\": false,\n      \"description\": \"One runtime configuration key as the maintainer currently sees it, after resolving whatever layered overlay it uses.\",\n      \"properties\": {\n        \"key\": {\n          \"description\": \"The configuration key, e.g. `server.port` or `log.level`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"requiresRestart\": {\n          \"description\": \"True when a change to this key takes effect only after a restart, rather than on the next read.\",\n          \"type\": \"boolean\"\n        },\n        \"source\": {\n          \"description\": \"Which layer supplied the effective value. An opaque maintainer-defined label — the framework does not enumerate it. A maintainer with a layered overlay reports the winning layer (e.g. `env`, `db`, `toml`, `default`); one without layers reports its single source.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"value\": {\n          \"description\": \"The effective value. Any JSON scalar the key holds (string, number, boolean, or null). A maintainer MUST redact the value of a secret-bearing key (see the spec) rather than return it here.\"\n        }\n      },\n      \"required\": [\n        \"key\",\n        \"value\",\n        \"source\",\n        \"requiresRestart\"\n      ],\n      \"title\": \"ConfigField\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"fields\": {\n          \"description\": \"The effective value of each requested (or every) configuration key.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/ConfigField\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"fields\"\n      ],\n      \"title\": \"Config Show — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/config/show/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"keys\": {\n      \"description\": \"Return only these keys. Omitted = return every registered key.\",\n      \"items\": {\n        \"minLength\": 1,\n        \"type\": \"string\"\n      },\n      \"minItems\": 1,\n      \"type\": \"array\",\n      \"uniqueItems\": true\n    }\n  },\n  \"title\": \"Config Show — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"ConfigField\":{\"$anchor\":\"configField\",\"additionalProperties\":false,\"description\":\"One runtime configuration key as the maintainer currently sees it, after resolving whatever layered overlay it uses.\",\"properties\":{\"key\":{\"description\":\"The configuration key, e.g. `server.port` or `log.level`.\",\"minLength\":1,\"type\":\"string\"},\"requiresRestart\":{\"description\":\"True when a change to this key takes effect only after a restart, rather than on the next read.\",\"type\":\"boolean\"},\"source\":{\"description\":\"Which layer supplied the effective value. An opaque maintainer-defined label — the framework does not enumerate it. A maintainer with a layered overlay reports the winning layer (e.g. `env`, `db`, `toml`, `default`); one without layers reports its single source.\",\"minLength\":1,\"type\":\"string\"},\"value\":{\"description\":\"The effective value. Any JSON scalar the key holds (string, number, boolean, or null). A maintainer MUST redact the value of a secret-bearing key (see the spec) rather than return it here.\"}},\"required\":[\"key\",\"value\",\"source\",\"requiresRestart\"],\"title\":\"ConfigField\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"fields\":{\"description\":\"The effective value of each requested (or every) configuration key.\",\"items\":{\"$ref\":\"#/$defs/ConfigField\"},\"type\":\"array\"}},\"required\":[\"fields\"],\"title\":\"Config Show — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/config/show/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"keys\":{\"description\":\"Return only these keys. Omitted = return every registered key.\",\"items\":{\"minLength\":1,\"type\":\"string\"},\"minItems\":1,\"type\":\"array\",\"uniqueItems\":true}},\"title\":\"Config Show — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/config/show/0.1#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"ConfigField\": {\n      \"$anchor\": \"configField\",\n      \"additionalProperties\": false,\n      \"description\": \"One runtime configuration key as the maintainer currently sees it, after resolving whatever layered overlay it uses.\",\n      \"properties\": {\n        \"key\": {\n          \"description\": \"The configuration key, e.g. `server.port` or `log.level`.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"requiresRestart\": {\n          \"description\": \"True when a change to this key takes effect only after a restart, rather than on the next read.\",\n          \"type\": \"boolean\"\n        },\n        \"source\": {\n          \"description\": \"Which layer supplied the effective value. An opaque maintainer-defined label — the framework does not enumerate it. A maintainer with a layered overlay reports the winning layer (e.g. `env`, `db`, `toml`, `default`); one without layers reports its single source.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"value\": {\n          \"description\": \"The effective value. Any JSON scalar the key holds (string, number, boolean, or null). A maintainer MUST redact the value of a secret-bearing key (see the spec) rather than return it here.\"\n        }\n      },\n      \"required\": [\n        \"key\",\n        \"value\",\n        \"source\",\n        \"requiresRestart\"\n      ],\n      \"title\": \"ConfigField\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"fields\": {\n          \"description\": \"The effective value of each requested (or every) configuration key.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/ConfigField\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"fields\"\n      ],\n      \"title\": \"Config Show — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"ConfigField\":{\"$anchor\":\"configField\",\"additionalProperties\":false,\"description\":\"One runtime configuration key as the maintainer currently sees it, after resolving whatever layered overlay it uses.\",\"properties\":{\"key\":{\"description\":\"The configuration key, e.g. `server.port` or `log.level`.\",\"minLength\":1,\"type\":\"string\"},\"requiresRestart\":{\"description\":\"True when a change to this key takes effect only after a restart, rather than on the next read.\",\"type\":\"boolean\"},\"source\":{\"description\":\"Which layer supplied the effective value. An opaque maintainer-defined label — the framework does not enumerate it. A maintainer with a layered overlay reports the winning layer (e.g. `env`, `db`, `toml`, `default`); one without layers reports its single source.\",\"minLength\":1,\"type\":\"string\"},\"value\":{\"description\":\"The effective value. Any JSON scalar the key holds (string, number, boolean, or null). A maintainer MUST redact the value of a secret-bearing key (see the spec) rather than return it here.\"}},\"required\":[\"key\",\"value\",\"source\",\"requiresRestart\"],\"title\":\"ConfigField\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"fields\":{\"description\":\"The effective value of each requested (or every) configuration key.\",\"items\":{\"$ref\":\"#/$defs/ConfigField\"},\"type\":\"array\"}},\"required\":[\"fields\"],\"title\":\"Config Show — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

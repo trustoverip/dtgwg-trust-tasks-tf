@@ -34,37 +34,6 @@ pub mod error {
 }
 ///The payload of the credential-exchange/query/0.1 document the community built for the holder — the DCQL query, the freshness nonce it bound to its own DID and the returned thread, and the purpose shown to the holder. A community MUST emit a value that validates against the credential-exchange/query/0.1 payload schema; its members are that specification's, and are not restated here. snake_case member names are DCQL's own.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "CredentialQuery",
-///  "description": "The payload of the credential-exchange/query/0.1 document the community built for the holder — the DCQL query, the freshness nonce it bound to its own DID and the returned thread, and the purpose shown to the holder. A community MUST emit a value that validates against the credential-exchange/query/0.1 payload schema; its members are that specification's, and are not restated here. snake_case member names are DCQL's own.",
-///  "type": "object",
-///  "required": [
-///    "dcql_query",
-///    "nonce",
-///    "purpose"
-///  ],
-///  "properties": {
-///    "dcql_query": {
-///      "type": "object"
-///    },
-///    "nonce": {
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    },
-///    "purpose": {
-///      "type": "string",
-///      "maxLength": 500,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": true
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[non_exhaustive]
 pub struct CredentialQuery {
@@ -79,16 +48,6 @@ impl CredentialQuery {
 }
 ///`CredentialQueryNonce`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CredentialQueryNonce(::std::string::String);
@@ -151,16 +110,6 @@ impl<'de> ::serde::Deserialize<'de> for CredentialQueryNonce {
 }
 ///`CredentialQueryPurpose`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 500,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct CredentialQueryPurpose(::std::string::String);
@@ -223,21 +172,6 @@ impl<'de> ::serde::Deserialize<'de> for CredentialQueryPurpose {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -259,15 +193,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -331,40 +256,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///An administrator asks the community to open a credential exchange with a prospective member: to issue a presentation challenge, build the credential-exchange/query for a registered Accepts criterion, and deliver it. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/join-requests/query/0.1",
-///  "title": "Payload",
-///  "description": "An administrator asks the community to open a credential exchange with a prospective member: to issue a presentation challenge, build the credential-exchange/query for a registered Accepts criterion, and deliver it. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "criterionId",
-///    "holderDid"
-///  ],
-///  "properties": {
-///    "criterionId": {
-///      "description": "The registered Accepts criterion (vtc/schemas/accepts/register) whose DCQL query to send.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "holderDid": {
-///      "description": "The holder the query is for — the prospective member whose agent will answer it.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 5,
-///      "pattern": "^did:"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -385,17 +276,6 @@ impl Payload {
 }
 ///The registered Accepts criterion (vtc/schemas/accepts/register) whose DCQL query to send.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The registered Accepts criterion (vtc/schemas/accepts/register) whose DCQL query to send.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCriterionId(::std::string::String);
@@ -458,18 +338,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCriterionId {
 }
 ///The holder the query is for — the prospective member whose agent will answer it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The holder the query is for — the prospective member whose agent will answer it.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 5,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadHolderDid(::std::string::String);
@@ -537,47 +405,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadHolderDid {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "delivered",
-///    "holderDid",
-///    "query",
-///    "threadId"
-///  ],
-///  "properties": {
-///    "delivered": {
-///      "description": "Whether the community accepted the query for delivery — queued to its outbox, which sends and retries it. Not a confirmation of receipt. False when it has no route to the holder or could not queue it; the caller can then relay `query` itself.",
-///      "type": "boolean"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "holderDid": {
-///      "description": "Echoed.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    },
-///    "query": {
-///      "$ref": "#/definitions/CredentialQuery"
-///    },
-///    "threadId": {
-///      "description": "The exchange's thread: the `id` of the credential-exchange/query document, and the `threadId` the holder's credential-exchange/present must carry. The presentation challenge is keyed by it.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -601,17 +428,6 @@ impl Response {
 }
 ///Echoed.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Echoed.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseHolderDid(::std::string::String);
@@ -676,17 +492,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseHolderDid {
 }
 ///The exchange's thread: the `id` of the credential-exchange/query document, and the `threadId` the holder's credential-exchange/present must carry. The presentation challenge is keyed by it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The exchange's thread: the `id` of the credential-exchange/query document, and the `threadId` the holder's credential-exchange/present must carry. The presentation challenge is keyed by it.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseThreadId(::std::string::String);
@@ -989,7 +794,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CredentialQuery\": {\n      \"additionalProperties\": true,\n      \"description\": \"The payload of the credential-exchange/query/0.1 document the community built for the holder — the DCQL query, the freshness nonce it bound to its own DID and the returned thread, and the purpose shown to the holder. A community MUST emit a value that validates against the credential-exchange/query/0.1 payload schema; its members are that specification's, and are not restated here. snake_case member names are DCQL's own.\",\n      \"properties\": {\n        \"dcql_query\": {\n          \"type\": \"object\"\n        },\n        \"nonce\": {\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"purpose\": {\n          \"maxLength\": 500,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"dcql_query\",\n        \"nonce\",\n        \"purpose\"\n      ],\n      \"title\": \"CredentialQuery\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"delivered\": {\n          \"description\": \"Whether the community accepted the query for delivery — queued to its outbox, which sends and retries it. Not a confirmation of receipt. False when it has no route to the holder or could not queue it; the caller can then relay `query` itself.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"holderDid\": {\n          \"description\": \"Echoed.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"query\": {\n          \"$ref\": \"#/$defs/CredentialQuery\"\n        },\n        \"threadId\": {\n          \"description\": \"The exchange's thread: the `id` of the credential-exchange/query document, and the `threadId` the holder's credential-exchange/present must carry. The presentation challenge is keyed by it.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"threadId\",\n        \"holderDid\",\n        \"query\",\n        \"delivered\"\n      ],\n      \"title\": \"VTC Join Requests — Query — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/join-requests/query/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An administrator asks the community to open a credential exchange with a prospective member: to issue a presentation challenge, build the credential-exchange/query for a registered Accepts criterion, and deliver it. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"criterionId\": {\n      \"description\": \"The registered Accepts criterion (vtc/schemas/accepts/register) whose DCQL query to send.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"holderDid\": {\n      \"description\": \"The holder the query is for — the prospective member whose agent will answer it.\",\n      \"maxLength\": 2048,\n      \"minLength\": 5,\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"holderDid\",\n    \"criterionId\"\n  ],\n  \"title\": \"VTC Join Requests — Query — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"CredentialQuery\":{\"additionalProperties\":true,\"description\":\"The payload of the credential-exchange/query/0.1 document the community built for the holder — the DCQL query, the freshness nonce it bound to its own DID and the returned thread, and the purpose shown to the holder. A community MUST emit a value that validates against the credential-exchange/query/0.1 payload schema; its members are that specification's, and are not restated here. snake_case member names are DCQL's own.\",\"properties\":{\"dcql_query\":{\"type\":\"object\"},\"nonce\":{\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"purpose\":{\"maxLength\":500,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"dcql_query\",\"nonce\",\"purpose\"],\"title\":\"CredentialQuery\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"delivered\":{\"description\":\"Whether the community accepted the query for delivery — queued to its outbox, which sends and retries it. Not a confirmation of receipt. False when it has no route to the holder or could not queue it; the caller can then relay `query` itself.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"holderDid\":{\"description\":\"Echoed.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"query\":{\"$ref\":\"#/$defs/CredentialQuery\"},\"threadId\":{\"description\":\"The exchange's thread: the `id` of the credential-exchange/query document, and the `threadId` the holder's credential-exchange/present must carry. The presentation challenge is keyed by it.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"threadId\",\"holderDid\",\"query\",\"delivered\"],\"title\":\"VTC Join Requests — Query — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/join-requests/query/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"An administrator asks the community to open a credential exchange with a prospective member: to issue a presentation challenge, build the credential-exchange/query for a registered Accepts criterion, and deliver it. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"criterionId\":{\"description\":\"The registered Accepts criterion (vtc/schemas/accepts/register) whose DCQL query to send.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"holderDid\":{\"description\":\"The holder the query is for — the prospective member whose agent will answer it.\",\"maxLength\":2048,\"minLength\":5,\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"holderDid\",\"criterionId\"],\"title\":\"VTC Join Requests — Query — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -999,7 +804,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"CredentialQuery\": {\n      \"additionalProperties\": true,\n      \"description\": \"The payload of the credential-exchange/query/0.1 document the community built for the holder — the DCQL query, the freshness nonce it bound to its own DID and the returned thread, and the purpose shown to the holder. A community MUST emit a value that validates against the credential-exchange/query/0.1 payload schema; its members are that specification's, and are not restated here. snake_case member names are DCQL's own.\",\n      \"properties\": {\n        \"dcql_query\": {\n          \"type\": \"object\"\n        },\n        \"nonce\": {\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"purpose\": {\n          \"maxLength\": 500,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"dcql_query\",\n        \"nonce\",\n        \"purpose\"\n      ],\n      \"title\": \"CredentialQuery\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"delivered\": {\n          \"description\": \"Whether the community accepted the query for delivery — queued to its outbox, which sends and retries it. Not a confirmation of receipt. False when it has no route to the holder or could not queue it; the caller can then relay `query` itself.\",\n          \"type\": \"boolean\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"holderDid\": {\n          \"description\": \"Echoed.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"query\": {\n          \"$ref\": \"#/$defs/CredentialQuery\"\n        },\n        \"threadId\": {\n          \"description\": \"The exchange's thread: the `id` of the credential-exchange/query document, and the `threadId` the holder's credential-exchange/present must carry. The presentation challenge is keyed by it.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"threadId\",\n        \"holderDid\",\n        \"query\",\n        \"delivered\"\n      ],\n      \"title\": \"VTC Join Requests — Query — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"CredentialQuery\":{\"additionalProperties\":true,\"description\":\"The payload of the credential-exchange/query/0.1 document the community built for the holder — the DCQL query, the freshness nonce it bound to its own DID and the returned thread, and the purpose shown to the holder. A community MUST emit a value that validates against the credential-exchange/query/0.1 payload schema; its members are that specification's, and are not restated here. snake_case member names are DCQL's own.\",\"properties\":{\"dcql_query\":{\"type\":\"object\"},\"nonce\":{\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"purpose\":{\"maxLength\":500,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"dcql_query\",\"nonce\",\"purpose\"],\"title\":\"CredentialQuery\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"delivered\":{\"description\":\"Whether the community accepted the query for delivery — queued to its outbox, which sends and retries it. Not a confirmation of receipt. False when it has no route to the holder or could not queue it; the caller can then relay `query` itself.\",\"type\":\"boolean\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"holderDid\":{\"description\":\"Echoed.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"query\":{\"$ref\":\"#/$defs/CredentialQuery\"},\"threadId\":{\"description\":\"The exchange's thread: the `id` of the credential-exchange/query document, and the `threadId` the holder's credential-exchange/present must carry. The presentation challenge is keyed by it.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"threadId\",\"holderDid\",\"query\",\"delivered\"],\"title\":\"VTC Join Requests — Query — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

@@ -41,21 +41,6 @@ This definition constrains the *encoding only*. What the digest is computed over
 
 Restricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that "interoperability is not guaranteed between implementations using such values", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DigestMultibase",
-///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-///  "examples": [
-///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-///  ],
-///  "type": "string",
-///  "minLength": 16,
-///  "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DigestMultibase(::std::string::String);
@@ -124,21 +109,6 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -160,15 +130,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -232,44 +193,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///An applicant asks the community to open an OpenID4VP 1.0 presentation session for one of its join criteria, so that a wallet which cannot sign Trust Tasks can present credentials as evidence for the applicant's join. The applicant is the document proof's signer, not a payload member. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/join-requests/wallet-session/start/0.1",
-///  "title": "Payload",
-///  "description": "An applicant asks the community to open an OpenID4VP 1.0 presentation session for one of its join criteria, so that a wallet which cannot sign Trust Tasks can present credentials as evidence for the applicant's join. The applicant is the document proof's signer, not a payload member. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "criterion"
-///  ],
-///  "properties": {
-///    "clientIdPrefix": {
-///      "description": "The OpenID4VP 1.0 client identifier prefix the community should identify itself to the wallet with — a DID (`decentralized_identifier`, as swiyu wallets expect) or an X.509 certificate (`x509_hash`, as EUDI wallets expect). Values are OpenID4VP's own and are carried verbatim. Absent: the community's default. A community holding no verifier identity of the requested kind refuses with `verifierNotConfigured`.",
-///      "type": "string",
-///      "enum": [
-///        "decentralized_identifier",
-///        "x509_hash"
-///      ]
-///    },
-///    "criterion": {
-///      "description": "The `requirementsDigest` of the criterion the applicant is gathering evidence for, as vtc/join-requests/manifest (0.3 or later) published it — the same value vtc/join-requests/submit/0.3 carries as its `criterion`. Naming the version, not only the criterion, fixes the DCQL query the wallet is asked to satisfy to the one the applicant read.",
-///      "$ref": "#/definitions/DigestMultibase"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "requestId": {
-///      "description": "An existing join request of the applicant's to record the evidence on. Absent: the community holds the evidence, for a bounded period of its own policy, for the applicant's next vtc/join-requests/submit under the same criterion.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -300,19 +223,6 @@ impl Payload {
 }
 ///The OpenID4VP 1.0 client identifier prefix the community should identify itself to the wallet with — a DID (`decentralized_identifier`, as swiyu wallets expect) or an X.509 certificate (`x509_hash`, as EUDI wallets expect). Values are OpenID4VP's own and are carried verbatim. Absent: the community's default. A community holding no verifier identity of the requested kind refuses with `verifierNotConfigured`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The OpenID4VP 1.0 client identifier prefix the community should identify itself to the wallet with — a DID (`decentralized_identifier`, as swiyu wallets expect) or an X.509 certificate (`x509_hash`, as EUDI wallets expect). Values are OpenID4VP's own and are carried verbatim. Absent: the community's default. A community holding no verifier identity of the requested kind refuses with `verifierNotConfigured`.",
-///  "type": "string",
-///  "enum": [
-///    "decentralized_identifier",
-///    "x509_hash"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -374,17 +284,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadClientIdPrefix {
 }
 ///An existing join request of the applicant's to record the evidence on. Absent: the community holds the evidence, for a bounded period of its own policy, for the applicant's next vtc/join-requests/submit under the same criterion.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "An existing join request of the applicant's to record the evidence on. Absent: the community holds the evidence, for a bounded period of its own policy, for the applicant's next vtc/join-requests/submit under the same criterion.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadRequestId(::std::string::String);
@@ -447,57 +346,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRequestId {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "clientId",
-///    "dcqlQuery",
-///    "expiresAt",
-///    "sessionId",
-///    "walletUri"
-///  ],
-///  "properties": {
-///    "clientId": {
-///      "description": "The full OpenID4VP client identifier the community presents to the wallet, prefix included (`decentralized_identifier:did:webvh:…`, `x509_hash:…`). It is the audience the wallet's key-binding JWT will name.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1
-///    },
-///    "dcqlQuery": {
-///      "description": "The DCQL query (OpenID4VP 1.0 §6) the wallet will be asked to satisfy: the criterion's published query, unchanged. Opaque here; its members are DCQL's own and keep DCQL's snake_case names.",
-///      "type": "object"
-///    },
-///    "expiresAt": {
-///      "description": "When the session closes if no wallet has answered it. Minutes, not hours.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "sessionId": {
-///      "description": "Opaque, unguessable identifier of the session, carrying at least 128 bits of entropy. The applicant reads the outcome with vtc/join-requests/wallet-session/status under it.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 16
-///    },
-///    "walletUri": {
-///      "description": "The OpenID4VP invocation URI for this session, carrying `client_id` and `request_uri`, to be rendered as a QR code or opened as a deep link. Its scheme is the community's choice for the wallet ecosystem it serves — `openid4vp://`, `swiyu-verify://`, `haip-vp://` and others.",
-///      "type": "string",
-///      "format": "uri",
-///      "maxLength": 4096,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -527,17 +375,6 @@ impl Response {
 }
 ///The full OpenID4VP client identifier the community presents to the wallet, prefix included (`decentralized_identifier:did:webvh:…`, `x509_hash:…`). It is the audience the wallet's key-binding JWT will name.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The full OpenID4VP client identifier the community presents to the wallet, prefix included (`decentralized_identifier:did:webvh:…`, `x509_hash:…`). It is the audience the wallet's key-binding JWT will name.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseClientId(::std::string::String);
@@ -600,17 +437,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseClientId {
 }
 ///Opaque, unguessable identifier of the session, carrying at least 128 bits of entropy. The applicant reads the outcome with vtc/join-requests/wallet-session/status under it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Opaque, unguessable identifier of the session, carrying at least 128 bits of entropy. The applicant reads the outcome with vtc/join-requests/wallet-session/status under it.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 16
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseSessionId(::std::string::String);
@@ -881,7 +707,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"clientId\": {\n          \"description\": \"The full OpenID4VP client identifier the community presents to the wallet, prefix included (`decentralized_identifier:did:webvh:…`, `x509_hash:…`). It is the audience the wallet's key-binding JWT will name.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"dcqlQuery\": {\n          \"description\": \"The DCQL query (OpenID4VP 1.0 §6) the wallet will be asked to satisfy: the criterion's published query, unchanged. Opaque here; its members are DCQL's own and keep DCQL's snake_case names.\",\n          \"type\": \"object\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the session closes if no wallet has answered it. Minutes, not hours.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"sessionId\": {\n          \"description\": \"Opaque, unguessable identifier of the session, carrying at least 128 bits of entropy. The applicant reads the outcome with vtc/join-requests/wallet-session/status under it.\",\n          \"maxLength\": 128,\n          \"minLength\": 16,\n          \"type\": \"string\"\n        },\n        \"walletUri\": {\n          \"description\": \"The OpenID4VP invocation URI for this session, carrying `client_id` and `request_uri`, to be rendered as a QR code or opened as a deep link. Its scheme is the community's choice for the wallet ecosystem it serves — `openid4vp://`, `swiyu-verify://`, `haip-vp://` and others.\",\n          \"format\": \"uri\",\n          \"maxLength\": 4096,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"sessionId\",\n        \"walletUri\",\n        \"clientId\",\n        \"dcqlQuery\",\n        \"expiresAt\"\n      ],\n      \"title\": \"VTC Join-Requests Wallet Session Start — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/join-requests/wallet-session/start/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An applicant asks the community to open an OpenID4VP 1.0 presentation session for one of its join criteria, so that a wallet which cannot sign Trust Tasks can present credentials as evidence for the applicant's join. The applicant is the document proof's signer, not a payload member. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"clientIdPrefix\": {\n      \"description\": \"The OpenID4VP 1.0 client identifier prefix the community should identify itself to the wallet with — a DID (`decentralized_identifier`, as swiyu wallets expect) or an X.509 certificate (`x509_hash`, as EUDI wallets expect). Values are OpenID4VP's own and are carried verbatim. Absent: the community's default. A community holding no verifier identity of the requested kind refuses with `verifierNotConfigured`.\",\n      \"enum\": [\n        \"decentralized_identifier\",\n        \"x509_hash\"\n      ],\n      \"type\": \"string\"\n    },\n    \"criterion\": {\n      \"$ref\": \"#/$defs/DigestMultibase\",\n      \"description\": \"The `requirementsDigest` of the criterion the applicant is gathering evidence for, as vtc/join-requests/manifest (0.3 or later) published it — the same value vtc/join-requests/submit/0.3 carries as its `criterion`. Naming the version, not only the criterion, fixes the DCQL query the wallet is asked to satisfy to the one the applicant read.\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"requestId\": {\n      \"description\": \"An existing join request of the applicant's to record the evidence on. Absent: the community holds the evidence, for a bounded period of its own policy, for the applicant's next vtc/join-requests/submit under the same criterion.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"criterion\"\n  ],\n  \"title\": \"VTC Join-Requests Wallet Session Start — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"clientId\":{\"description\":\"The full OpenID4VP client identifier the community presents to the wallet, prefix included (`decentralized_identifier:did:webvh:…`, `x509_hash:…`). It is the audience the wallet's key-binding JWT will name.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"dcqlQuery\":{\"description\":\"The DCQL query (OpenID4VP 1.0 §6) the wallet will be asked to satisfy: the criterion's published query, unchanged. Opaque here; its members are DCQL's own and keep DCQL's snake_case names.\",\"type\":\"object\"},\"expiresAt\":{\"description\":\"When the session closes if no wallet has answered it. Minutes, not hours.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"sessionId\":{\"description\":\"Opaque, unguessable identifier of the session, carrying at least 128 bits of entropy. The applicant reads the outcome with vtc/join-requests/wallet-session/status under it.\",\"maxLength\":128,\"minLength\":16,\"type\":\"string\"},\"walletUri\":{\"description\":\"The OpenID4VP invocation URI for this session, carrying `client_id` and `request_uri`, to be rendered as a QR code or opened as a deep link. Its scheme is the community's choice for the wallet ecosystem it serves — `openid4vp://`, `swiyu-verify://`, `haip-vp://` and others.\",\"format\":\"uri\",\"maxLength\":4096,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"sessionId\",\"walletUri\",\"clientId\",\"dcqlQuery\",\"expiresAt\"],\"title\":\"VTC Join-Requests Wallet Session Start — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/join-requests/wallet-session/start/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"An applicant asks the community to open an OpenID4VP 1.0 presentation session for one of its join criteria, so that a wallet which cannot sign Trust Tasks can present credentials as evidence for the applicant's join. The applicant is the document proof's signer, not a payload member. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"clientIdPrefix\":{\"description\":\"The OpenID4VP 1.0 client identifier prefix the community should identify itself to the wallet with — a DID (`decentralized_identifier`, as swiyu wallets expect) or an X.509 certificate (`x509_hash`, as EUDI wallets expect). Values are OpenID4VP's own and are carried verbatim. Absent: the community's default. A community holding no verifier identity of the requested kind refuses with `verifierNotConfigured`.\",\"enum\":[\"decentralized_identifier\",\"x509_hash\"],\"type\":\"string\"},\"criterion\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The `requirementsDigest` of the criterion the applicant is gathering evidence for, as vtc/join-requests/manifest (0.3 or later) published it — the same value vtc/join-requests/submit/0.3 carries as its `criterion`. Naming the version, not only the criterion, fixes the DCQL query the wallet is asked to satisfy to the one the applicant read.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"requestId\":{\"description\":\"An existing join request of the applicant's to record the evidence on. Absent: the community holds the evidence, for a bounded period of its own policy, for the applicant's next vtc/join-requests/submit under the same criterion.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"criterion\"],\"title\":\"VTC Join-Requests Wallet Session Start — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -891,7 +717,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"clientId\": {\n          \"description\": \"The full OpenID4VP client identifier the community presents to the wallet, prefix included (`decentralized_identifier:did:webvh:…`, `x509_hash:…`). It is the audience the wallet's key-binding JWT will name.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"dcqlQuery\": {\n          \"description\": \"The DCQL query (OpenID4VP 1.0 §6) the wallet will be asked to satisfy: the criterion's published query, unchanged. Opaque here; its members are DCQL's own and keep DCQL's snake_case names.\",\n          \"type\": \"object\"\n        },\n        \"expiresAt\": {\n          \"description\": \"When the session closes if no wallet has answered it. Minutes, not hours.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"sessionId\": {\n          \"description\": \"Opaque, unguessable identifier of the session, carrying at least 128 bits of entropy. The applicant reads the outcome with vtc/join-requests/wallet-session/status under it.\",\n          \"maxLength\": 128,\n          \"minLength\": 16,\n          \"type\": \"string\"\n        },\n        \"walletUri\": {\n          \"description\": \"The OpenID4VP invocation URI for this session, carrying `client_id` and `request_uri`, to be rendered as a QR code or opened as a deep link. Its scheme is the community's choice for the wallet ecosystem it serves — `openid4vp://`, `swiyu-verify://`, `haip-vp://` and others.\",\n          \"format\": \"uri\",\n          \"maxLength\": 4096,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"sessionId\",\n        \"walletUri\",\n        \"clientId\",\n        \"dcqlQuery\",\n        \"expiresAt\"\n      ],\n      \"title\": \"VTC Join-Requests Wallet Session Start — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"clientId\":{\"description\":\"The full OpenID4VP client identifier the community presents to the wallet, prefix included (`decentralized_identifier:did:webvh:…`, `x509_hash:…`). It is the audience the wallet's key-binding JWT will name.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"dcqlQuery\":{\"description\":\"The DCQL query (OpenID4VP 1.0 §6) the wallet will be asked to satisfy: the criterion's published query, unchanged. Opaque here; its members are DCQL's own and keep DCQL's snake_case names.\",\"type\":\"object\"},\"expiresAt\":{\"description\":\"When the session closes if no wallet has answered it. Minutes, not hours.\",\"format\":\"date-time\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"sessionId\":{\"description\":\"Opaque, unguessable identifier of the session, carrying at least 128 bits of entropy. The applicant reads the outcome with vtc/join-requests/wallet-session/status under it.\",\"maxLength\":128,\"minLength\":16,\"type\":\"string\"},\"walletUri\":{\"description\":\"The OpenID4VP invocation URI for this session, carrying `client_id` and `request_uri`, to be rendered as a QR code or opened as a deep link. Its scheme is the community's choice for the wallet ecosystem it serves — `openid4vp://`, `swiyu-verify://`, `haip-vp://` and others.\",\"format\":\"uri\",\"maxLength\":4096,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"sessionId\",\"walletUri\",\"clientId\",\"dcqlQuery\",\"expiresAt\"],\"title\":\"VTC Join-Requests Wallet Session Start — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

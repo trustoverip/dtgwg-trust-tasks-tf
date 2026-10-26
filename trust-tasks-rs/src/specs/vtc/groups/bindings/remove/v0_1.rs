@@ -34,16 +34,6 @@ pub mod error {
 }
 ///`BindingId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "BindingId",
-///  "type": "string",
-///  "pattern": "^gb_[A-Za-z0-9_-]{16,64}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct BindingId(::std::string::String);
@@ -107,21 +97,6 @@ impl<'de> ::serde::Deserialize<'de> for BindingId {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -143,15 +118,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -215,17 +181,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "GroupId",
-///  "description": "Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.",
-///  "type": "string",
-///  "pattern": "^grp_[A-Za-z0-9_-]{16,64}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct GroupId(::std::string::String);
@@ -289,40 +244,6 @@ impl<'de> ::serde::Deserialize<'de> for GroupId {
 }
 ///Remove a group's binding: members lose the room admission or grants it provided, unless another source still provides them. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/groups/bindings/remove/0.1",
-///  "title": "Payload",
-///  "description": "Remove a group's binding: members lose the room admission or grants it provided, unless another source still provides them. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "bindingId",
-///    "groupId",
-///    "reason"
-///  ],
-///  "properties": {
-///    "bindingId": {
-///      "$ref": "#/definitions/BindingId"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "groupId": {
-///      "$ref": "#/definitions/GroupId"
-///    },
-///    "reason": {
-///      "description": "Why, recorded with the change and shown to anyone who must approve it.",
-///      "type": "string",
-///      "maxLength": 1024,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -343,17 +264,6 @@ impl Payload {
 }
 ///Why, recorded with the change and shown to anyone who must approve it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Why, recorded with the change and shown to anyone who must approve it.",
-///  "type": "string",
-///  "maxLength": 1024,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadReason(::std::string::String);
@@ -416,39 +326,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 }
 ///The success response to a vtc/groups/bindings/remove/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/bindings/remove/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The success response to a vtc/groups/bindings/remove/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/bindings/remove/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "bindingId",
-///    "state"
-///  ],
-///  "properties": {
-///    "bindingId": {
-///      "$ref": "#/definitions/BindingId"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "state": {
-///      "description": "`removed`: done. `removing`: the reconciler is withdrawing what only this binding provided. `pending`: a reduction of authority the community is holding on its terms.",
-///      "type": "string",
-///      "enum": [
-///        "removed",
-///        "removing",
-///        "pending"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -467,20 +344,6 @@ impl Response {
 }
 ///`removed`: done. `removing`: the reconciler is withdrawing what only this binding provided. `pending`: a reduction of authority the community is holding on its terms.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "`removed`: done. `removing`: the reconciler is withdrawing what only this binding provided. `pending`: a reduction of authority the community is holding on its terms.",
-///  "type": "string",
-///  "enum": [
-///    "removed",
-///    "removing",
-///    "pending"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -699,7 +562,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"BindingId\": {\n      \"pattern\": \"^gb_[A-Za-z0-9_-]{16,64}$\",\n      \"title\": \"BindingId\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"GroupId\": {\n      \"description\": \"Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.\",\n      \"pattern\": \"^grp_[A-Za-z0-9_-]{16,64}$\",\n      \"title\": \"GroupId\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a vtc/groups/bindings/remove/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/bindings/remove/0.1#response.\",\n      \"properties\": {\n        \"bindingId\": {\n          \"$ref\": \"#/$defs/BindingId\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"state\": {\n          \"description\": \"`removed`: done. `removing`: the reconciler is withdrawing what only this binding provided. `pending`: a reduction of authority the community is holding on its terms.\",\n          \"enum\": [\n            \"removed\",\n            \"removing\",\n            \"pending\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"bindingId\",\n        \"state\"\n      ],\n      \"title\": \"VTC Groups — Bindings — Remove — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/groups/bindings/remove/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Remove a group's binding: members lose the room admission or grants it provided, unless another source still provides them. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"bindingId\": {\n      \"$ref\": \"#/$defs/BindingId\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"groupId\": {\n      \"$ref\": \"#/$defs/GroupId\"\n    },\n    \"reason\": {\n      \"description\": \"Why, recorded with the change and shown to anyone who must approve it.\",\n      \"maxLength\": 1024,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"groupId\",\n    \"bindingId\",\n    \"reason\"\n  ],\n  \"title\": \"VTC Groups — Bindings — Remove — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"BindingId\":{\"pattern\":\"^gb_[A-Za-z0-9_-]{16,64}$\",\"title\":\"BindingId\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"GroupId\":{\"description\":\"Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.\",\"pattern\":\"^grp_[A-Za-z0-9_-]{16,64}$\",\"title\":\"GroupId\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/groups/bindings/remove/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/bindings/remove/0.1#response.\",\"properties\":{\"bindingId\":{\"$ref\":\"#/$defs/BindingId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"state\":{\"description\":\"`removed`: done. `removing`: the reconciler is withdrawing what only this binding provided. `pending`: a reduction of authority the community is holding on its terms.\",\"enum\":[\"removed\",\"removing\",\"pending\"],\"type\":\"string\"}},\"required\":[\"bindingId\",\"state\"],\"title\":\"VTC Groups — Bindings — Remove — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/groups/bindings/remove/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Remove a group's binding: members lose the room admission or grants it provided, unless another source still provides them. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"bindingId\":{\"$ref\":\"#/$defs/BindingId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"groupId\":{\"$ref\":\"#/$defs/GroupId\"},\"reason\":{\"description\":\"Why, recorded with the change and shown to anyone who must approve it.\",\"maxLength\":1024,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"groupId\",\"bindingId\",\"reason\"],\"title\":\"VTC Groups — Bindings — Remove — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -709,7 +572,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"BindingId\": {\n      \"pattern\": \"^gb_[A-Za-z0-9_-]{16,64}$\",\n      \"title\": \"BindingId\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"GroupId\": {\n      \"description\": \"Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.\",\n      \"pattern\": \"^grp_[A-Za-z0-9_-]{16,64}$\",\n      \"title\": \"GroupId\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a vtc/groups/bindings/remove/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/bindings/remove/0.1#response.\",\n      \"properties\": {\n        \"bindingId\": {\n          \"$ref\": \"#/$defs/BindingId\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"state\": {\n          \"description\": \"`removed`: done. `removing`: the reconciler is withdrawing what only this binding provided. `pending`: a reduction of authority the community is holding on its terms.\",\n          \"enum\": [\n            \"removed\",\n            \"removing\",\n            \"pending\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"bindingId\",\n        \"state\"\n      ],\n      \"title\": \"VTC Groups — Bindings — Remove — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"BindingId\":{\"pattern\":\"^gb_[A-Za-z0-9_-]{16,64}$\",\"title\":\"BindingId\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"GroupId\":{\"description\":\"Opaque identifier of a community group: `grp_` followed by 16 to 64 base64url characters. Random and community-scoped; not the group's DID.\",\"pattern\":\"^grp_[A-Za-z0-9_-]{16,64}$\",\"title\":\"GroupId\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/groups/bindings/remove/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/groups/bindings/remove/0.1#response.\",\"properties\":{\"bindingId\":{\"$ref\":\"#/$defs/BindingId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"state\":{\"description\":\"`removed`: done. `removing`: the reconciler is withdrawing what only this binding provided. `pending`: a reduction of authority the community is holding on its terms.\",\"enum\":[\"removed\",\"removing\",\"pending\"],\"type\":\"string\"}},\"required\":[\"bindingId\",\"state\"],\"title\":\"VTC Groups — Bindings — Remove — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

@@ -1497,11 +1497,13 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<GeneratedSpec> {
     } = spec_schemas(spec)?;
 
     // The inlined, self-contained schema is now the on-the-wire
-    // `Payload::PAYLOAD_SCHEMA`.
-    let raw = serde_json::to_string_pretty(&schema)? + "\n";
+    // `Payload::PAYLOAD_SCHEMA`. Compact, not pretty-printed: it is read by a
+    // validator, never by a person, and indentation was a quarter of its bytes
+    // in a crate that sits near crates.io's 10 MB upload limit.
+    let raw = serde_json::to_string(&schema)? + "\n";
     let response_raw = response_schema
         .as_ref()
-        .map(|doc| serde_json::to_string_pretty(doc).map(|s| s + "\n"))
+        .map(|doc| serde_json::to_string(doc).map(|s| s + "\n"))
         .transpose()?;
 
     let has_response = normalize_titles(&mut schema)?;
@@ -1592,7 +1594,7 @@ fn generate_one(spec: &Spec, out_root: &Path) -> Result<GeneratedSpec> {
         apply_deprecation(&mut parsed, note);
     }
     indent_safe_docs(&mut parsed);
-    let formatted = prettyplease::unparse(&parsed);
+    let formatted = strip_doc_schema_blocks(&prettyplease::unparse(&parsed));
 
     let conformance = render_conformance_file(spec, &examples, &invalid_examples, has_response)
         .map(|tokens| {
@@ -3908,4 +3910,33 @@ mod lifecycle_tests {
         assert_eq!(get(&map, "old", "0.3"), &deprecated("retired"));
         assert_eq!(get(&map, "old", "0.4"), &deprecated("retired"));
     }
+}
+
+/// Remove the `<details><summary>JSON schema</summary> … </details>` block
+/// typify writes into every generated type's doc comment.
+///
+/// Each one restates the type's own JSON schema, nested types included, so the
+/// same schema text appeared once per enclosing type — 11–14 MB of a crate that
+/// reached 9.96 MB of crates.io's 10 MB upload limit. The schema a reader wants
+/// is the published one at the specification's Type URI, which every module's
+/// documentation already links, and the one a program wants is
+/// `Payload::PAYLOAD_SCHEMA`. The prose description typify draws from each
+/// schema's `description` is kept.
+fn strip_doc_schema_blocks(text: &str) -> String {
+    let mut out = String::with_capacity(text.len());
+    let mut skipping = false;
+    for line in text.split_inclusive('\n') {
+        if line.contains("<details><summary>JSON schema</summary>") {
+            skipping = true;
+            continue;
+        }
+        if skipping {
+            if line.contains("</details>") {
+                skipping = false;
+            }
+            continue;
+        }
+        out.push_str(line);
+    }
+    out
 }

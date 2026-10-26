@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,22 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///The state of a vetter's grant in this community. The three refusing values are deliberately distinct: `revoked` says the community withdrew a grant it had made, `expired` says one ran out, and `none` says there is nothing to withdraw. An applicant reads those differently, and so does a vetter checking their own standing.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "GrantStatus",
-///  "description": "The state of a vetter's grant in this community. The three refusing values are deliberately distinct: `revoked` says the community withdrew a grant it had made, `expired` says one ran out, and `none` says there is nothing to withdraw. An applicant reads those differently, and so does a vetter checking their own standing.",
-///  "type": "string",
-///  "enum": [
-///    "live",
-///    "revoked",
-///    "expired",
-///    "none"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -227,33 +187,6 @@ impl ::std::convert::TryFrom<::std::string::String> for GrantStatus {
 }
 ///An authenticated applicant or member asks a community about one vetter, by DID. The answer is the state of that vetter's grant — `live`, `revoked`, `expired` or `none` — which a list of vetters cannot express, because an absent vetter and a revoked one look identical in it. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/vetting/vetters/show/0.1",
-///  "title": "Payload",
-///  "description": "An authenticated applicant or member asks a community about one vetter, by DID. The answer is the state of that vetter's grant — `live`, `revoked`, `expired` or `none` — which a list of vetters cannot express, because an absent vetter and a revoked one look identical in it. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "vetterDid"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "vetterDid": {
-///      "description": "The DID of the vetter being asked about — the subject of the vetter role credential. The caller usually holds it from an earlier listing, or from a vetting exchange that has since gone quiet.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1,
-///      "pattern": "^did:"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -271,18 +204,6 @@ impl Payload {
 }
 ///The DID of the vetter being asked about — the subject of the vetter role credential. The caller usually holds it from an earlier listing, or from a vetting exchange that has since gone quiet.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The DID of the vetter being asked about — the subject of the vetter role credential. The caller usually holds it from an earlier listing, or from a vetting exchange that has since gone quiet.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadVetterDid(::std::string::String);
@@ -350,55 +271,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadVetterDid {
 }
 ///One vetter's grant status. Carries no profile: what a vetter published for a directory is answered by vtc/vetting/vetters/list, and this task answers a caller who already knows which vetter they mean.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "One vetter's grant status. Carries no profile: what a vetter published for a directory is answered by vtc/vetting/vetters/list, and this task answers a caller who already knows which vetter they mean.",
-///  "type": "object",
-///  "required": [
-///    "status",
-///    "vetterDid"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "grantId": {
-///      "description": "The identifier of the grant this status is about. Present for `live`, `revoked` and `expired`; absent for `none`, which is the absence of a grant and so has nothing to identify.",
-///      "type": "string",
-///      "maxLength": 512,
-///      "minLength": 1
-///    },
-///    "listed": {
-///      "description": "Whether this vetter has a profile stored with `listed: true`, and so would appear in vtc/vetting/vetters/list. Present only for `live`. It is what separates the two reasons a live vetter is missing from a listing: unlisted by choice, rather than not a vetter.",
-///      "type": "boolean"
-///    },
-///    "revokedAt": {
-///      "description": "When the grant was revoked. Present only for `revoked`. The reason is deliberately not carried: it is the community's internal record, and an applicant needs to know the grant does not hold, not why.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "status": {
-///      "$ref": "#/definitions/GrantStatus"
-///    },
-///    "validUntil": {
-///      "description": "The grant's `validUntil`. Present for `live` and `expired` — for `expired` it is when it ran out, which tells a caller whether it lapsed long ago or yesterday. Absent for `none`, and for `revoked`, where the revocation and not the expiry is what ended it.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "vetterDid": {
-///      "description": "The DID asked about, echoed so a response is self-contained.",
-///      "type": "string",
-///      "pattern": "^did:"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -441,17 +313,6 @@ impl Response {
 }
 ///The identifier of the grant this status is about. Present for `live`, `revoked` and `expired`; absent for `none`, which is the absence of a grant and so has nothing to identify.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The identifier of the grant this status is about. Present for `live`, `revoked` and `expired`; absent for `none`, which is the absence of a grant and so has nothing to identify.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseGrantId(::std::string::String);
@@ -514,16 +375,6 @@ impl<'de> ::serde::Deserialize<'de> for ResponseGrantId {
 }
 ///The DID asked about, echoed so a response is self-contained.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The DID asked about, echoed so a response is self-contained.",
-///  "type": "string",
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseVetterDid(::std::string::String);
@@ -777,7 +628,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/vetting/vetters/show/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"GrantStatus\": {\n      \"description\": \"The state of a vetter's grant in this community. The three refusing values are deliberately distinct: `revoked` says the community withdrew a grant it had made, `expired` says one ran out, and `none` says there is nothing to withdraw. An applicant reads those differently, and so does a vetter checking their own standing.\",\n      \"enum\": [\n        \"live\",\n        \"revoked\",\n        \"expired\",\n        \"none\"\n      ],\n      \"title\": \"GrantStatus\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"One vetter's grant status. Carries no profile: what a vetter published for a directory is answered by vtc/vetting/vetters/list, and this task answers a caller who already knows which vetter they mean.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"grantId\": {\n          \"description\": \"The identifier of the grant this status is about. Present for `live`, `revoked` and `expired`; absent for `none`, which is the absence of a grant and so has nothing to identify.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"listed\": {\n          \"description\": \"Whether this vetter has a profile stored with `listed: true`, and so would appear in vtc/vetting/vetters/list. Present only for `live`. It is what separates the two reasons a live vetter is missing from a listing: unlisted by choice, rather than not a vetter.\",\n          \"type\": \"boolean\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the grant was revoked. Present only for `revoked`. The reason is deliberately not carried: it is the community's internal record, and an applicant needs to know the grant does not hold, not why.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"$ref\": \"#/$defs/GrantStatus\"\n        },\n        \"validUntil\": {\n          \"description\": \"The grant's `validUntil`. Present for `live` and `expired` — for `expired` it is when it ran out, which tells a caller whether it lapsed long ago or yesterday. Absent for `none`, and for `revoked`, where the revocation and not the expiry is what ended it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"vetterDid\": {\n          \"description\": \"The DID asked about, echoed so a response is self-contained.\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"vetterDid\",\n        \"status\"\n      ],\n      \"title\": \"VTC Vetting — Show Vetter — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/vetting/vetters/show/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An authenticated applicant or member asks a community about one vetter, by DID. The answer is the state of that vetter's grant — `live`, `revoked`, `expired` or `none` — which a list of vetters cannot express, because an absent vetter and a revoked one look identical in it. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"vetterDid\": {\n      \"description\": \"The DID of the vetter being asked about — the subject of the vetter role credential. The caller usually holds it from an earlier listing, or from a vetting exchange that has since gone quiet.\",\n      \"maxLength\": 2048,\n      \"minLength\": 1,\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"vetterDid\"\n  ],\n  \"title\": \"VTC Vetting — Show Vetter — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"GrantStatus\":{\"description\":\"The state of a vetter's grant in this community. The three refusing values are deliberately distinct: `revoked` says the community withdrew a grant it had made, `expired` says one ran out, and `none` says there is nothing to withdraw. An applicant reads those differently, and so does a vetter checking their own standing.\",\"enum\":[\"live\",\"revoked\",\"expired\",\"none\"],\"title\":\"GrantStatus\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"One vetter's grant status. Carries no profile: what a vetter published for a directory is answered by vtc/vetting/vetters/list, and this task answers a caller who already knows which vetter they mean.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"grantId\":{\"description\":\"The identifier of the grant this status is about. Present for `live`, `revoked` and `expired`; absent for `none`, which is the absence of a grant and so has nothing to identify.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"listed\":{\"description\":\"Whether this vetter has a profile stored with `listed: true`, and so would appear in vtc/vetting/vetters/list. Present only for `live`. It is what separates the two reasons a live vetter is missing from a listing: unlisted by choice, rather than not a vetter.\",\"type\":\"boolean\"},\"revokedAt\":{\"description\":\"When the grant was revoked. Present only for `revoked`. The reason is deliberately not carried: it is the community's internal record, and an applicant needs to know the grant does not hold, not why.\",\"format\":\"date-time\",\"type\":\"string\"},\"status\":{\"$ref\":\"#/$defs/GrantStatus\"},\"validUntil\":{\"description\":\"The grant's `validUntil`. Present for `live` and `expired` — for `expired` it is when it ran out, which tells a caller whether it lapsed long ago or yesterday. Absent for `none`, and for `revoked`, where the revocation and not the expiry is what ended it.\",\"format\":\"date-time\",\"type\":\"string\"},\"vetterDid\":{\"description\":\"The DID asked about, echoed so a response is self-contained.\",\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"vetterDid\",\"status\"],\"title\":\"VTC Vetting — Show Vetter — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/vetting/vetters/show/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"An authenticated applicant or member asks a community about one vetter, by DID. The answer is the state of that vetter's grant — `live`, `revoked`, `expired` or `none` — which a list of vetters cannot express, because an absent vetter and a revoked one look identical in it. The outer document members (id, type, issuer, recipient, issuedAt, expiresAt, proof) are owned by the framework — SPEC §6.3.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"vetterDid\":{\"description\":\"The DID of the vetter being asked about — the subject of the vetter role credential. The caller usually holds it from an earlier listing, or from a vetting exchange that has since gone quiet.\",\"maxLength\":2048,\"minLength\":1,\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"vetterDid\"],\"title\":\"VTC Vetting — Show Vetter — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -785,7 +636,7 @@ impl crate::Payload for Response {
         "https://trusttasks.org/spec/vtc/vetting/vetters/show/0.1#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"GrantStatus\": {\n      \"description\": \"The state of a vetter's grant in this community. The three refusing values are deliberately distinct: `revoked` says the community withdrew a grant it had made, `expired` says one ran out, and `none` says there is nothing to withdraw. An applicant reads those differently, and so does a vetter checking their own standing.\",\n      \"enum\": [\n        \"live\",\n        \"revoked\",\n        \"expired\",\n        \"none\"\n      ],\n      \"title\": \"GrantStatus\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"One vetter's grant status. Carries no profile: what a vetter published for a directory is answered by vtc/vetting/vetters/list, and this task answers a caller who already knows which vetter they mean.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"grantId\": {\n          \"description\": \"The identifier of the grant this status is about. Present for `live`, `revoked` and `expired`; absent for `none`, which is the absence of a grant and so has nothing to identify.\",\n          \"maxLength\": 512,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"listed\": {\n          \"description\": \"Whether this vetter has a profile stored with `listed: true`, and so would appear in vtc/vetting/vetters/list. Present only for `live`. It is what separates the two reasons a live vetter is missing from a listing: unlisted by choice, rather than not a vetter.\",\n          \"type\": \"boolean\"\n        },\n        \"revokedAt\": {\n          \"description\": \"When the grant was revoked. Present only for `revoked`. The reason is deliberately not carried: it is the community's internal record, and an applicant needs to know the grant does not hold, not why.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"status\": {\n          \"$ref\": \"#/$defs/GrantStatus\"\n        },\n        \"validUntil\": {\n          \"description\": \"The grant's `validUntil`. Present for `live` and `expired` — for `expired` it is when it ran out, which tells a caller whether it lapsed long ago or yesterday. Absent for `none`, and for `revoked`, where the revocation and not the expiry is what ended it.\",\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"vetterDid\": {\n          \"description\": \"The DID asked about, echoed so a response is self-contained.\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"vetterDid\",\n        \"status\"\n      ],\n      \"title\": \"VTC Vetting — Show Vetter — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"GrantStatus\":{\"description\":\"The state of a vetter's grant in this community. The three refusing values are deliberately distinct: `revoked` says the community withdrew a grant it had made, `expired` says one ran out, and `none` says there is nothing to withdraw. An applicant reads those differently, and so does a vetter checking their own standing.\",\"enum\":[\"live\",\"revoked\",\"expired\",\"none\"],\"title\":\"GrantStatus\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"One vetter's grant status. Carries no profile: what a vetter published for a directory is answered by vtc/vetting/vetters/list, and this task answers a caller who already knows which vetter they mean.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"grantId\":{\"description\":\"The identifier of the grant this status is about. Present for `live`, `revoked` and `expired`; absent for `none`, which is the absence of a grant and so has nothing to identify.\",\"maxLength\":512,\"minLength\":1,\"type\":\"string\"},\"listed\":{\"description\":\"Whether this vetter has a profile stored with `listed: true`, and so would appear in vtc/vetting/vetters/list. Present only for `live`. It is what separates the two reasons a live vetter is missing from a listing: unlisted by choice, rather than not a vetter.\",\"type\":\"boolean\"},\"revokedAt\":{\"description\":\"When the grant was revoked. Present only for `revoked`. The reason is deliberately not carried: it is the community's internal record, and an applicant needs to know the grant does not hold, not why.\",\"format\":\"date-time\",\"type\":\"string\"},\"status\":{\"$ref\":\"#/$defs/GrantStatus\"},\"validUntil\":{\"description\":\"The grant's `validUntil`. Present for `live` and `expired` — for `expired` it is when it ran out, which tells a caller whether it lapsed long ago or yesterday. Absent for `none`, and for `revoked`, where the revocation and not the expiry is what ended it.\",\"format\":\"date-time\",\"type\":\"string\"},\"vetterDid\":{\"description\":\"The DID asked about, echoed so a response is self-contained.\",\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"vetterDid\",\"status\"],\"title\":\"VTC Vetting — Show Vetter — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

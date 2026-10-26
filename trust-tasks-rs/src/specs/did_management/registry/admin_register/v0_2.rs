@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,49 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/did-management/registry/admin-register/0.2",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "did",
-///    "instanceId",
-///    "publicUrl"
-///  ],
-///  "properties": {
-///    "did": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "instanceId": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "label": {
-///      "type": "string",
-///      "maxLength": 256
-///    },
-///    "publicUrl": {
-///      "type": "string",
-///      "format": "uri"
-///    },
-///    "servedDomains": {
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      }
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -212,15 +145,6 @@ impl Payload {
 }
 ///`PayloadDid`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadDid(::std::string::String);
@@ -280,15 +204,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDid {
 }
 ///`PayloadInstanceId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadInstanceId(::std::string::String);
@@ -348,15 +263,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadInstanceId {
 }
 ///`PayloadLabel`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 256
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadLabel(::std::string::String);
@@ -416,53 +322,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadLabel {
 }
 ///The `ServiceInstance` shape of `did-management/_shared/0.1`, with `lastSeen` renamed `lastSeenAt`; named apart from `service-instance.schema.json`'s `ServiceInstance`, a different shape, so the two do not collide in generated code.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RegisteredInstance",
-///  "description": "The `ServiceInstance` shape of `did-management/_shared/0.1`, with `lastSeen` renamed `lastSeenAt`; named apart from `service-instance.schema.json`'s `ServiceInstance`, a different shape, so the two do not collide in generated code.",
-///  "type": "object",
-///  "required": [
-///    "did",
-///    "instanceId"
-///  ],
-///  "properties": {
-///    "did": {
-///      "description": "VID identifying the registered service.",
-///      "type": "string"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "instanceId": {
-///      "description": "Stable identifier the control plane uses for this instance. SHOULD be derived from the instance's DID (e.g. `did:web:host.example` → `did_web_host_example`) so it survives restarts.",
-///      "type": "string"
-///    },
-///    "label": {
-///      "type": "string",
-///      "maxLength": 256
-///    },
-///    "lastSeenAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "publicUrl": {
-///      "type": "string",
-///      "format": "uri"
-///    },
-///    "servedDomains": {
-///      "description": "Hosting domains this instance currently serves. Updated by `domain/assign` / `domain/unassign` ack flow.",
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      }
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -503,15 +362,6 @@ impl RegisteredInstance {
 }
 ///`RegisteredInstanceLabel`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 256
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RegisteredInstanceLabel(::std::string::String);
@@ -571,28 +421,6 @@ impl<'de> ::serde::Deserialize<'de> for RegisteredInstanceLabel {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "entry"
-///  ],
-///  "properties": {
-///    "entry": {
-///      "$ref": "#/definitions/RegisteredInstance"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -916,7 +744,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"RegisteredInstance\": {\n      \"additionalProperties\": false,\n      \"description\": \"The `ServiceInstance` shape of `did-management/_shared/0.1`, with `lastSeen` renamed `lastSeenAt`; named apart from `service-instance.schema.json`'s `ServiceInstance`, a different shape, so the two do not collide in generated code.\",\n      \"properties\": {\n        \"did\": {\n          \"description\": \"VID identifying the registered service.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"instanceId\": {\n          \"description\": \"Stable identifier the control plane uses for this instance. SHOULD be derived from the instance's DID (e.g. `did:web:host.example` → `did_web_host_example`) so it survives restarts.\",\n          \"type\": \"string\"\n        },\n        \"label\": {\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"lastSeenAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"publicUrl\": {\n          \"format\": \"uri\",\n          \"type\": \"string\"\n        },\n        \"servedDomains\": {\n          \"description\": \"Hosting domains this instance currently serves. Updated by `domain/assign` / `domain/unassign` ack flow.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"instanceId\",\n        \"did\"\n      ],\n      \"title\": \"RegisteredInstance\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"entry\": {\n          \"$ref\": \"#/$defs/RegisteredInstance\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"entry\"\n      ],\n      \"title\": \"Registry Admin Register — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/did-management/registry/admin-register/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"did\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"instanceId\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"label\": {\n      \"maxLength\": 256,\n      \"type\": \"string\"\n    },\n    \"publicUrl\": {\n      \"format\": \"uri\",\n      \"type\": \"string\"\n    },\n    \"servedDomains\": {\n      \"items\": {\n        \"type\": \"string\"\n      },\n      \"type\": \"array\"\n    }\n  },\n  \"required\": [\n    \"instanceId\",\n    \"did\",\n    \"publicUrl\"\n  ],\n  \"title\": \"Registry Admin Register — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"RegisteredInstance\":{\"additionalProperties\":false,\"description\":\"The `ServiceInstance` shape of `did-management/_shared/0.1`, with `lastSeen` renamed `lastSeenAt`; named apart from `service-instance.schema.json`'s `ServiceInstance`, a different shape, so the two do not collide in generated code.\",\"properties\":{\"did\":{\"description\":\"VID identifying the registered service.\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"instanceId\":{\"description\":\"Stable identifier the control plane uses for this instance. SHOULD be derived from the instance's DID (e.g. `did:web:host.example` → `did_web_host_example`) so it survives restarts.\",\"type\":\"string\"},\"label\":{\"maxLength\":256,\"type\":\"string\"},\"lastSeenAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"publicUrl\":{\"format\":\"uri\",\"type\":\"string\"},\"servedDomains\":{\"description\":\"Hosting domains this instance currently serves. Updated by `domain/assign` / `domain/unassign` ack flow.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"instanceId\",\"did\"],\"title\":\"RegisteredInstance\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"entry\":{\"$ref\":\"#/$defs/RegisteredInstance\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"entry\"],\"title\":\"Registry Admin Register — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/did-management/registry/admin-register/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"did\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"instanceId\":{\"minLength\":1,\"type\":\"string\"},\"label\":{\"maxLength\":256,\"type\":\"string\"},\"publicUrl\":{\"format\":\"uri\",\"type\":\"string\"},\"servedDomains\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"instanceId\",\"did\",\"publicUrl\"],\"title\":\"Registry Admin Register — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -926,7 +754,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"RegisteredInstance\": {\n      \"additionalProperties\": false,\n      \"description\": \"The `ServiceInstance` shape of `did-management/_shared/0.1`, with `lastSeen` renamed `lastSeenAt`; named apart from `service-instance.schema.json`'s `ServiceInstance`, a different shape, so the two do not collide in generated code.\",\n      \"properties\": {\n        \"did\": {\n          \"description\": \"VID identifying the registered service.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"instanceId\": {\n          \"description\": \"Stable identifier the control plane uses for this instance. SHOULD be derived from the instance's DID (e.g. `did:web:host.example` → `did_web_host_example`) so it survives restarts.\",\n          \"type\": \"string\"\n        },\n        \"label\": {\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"lastSeenAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"publicUrl\": {\n          \"format\": \"uri\",\n          \"type\": \"string\"\n        },\n        \"servedDomains\": {\n          \"description\": \"Hosting domains this instance currently serves. Updated by `domain/assign` / `domain/unassign` ack flow.\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"instanceId\",\n        \"did\"\n      ],\n      \"title\": \"RegisteredInstance\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"entry\": {\n          \"$ref\": \"#/$defs/RegisteredInstance\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        }\n      },\n      \"required\": [\n        \"entry\"\n      ],\n      \"title\": \"Registry Admin Register — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"RegisteredInstance\":{\"additionalProperties\":false,\"description\":\"The `ServiceInstance` shape of `did-management/_shared/0.1`, with `lastSeen` renamed `lastSeenAt`; named apart from `service-instance.schema.json`'s `ServiceInstance`, a different shape, so the two do not collide in generated code.\",\"properties\":{\"did\":{\"description\":\"VID identifying the registered service.\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"instanceId\":{\"description\":\"Stable identifier the control plane uses for this instance. SHOULD be derived from the instance's DID (e.g. `did:web:host.example` → `did_web_host_example`) so it survives restarts.\",\"type\":\"string\"},\"label\":{\"maxLength\":256,\"type\":\"string\"},\"lastSeenAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"publicUrl\":{\"format\":\"uri\",\"type\":\"string\"},\"servedDomains\":{\"description\":\"Hosting domains this instance currently serves. Updated by `domain/assign` / `domain/unassign` ack flow.\",\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"instanceId\",\"did\"],\"title\":\"RegisteredInstance\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"entry\":{\"$ref\":\"#/$defs/RegisteredInstance\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"}},\"required\":[\"entry\"],\"title\":\"Registry Admin Register — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,36 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A device registers its platform push token (APNs / FCM / Web Push) with a push gateway and names the controller VTA permitted to provision its trigger allowlist. The gateway returns an opaque WakeHandle; the raw token is held by the gateway only. See the push wake-up binding (https://trusttasks.org/binding/push/0.1).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/push/register/0.2",
-///  "title": "Payload",
-///  "description": "A device registers its platform push token (APNs / FCM / Web Push) with a push gateway and names the controller VTA permitted to provision its trigger allowlist. The gateway returns an opaque WakeHandle; the raw token is held by the gateway only. See the push wake-up binding (https://trusttasks.org/binding/push/0.1).",
-///  "type": "object",
-///  "required": [
-///    "controllerVtaDid",
-///    "registration"
-///  ],
-///  "properties": {
-///    "controllerVtaDid": {
-///      "description": "The DID of the VTA permitted to provision this handle's trigger allowlist (push/provision). The device conveys the resulting handle to this VTA via device/set-wake.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "registration": {
-///      "description": "The platform push channel (token). Held by the gateway only — never disclosed to any other party.",
-///      "$ref": "#/definitions/PushRegistration"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -191,16 +137,6 @@ impl Payload {
 }
 ///The DID of the VTA permitted to provision this handle's trigger allowlist (push/provision). The device conveys the resulting handle to this VTA via device/set-wake.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The DID of the VTA permitted to provision this handle's trigger allowlist (push/provision). The device conveys the resulting handle to this VTA via device/set-wake.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadControllerVtaDid(::std::string::String);
@@ -260,110 +196,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadControllerVtaDid {
 }
 ///A device's platform push channel — the body the device registers with its push GATEWAY (push wake-up binding, https://trusttasks.org/binding/push/0.1; modeled on Aries RFC 0699/0734). The gateway holds this token and returns an opaque WakeHandle in exchange; the token is held by the gateway ONLY, never by the mediator or the maintainer/VTA. The gateway uses it to send a contentless wake-up when an authorized trigger asks — the push payload never carries Trust Task content. Tagged union over the discriminator `platform`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "PushRegistration",
-///  "description": "A device's platform push channel — the body the device registers with its push GATEWAY (push wake-up binding, https://trusttasks.org/binding/push/0.1; modeled on Aries RFC 0699/0734). The gateway holds this token and returns an opaque WakeHandle in exchange; the token is held by the gateway ONLY, never by the mediator or the maintainer/VTA. The gateway uses it to send a contentless wake-up when an authorized trigger asks — the push payload never carries Trust Task content. Tagged union over the discriminator `platform`.",
-///  "oneOf": [
-///    {
-///      "title": "Apns",
-///      "type": "object",
-///      "required": [
-///        "platform",
-///        "token",
-///        "topic"
-///      ],
-///      "properties": {
-///        "environment": {
-///          "description": "Which APNs environment issued the token. Maintainers route to the matching APNs endpoint.",
-///          "type": "string",
-///          "enum": [
-///            "sandbox",
-///            "production"
-///          ]
-///        },
-///        "platform": {
-///          "const": "apns"
-///        },
-///        "token": {
-///          "description": "APNs device token (hex string issued by Apple Push Notification service).",
-///          "type": "string",
-///          "minLength": 1
-///        },
-///        "topic": {
-///          "description": "APNs topic — typically the app bundle identifier the gateway pushes to.",
-///          "type": "string",
-///          "minLength": 1
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "Fcm",
-///      "type": "object",
-///      "required": [
-///        "platform",
-///        "token"
-///      ],
-///      "properties": {
-///        "platform": {
-///          "const": "fcm"
-///        },
-///        "token": {
-///          "description": "Firebase Cloud Messaging registration token. The gateway sends a data message (not a notification message) so the app controls wake and display.",
-///          "type": "string",
-///          "minLength": 1
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "WebPush",
-///      "type": "object",
-///      "required": [
-///        "endpoint",
-///        "keys",
-///        "platform"
-///      ],
-///      "properties": {
-///        "endpoint": {
-///          "description": "RFC 8030 Web Push subscription endpoint.",
-///          "type": "string",
-///          "format": "uri"
-///        },
-///        "keys": {
-///          "description": "Web Push (RFC 8291) encryption keys. Note: per the push binding the payload remains contentless regardless of this encryption.",
-///          "type": "object",
-///          "required": [
-///            "auth",
-///            "p256dh"
-///          ],
-///          "properties": {
-///            "auth": {
-///              "description": "base64url-encoded auth secret.",
-///              "type": "string",
-///              "minLength": 1
-///            },
-///            "p256dh": {
-///              "description": "base64url-encoded P-256 ECDH public key.",
-///              "type": "string",
-///              "minLength": 1
-///            }
-///          },
-///          "additionalProperties": false
-///        },
-///        "platform": {
-///          "const": "webpush"
-///        }
-///      },
-///      "additionalProperties": false
-///    }
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(tag = "platform", deny_unknown_fields)]
 #[non_exhaustive]
@@ -395,19 +227,6 @@ pub enum PushRegistration {
 }
 ///Which APNs environment issued the token. Maintainers route to the matching APNs endpoint.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Which APNs environment issued the token. Maintainers route to the matching APNs endpoint.",
-///  "type": "string",
-///  "enum": [
-///    "sandbox",
-///    "production"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -469,32 +288,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PushRegistrationEnvironm
 }
 ///Web Push (RFC 8291) encryption keys. Note: per the push binding the payload remains contentless regardless of this encryption.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Web Push (RFC 8291) encryption keys. Note: per the push binding the payload remains contentless regardless of this encryption.",
-///  "type": "object",
-///  "required": [
-///    "auth",
-///    "p256dh"
-///  ],
-///  "properties": {
-///    "auth": {
-///      "description": "base64url-encoded auth secret.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "p256dh": {
-///      "description": "base64url-encoded P-256 ECDH public key.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -511,16 +304,6 @@ impl PushRegistrationKeys {
 }
 ///base64url-encoded auth secret.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "base64url-encoded auth secret.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PushRegistrationKeysAuth(::std::string::String);
@@ -580,16 +363,6 @@ impl<'de> ::serde::Deserialize<'de> for PushRegistrationKeysAuth {
 }
 ///base64url-encoded P-256 ECDH public key.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "base64url-encoded P-256 ECDH public key.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PushRegistrationKeysP256dh(::std::string::String);
@@ -649,16 +422,6 @@ impl<'de> ::serde::Deserialize<'de> for PushRegistrationKeysP256dh {
 }
 ///APNs device token (hex string issued by Apple Push Notification service).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "APNs device token (hex string issued by Apple Push Notification service).",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PushRegistrationToken(::std::string::String);
@@ -718,16 +481,6 @@ impl<'de> ::serde::Deserialize<'de> for PushRegistrationToken {
 }
 ///APNs topic — typically the app bundle identifier the gateway pushes to.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "APNs topic — typically the app bundle identifier the gateway pushes to.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PushRegistrationTopic(::std::string::String);
@@ -787,29 +540,6 @@ impl<'de> ::serde::Deserialize<'de> for PushRegistrationTopic {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "wakeHandle"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "wakeHandle": {
-///      "description": "The opaque gateway-issued handle (gateway address + handle). Conveyed onward; reveals no token.",
-///      "$ref": "#/definitions/WakeHandle"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -827,33 +557,6 @@ impl Response {
 }
 ///An opaque, gateway-issued reference to a device's push channel (push wake-up binding, https://trusttasks.org/binding/push/0.1). The push gateway returns it to the device at registration; the device conveys it to its VTA (device/set-wake), and the VTA provisions it to authorized triggers (its mediator and/or itself). The raw platform push token (APNs/FCM/WebPush) is held ONLY by the gateway and is never represented here — the handle abstracts the platform, so adding new push methods (e.g. PWA Web Push) needs no change to triggers or VTA config. A handle is a bearer capability to *request* a wake (subject to the gateway's allowlist), never to read the channel.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "WakeHandle",
-///  "description": "An opaque, gateway-issued reference to a device's push channel (push wake-up binding, https://trusttasks.org/binding/push/0.1). The push gateway returns it to the device at registration; the device conveys it to its VTA (device/set-wake), and the VTA provisions it to authorized triggers (its mediator and/or itself). The raw platform push token (APNs/FCM/WebPush) is held ONLY by the gateway and is never represented here — the handle abstracts the platform, so adding new push methods (e.g. PWA Web Push) needs no change to triggers or VTA config. A handle is a bearer capability to *request* a wake (subject to the gateway's allowlist), never to read the channel.",
-///  "type": "object",
-///  "required": [
-///    "gateway",
-///    "handle"
-///  ],
-///  "properties": {
-///    "gateway": {
-///      "description": "The push gateway that issued this handle and acts on it — a DID (DIDComm-reachable gateway) or an https URL (REST gateway). A trigger sends its contentless wake request here.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "handle": {
-///      "description": "Opaque gateway-issued identifier for the device's push channel. Reveals no platform token. Rotates whenever the device re-registers a new platform token with the gateway; the device then re-conveys the fresh handle via device/set-wake.",
-///      "type": "string",
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -870,16 +573,6 @@ impl WakeHandle {
 }
 ///The push gateway that issued this handle and acts on it — a DID (DIDComm-reachable gateway) or an https URL (REST gateway). A trigger sends its contentless wake request here.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The push gateway that issued this handle and acts on it — a DID (DIDComm-reachable gateway) or an https URL (REST gateway). A trigger sends its contentless wake request here.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct WakeHandleGateway(::std::string::String);
@@ -939,16 +632,6 @@ impl<'de> ::serde::Deserialize<'de> for WakeHandleGateway {
 }
 ///Opaque gateway-issued identifier for the device's push channel. Reveals no platform token. Rotates whenever the device re-registers a new platform token with the gateway; the device then re-conveys the fresh handle via device/set-wake.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Opaque gateway-issued identifier for the device's push channel. Reveals no platform token. Rotates whenever the device re-registers a new platform token with the gateway; the device then re-conveys the fresh handle via device/set-wake.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct WakeHandleHandle(::std::string::String);
@@ -1241,7 +924,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"PushRegistration\": {\n      \"description\": \"A device's platform push channel — the body the device registers with its push GATEWAY (push wake-up binding, https://trusttasks.org/binding/push/0.1; modeled on Aries RFC 0699/0734). The gateway holds this token and returns an opaque WakeHandle in exchange; the token is held by the gateway ONLY, never by the mediator or the maintainer/VTA. The gateway uses it to send a contentless wake-up when an authorized trigger asks — the push payload never carries Trust Task content. Tagged union over the discriminator `platform`.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"environment\": {\n              \"description\": \"Which APNs environment issued the token. Maintainers route to the matching APNs endpoint.\",\n              \"enum\": [\n                \"sandbox\",\n                \"production\"\n              ],\n              \"type\": \"string\"\n            },\n            \"platform\": {\n              \"const\": \"apns\"\n            },\n            \"token\": {\n              \"description\": \"APNs device token (hex string issued by Apple Push Notification service).\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"topic\": {\n              \"description\": \"APNs topic — typically the app bundle identifier the gateway pushes to.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"platform\",\n            \"token\",\n            \"topic\"\n          ],\n          \"title\": \"Apns\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"platform\": {\n              \"const\": \"fcm\"\n            },\n            \"token\": {\n              \"description\": \"Firebase Cloud Messaging registration token. The gateway sends a data message (not a notification message) so the app controls wake and display.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"platform\",\n            \"token\"\n          ],\n          \"title\": \"Fcm\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"endpoint\": {\n              \"description\": \"RFC 8030 Web Push subscription endpoint.\",\n              \"format\": \"uri\",\n              \"type\": \"string\"\n            },\n            \"keys\": {\n              \"additionalProperties\": false,\n              \"description\": \"Web Push (RFC 8291) encryption keys. Note: per the push binding the payload remains contentless regardless of this encryption.\",\n              \"properties\": {\n                \"auth\": {\n                  \"description\": \"base64url-encoded auth secret.\",\n                  \"minLength\": 1,\n                  \"type\": \"string\"\n                },\n                \"p256dh\": {\n                  \"description\": \"base64url-encoded P-256 ECDH public key.\",\n                  \"minLength\": 1,\n                  \"type\": \"string\"\n                }\n              },\n              \"required\": [\n                \"p256dh\",\n                \"auth\"\n              ],\n              \"type\": \"object\"\n            },\n            \"platform\": {\n              \"const\": \"webpush\"\n            }\n          },\n          \"required\": [\n            \"platform\",\n            \"endpoint\",\n            \"keys\"\n          ],\n          \"title\": \"WebPush\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"PushRegistration\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"wakeHandle\": {\n          \"$ref\": \"#/$defs/WakeHandle\",\n          \"description\": \"The opaque gateway-issued handle (gateway address + handle). Conveyed onward; reveals no token.\"\n        }\n      },\n      \"required\": [\n        \"wakeHandle\"\n      ],\n      \"title\": \"Push Register — response payload\",\n      \"type\": \"object\"\n    },\n    \"WakeHandle\": {\n      \"additionalProperties\": false,\n      \"description\": \"An opaque, gateway-issued reference to a device's push channel (push wake-up binding, https://trusttasks.org/binding/push/0.1). The push gateway returns it to the device at registration; the device conveys it to its VTA (device/set-wake), and the VTA provisions it to authorized triggers (its mediator and/or itself). The raw platform push token (APNs/FCM/WebPush) is held ONLY by the gateway and is never represented here — the handle abstracts the platform, so adding new push methods (e.g. PWA Web Push) needs no change to triggers or VTA config. A handle is a bearer capability to *request* a wake (subject to the gateway's allowlist), never to read the channel.\",\n      \"properties\": {\n        \"gateway\": {\n          \"description\": \"The push gateway that issued this handle and acts on it — a DID (DIDComm-reachable gateway) or an https URL (REST gateway). A trigger sends its contentless wake request here.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"handle\": {\n          \"description\": \"Opaque gateway-issued identifier for the device's push channel. Reveals no platform token. Rotates whenever the device re-registers a new platform token with the gateway; the device then re-conveys the fresh handle via device/set-wake.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"gateway\",\n        \"handle\"\n      ],\n      \"title\": \"WakeHandle\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/push/register/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"A device registers its platform push token (APNs / FCM / Web Push) with a push gateway and names the controller VTA permitted to provision its trigger allowlist. The gateway returns an opaque WakeHandle; the raw token is held by the gateway only. See the push wake-up binding (https://trusttasks.org/binding/push/0.1).\",\n  \"properties\": {\n    \"controllerVtaDid\": {\n      \"description\": \"The DID of the VTA permitted to provision this handle's trigger allowlist (push/provision). The device conveys the resulting handle to this VTA via device/set-wake.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"registration\": {\n      \"$ref\": \"#/$defs/PushRegistration\",\n      \"description\": \"The platform push channel (token). Held by the gateway only — never disclosed to any other party.\"\n    }\n  },\n  \"required\": [\n    \"registration\",\n    \"controllerVtaDid\"\n  ],\n  \"title\": \"Push Register — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"PushRegistration\":{\"description\":\"A device's platform push channel — the body the device registers with its push GATEWAY (push wake-up binding, https://trusttasks.org/binding/push/0.1; modeled on Aries RFC 0699/0734). The gateway holds this token and returns an opaque WakeHandle in exchange; the token is held by the gateway ONLY, never by the mediator or the maintainer/VTA. The gateway uses it to send a contentless wake-up when an authorized trigger asks — the push payload never carries Trust Task content. Tagged union over the discriminator `platform`.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"environment\":{\"description\":\"Which APNs environment issued the token. Maintainers route to the matching APNs endpoint.\",\"enum\":[\"sandbox\",\"production\"],\"type\":\"string\"},\"platform\":{\"const\":\"apns\"},\"token\":{\"description\":\"APNs device token (hex string issued by Apple Push Notification service).\",\"minLength\":1,\"type\":\"string\"},\"topic\":{\"description\":\"APNs topic — typically the app bundle identifier the gateway pushes to.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"platform\",\"token\",\"topic\"],\"title\":\"Apns\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"platform\":{\"const\":\"fcm\"},\"token\":{\"description\":\"Firebase Cloud Messaging registration token. The gateway sends a data message (not a notification message) so the app controls wake and display.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"platform\",\"token\"],\"title\":\"Fcm\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"endpoint\":{\"description\":\"RFC 8030 Web Push subscription endpoint.\",\"format\":\"uri\",\"type\":\"string\"},\"keys\":{\"additionalProperties\":false,\"description\":\"Web Push (RFC 8291) encryption keys. Note: per the push binding the payload remains contentless regardless of this encryption.\",\"properties\":{\"auth\":{\"description\":\"base64url-encoded auth secret.\",\"minLength\":1,\"type\":\"string\"},\"p256dh\":{\"description\":\"base64url-encoded P-256 ECDH public key.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"p256dh\",\"auth\"],\"type\":\"object\"},\"platform\":{\"const\":\"webpush\"}},\"required\":[\"platform\",\"endpoint\",\"keys\"],\"title\":\"WebPush\",\"type\":\"object\"}],\"title\":\"PushRegistration\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"wakeHandle\":{\"$ref\":\"#/$defs/WakeHandle\",\"description\":\"The opaque gateway-issued handle (gateway address + handle). Conveyed onward; reveals no token.\"}},\"required\":[\"wakeHandle\"],\"title\":\"Push Register — response payload\",\"type\":\"object\"},\"WakeHandle\":{\"additionalProperties\":false,\"description\":\"An opaque, gateway-issued reference to a device's push channel (push wake-up binding, https://trusttasks.org/binding/push/0.1). The push gateway returns it to the device at registration; the device conveys it to its VTA (device/set-wake), and the VTA provisions it to authorized triggers (its mediator and/or itself). The raw platform push token (APNs/FCM/WebPush) is held ONLY by the gateway and is never represented here — the handle abstracts the platform, so adding new push methods (e.g. PWA Web Push) needs no change to triggers or VTA config. A handle is a bearer capability to *request* a wake (subject to the gateway's allowlist), never to read the channel.\",\"properties\":{\"gateway\":{\"description\":\"The push gateway that issued this handle and acts on it — a DID (DIDComm-reachable gateway) or an https URL (REST gateway). A trigger sends its contentless wake request here.\",\"minLength\":1,\"type\":\"string\"},\"handle\":{\"description\":\"Opaque gateway-issued identifier for the device's push channel. Reveals no platform token. Rotates whenever the device re-registers a new platform token with the gateway; the device then re-conveys the fresh handle via device/set-wake.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"gateway\",\"handle\"],\"title\":\"WakeHandle\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/push/register/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"A device registers its platform push token (APNs / FCM / Web Push) with a push gateway and names the controller VTA permitted to provision its trigger allowlist. The gateway returns an opaque WakeHandle; the raw token is held by the gateway only. See the push wake-up binding (https://trusttasks.org/binding/push/0.1).\",\"properties\":{\"controllerVtaDid\":{\"description\":\"The DID of the VTA permitted to provision this handle's trigger allowlist (push/provision). The device conveys the resulting handle to this VTA via device/set-wake.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"registration\":{\"$ref\":\"#/$defs/PushRegistration\",\"description\":\"The platform push channel (token). Held by the gateway only — never disclosed to any other party.\"}},\"required\":[\"registration\",\"controllerVtaDid\"],\"title\":\"Push Register — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1249,7 +932,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"PushRegistration\": {\n      \"description\": \"A device's platform push channel — the body the device registers with its push GATEWAY (push wake-up binding, https://trusttasks.org/binding/push/0.1; modeled on Aries RFC 0699/0734). The gateway holds this token and returns an opaque WakeHandle in exchange; the token is held by the gateway ONLY, never by the mediator or the maintainer/VTA. The gateway uses it to send a contentless wake-up when an authorized trigger asks — the push payload never carries Trust Task content. Tagged union over the discriminator `platform`.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"environment\": {\n              \"description\": \"Which APNs environment issued the token. Maintainers route to the matching APNs endpoint.\",\n              \"enum\": [\n                \"sandbox\",\n                \"production\"\n              ],\n              \"type\": \"string\"\n            },\n            \"platform\": {\n              \"const\": \"apns\"\n            },\n            \"token\": {\n              \"description\": \"APNs device token (hex string issued by Apple Push Notification service).\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            },\n            \"topic\": {\n              \"description\": \"APNs topic — typically the app bundle identifier the gateway pushes to.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"platform\",\n            \"token\",\n            \"topic\"\n          ],\n          \"title\": \"Apns\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"platform\": {\n              \"const\": \"fcm\"\n            },\n            \"token\": {\n              \"description\": \"Firebase Cloud Messaging registration token. The gateway sends a data message (not a notification message) so the app controls wake and display.\",\n              \"minLength\": 1,\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"platform\",\n            \"token\"\n          ],\n          \"title\": \"Fcm\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"endpoint\": {\n              \"description\": \"RFC 8030 Web Push subscription endpoint.\",\n              \"format\": \"uri\",\n              \"type\": \"string\"\n            },\n            \"keys\": {\n              \"additionalProperties\": false,\n              \"description\": \"Web Push (RFC 8291) encryption keys. Note: per the push binding the payload remains contentless regardless of this encryption.\",\n              \"properties\": {\n                \"auth\": {\n                  \"description\": \"base64url-encoded auth secret.\",\n                  \"minLength\": 1,\n                  \"type\": \"string\"\n                },\n                \"p256dh\": {\n                  \"description\": \"base64url-encoded P-256 ECDH public key.\",\n                  \"minLength\": 1,\n                  \"type\": \"string\"\n                }\n              },\n              \"required\": [\n                \"p256dh\",\n                \"auth\"\n              ],\n              \"type\": \"object\"\n            },\n            \"platform\": {\n              \"const\": \"webpush\"\n            }\n          },\n          \"required\": [\n            \"platform\",\n            \"endpoint\",\n            \"keys\"\n          ],\n          \"title\": \"WebPush\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"PushRegistration\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"wakeHandle\": {\n          \"$ref\": \"#/$defs/WakeHandle\",\n          \"description\": \"The opaque gateway-issued handle (gateway address + handle). Conveyed onward; reveals no token.\"\n        }\n      },\n      \"required\": [\n        \"wakeHandle\"\n      ],\n      \"title\": \"Push Register — response payload\",\n      \"type\": \"object\"\n    },\n    \"WakeHandle\": {\n      \"additionalProperties\": false,\n      \"description\": \"An opaque, gateway-issued reference to a device's push channel (push wake-up binding, https://trusttasks.org/binding/push/0.1). The push gateway returns it to the device at registration; the device conveys it to its VTA (device/set-wake), and the VTA provisions it to authorized triggers (its mediator and/or itself). The raw platform push token (APNs/FCM/WebPush) is held ONLY by the gateway and is never represented here — the handle abstracts the platform, so adding new push methods (e.g. PWA Web Push) needs no change to triggers or VTA config. A handle is a bearer capability to *request* a wake (subject to the gateway's allowlist), never to read the channel.\",\n      \"properties\": {\n        \"gateway\": {\n          \"description\": \"The push gateway that issued this handle and acts on it — a DID (DIDComm-reachable gateway) or an https URL (REST gateway). A trigger sends its contentless wake request here.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"handle\": {\n          \"description\": \"Opaque gateway-issued identifier for the device's push channel. Reveals no platform token. Rotates whenever the device re-registers a new platform token with the gateway; the device then re-conveys the fresh handle via device/set-wake.\",\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"gateway\",\n        \"handle\"\n      ],\n      \"title\": \"WakeHandle\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"PushRegistration\":{\"description\":\"A device's platform push channel — the body the device registers with its push GATEWAY (push wake-up binding, https://trusttasks.org/binding/push/0.1; modeled on Aries RFC 0699/0734). The gateway holds this token and returns an opaque WakeHandle in exchange; the token is held by the gateway ONLY, never by the mediator or the maintainer/VTA. The gateway uses it to send a contentless wake-up when an authorized trigger asks — the push payload never carries Trust Task content. Tagged union over the discriminator `platform`.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"environment\":{\"description\":\"Which APNs environment issued the token. Maintainers route to the matching APNs endpoint.\",\"enum\":[\"sandbox\",\"production\"],\"type\":\"string\"},\"platform\":{\"const\":\"apns\"},\"token\":{\"description\":\"APNs device token (hex string issued by Apple Push Notification service).\",\"minLength\":1,\"type\":\"string\"},\"topic\":{\"description\":\"APNs topic — typically the app bundle identifier the gateway pushes to.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"platform\",\"token\",\"topic\"],\"title\":\"Apns\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"platform\":{\"const\":\"fcm\"},\"token\":{\"description\":\"Firebase Cloud Messaging registration token. The gateway sends a data message (not a notification message) so the app controls wake and display.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"platform\",\"token\"],\"title\":\"Fcm\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"endpoint\":{\"description\":\"RFC 8030 Web Push subscription endpoint.\",\"format\":\"uri\",\"type\":\"string\"},\"keys\":{\"additionalProperties\":false,\"description\":\"Web Push (RFC 8291) encryption keys. Note: per the push binding the payload remains contentless regardless of this encryption.\",\"properties\":{\"auth\":{\"description\":\"base64url-encoded auth secret.\",\"minLength\":1,\"type\":\"string\"},\"p256dh\":{\"description\":\"base64url-encoded P-256 ECDH public key.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"p256dh\",\"auth\"],\"type\":\"object\"},\"platform\":{\"const\":\"webpush\"}},\"required\":[\"platform\",\"endpoint\",\"keys\"],\"title\":\"WebPush\",\"type\":\"object\"}],\"title\":\"PushRegistration\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"wakeHandle\":{\"$ref\":\"#/$defs/WakeHandle\",\"description\":\"The opaque gateway-issued handle (gateway address + handle). Conveyed onward; reveals no token.\"}},\"required\":[\"wakeHandle\"],\"title\":\"Push Register — response payload\",\"type\":\"object\"},\"WakeHandle\":{\"additionalProperties\":false,\"description\":\"An opaque, gateway-issued reference to a device's push channel (push wake-up binding, https://trusttasks.org/binding/push/0.1). The push gateway returns it to the device at registration; the device conveys it to its VTA (device/set-wake), and the VTA provisions it to authorized triggers (its mediator and/or itself). The raw platform push token (APNs/FCM/WebPush) is held ONLY by the gateway and is never represented here — the handle abstracts the platform, so adding new push methods (e.g. PWA Web Push) needs no change to triggers or VTA config. A handle is a bearer capability to *request* a wake (subject to the gateway's allowlist), never to read the channel.\",\"properties\":{\"gateway\":{\"description\":\"The push gateway that issued this handle and acts on it — a DID (DIDComm-reachable gateway) or an https URL (REST gateway). A trigger sends its contentless wake request here.\",\"minLength\":1,\"type\":\"string\"},\"handle\":{\"description\":\"Opaque gateway-issued identifier for the device's push channel. Reveals no platform token. Rotates whenever the device re-registers a new platform token with the gateway; the device then re-conveys the fresh handle via device/set-wake.\",\"minLength\":1,\"type\":\"string\"}},\"required\":[\"gateway\",\"handle\"],\"title\":\"WakeHandle\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

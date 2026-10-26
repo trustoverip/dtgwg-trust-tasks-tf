@@ -34,77 +34,6 @@ pub mod error {
 }
 ///A membership admitted directly, with the credentials issued for it — the success payload of vtc/members/admit and vtc/members/make-membership.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "AdmittedMembership",
-///  "description": "A membership admitted directly, with the credentials issued for it — the success payload of vtc/members/admit and vtc/members/make-membership.",
-///  "type": "object",
-///  "required": [
-///    "approval",
-///    "returning",
-///    "role",
-///    "roleVac",
-///    "status",
-///    "statusListIndex",
-///    "subject",
-///    "vmc"
-///  ],
-///  "properties": {
-///    "approval": {
-///      "$ref": "#/definitions/Approval"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "label": {
-///      "description": "The new entry's label, when vtc/members/admit was given one. Absent for vtc/members/make-membership, which writes no entry.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "returning": {
-///      "description": "True when vtc/members/admit re-admitted a former member (a removed member record, no entry), as a rejoin would re-admit them. Always false for vtc/members/make-membership, which refuses a removed record.",
-///      "type": "boolean"
-///    },
-///    "role": {
-///      "description": "The community role the membership holds: for vtc/members/admit the one requested, for vtc/members/make-membership the role the entry already held.",
-///      "type": "string",
-///      "maxLength": 128,
-///      "minLength": 1
-///    },
-///    "roleVac": {
-///      "description": "The role credential issued for the admission: a Verifiable Authority Credential issued by the community whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\"role:<name>\"] }`, the shape vtc/join-requests/decide returns.",
-///      "type": "object"
-///    },
-///    "status": {
-///      "description": "Always `admitted`: a refusal is a trust-task-error, and a referred admission is answered with trust-task-next-step until it executes.",
-///      "type": "string",
-///      "enum": [
-///        "admitted"
-///      ]
-///    },
-///    "statusListIndex": {
-///      "description": "The membership's slot on the community's revocation status list, which the VMC's credentialStatus names.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "subject": {
-///      "description": "The DID admitted.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    },
-///    "vmc": {
-///      "description": "The Verifiable Membership Credential issued for the admission, delivered inline as vtc/join-requests/decide delivers it.",
-///      "type": "object"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -139,17 +68,6 @@ impl AdmittedMembership {
 }
 ///The new entry's label, when vtc/members/admit was given one. Absent for vtc/members/make-membership, which writes no entry.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The new entry's label, when vtc/members/admit was given one. Absent for vtc/members/make-membership, which writes no entry.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct AdmittedMembershipLabel(::std::string::String);
@@ -212,17 +130,6 @@ impl<'de> ::serde::Deserialize<'de> for AdmittedMembershipLabel {
 }
 ///The community role the membership holds: for vtc/members/admit the one requested, for vtc/members/make-membership the role the entry already held.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The community role the membership holds: for vtc/members/admit the one requested, for vtc/members/make-membership the role the entry already held.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct AdmittedMembershipRole(::std::string::String);
@@ -285,18 +192,6 @@ impl<'de> ::serde::Deserialize<'de> for AdmittedMembershipRole {
 }
 ///Always `admitted`: a refusal is a trust-task-error, and a referred admission is answered with trust-task-next-step until it executes.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Always `admitted`: a refusal is a trust-task-error, and a referred admission is answered with trust-task-next-step until it executes.",
-///  "type": "string",
-///  "enum": [
-///    "admitted"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -354,17 +249,6 @@ impl ::std::convert::TryFrom<::std::string::String> for AdmittedMembershipStatus
 }
 ///The DID admitted.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The DID admitted.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct AdmittedMembershipSubject(::std::string::String);
@@ -429,21 +313,6 @@ impl<'de> ::serde::Deserialize<'de> for AdmittedMembershipSubject {
 }
 ///How the admission came to execute. `policyAllowed`: the community's policy admitted it at once. `approved`: the policy referred it, the community parked it, and another administrator approved it. `waived`: the policy referred it, and the community's single-administrator mode waived the approval on the requester's own re-authentication bound to the operation.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Approval",
-///  "description": "How the admission came to execute. `policyAllowed`: the community's policy admitted it at once. `approved`: the policy referred it, the community parked it, and another administrator approved it. `waived`: the policy referred it, and the community's single-administrator mode waived the approval on the requester's own re-authentication bound to the operation.",
-///  "type": "string",
-///  "enum": [
-///    "policyAllowed",
-///    "approved",
-///    "waived"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -509,21 +378,6 @@ impl ::std::convert::TryFrom<::std::string::String> for Approval {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -545,15 +399,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -617,37 +462,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///An administrator gives an existing access-control entry that has no member record — typically the community's bootstrap administrator — the member record and credentials a completed join would have given it, at the role the entry already holds. The entry itself is not changed.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/members/make-membership/0.1",
-///  "title": "Payload",
-///  "description": "An administrator gives an existing access-control entry that has no member record — typically the community's bootstrap administrator — the member record and credentials a completed join would have given it, at the role the entry already holds. The entry itself is not changed.",
-///  "type": "object",
-///  "required": [
-///    "subject"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "reason": {
-///      "description": "Why, for the community's audit trail and for the administrators asked to approve it if the operation is referred. Never published to the subject or beyond the community.",
-///      "type": "string",
-///      "maxLength": 1024
-///    },
-///    "subject": {
-///      "description": "The DID whose access-control entry becomes a membership. It holds a live entry that is not of the `application` community role, and no member record, live or removed.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "pattern": "^did:"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -667,16 +481,6 @@ impl Payload {
 }
 ///Why, for the community's audit trail and for the administrators asked to approve it if the operation is referred. Never published to the subject or beyond the community.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Why, for the community's audit trail and for the administrators asked to approve it if the operation is referred. Never published to the subject or beyond the community.",
-///  "type": "string",
-///  "maxLength": 1024
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadReason(::std::string::String);
@@ -736,17 +540,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 }
 ///The DID whose access-control entry becomes a membership. It holds a live entry that is not of the `application` community role, and no member record, live or removed.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The DID whose access-control entry becomes a membership. It holds a live entry that is not of the `application` community role, and no member record, live or removed.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadSubject(::std::string::String);
@@ -811,18 +604,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadSubject {
 }
 ///Success response to vtc/members/make-membership/0.1: the membership as admitted, with the credentials issued for it. Type https://trusttasks.org/spec/vtc/members/make-membership/0.1#response — carried directly, or on the request's threadId when a referred operation executes after its approval.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to vtc/members/make-membership/0.1: the membership as admitted, with the credentials issued for it. Type https://trusttasks.org/spec/vtc/members/make-membership/0.1#response — carried directly, or on the request's threadId when a referred operation executes after its approval.",
-///  "$ref": "#/definitions/AdmittedMembership",
-///  "$anchor": "response",
-///  "unevaluatedProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Response(pub AdmittedMembership);
@@ -1099,7 +880,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AdmittedMembership\": {\n      \"additionalProperties\": false,\n      \"description\": \"A membership admitted directly, with the credentials issued for it — the success payload of vtc/members/admit and vtc/members/make-membership.\",\n      \"properties\": {\n        \"approval\": {\n          \"$ref\": \"#/$defs/Approval\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"label\": {\n          \"description\": \"The new entry's label, when vtc/members/admit was given one. Absent for vtc/members/make-membership, which writes no entry.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"returning\": {\n          \"description\": \"True when vtc/members/admit re-admitted a former member (a removed member record, no entry), as a rejoin would re-admit them. Always false for vtc/members/make-membership, which refuses a removed record.\",\n          \"type\": \"boolean\"\n        },\n        \"role\": {\n          \"description\": \"The community role the membership holds: for vtc/members/admit the one requested, for vtc/members/make-membership the role the entry already held.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"roleVac\": {\n          \"description\": \"The role credential issued for the admission: a Verifiable Authority Credential issued by the community whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\\\"role:<name>\\\"] }`, the shape vtc/join-requests/decide returns.\",\n          \"type\": \"object\"\n        },\n        \"status\": {\n          \"description\": \"Always `admitted`: a refusal is a trust-task-error, and a referred admission is answered with trust-task-next-step until it executes.\",\n          \"enum\": [\n            \"admitted\"\n          ],\n          \"type\": \"string\"\n        },\n        \"statusListIndex\": {\n          \"description\": \"The membership's slot on the community's revocation status list, which the VMC's credentialStatus names.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"subject\": {\n          \"description\": \"The DID admitted.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"vmc\": {\n          \"description\": \"The Verifiable Membership Credential issued for the admission, delivered inline as vtc/join-requests/decide delivers it.\",\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"subject\",\n        \"role\",\n        \"status\",\n        \"returning\",\n        \"approval\",\n        \"statusListIndex\",\n        \"vmc\",\n        \"roleVac\"\n      ],\n      \"title\": \"AdmittedMembership\",\n      \"type\": \"object\"\n    },\n    \"Approval\": {\n      \"description\": \"How the admission came to execute. `policyAllowed`: the community's policy admitted it at once. `approved`: the policy referred it, the community parked it, and another administrator approved it. `waived`: the policy referred it, and the community's single-administrator mode waived the approval on the requester's own re-authentication bound to the operation.\",\n      \"enum\": [\n        \"policyAllowed\",\n        \"approved\",\n        \"waived\"\n      ],\n      \"title\": \"Approval\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"$ref\": \"#/$defs/AdmittedMembership\",\n      \"description\": \"Success response to vtc/members/make-membership/0.1: the membership as admitted, with the credentials issued for it. Type https://trusttasks.org/spec/vtc/members/make-membership/0.1#response — carried directly, or on the request's threadId when a referred operation executes after its approval.\",\n      \"title\": \"VTC Members Make-Membership — response payload\",\n      \"unevaluatedProperties\": false\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/members/make-membership/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"An administrator gives an existing access-control entry that has no member record — typically the community's bootstrap administrator — the member record and credentials a completed join would have given it, at the role the entry already holds. The entry itself is not changed.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"reason\": {\n      \"description\": \"Why, for the community's audit trail and for the administrators asked to approve it if the operation is referred. Never published to the subject or beyond the community.\",\n      \"maxLength\": 1024,\n      \"type\": \"string\"\n    },\n    \"subject\": {\n      \"description\": \"The DID whose access-control entry becomes a membership. It holds a live entry that is not of the `application` community role, and no member record, live or removed.\",\n      \"maxLength\": 2048,\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"subject\"\n  ],\n  \"title\": \"VTC Members Make-Membership — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"AdmittedMembership\":{\"additionalProperties\":false,\"description\":\"A membership admitted directly, with the credentials issued for it — the success payload of vtc/members/admit and vtc/members/make-membership.\",\"properties\":{\"approval\":{\"$ref\":\"#/$defs/Approval\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"label\":{\"description\":\"The new entry's label, when vtc/members/admit was given one. Absent for vtc/members/make-membership, which writes no entry.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"returning\":{\"description\":\"True when vtc/members/admit re-admitted a former member (a removed member record, no entry), as a rejoin would re-admit them. Always false for vtc/members/make-membership, which refuses a removed record.\",\"type\":\"boolean\"},\"role\":{\"description\":\"The community role the membership holds: for vtc/members/admit the one requested, for vtc/members/make-membership the role the entry already held.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"roleVac\":{\"description\":\"The role credential issued for the admission: a Verifiable Authority Credential issued by the community whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\\\"role:<name>\\\"] }`, the shape vtc/join-requests/decide returns.\",\"type\":\"object\"},\"status\":{\"description\":\"Always `admitted`: a refusal is a trust-task-error, and a referred admission is answered with trust-task-next-step until it executes.\",\"enum\":[\"admitted\"],\"type\":\"string\"},\"statusListIndex\":{\"description\":\"The membership's slot on the community's revocation status list, which the VMC's credentialStatus names.\",\"minimum\":0,\"type\":\"integer\"},\"subject\":{\"description\":\"The DID admitted.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"vmc\":{\"description\":\"The Verifiable Membership Credential issued for the admission, delivered inline as vtc/join-requests/decide delivers it.\",\"type\":\"object\"}},\"required\":[\"subject\",\"role\",\"status\",\"returning\",\"approval\",\"statusListIndex\",\"vmc\",\"roleVac\"],\"title\":\"AdmittedMembership\",\"type\":\"object\"},\"Approval\":{\"description\":\"How the admission came to execute. `policyAllowed`: the community's policy admitted it at once. `approved`: the policy referred it, the community parked it, and another administrator approved it. `waived`: the policy referred it, and the community's single-administrator mode waived the approval on the requester's own re-authentication bound to the operation.\",\"enum\":[\"policyAllowed\",\"approved\",\"waived\"],\"title\":\"Approval\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"$ref\":\"#/$defs/AdmittedMembership\",\"description\":\"Success response to vtc/members/make-membership/0.1: the membership as admitted, with the credentials issued for it. Type https://trusttasks.org/spec/vtc/members/make-membership/0.1#response — carried directly, or on the request's threadId when a referred operation executes after its approval.\",\"title\":\"VTC Members Make-Membership — response payload\",\"unevaluatedProperties\":false}},\"$id\":\"https://trusttasks.org/spec/vtc/members/make-membership/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"An administrator gives an existing access-control entry that has no member record — typically the community's bootstrap administrator — the member record and credentials a completed join would have given it, at the role the entry already holds. The entry itself is not changed.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"reason\":{\"description\":\"Why, for the community's audit trail and for the administrators asked to approve it if the operation is referred. Never published to the subject or beyond the community.\",\"maxLength\":1024,\"type\":\"string\"},\"subject\":{\"description\":\"The DID whose access-control entry becomes a membership. It holds a live entry that is not of the `application` community role, and no member record, live or removed.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"}},\"required\":[\"subject\"],\"title\":\"VTC Members Make-Membership — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1109,7 +890,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AdmittedMembership\": {\n      \"additionalProperties\": false,\n      \"description\": \"A membership admitted directly, with the credentials issued for it — the success payload of vtc/members/admit and vtc/members/make-membership.\",\n      \"properties\": {\n        \"approval\": {\n          \"$ref\": \"#/$defs/Approval\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"label\": {\n          \"description\": \"The new entry's label, when vtc/members/admit was given one. Absent for vtc/members/make-membership, which writes no entry.\",\n          \"maxLength\": 256,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"returning\": {\n          \"description\": \"True when vtc/members/admit re-admitted a former member (a removed member record, no entry), as a rejoin would re-admit them. Always false for vtc/members/make-membership, which refuses a removed record.\",\n          \"type\": \"boolean\"\n        },\n        \"role\": {\n          \"description\": \"The community role the membership holds: for vtc/members/admit the one requested, for vtc/members/make-membership the role the entry already held.\",\n          \"maxLength\": 128,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"roleVac\": {\n          \"description\": \"The role credential issued for the admission: a Verifiable Authority Credential issued by the community whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\\\"role:<name>\\\"] }`, the shape vtc/join-requests/decide returns.\",\n          \"type\": \"object\"\n        },\n        \"status\": {\n          \"description\": \"Always `admitted`: a refusal is a trust-task-error, and a referred admission is answered with trust-task-next-step until it executes.\",\n          \"enum\": [\n            \"admitted\"\n          ],\n          \"type\": \"string\"\n        },\n        \"statusListIndex\": {\n          \"description\": \"The membership's slot on the community's revocation status list, which the VMC's credentialStatus names.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"subject\": {\n          \"description\": \"The DID admitted.\",\n          \"maxLength\": 2048,\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"vmc\": {\n          \"description\": \"The Verifiable Membership Credential issued for the admission, delivered inline as vtc/join-requests/decide delivers it.\",\n          \"type\": \"object\"\n        }\n      },\n      \"required\": [\n        \"subject\",\n        \"role\",\n        \"status\",\n        \"returning\",\n        \"approval\",\n        \"statusListIndex\",\n        \"vmc\",\n        \"roleVac\"\n      ],\n      \"title\": \"AdmittedMembership\",\n      \"type\": \"object\"\n    },\n    \"Approval\": {\n      \"description\": \"How the admission came to execute. `policyAllowed`: the community's policy admitted it at once. `approved`: the policy referred it, the community parked it, and another administrator approved it. `waived`: the policy referred it, and the community's single-administrator mode waived the approval on the requester's own re-authentication bound to the operation.\",\n      \"enum\": [\n        \"policyAllowed\",\n        \"approved\",\n        \"waived\"\n      ],\n      \"title\": \"Approval\",\n      \"type\": \"string\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"$ref\": \"#/$defs/AdmittedMembership\",\n      \"description\": \"Success response to vtc/members/make-membership/0.1: the membership as admitted, with the credentials issued for it. Type https://trusttasks.org/spec/vtc/members/make-membership/0.1#response — carried directly, or on the request's threadId when a referred operation executes after its approval.\",\n      \"title\": \"VTC Members Make-Membership — response payload\",\n      \"unevaluatedProperties\": false\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"AdmittedMembership\":{\"additionalProperties\":false,\"description\":\"A membership admitted directly, with the credentials issued for it — the success payload of vtc/members/admit and vtc/members/make-membership.\",\"properties\":{\"approval\":{\"$ref\":\"#/$defs/Approval\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"label\":{\"description\":\"The new entry's label, when vtc/members/admit was given one. Absent for vtc/members/make-membership, which writes no entry.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"returning\":{\"description\":\"True when vtc/members/admit re-admitted a former member (a removed member record, no entry), as a rejoin would re-admit them. Always false for vtc/members/make-membership, which refuses a removed record.\",\"type\":\"boolean\"},\"role\":{\"description\":\"The community role the membership holds: for vtc/members/admit the one requested, for vtc/members/make-membership the role the entry already held.\",\"maxLength\":128,\"minLength\":1,\"type\":\"string\"},\"roleVac\":{\"description\":\"The role credential issued for the admission: a Verifiable Authority Credential issued by the community whose `credentialSubject.authority` is `{ scope: <community DID>, actions: [\\\"role:<name>\\\"] }`, the shape vtc/join-requests/decide returns.\",\"type\":\"object\"},\"status\":{\"description\":\"Always `admitted`: a refusal is a trust-task-error, and a referred admission is answered with trust-task-next-step until it executes.\",\"enum\":[\"admitted\"],\"type\":\"string\"},\"statusListIndex\":{\"description\":\"The membership's slot on the community's revocation status list, which the VMC's credentialStatus names.\",\"minimum\":0,\"type\":\"integer\"},\"subject\":{\"description\":\"The DID admitted.\",\"maxLength\":2048,\"pattern\":\"^did:\",\"type\":\"string\"},\"vmc\":{\"description\":\"The Verifiable Membership Credential issued for the admission, delivered inline as vtc/join-requests/decide delivers it.\",\"type\":\"object\"}},\"required\":[\"subject\",\"role\",\"status\",\"returning\",\"approval\",\"statusListIndex\",\"vmc\",\"roleVac\"],\"title\":\"AdmittedMembership\",\"type\":\"object\"},\"Approval\":{\"description\":\"How the admission came to execute. `policyAllowed`: the community's policy admitted it at once. `approved`: the policy referred it, the community parked it, and another administrator approved it. `waived`: the policy referred it, and the community's single-administrator mode waived the approval on the requester's own re-authentication bound to the operation.\",\"enum\":[\"policyAllowed\",\"approved\",\"waived\"],\"title\":\"Approval\",\"type\":\"string\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"$ref\":\"#/$defs/AdmittedMembership\",\"description\":\"Success response to vtc/members/make-membership/0.1: the membership as admitted, with the credentials issued for it. Type https://trusttasks.org/spec/vtc/members/make-membership/0.1#response — carried directly, or on the request's threadId when a referred operation executes after its approval.\",\"title\":\"VTC Members Make-Membership — response payload\",\"unevaluatedProperties\":false}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

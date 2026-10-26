@@ -35,57 +35,6 @@ pub mod error {
 }
 ///The answer to one question. Exactly one member besides `question` is present, matching the question's type, or `abstain` for an optional question left unanswered.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Answer",
-///  "description": "The answer to one question. Exactly one member besides `question` is present, matching the question's type, or `abstain` for an optional question left unanswered.",
-///  "type": "object",
-///  "maxProperties": 2,
-///  "minProperties": 2,
-///  "required": [
-///    "question"
-///  ],
-///  "properties": {
-///    "abstain": {
-///      "const": true
-///    },
-///    "choice": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Key"
-///      },
-///      "uniqueItems": true
-///    },
-///    "question": {
-///      "$ref": "#/definitions/Key"
-///    },
-///    "ranking": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Key"
-///      },
-///      "uniqueItems": true
-///    },
-///    "scores": {
-///      "type": "object",
-///      "additionalProperties": {
-///        "type": "integer"
-///      },
-///      "propertyNames": {
-///        "$ref": "#/definitions/Key"
-///      }
-///    },
-///    "text": {
-///      "type": "string",
-///      "maxLength": 4096
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -112,15 +61,6 @@ impl Answer {
 }
 ///`AnswerText`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 4096
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct AnswerText(::std::string::String);
@@ -180,38 +120,6 @@ impl<'de> ::serde::Deserialize<'de> for AnswerText {
 }
 ///An open ballot: one answer per question of the manifest, in any order. The bytes a cast's proof binds are the RFC 8785 (JCS) canonicalization of this object as received.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ballot",
-///  "description": "An open ballot: one answer per question of the manifest, in any order. The bytes a cast's proof binds are the RFC 8785 (JCS) canonicalization of this object as received.",
-///  "type": "object",
-///  "required": [
-///    "answers",
-///    "electionId",
-///    "manifestDigest"
-///  ],
-///  "properties": {
-///    "answers": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/Answer"
-///      },
-///      "maxItems": 128,
-///      "minItems": 1
-///    },
-///    "electionId": {
-///      "$ref": "#/definitions/ElectionId"
-///    },
-///    "manifestDigest": {
-///      "$ref": "#/definitions/DigestMultibase"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -229,327 +137,6 @@ impl Ballot {
 }
 ///One leaf of a board. A leaf's hash is the RFC 9162 leaf hash of the JCS canonicalization of this object. Entries carry no time of arrival: the order is the board's, and a timestamp would hand anyone who reads the board the timing the registrar's log would need to pair a ticket with its cast.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "BoardEntry",
-///  "description": "One leaf of a board. A leaf's hash is the RFC 9162 leaf hash of the JCS canonicalization of this object. Entries carry no time of arrival: the order is the board's, and a timestamp would hand anyone who reads the board the timing the registrar's log would need to pair a ticket with its cast.",
-///  "oneOf": [
-///    {
-///      "title": "CastEntry",
-///      "type": "object",
-///      "required": [
-///        "cast",
-///        "kind"
-///      ],
-///      "properties": {
-///        "cast": {
-///          "$ref": "#/definitions/Cast"
-///        },
-///        "kind": {
-///          "const": "cast"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "ReplacementEntry",
-///      "description": "The cast at `replaces` is no longer counted: a later cast under the same tag is.",
-///      "type": "object",
-///      "required": [
-///        "by",
-///        "kind",
-///        "replaces",
-///        "tag"
-///      ],
-///      "properties": {
-///        "by": {
-///          "type": "integer",
-///          "minimum": 0.0
-///        },
-///        "kind": {
-///          "const": "replaced"
-///        },
-///        "replaces": {
-///          "type": "integer",
-///          "minimum": 0.0
-///        },
-///        "tag": {
-///          "$ref": "#/definitions/Multibase"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "LifecycleEntry",
-///      "type": "object",
-///      "required": [
-///        "at",
-///        "kind"
-///      ],
-///      "properties": {
-///        "at": {
-///          "type": "string",
-///          "format": "date-time"
-///        },
-///        "kind": {
-///          "enum": [
-///            "opened",
-///            "closed",
-///            "closedEarly",
-///            "cancelled"
-///          ]
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "ResultEntry",
-///      "type": "object",
-///      "required": [
-///        "kind",
-///        "result"
-///      ],
-///      "properties": {
-///        "kind": {
-///          "const": "result"
-///        },
-///        "result": {
-///          "$ref": "#/definitions/ElectionResult"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "EncryptedCastEntry",
-///      "type": "object",
-///      "required": [
-///        "cast",
-///        "kind"
-///      ],
-///      "properties": {
-///        "cast": {
-///          "$ref": "#/definitions/EncryptedCast"
-///        },
-///        "kind": {
-///          "const": "encryptedCast"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "TransportKeyEntry",
-///      "description": "Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind.",
-///      "type": "object",
-///      "required": [
-///        "kind",
-///        "transportKey"
-///      ],
-///      "properties": {
-///        "kind": {
-///          "const": "transportKey"
-///        },
-///        "transportKey": {
-///          "$ref": "#/definitions/TransportKey"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "DealingEntry",
-///      "description": "Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind.",
-///      "type": "object",
-///      "required": [
-///        "dealing",
-///        "kind"
-///      ],
-///      "properties": {
-///        "dealing": {
-///          "$ref": "#/definitions/Dealing"
-///        },
-///        "kind": {
-///          "const": "dealing"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "ConfirmationEntry",
-///      "description": "Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind.",
-///      "type": "object",
-///      "required": [
-///        "complaints",
-///        "kind",
-///        "trustee"
-///      ],
-///      "properties": {
-///        "complaints": {
-///          "type": "array",
-///          "items": {
-///            "$ref": "#/definitions/TrusteeIndex"
-///          },
-///          "maxItems": 64
-///        },
-///        "kind": {
-///          "const": "confirmation"
-///        },
-///        "trustee": {
-///          "$ref": "#/definitions/TrusteeIndex"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "JustificationEntry",
-///      "description": "Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind.",
-///      "type": "object",
-///      "required": [
-///        "dealer",
-///        "kind",
-///        "recipient",
-///        "share"
-///      ],
-///      "properties": {
-///        "dealer": {
-///          "$ref": "#/definitions/TrusteeIndex"
-///        },
-///        "kind": {
-///          "const": "justification"
-///        },
-///        "recipient": {
-///          "$ref": "#/definitions/TrusteeIndex"
-///        },
-///        "share": {
-///          "$ref": "#/definitions/GroupScalar"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "ElectionKeyEntry",
-///      "type": "object",
-///      "required": [
-///        "electionKey",
-///        "kind"
-///      ],
-///      "properties": {
-///        "electionKey": {
-///          "$ref": "#/definitions/ElectionKey"
-///        },
-///        "kind": {
-///          "const": "electionKey"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "PartialDecryptionsEntry",
-///      "type": "object",
-///      "required": [
-///        "kind",
-///        "partials",
-///        "trustee"
-///      ],
-///      "properties": {
-///        "kind": {
-///          "const": "partials"
-///        },
-///        "partials": {
-///          "type": "array",
-///          "items": {
-///            "$ref": "#/definitions/PartialDecryption"
-///          },
-///          "maxItems": 100000,
-///          "minItems": 1
-///        },
-///        "trustee": {
-///          "$ref": "#/definitions/TrusteeIndex"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "UnsealedEntry",
-///      "type": "object",
-///      "required": [
-///        "ballot",
-///        "kind",
-///        "leafIndex"
-///      ],
-///      "properties": {
-///        "ballot": {
-///          "$ref": "#/definitions/Ballot"
-///        },
-///        "kind": {
-///          "const": "unsealed"
-///        },
-///        "leafIndex": {
-///          "type": "integer",
-///          "minimum": 0.0
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "SpoiledEntry",
-///      "description": "A sealed cast that did not open, or opened to no valid ballot: not counted (CONVENTIONS §9.7).",
-///      "type": "object",
-///      "required": [
-///        "kind",
-///        "leafIndex"
-///      ],
-///      "properties": {
-///        "kind": {
-///          "const": "spoiled"
-///        },
-///        "leafIndex": {
-///          "type": "integer",
-///          "minimum": 0.0
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "TrusteeStepEntry",
-///      "description": "One step of the trustees' ceremony — an enrolment, a dealing, a confirmation or a justification — as the trustee's own signed request, so that anyone reading the board can tell who took it (CONVENTIONS §9.6).",
-///      "type": "object",
-///      "required": [
-///        "kind",
-///        "request"
-///      ],
-///      "properties": {
-///        "kind": {
-///          "const": "trusteeStep"
-///        },
-///        "request": {
-///          "$ref": "#/definitions/SignedRequest"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    {
-///      "title": "DecryptionAuthorizedEntry",
-///      "description": "The community's voting/trustees/authorize request, exactly as the ballot box received it: the decryption targets of a closed election, pinned by digest to a head of the board (CONVENTIONS §9.7).",
-///      "type": "object",
-///      "required": [
-///        "kind",
-///        "request"
-///      ],
-///      "properties": {
-///        "kind": {
-///          "const": "decryptionAuthorized"
-///        },
-///        "request": {
-///          "$ref": "#/definitions/SignedRequest"
-///        }
-///      },
-///      "additionalProperties": false
-///    }
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged, deny_unknown_fields)]
 #[non_exhaustive]
@@ -628,40 +215,6 @@ pub enum BoardEntry {
 }
 ///A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "BoardHead",
-///  "description": "A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.",
-///  "type": "object",
-///  "required": [
-///    "electionId",
-///    "issuedAt",
-///    "rootHash",
-///    "treeSize"
-///  ],
-///  "properties": {
-///    "electionId": {
-///      "$ref": "#/definitions/ElectionId"
-///    },
-///    "issuedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "rootHash": {
-///      "description": "The RFC 9162 Merkle tree hash (SHA-256) of the first `treeSize` entries, as a multihash.",
-///      "$ref": "#/definitions/DigestMultibase"
-///    },
-///    "treeSize": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -683,33 +236,6 @@ impl BoardHead {
 }
 ///A ballot and the PCS attestation that admits it (VTI-VOT-030). `attestation` is the suite's canonical encoding of the attestation made for the election point with the ballot context bound in (CONVENTIONS §3); `tag` repeats its tag so a ballot box can refuse a duplicate before the pairing check.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Cast",
-///  "description": "A ballot and the PCS attestation that admits it (VTI-VOT-030). `attestation` is the suite's canonical encoding of the attestation made for the election point with the ballot context bound in (CONVENTIONS §3); `tag` repeats its tag so a ballot box can refuse a duplicate before the pairing check.",
-///  "type": "object",
-///  "required": [
-///    "attestation",
-///    "ballot",
-///    "tag"
-///  ],
-///  "properties": {
-///    "attestation": {
-///      "$ref": "#/definitions/Multibase"
-///    },
-///    "ballot": {
-///      "$ref": "#/definitions/Ballot"
-///    },
-///    "tag": {
-///      "$ref": "#/definitions/Multibase"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -725,47 +251,6 @@ impl Cast {
 }
 ///A trustee's contribution to the election key: Feldman commitments to its polynomial, a proof of knowledge of the constant term, and one share per trustee sealed to that trustee's transport key (CONVENTIONS §9.6).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Dealing",
-///  "description": "A trustee's contribution to the election key: Feldman commitments to its polynomial, a proof of knowledge of the constant term, and one share per trustee sealed to that trustee's transport key (CONVENTIONS §9.6).",
-///  "type": "object",
-///  "required": [
-///    "commitments",
-///    "dealer",
-///    "pok",
-///    "shares"
-///  ],
-///  "properties": {
-///    "commitments": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/GroupElement"
-///      },
-///      "maxItems": 64,
-///      "minItems": 2
-///    },
-///    "dealer": {
-///      "$ref": "#/definitions/TrusteeIndex"
-///    },
-///    "pok": {
-///      "$ref": "#/definitions/SigmaProof"
-///    },
-///    "shares": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/SealedShare"
-///      },
-///      "maxItems": 64,
-///      "minItems": 2
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -782,49 +267,6 @@ impl Dealing {
 }
 ///What a partial decryption decrypts: the sealed cast at a board leaf, or the total of one option of one question.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DecryptionTarget",
-///  "description": "What a partial decryption decrypts: the sealed cast at a board leaf, or the total of one option of one question.",
-///  "type": "object",
-///  "oneOf": [
-///    {
-///      "required": [
-///        "leafIndex"
-///      ]
-///    },
-///    {
-///      "required": [
-///        "option",
-///        "question"
-///      ]
-///    }
-///  ],
-///  "required": [
-///    "ciphertext"
-///  ],
-///  "properties": {
-///    "ciphertext": {
-///      "$ref": "#/definitions/ElGamalCiphertext"
-///    },
-///    "leafIndex": {
-///      "description": "A sealed cast's board leaf.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "option": {
-///      "$ref": "#/definitions/Key"
-///    },
-///    "question": {
-///      "$ref": "#/definitions/Key"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged, deny_unknown_fields)]
 #[non_exhaustive]
@@ -850,21 +292,6 @@ This definition constrains the *encoding only*. What the digest is computed over
 
 Restricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that "interoperability is not guaranteed between implementations using such values", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DigestMultibase",
-///  "description": "A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\n\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\n\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\n\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \"interoperability is not guaranteed between implementations using such values\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.",
-///  "examples": [
-///    "zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR"
-///  ],
-///  "type": "string",
-///  "minLength": 16,
-///  "pattern": "^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct DigestMultibase(::std::string::String);
@@ -933,21 +360,6 @@ impl<'de> ::serde::Deserialize<'de> for DigestMultibase {
 }
 ///A disjunctive proof that a ciphertext encrypts one value of a public list: one `(c, z)` per value, in the list's order (CONVENTIONS §9.3).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "DisjunctiveProof",
-///  "description": "A disjunctive proof that a ciphertext encrypts one value of a public list: one `(c, z)` per value, in the list's order (CONVENTIONS §9.3).",
-///  "type": "array",
-///  "items": {
-///    "$ref": "#/definitions/SigmaProof"
-///  },
-///  "maxItems": 65,
-///  "minItems": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct DisjunctiveProof(pub ::std::vec::Vec<SigmaProof>);
@@ -969,29 +381,6 @@ impl ::std::convert::From<::std::vec::Vec<SigmaProof>> for DisjunctiveProof {
 }
 ///`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ElGamalCiphertext",
-///  "description": "`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).",
-///  "type": "object",
-///  "required": [
-///    "a",
-///    "b"
-///  ],
-///  "properties": {
-///    "a": {
-///      "$ref": "#/definitions/GroupElement"
-///    },
-///    "b": {
-///      "$ref": "#/definitions/GroupElement"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1006,17 +395,6 @@ impl ElGamalCiphertext {
 }
 ///An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ElectionId",
-///  "description": "An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.",
-///  "type": "string",
-///  "pattern": "^[A-Za-z0-9._-]{1,128}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ElectionId(::std::string::String);
@@ -1080,57 +458,6 @@ impl<'de> ::serde::Deserialize<'de> for ElectionId {
 }
 ///The election key and each trustee's public verification key, computed from the qualified dealings (CONVENTIONS §9.6). Anyone can recompute it from the board.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ElectionKey",
-///  "description": "The election key and each trustee's public verification key, computed from the qualified dealings (CONVENTIONS §9.6). Anyone can recompute it from the board.",
-///  "type": "object",
-///  "required": [
-///    "key",
-///    "qualified",
-///    "verification"
-///  ],
-///  "properties": {
-///    "key": {
-///      "$ref": "#/definitions/GroupElement"
-///    },
-///    "qualified": {
-///      "description": "The dealers whose dealings the key is formed from.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/TrusteeIndex"
-///      },
-///      "maxItems": 64,
-///      "minItems": 1
-///    },
-///    "verification": {
-///      "type": "array",
-///      "items": {
-///        "type": "object",
-///        "required": [
-///          "key",
-///          "trustee"
-///        ],
-///        "properties": {
-///          "key": {
-///            "$ref": "#/definitions/GroupElement"
-///          },
-///          "trustee": {
-///            "$ref": "#/definitions/TrusteeIndex"
-///          }
-///        },
-///        "additionalProperties": false
-///      },
-///      "maxItems": 64,
-///      "minItems": 2
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1147,27 +474,6 @@ impl ElectionKey {
 }
 ///`ElectionKeyVerificationItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "key",
-///    "trustee"
-///  ],
-///  "properties": {
-///    "key": {
-///      "$ref": "#/definitions/GroupElement"
-///    },
-///    "trustee": {
-///      "$ref": "#/definitions/TrusteeIndex"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1182,46 +488,6 @@ impl ElectionKeyVerificationItem {
 }
 ///An election's result, computable by anyone who can read its board from the board and the registration alone (VTI-VOT-070).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ElectionResult",
-///  "description": "An election's result, computable by anyone who can read its board from the board and the registration alone (VTI-VOT-070).",
-///  "type": "object",
-///  "required": [
-///    "ballotsCounted",
-///    "electionId",
-///    "head",
-///    "manifestDigest",
-///    "questions"
-///  ],
-///  "properties": {
-///    "ballotsCounted": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "electionId": {
-///      "$ref": "#/definitions/ElectionId"
-///    },
-///    "head": {
-///      "description": "The head of the board as it stood at close: the result counts exactly its entries.",
-///      "$ref": "#/definitions/BoardHead"
-///    },
-///    "manifestDigest": {
-///      "$ref": "#/definitions/DigestMultibase"
-///    },
-///    "questions": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/QuestionResult"
-///      }
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1243,38 +509,6 @@ impl ElectionResult {
 }
 ///A tallied-encrypted ballot: one EncryptedQuestion per manifest question, in the manifest's order. Never decrypted (VTI-VOT-064).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "EncryptedBallot",
-///  "description": "A tallied-encrypted ballot: one EncryptedQuestion per manifest question, in the manifest's order. Never decrypted (VTI-VOT-064).",
-///  "type": "object",
-///  "required": [
-///    "electionId",
-///    "manifestDigest",
-///    "questions"
-///  ],
-///  "properties": {
-///    "electionId": {
-///      "$ref": "#/definitions/ElectionId"
-///    },
-///    "manifestDigest": {
-///      "$ref": "#/definitions/DigestMultibase"
-///    },
-///    "questions": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/EncryptedQuestion"
-///      },
-///      "maxItems": 64,
-///      "minItems": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1292,47 +526,6 @@ impl EncryptedBallot {
 }
 ///A cast of a sealed or tallied-encrypted election: exactly one of `sealed` (the Ballot's JCS bytes sealed to the election key) or `encrypted`, with the tag and the attestation over the JCS bytes of whichever is present (CONVENTIONS §3.6, §9.5).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "EncryptedCast",
-///  "description": "A cast of a sealed or tallied-encrypted election: exactly one of `sealed` (the Ballot's JCS bytes sealed to the election key) or `encrypted`, with the tag and the attestation over the JCS bytes of whichever is present (CONVENTIONS §3.6, §9.5).",
-///  "type": "object",
-///  "oneOf": [
-///    {
-///      "required": [
-///        "sealed"
-///      ]
-///    },
-///    {
-///      "required": [
-///        "encrypted"
-///      ]
-///    }
-///  ],
-///  "required": [
-///    "attestation",
-///    "tag"
-///  ],
-///  "properties": {
-///    "attestation": {
-///      "$ref": "#/definitions/Multibase"
-///    },
-///    "encrypted": {
-///      "$ref": "#/definitions/EncryptedBallot"
-///    },
-///    "sealed": {
-///      "$ref": "#/definitions/SealedPayload"
-///    },
-///    "tag": {
-///      "$ref": "#/definitions/Multibase"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(untagged, deny_unknown_fields)]
 #[non_exhaustive]
@@ -1350,28 +543,6 @@ pub enum EncryptedCast {
 }
 ///`EncryptedOption`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "EncryptedOption",
-///  "type": "object",
-///  "required": [
-///    "ciphertext",
-///    "proof"
-///  ],
-///  "properties": {
-///    "ciphertext": {
-///      "$ref": "#/definitions/ElGamalCiphertext"
-///    },
-///    "proof": {
-///      "$ref": "#/definitions/DisjunctiveProof"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1386,38 +557,6 @@ impl EncryptedOption {
 }
 ///One choice question of a tallied-encrypted ballot: per option, in the manifest's order, an encryption of 0 or 1 with its proof; and a proof that the selections sum to a count the question admits (CONVENTIONS §9.5).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "EncryptedQuestion",
-///  "description": "One choice question of a tallied-encrypted ballot: per option, in the manifest's order, an encryption of 0 or 1 with its proof; and a proof that the selections sum to a count the question admits (CONVENTIONS §9.5).",
-///  "type": "object",
-///  "required": [
-///    "options",
-///    "question",
-///    "sumProof"
-///  ],
-///  "properties": {
-///    "options": {
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/EncryptedOption"
-///      },
-///      "maxItems": 64,
-///      "minItems": 1
-///    },
-///    "question": {
-///      "$ref": "#/definitions/Key"
-///    },
-///    "sumProof": {
-///      "$ref": "#/definitions/DisjunctiveProof"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1434,21 +573,6 @@ impl EncryptedQuestion {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -1470,15 +594,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -1542,19 +657,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "GroupElement",
-///  "description": "A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 2,
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct GroupElement(::std::string::String);
@@ -1624,19 +726,6 @@ impl<'de> ::serde::Deserialize<'de> for GroupElement {
 }
 ///A scalar mod the Ristretto group order: 32 canonical little-endian bytes, multibase base58btc (CONVENTIONS §9.1).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "GroupScalar",
-///  "description": "A scalar mod the Ristretto group order: 32 canonical little-endian bytes, multibase base58btc (CONVENTIONS §9.1).",
-///  "type": "string",
-///  "maxLength": 64,
-///  "minLength": 2,
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct GroupScalar(::std::string::String);
@@ -1706,17 +795,6 @@ impl<'de> ::serde::Deserialize<'de> for GroupScalar {
 }
 ///A question or option key, unique within its manifest or question.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Key",
-///  "description": "A question or option key, unique within its manifest or question.",
-///  "type": "string",
-///  "pattern": "^[A-Za-z0-9._-]{1,64}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Key(::std::string::String);
@@ -1778,19 +856,6 @@ impl<'de> ::serde::Deserialize<'de> for Key {
 }
 ///`LifecycleEntryKind`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "enum": [
-///    "opened",
-///    "closed",
-///    "closedEarly",
-///    "cancelled"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -1860,18 +925,6 @@ impl ::std::convert::TryFrom<::std::string::String> for LifecycleEntryKind {
 }
 ///A binary value, multibase base58btc over the suite's canonical (compressed) encoding.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Multibase",
-///  "description": "A binary value, multibase base58btc over the suite's canonical (compressed) encoding.",
-///  "type": "string",
-///  "maxLength": 16384,
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Multibase(::std::string::String);
@@ -1938,33 +991,6 @@ impl<'de> ::serde::Deserialize<'de> for Multibase {
 }
 ///Trustee `trustee`'s share of one decryption, `d = x_j·a`, with a Chaum–Pedersen proof against its verification key (CONVENTIONS §9.7).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "PartialDecryption",
-///  "description": "Trustee `trustee`'s share of one decryption, `d = x_j·a`, with a Chaum–Pedersen proof against its verification key (CONVENTIONS §9.7).",
-///  "type": "object",
-///  "required": [
-///    "d",
-///    "proof",
-///    "target"
-///  ],
-///  "properties": {
-///    "d": {
-///      "$ref": "#/definitions/GroupElement"
-///    },
-///    "proof": {
-///      "$ref": "#/definitions/SigmaProof"
-///    },
-///    "target": {
-///      "$ref": "#/definitions/DecryptionTarget"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -1980,54 +1006,6 @@ impl PartialDecryption {
 }
 ///Reads a range of an election board's entries, against the current head or against an earlier tree size.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/voting/board/read/0.1",
-///  "title": "Payload",
-///  "description": "Reads a range of an election board's entries, against the current head or against an earlier tree size.",
-///  "type": "object",
-///  "required": [
-///    "community",
-///    "electionId",
-///    "from",
-///    "limit"
-///  ],
-///  "properties": {
-///    "community": {
-///      "description": "The community's DID.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1
-///    },
-///    "electionId": {
-///      "$ref": "#/definitions/ElectionId"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "from": {
-///      "description": "The index of the first entry to return.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "limit": {
-///      "description": "The most entries to return.",
-///      "type": "integer",
-///      "maximum": 1000.0,
-///      "minimum": 1.0
-///    },
-///    "treeSize": {
-///      "description": "Read against the board as it stood at this size — the size of a head the reader holds. At most the current size. Absent: the current size.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -2058,17 +1036,6 @@ impl Payload {
 }
 ///The community's DID.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The community's DID.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadCommunity(::std::string::String);
@@ -2131,86 +1098,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadCommunity {
 }
 ///One question's totals. `choice`: selections per option. `ranking`: per option, how many ballots placed it at each position (index 0 = first). `score`: per option, the sum and the number of ballots that scored it. `text`: the answers, in board order, withheld (`withheld: true`) below the manifest's `textReleaseThreshold`. `abstained` counts ballots that left the question unanswered.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "QuestionResult",
-///  "description": "One question's totals. `choice`: selections per option. `ranking`: per option, how many ballots placed it at each position (index 0 = first). `score`: per option, the sum and the number of ballots that scored it. `text`: the answers, in board order, withheld (`withheld: true`) below the manifest's `textReleaseThreshold`. `abstained` counts ballots that left the question unanswered.",
-///  "type": "object",
-///  "required": [
-///    "abstained",
-///    "question"
-///  ],
-///  "properties": {
-///    "abstained": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "choice": {
-///      "type": "object",
-///      "additionalProperties": {
-///        "type": "integer",
-///        "minimum": 0.0
-///      },
-///      "propertyNames": {
-///        "$ref": "#/definitions/Key"
-///      }
-///    },
-///    "question": {
-///      "$ref": "#/definitions/Key"
-///    },
-///    "ranking": {
-///      "type": "object",
-///      "additionalProperties": {
-///        "type": "array",
-///        "items": {
-///          "type": "integer",
-///          "minimum": 0.0
-///        }
-///      },
-///      "propertyNames": {
-///        "$ref": "#/definitions/Key"
-///      }
-///    },
-///    "score": {
-///      "type": "object",
-///      "additionalProperties": {
-///        "type": "object",
-///        "required": [
-///          "count",
-///          "sum"
-///        ],
-///        "properties": {
-///          "count": {
-///            "type": "integer",
-///            "minimum": 0.0
-///          },
-///          "sum": {
-///            "type": "integer"
-///          }
-///        },
-///        "additionalProperties": false
-///      },
-///      "propertyNames": {
-///        "$ref": "#/definitions/Key"
-///      }
-///    },
-///    "text": {
-///      "type": "array",
-///      "items": {
-///        "type": "string",
-///        "maxLength": 4096
-///      }
-///    },
-///    "withheld": {
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -2244,28 +1131,6 @@ impl QuestionResult {
 }
 ///`QuestionResultScoreValue`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "count",
-///    "sum"
-///  ],
-///  "properties": {
-///    "count": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "sum": {
-///      "type": "integer"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -2280,15 +1145,6 @@ impl QuestionResultScoreValue {
 }
 ///`QuestionResultTextItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 4096
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct QuestionResultTextItem(::std::string::String);
@@ -2348,58 +1204,6 @@ impl<'de> ::serde::Deserialize<'de> for QuestionResultTextItem {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "entries",
-///    "treeSize"
-///  ],
-///  "properties": {
-///    "entries": {
-///      "description": "Consecutive entries from `from`, in board order.",
-///      "type": "array",
-///      "items": {
-///        "type": "object",
-///        "required": [
-///          "entry",
-///          "index"
-///        ],
-///        "properties": {
-///          "entry": {
-///            "$ref": "#/definitions/BoardEntry"
-///          },
-///          "index": {
-///            "type": "integer",
-///            "minimum": 0.0
-///          }
-///        },
-///        "additionalProperties": false
-///      },
-///      "maxItems": 1000
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "next": {
-///      "description": "The `from` of the next page. Absent when the page reaches `treeSize`.",
-///      "type": "integer",
-///      "minimum": 1.0
-///    },
-///    "treeSize": {
-///      "description": "The tree size the page was read against. No entry at or beyond it is returned.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -2423,28 +1227,6 @@ impl Response {
 }
 ///`ResponseEntriesItem`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "entry",
-///    "index"
-///  ],
-///  "properties": {
-///    "entry": {
-///      "$ref": "#/definitions/BoardEntry"
-///    },
-///    "index": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -2459,32 +1241,6 @@ impl ResponseEntriesItem {
 }
 ///Bytes sealed to a key: a random group element encrypted as `kem`, and the bytes under ChaCha20-Poly1305 with a key derived from it, multibase base58btc (CONVENTIONS §9.4).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "SealedPayload",
-///  "description": "Bytes sealed to a key: a random group element encrypted as `kem`, and the bytes under ChaCha20-Poly1305 with a key derived from it, multibase base58btc (CONVENTIONS §9.4).",
-///  "type": "object",
-///  "required": [
-///    "body",
-///    "kem"
-///  ],
-///  "properties": {
-///    "body": {
-///      "type": "string",
-///      "maxLength": 131072,
-///      "minLength": 2,
-///      "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///    },
-///    "kem": {
-///      "$ref": "#/definitions/ElGamalCiphertext"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -2499,17 +1255,6 @@ impl SealedPayload {
 }
 ///`SealedPayloadBody`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 131072,
-///  "minLength": 2,
-///  "pattern": "^z[1-9A-HJ-NP-Za-km-z]+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct SealedPayloadBody(::std::string::String);
@@ -2579,28 +1324,6 @@ impl<'de> ::serde::Deserialize<'de> for SealedPayloadBody {
 }
 ///`SealedShare`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "SealedShare",
-///  "type": "object",
-///  "required": [
-///    "recipient",
-///    "share"
-///  ],
-///  "properties": {
-///    "recipient": {
-///      "$ref": "#/definitions/TrusteeIndex"
-///    },
-///    "share": {
-///      "$ref": "#/definitions/SealedPayload"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -2615,29 +1338,6 @@ impl SealedShare {
 }
 ///A non-interactive sigma proof as its challenge and response `(c, z)` (Schnorr or Chaum–Pedersen; CONVENTIONS §9.3).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "SigmaProof",
-///  "description": "A non-interactive sigma proof as its challenge and response `(c, z)` (Schnorr or Chaum–Pedersen; CONVENTIONS §9.3).",
-///  "type": "object",
-///  "required": [
-///    "c",
-///    "z"
-///  ],
-///  "properties": {
-///    "c": {
-///      "$ref": "#/definitions/GroupScalar"
-///    },
-///    "z": {
-///      "$ref": "#/definitions/GroupScalar"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -2652,17 +1352,6 @@ impl SigmaProof {
 }
 ///A whole Trust Task request document — `id`, `type`, `issuer`, `payload` and every other member, `proof` included — exactly as the ballot box received it, never re-serialised: its proof is taken over its members, and a re-serialised copy does not reliably reproduce them. Typed as an open object so every member survives; CONVENTIONS §9.6 gives the checks that make it a trustee's step.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "SignedRequest",
-///  "description": "A whole Trust Task request document — `id`, `type`, `issuer`, `payload` and every other member, `proof` included — exactly as the ballot box received it, never re-serialised: its proof is taken over its members, and a re-serialised copy does not reliably reproduce them. Typed as an open object so every member survives; CONVENTIONS §9.6 gives the checks that make it a trustee's step.",
-///  "type": "object",
-///  "minProperties": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct SignedRequest(pub ::serde_json::Map<::std::string::String, ::serde_json::Value>);
@@ -2688,33 +1377,6 @@ impl ::std::convert::From<::serde_json::Map<::std::string::String, ::serde_json:
 }
 ///The group element a trustee's shares are sealed to, with a Schnorr proof of knowledge of its discrete log (CONVENTIONS §9.6).
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "TransportKey",
-///  "description": "The group element a trustee's shares are sealed to, with a Schnorr proof of knowledge of its discrete log (CONVENTIONS §9.6).",
-///  "type": "object",
-///  "required": [
-///    "key",
-///    "pok",
-///    "trustee"
-///  ],
-///  "properties": {
-///    "key": {
-///      "$ref": "#/definitions/GroupElement"
-///    },
-///    "pok": {
-///      "$ref": "#/definitions/SigmaProof"
-///    },
-///    "trustee": {
-///      "$ref": "#/definitions/TrusteeIndex"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -2730,18 +1392,6 @@ impl TransportKey {
 }
 ///A trustee's index: its position in the manifest's `trustees.dids`, counting from 1.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "TrusteeIndex",
-///  "description": "A trustee's index: its position in the manifest's `trustees.dids`, counting from 1.",
-///  "type": "integer",
-///  "maximum": 64.0,
-///  "minimum": 1.0
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct TrusteeIndex(pub ::std::num::NonZeroU64);
@@ -4413,13 +3063,13 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/voting/board/read/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Answer\": {\n      \"additionalProperties\": false,\n      \"description\": \"The answer to one question. Exactly one member besides `question` is present, matching the question's type, or `abstain` for an optional question left unanswered.\",\n      \"maxProperties\": 2,\n      \"minProperties\": 2,\n      \"properties\": {\n        \"abstain\": {\n          \"const\": true\n        },\n        \"choice\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"question\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"ranking\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"scores\": {\n          \"additionalProperties\": {\n            \"type\": \"integer\"\n          },\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"object\"\n        },\n        \"text\": {\n          \"maxLength\": 4096,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"question\"\n      ],\n      \"title\": \"Answer\",\n      \"type\": \"object\"\n    },\n    \"Ballot\": {\n      \"additionalProperties\": false,\n      \"description\": \"An open ballot: one answer per question of the manifest, in any order. The bytes a cast's proof binds are the RFC 8785 (JCS) canonicalization of this object as received.\",\n      \"properties\": {\n        \"answers\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Answer\"\n          },\n          \"maxItems\": 128,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"manifestDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"manifestDigest\",\n        \"answers\"\n      ],\n      \"title\": \"Ballot\",\n      \"type\": \"object\"\n    },\n    \"BoardEntry\": {\n      \"description\": \"One leaf of a board. A leaf's hash is the RFC 9162 leaf hash of the JCS canonicalization of this object. Entries carry no time of arrival: the order is the board's, and a timestamp would hand anyone who reads the board the timing the registrar's log would need to pair a ticket with its cast.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"cast\": {\n              \"$ref\": \"#/$defs/Cast\"\n            },\n            \"kind\": {\n              \"const\": \"cast\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"cast\"\n          ],\n          \"title\": \"CastEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"The cast at `replaces` is no longer counted: a later cast under the same tag is.\",\n          \"properties\": {\n            \"by\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"kind\": {\n              \"const\": \"replaced\"\n            },\n            \"replaces\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"tag\": {\n              \"$ref\": \"#/$defs/Multibase\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"tag\",\n            \"replaces\",\n            \"by\"\n          ],\n          \"title\": \"ReplacementEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"at\": {\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"enum\": [\n                \"opened\",\n                \"closed\",\n                \"closedEarly\",\n                \"cancelled\"\n              ]\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"at\"\n          ],\n          \"title\": \"LifecycleEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"result\"\n            },\n            \"result\": {\n              \"$ref\": \"#/$defs/ElectionResult\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"result\"\n          ],\n          \"title\": \"ResultEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"cast\": {\n              \"$ref\": \"#/$defs/EncryptedCast\"\n            },\n            \"kind\": {\n              \"const\": \"encryptedCast\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"cast\"\n          ],\n          \"title\": \"EncryptedCastEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind.\",\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"transportKey\"\n            },\n            \"transportKey\": {\n              \"$ref\": \"#/$defs/TransportKey\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"transportKey\"\n          ],\n          \"title\": \"TransportKeyEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind.\",\n          \"properties\": {\n            \"dealing\": {\n              \"$ref\": \"#/$defs/Dealing\"\n            },\n            \"kind\": {\n              \"const\": \"dealing\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"dealing\"\n          ],\n          \"title\": \"DealingEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind.\",\n          \"properties\": {\n            \"complaints\": {\n              \"items\": {\n                \"$ref\": \"#/$defs/TrusteeIndex\"\n              },\n              \"maxItems\": 64,\n              \"type\": \"array\"\n            },\n            \"kind\": {\n              \"const\": \"confirmation\"\n            },\n            \"trustee\": {\n              \"$ref\": \"#/$defs/TrusteeIndex\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"trustee\",\n            \"complaints\"\n          ],\n          \"title\": \"ConfirmationEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind.\",\n          \"properties\": {\n            \"dealer\": {\n              \"$ref\": \"#/$defs/TrusteeIndex\"\n            },\n            \"kind\": {\n              \"const\": \"justification\"\n            },\n            \"recipient\": {\n              \"$ref\": \"#/$defs/TrusteeIndex\"\n            },\n            \"share\": {\n              \"$ref\": \"#/$defs/GroupScalar\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"dealer\",\n            \"recipient\",\n            \"share\"\n          ],\n          \"title\": \"JustificationEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"electionKey\": {\n              \"$ref\": \"#/$defs/ElectionKey\"\n            },\n            \"kind\": {\n              \"const\": \"electionKey\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"electionKey\"\n          ],\n          \"title\": \"ElectionKeyEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"partials\"\n            },\n            \"partials\": {\n              \"items\": {\n                \"$ref\": \"#/$defs/PartialDecryption\"\n              },\n              \"maxItems\": 100000,\n              \"minItems\": 1,\n              \"type\": \"array\"\n            },\n            \"trustee\": {\n              \"$ref\": \"#/$defs/TrusteeIndex\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"trustee\",\n            \"partials\"\n          ],\n          \"title\": \"PartialDecryptionsEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"ballot\": {\n              \"$ref\": \"#/$defs/Ballot\"\n            },\n            \"kind\": {\n              \"const\": \"unsealed\"\n            },\n            \"leafIndex\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"leafIndex\",\n            \"ballot\"\n          ],\n          \"title\": \"UnsealedEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"A sealed cast that did not open, or opened to no valid ballot: not counted (CONVENTIONS §9.7).\",\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"spoiled\"\n            },\n            \"leafIndex\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"leafIndex\"\n          ],\n          \"title\": \"SpoiledEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"One step of the trustees' ceremony — an enrolment, a dealing, a confirmation or a justification — as the trustee's own signed request, so that anyone reading the board can tell who took it (CONVENTIONS §9.6).\",\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"trusteeStep\"\n            },\n            \"request\": {\n              \"$ref\": \"#/$defs/SignedRequest\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"request\"\n          ],\n          \"title\": \"TrusteeStepEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"The community's voting/trustees/authorize request, exactly as the ballot box received it: the decryption targets of a closed election, pinned by digest to a head of the board (CONVENTIONS §9.7).\",\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"decryptionAuthorized\"\n            },\n            \"request\": {\n              \"$ref\": \"#/$defs/SignedRequest\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"request\"\n          ],\n          \"title\": \"DecryptionAuthorizedEntry\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"BoardEntry\"\n    },\n    \"BoardHead\": {\n      \"additionalProperties\": false,\n      \"description\": \"A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.\",\n      \"properties\": {\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"issuedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"rootHash\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"The RFC 9162 Merkle tree hash (SHA-256) of the first `treeSize` entries, as a multihash.\"\n        },\n        \"treeSize\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"treeSize\",\n        \"rootHash\",\n        \"issuedAt\"\n      ],\n      \"title\": \"BoardHead\",\n      \"type\": \"object\"\n    },\n    \"Cast\": {\n      \"additionalProperties\": false,\n      \"description\": \"A ballot and the PCS attestation that admits it (VTI-VOT-030). `attestation` is the suite's canonical encoding of the attestation made for the election point with the ballot context bound in (CONVENTIONS §3); `tag` repeats its tag so a ballot box can refuse a duplicate before the pairing check.\",\n      \"properties\": {\n        \"attestation\": {\n          \"$ref\": \"#/$defs/Multibase\"\n        },\n        \"ballot\": {\n          \"$ref\": \"#/$defs/Ballot\"\n        },\n        \"tag\": {\n          \"$ref\": \"#/$defs/Multibase\"\n        }\n      },\n      \"required\": [\n        \"ballot\",\n        \"tag\",\n        \"attestation\"\n      ],\n      \"title\": \"Cast\",\n      \"type\": \"object\"\n    },\n    \"Dealing\": {\n      \"additionalProperties\": false,\n      \"description\": \"A trustee's contribution to the election key: Feldman commitments to its polynomial, a proof of knowledge of the constant term, and one share per trustee sealed to that trustee's transport key (CONVENTIONS §9.6).\",\n      \"properties\": {\n        \"commitments\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/GroupElement\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 2,\n          \"type\": \"array\"\n        },\n        \"dealer\": {\n          \"$ref\": \"#/$defs/TrusteeIndex\"\n        },\n        \"pok\": {\n          \"$ref\": \"#/$defs/SigmaProof\"\n        },\n        \"shares\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/SealedShare\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 2,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"dealer\",\n        \"commitments\",\n        \"pok\",\n        \"shares\"\n      ],\n      \"title\": \"Dealing\",\n      \"type\": \"object\"\n    },\n    \"DecryptionTarget\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a partial decryption decrypts: the sealed cast at a board leaf, or the total of one option of one question.\",\n      \"oneOf\": [\n        {\n          \"required\": [\n            \"leafIndex\"\n          ]\n        },\n        {\n          \"required\": [\n            \"question\",\n            \"option\"\n          ]\n        }\n      ],\n      \"properties\": {\n        \"ciphertext\": {\n          \"$ref\": \"#/$defs/ElGamalCiphertext\"\n        },\n        \"leafIndex\": {\n          \"description\": \"A sealed cast's board leaf.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"option\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"question\": {\n          \"$ref\": \"#/$defs/Key\"\n        }\n      },\n      \"required\": [\n        \"ciphertext\"\n      ],\n      \"title\": \"DecryptionTarget\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"DisjunctiveProof\": {\n      \"description\": \"A disjunctive proof that a ciphertext encrypts one value of a public list: one `(c, z)` per value, in the list's order (CONVENTIONS §9.3).\",\n      \"items\": {\n        \"$ref\": \"#/$defs/SigmaProof\"\n      },\n      \"maxItems\": 65,\n      \"minItems\": 1,\n      \"title\": \"DisjunctiveProof\",\n      \"type\": \"array\"\n    },\n    \"ElGamalCiphertext\": {\n      \"additionalProperties\": false,\n      \"description\": \"`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).\",\n      \"properties\": {\n        \"a\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        },\n        \"b\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        }\n      },\n      \"required\": [\n        \"a\",\n        \"b\"\n      ],\n      \"title\": \"ElGamalCiphertext\",\n      \"type\": \"object\"\n    },\n    \"ElectionId\": {\n      \"description\": \"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,128}$\",\n      \"title\": \"ElectionId\",\n      \"type\": \"string\"\n    },\n    \"ElectionKey\": {\n      \"additionalProperties\": false,\n      \"description\": \"The election key and each trustee's public verification key, computed from the qualified dealings (CONVENTIONS §9.6). Anyone can recompute it from the board.\",\n      \"properties\": {\n        \"key\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        },\n        \"qualified\": {\n          \"description\": \"The dealers whose dealings the key is formed from.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/TrusteeIndex\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"verification\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"key\": {\n                \"$ref\": \"#/$defs/GroupElement\"\n              },\n              \"trustee\": {\n                \"$ref\": \"#/$defs/TrusteeIndex\"\n              }\n            },\n            \"required\": [\n              \"trustee\",\n              \"key\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 2,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"key\",\n        \"qualified\",\n        \"verification\"\n      ],\n      \"title\": \"ElectionKey\",\n      \"type\": \"object\"\n    },\n    \"ElectionResult\": {\n      \"additionalProperties\": false,\n      \"description\": \"An election's result, computable by anyone who can read its board from the board and the registration alone (VTI-VOT-070).\",\n      \"properties\": {\n        \"ballotsCounted\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"head\": {\n          \"$ref\": \"#/$defs/BoardHead\",\n          \"description\": \"The head of the board as it stood at close: the result counts exactly its entries.\"\n        },\n        \"manifestDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\"\n        },\n        \"questions\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/QuestionResult\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"manifestDigest\",\n        \"ballotsCounted\",\n        \"questions\",\n        \"head\"\n      ],\n      \"title\": \"ElectionResult\",\n      \"type\": \"object\"\n    },\n    \"EncryptedBallot\": {\n      \"additionalProperties\": false,\n      \"description\": \"A tallied-encrypted ballot: one EncryptedQuestion per manifest question, in the manifest's order. Never decrypted (VTI-VOT-064).\",\n      \"properties\": {\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"manifestDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\"\n        },\n        \"questions\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/EncryptedQuestion\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"manifestDigest\",\n        \"questions\"\n      ],\n      \"title\": \"EncryptedBallot\",\n      \"type\": \"object\"\n    },\n    \"EncryptedCast\": {\n      \"additionalProperties\": false,\n      \"description\": \"A cast of a sealed or tallied-encrypted election: exactly one of `sealed` (the Ballot's JCS bytes sealed to the election key) or `encrypted`, with the tag and the attestation over the JCS bytes of whichever is present (CONVENTIONS §3.6, §9.5).\",\n      \"oneOf\": [\n        {\n          \"required\": [\n            \"sealed\"\n          ]\n        },\n        {\n          \"required\": [\n            \"encrypted\"\n          ]\n        }\n      ],\n      \"properties\": {\n        \"attestation\": {\n          \"$ref\": \"#/$defs/Multibase\"\n        },\n        \"encrypted\": {\n          \"$ref\": \"#/$defs/EncryptedBallot\"\n        },\n        \"sealed\": {\n          \"$ref\": \"#/$defs/SealedPayload\"\n        },\n        \"tag\": {\n          \"$ref\": \"#/$defs/Multibase\"\n        }\n      },\n      \"required\": [\n        \"tag\",\n        \"attestation\"\n      ],\n      \"title\": \"EncryptedCast\",\n      \"type\": \"object\"\n    },\n    \"EncryptedOption\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ciphertext\": {\n          \"$ref\": \"#/$defs/ElGamalCiphertext\"\n        },\n        \"proof\": {\n          \"$ref\": \"#/$defs/DisjunctiveProof\"\n        }\n      },\n      \"required\": [\n        \"ciphertext\",\n        \"proof\"\n      ],\n      \"title\": \"EncryptedOption\",\n      \"type\": \"object\"\n    },\n    \"EncryptedQuestion\": {\n      \"additionalProperties\": false,\n      \"description\": \"One choice question of a tallied-encrypted ballot: per option, in the manifest's order, an encryption of 0 or 1 with its proof; and a proof that the selections sum to a count the question admits (CONVENTIONS §9.5).\",\n      \"properties\": {\n        \"options\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/EncryptedOption\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"question\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"sumProof\": {\n          \"$ref\": \"#/$defs/DisjunctiveProof\"\n        }\n      },\n      \"required\": [\n        \"question\",\n        \"options\",\n        \"sumProof\"\n      ],\n      \"title\": \"EncryptedQuestion\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"GroupElement\": {\n      \"description\": \"A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).\",\n      \"maxLength\": 64,\n      \"minLength\": 2,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"GroupElement\",\n      \"type\": \"string\"\n    },\n    \"GroupScalar\": {\n      \"description\": \"A scalar mod the Ristretto group order: 32 canonical little-endian bytes, multibase base58btc (CONVENTIONS §9.1).\",\n      \"maxLength\": 64,\n      \"minLength\": 2,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"GroupScalar\",\n      \"type\": \"string\"\n    },\n    \"Key\": {\n      \"description\": \"A question or option key, unique within its manifest or question.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,64}$\",\n      \"title\": \"Key\",\n      \"type\": \"string\"\n    },\n    \"Multibase\": {\n      \"description\": \"A binary value, multibase base58btc over the suite's canonical (compressed) encoding.\",\n      \"maxLength\": 16384,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"Multibase\",\n      \"type\": \"string\"\n    },\n    \"PartialDecryption\": {\n      \"additionalProperties\": false,\n      \"description\": \"Trustee `trustee`'s share of one decryption, `d = x_j·a`, with a Chaum–Pedersen proof against its verification key (CONVENTIONS §9.7).\",\n      \"properties\": {\n        \"d\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        },\n        \"proof\": {\n          \"$ref\": \"#/$defs/SigmaProof\"\n        },\n        \"target\": {\n          \"$ref\": \"#/$defs/DecryptionTarget\"\n        }\n      },\n      \"required\": [\n        \"target\",\n        \"d\",\n        \"proof\"\n      ],\n      \"title\": \"PartialDecryption\",\n      \"type\": \"object\"\n    },\n    \"QuestionResult\": {\n      \"additionalProperties\": false,\n      \"description\": \"One question's totals. `choice`: selections per option. `ranking`: per option, how many ballots placed it at each position (index 0 = first). `score`: per option, the sum and the number of ballots that scored it. `text`: the answers, in board order, withheld (`withheld: true`) below the manifest's `textReleaseThreshold`. `abstained` counts ballots that left the question unanswered.\",\n      \"properties\": {\n        \"abstained\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"choice\": {\n          \"additionalProperties\": {\n            \"minimum\": 0,\n            \"type\": \"integer\"\n          },\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"object\"\n        },\n        \"question\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"ranking\": {\n          \"additionalProperties\": {\n            \"items\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"type\": \"array\"\n          },\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"object\"\n        },\n        \"score\": {\n          \"additionalProperties\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"count\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"sum\": {\n                \"type\": \"integer\"\n              }\n            },\n            \"required\": [\n              \"sum\",\n              \"count\"\n            ],\n            \"type\": \"object\"\n          },\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"object\"\n        },\n        \"text\": {\n          \"items\": {\n            \"maxLength\": 4096,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"withheld\": {\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"question\",\n        \"abstained\"\n      ],\n      \"title\": \"QuestionResult\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"entries\": {\n          \"description\": \"Consecutive entries from `from`, in board order.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"entry\": {\n                \"$ref\": \"#/$defs/BoardEntry\"\n              },\n              \"index\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              }\n            },\n            \"required\": [\n              \"index\",\n              \"entry\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 1000,\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"next\": {\n          \"description\": \"The `from` of the next page. Absent when the page reaches `treeSize`.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"treeSize\": {\n          \"description\": \"The tree size the page was read against. No entry at or beyond it is returned.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"treeSize\",\n        \"entries\"\n      ],\n      \"title\": \"Voting — Board Read — response payload\",\n      \"type\": \"object\"\n    },\n    \"SealedPayload\": {\n      \"additionalProperties\": false,\n      \"description\": \"Bytes sealed to a key: a random group element encrypted as `kem`, and the bytes under ChaCha20-Poly1305 with a key derived from it, multibase base58btc (CONVENTIONS §9.4).\",\n      \"properties\": {\n        \"body\": {\n          \"maxLength\": 131072,\n          \"minLength\": 2,\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        },\n        \"kem\": {\n          \"$ref\": \"#/$defs/ElGamalCiphertext\"\n        }\n      },\n      \"required\": [\n        \"kem\",\n        \"body\"\n      ],\n      \"title\": \"SealedPayload\",\n      \"type\": \"object\"\n    },\n    \"SealedShare\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"recipient\": {\n          \"$ref\": \"#/$defs/TrusteeIndex\"\n        },\n        \"share\": {\n          \"$ref\": \"#/$defs/SealedPayload\"\n        }\n      },\n      \"required\": [\n        \"recipient\",\n        \"share\"\n      ],\n      \"title\": \"SealedShare\",\n      \"type\": \"object\"\n    },\n    \"SigmaProof\": {\n      \"additionalProperties\": false,\n      \"description\": \"A non-interactive sigma proof as its challenge and response `(c, z)` (Schnorr or Chaum–Pedersen; CONVENTIONS §9.3).\",\n      \"properties\": {\n        \"c\": {\n          \"$ref\": \"#/$defs/GroupScalar\"\n        },\n        \"z\": {\n          \"$ref\": \"#/$defs/GroupScalar\"\n        }\n      },\n      \"required\": [\n        \"c\",\n        \"z\"\n      ],\n      \"title\": \"SigmaProof\",\n      \"type\": \"object\"\n    },\n    \"SignedRequest\": {\n      \"description\": \"A whole Trust Task request document — `id`, `type`, `issuer`, `payload` and every other member, `proof` included — exactly as the ballot box received it, never re-serialised: its proof is taken over its members, and a re-serialised copy does not reliably reproduce them. Typed as an open object so every member survives; CONVENTIONS §9.6 gives the checks that make it a trustee's step.\",\n      \"minProperties\": 1,\n      \"title\": \"SignedRequest\",\n      \"type\": \"object\"\n    },\n    \"TransportKey\": {\n      \"additionalProperties\": false,\n      \"description\": \"The group element a trustee's shares are sealed to, with a Schnorr proof of knowledge of its discrete log (CONVENTIONS §9.6).\",\n      \"properties\": {\n        \"key\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        },\n        \"pok\": {\n          \"$ref\": \"#/$defs/SigmaProof\"\n        },\n        \"trustee\": {\n          \"$ref\": \"#/$defs/TrusteeIndex\"\n        }\n      },\n      \"required\": [\n        \"trustee\",\n        \"key\",\n        \"pok\"\n      ],\n      \"title\": \"TransportKey\",\n      \"type\": \"object\"\n    },\n    \"TrusteeIndex\": {\n      \"description\": \"A trustee's index: its position in the manifest's `trustees.dids`, counting from 1.\",\n      \"maximum\": 64,\n      \"minimum\": 1,\n      \"title\": \"TrusteeIndex\",\n      \"type\": \"integer\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/voting/board/read/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Reads a range of an election board's entries, against the current head or against an earlier tree size.\",\n  \"properties\": {\n    \"community\": {\n      \"description\": \"The community's DID.\",\n      \"maxLength\": 2048,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"electionId\": {\n      \"$ref\": \"#/$defs/ElectionId\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"from\": {\n      \"description\": \"The index of the first entry to return.\",\n      \"minimum\": 0,\n      \"type\": \"integer\"\n    },\n    \"limit\": {\n      \"description\": \"The most entries to return.\",\n      \"maximum\": 1000,\n      \"minimum\": 1,\n      \"type\": \"integer\"\n    },\n    \"treeSize\": {\n      \"description\": \"Read against the board as it stood at this size — the size of a head the reader holds. At most the current size. Absent: the current size.\",\n      \"minimum\": 0,\n      \"type\": \"integer\"\n    }\n  },\n  \"required\": [\n    \"community\",\n    \"electionId\",\n    \"from\",\n    \"limit\"\n  ],\n  \"title\": \"Voting — Board Read — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Answer\":{\"additionalProperties\":false,\"description\":\"The answer to one question. Exactly one member besides `question` is present, matching the question's type, or `abstain` for an optional question left unanswered.\",\"maxProperties\":2,\"minProperties\":2,\"properties\":{\"abstain\":{\"const\":true},\"choice\":{\"items\":{\"$ref\":\"#/$defs/Key\"},\"type\":\"array\",\"uniqueItems\":true},\"question\":{\"$ref\":\"#/$defs/Key\"},\"ranking\":{\"items\":{\"$ref\":\"#/$defs/Key\"},\"type\":\"array\",\"uniqueItems\":true},\"scores\":{\"additionalProperties\":{\"type\":\"integer\"},\"propertyNames\":{\"$ref\":\"#/$defs/Key\"},\"type\":\"object\"},\"text\":{\"maxLength\":4096,\"type\":\"string\"}},\"required\":[\"question\"],\"title\":\"Answer\",\"type\":\"object\"},\"Ballot\":{\"additionalProperties\":false,\"description\":\"An open ballot: one answer per question of the manifest, in any order. The bytes a cast's proof binds are the RFC 8785 (JCS) canonicalization of this object as received.\",\"properties\":{\"answers\":{\"items\":{\"$ref\":\"#/$defs/Answer\"},\"maxItems\":128,\"minItems\":1,\"type\":\"array\"},\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"manifestDigest\":{\"$ref\":\"#/$defs/DigestMultibase\"}},\"required\":[\"electionId\",\"manifestDigest\",\"answers\"],\"title\":\"Ballot\",\"type\":\"object\"},\"BoardEntry\":{\"description\":\"One leaf of a board. A leaf's hash is the RFC 9162 leaf hash of the JCS canonicalization of this object. Entries carry no time of arrival: the order is the board's, and a timestamp would hand anyone who reads the board the timing the registrar's log would need to pair a ticket with its cast.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"cast\":{\"$ref\":\"#/$defs/Cast\"},\"kind\":{\"const\":\"cast\"}},\"required\":[\"kind\",\"cast\"],\"title\":\"CastEntry\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"The cast at `replaces` is no longer counted: a later cast under the same tag is.\",\"properties\":{\"by\":{\"minimum\":0,\"type\":\"integer\"},\"kind\":{\"const\":\"replaced\"},\"replaces\":{\"minimum\":0,\"type\":\"integer\"},\"tag\":{\"$ref\":\"#/$defs/Multibase\"}},\"required\":[\"kind\",\"tag\",\"replaces\",\"by\"],\"title\":\"ReplacementEntry\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"at\":{\"format\":\"date-time\",\"type\":\"string\"},\"kind\":{\"enum\":[\"opened\",\"closed\",\"closedEarly\",\"cancelled\"]}},\"required\":[\"kind\",\"at\"],\"title\":\"LifecycleEntry\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"result\"},\"result\":{\"$ref\":\"#/$defs/ElectionResult\"}},\"required\":[\"kind\",\"result\"],\"title\":\"ResultEntry\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"cast\":{\"$ref\":\"#/$defs/EncryptedCast\"},\"kind\":{\"const\":\"encryptedCast\"}},\"required\":[\"kind\",\"cast\"],\"title\":\"EncryptedCastEntry\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind.\",\"properties\":{\"kind\":{\"const\":\"transportKey\"},\"transportKey\":{\"$ref\":\"#/$defs/TransportKey\"}},\"required\":[\"kind\",\"transportKey\"],\"title\":\"TransportKeyEntry\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind.\",\"properties\":{\"dealing\":{\"$ref\":\"#/$defs/Dealing\"},\"kind\":{\"const\":\"dealing\"}},\"required\":[\"kind\",\"dealing\"],\"title\":\"DealingEntry\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind.\",\"properties\":{\"complaints\":{\"items\":{\"$ref\":\"#/$defs/TrusteeIndex\"},\"maxItems\":64,\"type\":\"array\"},\"kind\":{\"const\":\"confirmation\"},\"trustee\":{\"$ref\":\"#/$defs/TrusteeIndex\"}},\"required\":[\"kind\",\"trustee\",\"complaints\"],\"title\":\"ConfirmationEntry\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind.\",\"properties\":{\"dealer\":{\"$ref\":\"#/$defs/TrusteeIndex\"},\"kind\":{\"const\":\"justification\"},\"recipient\":{\"$ref\":\"#/$defs/TrusteeIndex\"},\"share\":{\"$ref\":\"#/$defs/GroupScalar\"}},\"required\":[\"kind\",\"dealer\",\"recipient\",\"share\"],\"title\":\"JustificationEntry\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"electionKey\":{\"$ref\":\"#/$defs/ElectionKey\"},\"kind\":{\"const\":\"electionKey\"}},\"required\":[\"kind\",\"electionKey\"],\"title\":\"ElectionKeyEntry\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"partials\"},\"partials\":{\"items\":{\"$ref\":\"#/$defs/PartialDecryption\"},\"maxItems\":100000,\"minItems\":1,\"type\":\"array\"},\"trustee\":{\"$ref\":\"#/$defs/TrusteeIndex\"}},\"required\":[\"kind\",\"trustee\",\"partials\"],\"title\":\"PartialDecryptionsEntry\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"ballot\":{\"$ref\":\"#/$defs/Ballot\"},\"kind\":{\"const\":\"unsealed\"},\"leafIndex\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"kind\",\"leafIndex\",\"ballot\"],\"title\":\"UnsealedEntry\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"A sealed cast that did not open, or opened to no valid ballot: not counted (CONVENTIONS §9.7).\",\"properties\":{\"kind\":{\"const\":\"spoiled\"},\"leafIndex\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"kind\",\"leafIndex\"],\"title\":\"SpoiledEntry\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"One step of the trustees' ceremony — an enrolment, a dealing, a confirmation or a justification — as the trustee's own signed request, so that anyone reading the board can tell who took it (CONVENTIONS §9.6).\",\"properties\":{\"kind\":{\"const\":\"trusteeStep\"},\"request\":{\"$ref\":\"#/$defs/SignedRequest\"}},\"required\":[\"kind\",\"request\"],\"title\":\"TrusteeStepEntry\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"The community's voting/trustees/authorize request, exactly as the ballot box received it: the decryption targets of a closed election, pinned by digest to a head of the board (CONVENTIONS §9.7).\",\"properties\":{\"kind\":{\"const\":\"decryptionAuthorized\"},\"request\":{\"$ref\":\"#/$defs/SignedRequest\"}},\"required\":[\"kind\",\"request\"],\"title\":\"DecryptionAuthorizedEntry\",\"type\":\"object\"}],\"title\":\"BoardEntry\"},\"BoardHead\":{\"additionalProperties\":false,\"description\":\"A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.\",\"properties\":{\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"rootHash\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The RFC 9162 Merkle tree hash (SHA-256) of the first `treeSize` entries, as a multihash.\"},\"treeSize\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"electionId\",\"treeSize\",\"rootHash\",\"issuedAt\"],\"title\":\"BoardHead\",\"type\":\"object\"},\"Cast\":{\"additionalProperties\":false,\"description\":\"A ballot and the PCS attestation that admits it (VTI-VOT-030). `attestation` is the suite's canonical encoding of the attestation made for the election point with the ballot context bound in (CONVENTIONS §3); `tag` repeats its tag so a ballot box can refuse a duplicate before the pairing check.\",\"properties\":{\"attestation\":{\"$ref\":\"#/$defs/Multibase\"},\"ballot\":{\"$ref\":\"#/$defs/Ballot\"},\"tag\":{\"$ref\":\"#/$defs/Multibase\"}},\"required\":[\"ballot\",\"tag\",\"attestation\"],\"title\":\"Cast\",\"type\":\"object\"},\"Dealing\":{\"additionalProperties\":false,\"description\":\"A trustee's contribution to the election key: Feldman commitments to its polynomial, a proof of knowledge of the constant term, and one share per trustee sealed to that trustee's transport key (CONVENTIONS §9.6).\",\"properties\":{\"commitments\":{\"items\":{\"$ref\":\"#/$defs/GroupElement\"},\"maxItems\":64,\"minItems\":2,\"type\":\"array\"},\"dealer\":{\"$ref\":\"#/$defs/TrusteeIndex\"},\"pok\":{\"$ref\":\"#/$defs/SigmaProof\"},\"shares\":{\"items\":{\"$ref\":\"#/$defs/SealedShare\"},\"maxItems\":64,\"minItems\":2,\"type\":\"array\"}},\"required\":[\"dealer\",\"commitments\",\"pok\",\"shares\"],\"title\":\"Dealing\",\"type\":\"object\"},\"DecryptionTarget\":{\"additionalProperties\":false,\"description\":\"What a partial decryption decrypts: the sealed cast at a board leaf, or the total of one option of one question.\",\"oneOf\":[{\"required\":[\"leafIndex\"]},{\"required\":[\"question\",\"option\"]}],\"properties\":{\"ciphertext\":{\"$ref\":\"#/$defs/ElGamalCiphertext\"},\"leafIndex\":{\"description\":\"A sealed cast's board leaf.\",\"minimum\":0,\"type\":\"integer\"},\"option\":{\"$ref\":\"#/$defs/Key\"},\"question\":{\"$ref\":\"#/$defs/Key\"}},\"required\":[\"ciphertext\"],\"title\":\"DecryptionTarget\",\"type\":\"object\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"DisjunctiveProof\":{\"description\":\"A disjunctive proof that a ciphertext encrypts one value of a public list: one `(c, z)` per value, in the list's order (CONVENTIONS §9.3).\",\"items\":{\"$ref\":\"#/$defs/SigmaProof\"},\"maxItems\":65,\"minItems\":1,\"title\":\"DisjunctiveProof\",\"type\":\"array\"},\"ElGamalCiphertext\":{\"additionalProperties\":false,\"description\":\"`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).\",\"properties\":{\"a\":{\"$ref\":\"#/$defs/GroupElement\"},\"b\":{\"$ref\":\"#/$defs/GroupElement\"}},\"required\":[\"a\",\"b\"],\"title\":\"ElGamalCiphertext\",\"type\":\"object\"},\"ElectionId\":{\"description\":\"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\"pattern\":\"^[A-Za-z0-9._-]{1,128}$\",\"title\":\"ElectionId\",\"type\":\"string\"},\"ElectionKey\":{\"additionalProperties\":false,\"description\":\"The election key and each trustee's public verification key, computed from the qualified dealings (CONVENTIONS §9.6). Anyone can recompute it from the board.\",\"properties\":{\"key\":{\"$ref\":\"#/$defs/GroupElement\"},\"qualified\":{\"description\":\"The dealers whose dealings the key is formed from.\",\"items\":{\"$ref\":\"#/$defs/TrusteeIndex\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\"},\"verification\":{\"items\":{\"additionalProperties\":false,\"properties\":{\"key\":{\"$ref\":\"#/$defs/GroupElement\"},\"trustee\":{\"$ref\":\"#/$defs/TrusteeIndex\"}},\"required\":[\"trustee\",\"key\"],\"type\":\"object\"},\"maxItems\":64,\"minItems\":2,\"type\":\"array\"}},\"required\":[\"key\",\"qualified\",\"verification\"],\"title\":\"ElectionKey\",\"type\":\"object\"},\"ElectionResult\":{\"additionalProperties\":false,\"description\":\"An election's result, computable by anyone who can read its board from the board and the registration alone (VTI-VOT-070).\",\"properties\":{\"ballotsCounted\":{\"minimum\":0,\"type\":\"integer\"},\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"head\":{\"$ref\":\"#/$defs/BoardHead\",\"description\":\"The head of the board as it stood at close: the result counts exactly its entries.\"},\"manifestDigest\":{\"$ref\":\"#/$defs/DigestMultibase\"},\"questions\":{\"items\":{\"$ref\":\"#/$defs/QuestionResult\"},\"type\":\"array\"}},\"required\":[\"electionId\",\"manifestDigest\",\"ballotsCounted\",\"questions\",\"head\"],\"title\":\"ElectionResult\",\"type\":\"object\"},\"EncryptedBallot\":{\"additionalProperties\":false,\"description\":\"A tallied-encrypted ballot: one EncryptedQuestion per manifest question, in the manifest's order. Never decrypted (VTI-VOT-064).\",\"properties\":{\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"manifestDigest\":{\"$ref\":\"#/$defs/DigestMultibase\"},\"questions\":{\"items\":{\"$ref\":\"#/$defs/EncryptedQuestion\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\"}},\"required\":[\"electionId\",\"manifestDigest\",\"questions\"],\"title\":\"EncryptedBallot\",\"type\":\"object\"},\"EncryptedCast\":{\"additionalProperties\":false,\"description\":\"A cast of a sealed or tallied-encrypted election: exactly one of `sealed` (the Ballot's JCS bytes sealed to the election key) or `encrypted`, with the tag and the attestation over the JCS bytes of whichever is present (CONVENTIONS §3.6, §9.5).\",\"oneOf\":[{\"required\":[\"sealed\"]},{\"required\":[\"encrypted\"]}],\"properties\":{\"attestation\":{\"$ref\":\"#/$defs/Multibase\"},\"encrypted\":{\"$ref\":\"#/$defs/EncryptedBallot\"},\"sealed\":{\"$ref\":\"#/$defs/SealedPayload\"},\"tag\":{\"$ref\":\"#/$defs/Multibase\"}},\"required\":[\"tag\",\"attestation\"],\"title\":\"EncryptedCast\",\"type\":\"object\"},\"EncryptedOption\":{\"additionalProperties\":false,\"properties\":{\"ciphertext\":{\"$ref\":\"#/$defs/ElGamalCiphertext\"},\"proof\":{\"$ref\":\"#/$defs/DisjunctiveProof\"}},\"required\":[\"ciphertext\",\"proof\"],\"title\":\"EncryptedOption\",\"type\":\"object\"},\"EncryptedQuestion\":{\"additionalProperties\":false,\"description\":\"One choice question of a tallied-encrypted ballot: per option, in the manifest's order, an encryption of 0 or 1 with its proof; and a proof that the selections sum to a count the question admits (CONVENTIONS §9.5).\",\"properties\":{\"options\":{\"items\":{\"$ref\":\"#/$defs/EncryptedOption\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\"},\"question\":{\"$ref\":\"#/$defs/Key\"},\"sumProof\":{\"$ref\":\"#/$defs/DisjunctiveProof\"}},\"required\":[\"question\",\"options\",\"sumProof\"],\"title\":\"EncryptedQuestion\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"GroupElement\":{\"description\":\"A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).\",\"maxLength\":64,\"minLength\":2,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"GroupElement\",\"type\":\"string\"},\"GroupScalar\":{\"description\":\"A scalar mod the Ristretto group order: 32 canonical little-endian bytes, multibase base58btc (CONVENTIONS §9.1).\",\"maxLength\":64,\"minLength\":2,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"GroupScalar\",\"type\":\"string\"},\"Key\":{\"description\":\"A question or option key, unique within its manifest or question.\",\"pattern\":\"^[A-Za-z0-9._-]{1,64}$\",\"title\":\"Key\",\"type\":\"string\"},\"Multibase\":{\"description\":\"A binary value, multibase base58btc over the suite's canonical (compressed) encoding.\",\"maxLength\":16384,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"Multibase\",\"type\":\"string\"},\"PartialDecryption\":{\"additionalProperties\":false,\"description\":\"Trustee `trustee`'s share of one decryption, `d = x_j·a`, with a Chaum–Pedersen proof against its verification key (CONVENTIONS §9.7).\",\"properties\":{\"d\":{\"$ref\":\"#/$defs/GroupElement\"},\"proof\":{\"$ref\":\"#/$defs/SigmaProof\"},\"target\":{\"$ref\":\"#/$defs/DecryptionTarget\"}},\"required\":[\"target\",\"d\",\"proof\"],\"title\":\"PartialDecryption\",\"type\":\"object\"},\"QuestionResult\":{\"additionalProperties\":false,\"description\":\"One question's totals. `choice`: selections per option. `ranking`: per option, how many ballots placed it at each position (index 0 = first). `score`: per option, the sum and the number of ballots that scored it. `text`: the answers, in board order, withheld (`withheld: true`) below the manifest's `textReleaseThreshold`. `abstained` counts ballots that left the question unanswered.\",\"properties\":{\"abstained\":{\"minimum\":0,\"type\":\"integer\"},\"choice\":{\"additionalProperties\":{\"minimum\":0,\"type\":\"integer\"},\"propertyNames\":{\"$ref\":\"#/$defs/Key\"},\"type\":\"object\"},\"question\":{\"$ref\":\"#/$defs/Key\"},\"ranking\":{\"additionalProperties\":{\"items\":{\"minimum\":0,\"type\":\"integer\"},\"type\":\"array\"},\"propertyNames\":{\"$ref\":\"#/$defs/Key\"},\"type\":\"object\"},\"score\":{\"additionalProperties\":{\"additionalProperties\":false,\"properties\":{\"count\":{\"minimum\":0,\"type\":\"integer\"},\"sum\":{\"type\":\"integer\"}},\"required\":[\"sum\",\"count\"],\"type\":\"object\"},\"propertyNames\":{\"$ref\":\"#/$defs/Key\"},\"type\":\"object\"},\"text\":{\"items\":{\"maxLength\":4096,\"type\":\"string\"},\"type\":\"array\"},\"withheld\":{\"type\":\"boolean\"}},\"required\":[\"question\",\"abstained\"],\"title\":\"QuestionResult\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"entries\":{\"description\":\"Consecutive entries from `from`, in board order.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"entry\":{\"$ref\":\"#/$defs/BoardEntry\"},\"index\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"index\",\"entry\"],\"type\":\"object\"},\"maxItems\":1000,\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"next\":{\"description\":\"The `from` of the next page. Absent when the page reaches `treeSize`.\",\"minimum\":1,\"type\":\"integer\"},\"treeSize\":{\"description\":\"The tree size the page was read against. No entry at or beyond it is returned.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"treeSize\",\"entries\"],\"title\":\"Voting — Board Read — response payload\",\"type\":\"object\"},\"SealedPayload\":{\"additionalProperties\":false,\"description\":\"Bytes sealed to a key: a random group element encrypted as `kem`, and the bytes under ChaCha20-Poly1305 with a key derived from it, multibase base58btc (CONVENTIONS §9.4).\",\"properties\":{\"body\":{\"maxLength\":131072,\"minLength\":2,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"kem\":{\"$ref\":\"#/$defs/ElGamalCiphertext\"}},\"required\":[\"kem\",\"body\"],\"title\":\"SealedPayload\",\"type\":\"object\"},\"SealedShare\":{\"additionalProperties\":false,\"properties\":{\"recipient\":{\"$ref\":\"#/$defs/TrusteeIndex\"},\"share\":{\"$ref\":\"#/$defs/SealedPayload\"}},\"required\":[\"recipient\",\"share\"],\"title\":\"SealedShare\",\"type\":\"object\"},\"SigmaProof\":{\"additionalProperties\":false,\"description\":\"A non-interactive sigma proof as its challenge and response `(c, z)` (Schnorr or Chaum–Pedersen; CONVENTIONS §9.3).\",\"properties\":{\"c\":{\"$ref\":\"#/$defs/GroupScalar\"},\"z\":{\"$ref\":\"#/$defs/GroupScalar\"}},\"required\":[\"c\",\"z\"],\"title\":\"SigmaProof\",\"type\":\"object\"},\"SignedRequest\":{\"description\":\"A whole Trust Task request document — `id`, `type`, `issuer`, `payload` and every other member, `proof` included — exactly as the ballot box received it, never re-serialised: its proof is taken over its members, and a re-serialised copy does not reliably reproduce them. Typed as an open object so every member survives; CONVENTIONS §9.6 gives the checks that make it a trustee's step.\",\"minProperties\":1,\"title\":\"SignedRequest\",\"type\":\"object\"},\"TransportKey\":{\"additionalProperties\":false,\"description\":\"The group element a trustee's shares are sealed to, with a Schnorr proof of knowledge of its discrete log (CONVENTIONS §9.6).\",\"properties\":{\"key\":{\"$ref\":\"#/$defs/GroupElement\"},\"pok\":{\"$ref\":\"#/$defs/SigmaProof\"},\"trustee\":{\"$ref\":\"#/$defs/TrusteeIndex\"}},\"required\":[\"trustee\",\"key\",\"pok\"],\"title\":\"TransportKey\",\"type\":\"object\"},\"TrusteeIndex\":{\"description\":\"A trustee's index: its position in the manifest's `trustees.dids`, counting from 1.\",\"maximum\":64,\"minimum\":1,\"title\":\"TrusteeIndex\",\"type\":\"integer\"}},\"$id\":\"https://trusttasks.org/spec/voting/board/read/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Reads a range of an election board's entries, against the current head or against an earlier tree size.\",\"properties\":{\"community\":{\"description\":\"The community's DID.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"from\":{\"description\":\"The index of the first entry to return.\",\"minimum\":0,\"type\":\"integer\"},\"limit\":{\"description\":\"The most entries to return.\",\"maximum\":1000,\"minimum\":1,\"type\":\"integer\"},\"treeSize\":{\"description\":\"Read against the board as it stood at this size — the size of a head the reader holds. At most the current size. Absent: the current size.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"community\",\"electionId\",\"from\",\"limit\"],\"title\":\"Voting — Board Read — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/voting/board/read/0.1#response";
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Answer\": {\n      \"additionalProperties\": false,\n      \"description\": \"The answer to one question. Exactly one member besides `question` is present, matching the question's type, or `abstain` for an optional question left unanswered.\",\n      \"maxProperties\": 2,\n      \"minProperties\": 2,\n      \"properties\": {\n        \"abstain\": {\n          \"const\": true\n        },\n        \"choice\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"question\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"ranking\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"array\",\n          \"uniqueItems\": true\n        },\n        \"scores\": {\n          \"additionalProperties\": {\n            \"type\": \"integer\"\n          },\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"object\"\n        },\n        \"text\": {\n          \"maxLength\": 4096,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"question\"\n      ],\n      \"title\": \"Answer\",\n      \"type\": \"object\"\n    },\n    \"Ballot\": {\n      \"additionalProperties\": false,\n      \"description\": \"An open ballot: one answer per question of the manifest, in any order. The bytes a cast's proof binds are the RFC 8785 (JCS) canonicalization of this object as received.\",\n      \"properties\": {\n        \"answers\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/Answer\"\n          },\n          \"maxItems\": 128,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"manifestDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"manifestDigest\",\n        \"answers\"\n      ],\n      \"title\": \"Ballot\",\n      \"type\": \"object\"\n    },\n    \"BoardEntry\": {\n      \"description\": \"One leaf of a board. A leaf's hash is the RFC 9162 leaf hash of the JCS canonicalization of this object. Entries carry no time of arrival: the order is the board's, and a timestamp would hand anyone who reads the board the timing the registrar's log would need to pair a ticket with its cast.\",\n      \"oneOf\": [\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"cast\": {\n              \"$ref\": \"#/$defs/Cast\"\n            },\n            \"kind\": {\n              \"const\": \"cast\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"cast\"\n          ],\n          \"title\": \"CastEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"The cast at `replaces` is no longer counted: a later cast under the same tag is.\",\n          \"properties\": {\n            \"by\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"kind\": {\n              \"const\": \"replaced\"\n            },\n            \"replaces\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"tag\": {\n              \"$ref\": \"#/$defs/Multibase\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"tag\",\n            \"replaces\",\n            \"by\"\n          ],\n          \"title\": \"ReplacementEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"at\": {\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"kind\": {\n              \"enum\": [\n                \"opened\",\n                \"closed\",\n                \"closedEarly\",\n                \"cancelled\"\n              ]\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"at\"\n          ],\n          \"title\": \"LifecycleEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"result\"\n            },\n            \"result\": {\n              \"$ref\": \"#/$defs/ElectionResult\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"result\"\n          ],\n          \"title\": \"ResultEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"cast\": {\n              \"$ref\": \"#/$defs/EncryptedCast\"\n            },\n            \"kind\": {\n              \"const\": \"encryptedCast\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"cast\"\n          ],\n          \"title\": \"EncryptedCastEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind.\",\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"transportKey\"\n            },\n            \"transportKey\": {\n              \"$ref\": \"#/$defs/TransportKey\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"transportKey\"\n          ],\n          \"title\": \"TransportKeyEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind.\",\n          \"properties\": {\n            \"dealing\": {\n              \"$ref\": \"#/$defs/Dealing\"\n            },\n            \"kind\": {\n              \"const\": \"dealing\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"dealing\"\n          ],\n          \"title\": \"DealingEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind.\",\n          \"properties\": {\n            \"complaints\": {\n              \"items\": {\n                \"$ref\": \"#/$defs/TrusteeIndex\"\n              },\n              \"maxItems\": 64,\n              \"type\": \"array\"\n            },\n            \"kind\": {\n              \"const\": \"confirmation\"\n            },\n            \"trustee\": {\n              \"$ref\": \"#/$defs/TrusteeIndex\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"trustee\",\n            \"complaints\"\n          ],\n          \"title\": \"ConfirmationEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind.\",\n          \"properties\": {\n            \"dealer\": {\n              \"$ref\": \"#/$defs/TrusteeIndex\"\n            },\n            \"kind\": {\n              \"const\": \"justification\"\n            },\n            \"recipient\": {\n              \"$ref\": \"#/$defs/TrusteeIndex\"\n            },\n            \"share\": {\n              \"$ref\": \"#/$defs/GroupScalar\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"dealer\",\n            \"recipient\",\n            \"share\"\n          ],\n          \"title\": \"JustificationEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"electionKey\": {\n              \"$ref\": \"#/$defs/ElectionKey\"\n            },\n            \"kind\": {\n              \"const\": \"electionKey\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"electionKey\"\n          ],\n          \"title\": \"ElectionKeyEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"partials\"\n            },\n            \"partials\": {\n              \"items\": {\n                \"$ref\": \"#/$defs/PartialDecryption\"\n              },\n              \"maxItems\": 100000,\n              \"minItems\": 1,\n              \"type\": \"array\"\n            },\n            \"trustee\": {\n              \"$ref\": \"#/$defs/TrusteeIndex\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"trustee\",\n            \"partials\"\n          ],\n          \"title\": \"PartialDecryptionsEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"ballot\": {\n              \"$ref\": \"#/$defs/Ballot\"\n            },\n            \"kind\": {\n              \"const\": \"unsealed\"\n            },\n            \"leafIndex\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"leafIndex\",\n            \"ballot\"\n          ],\n          \"title\": \"UnsealedEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"A sealed cast that did not open, or opened to no valid ballot: not counted (CONVENTIONS §9.7).\",\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"spoiled\"\n            },\n            \"leafIndex\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"leafIndex\"\n          ],\n          \"title\": \"SpoiledEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"One step of the trustees' ceremony — an enrolment, a dealing, a confirmation or a justification — as the trustee's own signed request, so that anyone reading the board can tell who took it (CONVENTIONS §9.6).\",\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"trusteeStep\"\n            },\n            \"request\": {\n              \"$ref\": \"#/$defs/SignedRequest\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"request\"\n          ],\n          \"title\": \"TrusteeStepEntry\",\n          \"type\": \"object\"\n        },\n        {\n          \"additionalProperties\": false,\n          \"description\": \"The community's voting/trustees/authorize request, exactly as the ballot box received it: the decryption targets of a closed election, pinned by digest to a head of the board (CONVENTIONS §9.7).\",\n          \"properties\": {\n            \"kind\": {\n              \"const\": \"decryptionAuthorized\"\n            },\n            \"request\": {\n              \"$ref\": \"#/$defs/SignedRequest\"\n            }\n          },\n          \"required\": [\n            \"kind\",\n            \"request\"\n          ],\n          \"title\": \"DecryptionAuthorizedEntry\",\n          \"type\": \"object\"\n        }\n      ],\n      \"title\": \"BoardEntry\"\n    },\n    \"BoardHead\": {\n      \"additionalProperties\": false,\n      \"description\": \"A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.\",\n      \"properties\": {\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"issuedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"rootHash\": {\n          \"$ref\": \"#/$defs/DigestMultibase\",\n          \"description\": \"The RFC 9162 Merkle tree hash (SHA-256) of the first `treeSize` entries, as a multihash.\"\n        },\n        \"treeSize\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"treeSize\",\n        \"rootHash\",\n        \"issuedAt\"\n      ],\n      \"title\": \"BoardHead\",\n      \"type\": \"object\"\n    },\n    \"Cast\": {\n      \"additionalProperties\": false,\n      \"description\": \"A ballot and the PCS attestation that admits it (VTI-VOT-030). `attestation` is the suite's canonical encoding of the attestation made for the election point with the ballot context bound in (CONVENTIONS §3); `tag` repeats its tag so a ballot box can refuse a duplicate before the pairing check.\",\n      \"properties\": {\n        \"attestation\": {\n          \"$ref\": \"#/$defs/Multibase\"\n        },\n        \"ballot\": {\n          \"$ref\": \"#/$defs/Ballot\"\n        },\n        \"tag\": {\n          \"$ref\": \"#/$defs/Multibase\"\n        }\n      },\n      \"required\": [\n        \"ballot\",\n        \"tag\",\n        \"attestation\"\n      ],\n      \"title\": \"Cast\",\n      \"type\": \"object\"\n    },\n    \"Dealing\": {\n      \"additionalProperties\": false,\n      \"description\": \"A trustee's contribution to the election key: Feldman commitments to its polynomial, a proof of knowledge of the constant term, and one share per trustee sealed to that trustee's transport key (CONVENTIONS §9.6).\",\n      \"properties\": {\n        \"commitments\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/GroupElement\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 2,\n          \"type\": \"array\"\n        },\n        \"dealer\": {\n          \"$ref\": \"#/$defs/TrusteeIndex\"\n        },\n        \"pok\": {\n          \"$ref\": \"#/$defs/SigmaProof\"\n        },\n        \"shares\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/SealedShare\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 2,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"dealer\",\n        \"commitments\",\n        \"pok\",\n        \"shares\"\n      ],\n      \"title\": \"Dealing\",\n      \"type\": \"object\"\n    },\n    \"DecryptionTarget\": {\n      \"additionalProperties\": false,\n      \"description\": \"What a partial decryption decrypts: the sealed cast at a board leaf, or the total of one option of one question.\",\n      \"oneOf\": [\n        {\n          \"required\": [\n            \"leafIndex\"\n          ]\n        },\n        {\n          \"required\": [\n            \"question\",\n            \"option\"\n          ]\n        }\n      ],\n      \"properties\": {\n        \"ciphertext\": {\n          \"$ref\": \"#/$defs/ElGamalCiphertext\"\n        },\n        \"leafIndex\": {\n          \"description\": \"A sealed cast's board leaf.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"option\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"question\": {\n          \"$ref\": \"#/$defs/Key\"\n        }\n      },\n      \"required\": [\n        \"ciphertext\"\n      ],\n      \"title\": \"DecryptionTarget\",\n      \"type\": \"object\"\n    },\n    \"DigestMultibase\": {\n      \"description\": \"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\n      \"examples\": [\n        \"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"\n      ],\n      \"minLength\": 16,\n      \"pattern\": \"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\n      \"title\": \"DigestMultibase\",\n      \"type\": \"string\"\n    },\n    \"DisjunctiveProof\": {\n      \"description\": \"A disjunctive proof that a ciphertext encrypts one value of a public list: one `(c, z)` per value, in the list's order (CONVENTIONS §9.3).\",\n      \"items\": {\n        \"$ref\": \"#/$defs/SigmaProof\"\n      },\n      \"maxItems\": 65,\n      \"minItems\": 1,\n      \"title\": \"DisjunctiveProof\",\n      \"type\": \"array\"\n    },\n    \"ElGamalCiphertext\": {\n      \"additionalProperties\": false,\n      \"description\": \"`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).\",\n      \"properties\": {\n        \"a\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        },\n        \"b\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        }\n      },\n      \"required\": [\n        \"a\",\n        \"b\"\n      ],\n      \"title\": \"ElGamalCiphertext\",\n      \"type\": \"object\"\n    },\n    \"ElectionId\": {\n      \"description\": \"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,128}$\",\n      \"title\": \"ElectionId\",\n      \"type\": \"string\"\n    },\n    \"ElectionKey\": {\n      \"additionalProperties\": false,\n      \"description\": \"The election key and each trustee's public verification key, computed from the qualified dealings (CONVENTIONS §9.6). Anyone can recompute it from the board.\",\n      \"properties\": {\n        \"key\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        },\n        \"qualified\": {\n          \"description\": \"The dealers whose dealings the key is formed from.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/TrusteeIndex\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"verification\": {\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"key\": {\n                \"$ref\": \"#/$defs/GroupElement\"\n              },\n              \"trustee\": {\n                \"$ref\": \"#/$defs/TrusteeIndex\"\n              }\n            },\n            \"required\": [\n              \"trustee\",\n              \"key\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 2,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"key\",\n        \"qualified\",\n        \"verification\"\n      ],\n      \"title\": \"ElectionKey\",\n      \"type\": \"object\"\n    },\n    \"ElectionResult\": {\n      \"additionalProperties\": false,\n      \"description\": \"An election's result, computable by anyone who can read its board from the board and the registration alone (VTI-VOT-070).\",\n      \"properties\": {\n        \"ballotsCounted\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"head\": {\n          \"$ref\": \"#/$defs/BoardHead\",\n          \"description\": \"The head of the board as it stood at close: the result counts exactly its entries.\"\n        },\n        \"manifestDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\"\n        },\n        \"questions\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/QuestionResult\"\n          },\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"manifestDigest\",\n        \"ballotsCounted\",\n        \"questions\",\n        \"head\"\n      ],\n      \"title\": \"ElectionResult\",\n      \"type\": \"object\"\n    },\n    \"EncryptedBallot\": {\n      \"additionalProperties\": false,\n      \"description\": \"A tallied-encrypted ballot: one EncryptedQuestion per manifest question, in the manifest's order. Never decrypted (VTI-VOT-064).\",\n      \"properties\": {\n        \"electionId\": {\n          \"$ref\": \"#/$defs/ElectionId\"\n        },\n        \"manifestDigest\": {\n          \"$ref\": \"#/$defs/DigestMultibase\"\n        },\n        \"questions\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/EncryptedQuestion\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        }\n      },\n      \"required\": [\n        \"electionId\",\n        \"manifestDigest\",\n        \"questions\"\n      ],\n      \"title\": \"EncryptedBallot\",\n      \"type\": \"object\"\n    },\n    \"EncryptedCast\": {\n      \"additionalProperties\": false,\n      \"description\": \"A cast of a sealed or tallied-encrypted election: exactly one of `sealed` (the Ballot's JCS bytes sealed to the election key) or `encrypted`, with the tag and the attestation over the JCS bytes of whichever is present (CONVENTIONS §3.6, §9.5).\",\n      \"oneOf\": [\n        {\n          \"required\": [\n            \"sealed\"\n          ]\n        },\n        {\n          \"required\": [\n            \"encrypted\"\n          ]\n        }\n      ],\n      \"properties\": {\n        \"attestation\": {\n          \"$ref\": \"#/$defs/Multibase\"\n        },\n        \"encrypted\": {\n          \"$ref\": \"#/$defs/EncryptedBallot\"\n        },\n        \"sealed\": {\n          \"$ref\": \"#/$defs/SealedPayload\"\n        },\n        \"tag\": {\n          \"$ref\": \"#/$defs/Multibase\"\n        }\n      },\n      \"required\": [\n        \"tag\",\n        \"attestation\"\n      ],\n      \"title\": \"EncryptedCast\",\n      \"type\": \"object\"\n    },\n    \"EncryptedOption\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"ciphertext\": {\n          \"$ref\": \"#/$defs/ElGamalCiphertext\"\n        },\n        \"proof\": {\n          \"$ref\": \"#/$defs/DisjunctiveProof\"\n        }\n      },\n      \"required\": [\n        \"ciphertext\",\n        \"proof\"\n      ],\n      \"title\": \"EncryptedOption\",\n      \"type\": \"object\"\n    },\n    \"EncryptedQuestion\": {\n      \"additionalProperties\": false,\n      \"description\": \"One choice question of a tallied-encrypted ballot: per option, in the manifest's order, an encryption of 0 or 1 with its proof; and a proof that the selections sum to a count the question admits (CONVENTIONS §9.5).\",\n      \"properties\": {\n        \"options\": {\n          \"items\": {\n            \"$ref\": \"#/$defs/EncryptedOption\"\n          },\n          \"maxItems\": 64,\n          \"minItems\": 1,\n          \"type\": \"array\"\n        },\n        \"question\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"sumProof\": {\n          \"$ref\": \"#/$defs/DisjunctiveProof\"\n        }\n      },\n      \"required\": [\n        \"question\",\n        \"options\",\n        \"sumProof\"\n      ],\n      \"title\": \"EncryptedQuestion\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"GroupElement\": {\n      \"description\": \"A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).\",\n      \"maxLength\": 64,\n      \"minLength\": 2,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"GroupElement\",\n      \"type\": \"string\"\n    },\n    \"GroupScalar\": {\n      \"description\": \"A scalar mod the Ristretto group order: 32 canonical little-endian bytes, multibase base58btc (CONVENTIONS §9.1).\",\n      \"maxLength\": 64,\n      \"minLength\": 2,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"GroupScalar\",\n      \"type\": \"string\"\n    },\n    \"Key\": {\n      \"description\": \"A question or option key, unique within its manifest or question.\",\n      \"pattern\": \"^[A-Za-z0-9._-]{1,64}$\",\n      \"title\": \"Key\",\n      \"type\": \"string\"\n    },\n    \"Multibase\": {\n      \"description\": \"A binary value, multibase base58btc over the suite's canonical (compressed) encoding.\",\n      \"maxLength\": 16384,\n      \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n      \"title\": \"Multibase\",\n      \"type\": \"string\"\n    },\n    \"PartialDecryption\": {\n      \"additionalProperties\": false,\n      \"description\": \"Trustee `trustee`'s share of one decryption, `d = x_j·a`, with a Chaum–Pedersen proof against its verification key (CONVENTIONS §9.7).\",\n      \"properties\": {\n        \"d\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        },\n        \"proof\": {\n          \"$ref\": \"#/$defs/SigmaProof\"\n        },\n        \"target\": {\n          \"$ref\": \"#/$defs/DecryptionTarget\"\n        }\n      },\n      \"required\": [\n        \"target\",\n        \"d\",\n        \"proof\"\n      ],\n      \"title\": \"PartialDecryption\",\n      \"type\": \"object\"\n    },\n    \"QuestionResult\": {\n      \"additionalProperties\": false,\n      \"description\": \"One question's totals. `choice`: selections per option. `ranking`: per option, how many ballots placed it at each position (index 0 = first). `score`: per option, the sum and the number of ballots that scored it. `text`: the answers, in board order, withheld (`withheld: true`) below the manifest's `textReleaseThreshold`. `abstained` counts ballots that left the question unanswered.\",\n      \"properties\": {\n        \"abstained\": {\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"choice\": {\n          \"additionalProperties\": {\n            \"minimum\": 0,\n            \"type\": \"integer\"\n          },\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"object\"\n        },\n        \"question\": {\n          \"$ref\": \"#/$defs/Key\"\n        },\n        \"ranking\": {\n          \"additionalProperties\": {\n            \"items\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"type\": \"array\"\n          },\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"object\"\n        },\n        \"score\": {\n          \"additionalProperties\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"count\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              },\n              \"sum\": {\n                \"type\": \"integer\"\n              }\n            },\n            \"required\": [\n              \"sum\",\n              \"count\"\n            ],\n            \"type\": \"object\"\n          },\n          \"propertyNames\": {\n            \"$ref\": \"#/$defs/Key\"\n          },\n          \"type\": \"object\"\n        },\n        \"text\": {\n          \"items\": {\n            \"maxLength\": 4096,\n            \"type\": \"string\"\n          },\n          \"type\": \"array\"\n        },\n        \"withheld\": {\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"question\",\n        \"abstained\"\n      ],\n      \"title\": \"QuestionResult\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"entries\": {\n          \"description\": \"Consecutive entries from `from`, in board order.\",\n          \"items\": {\n            \"additionalProperties\": false,\n            \"properties\": {\n              \"entry\": {\n                \"$ref\": \"#/$defs/BoardEntry\"\n              },\n              \"index\": {\n                \"minimum\": 0,\n                \"type\": \"integer\"\n              }\n            },\n            \"required\": [\n              \"index\",\n              \"entry\"\n            ],\n            \"type\": \"object\"\n          },\n          \"maxItems\": 1000,\n          \"type\": \"array\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"next\": {\n          \"description\": \"The `from` of the next page. Absent when the page reaches `treeSize`.\",\n          \"minimum\": 1,\n          \"type\": \"integer\"\n        },\n        \"treeSize\": {\n          \"description\": \"The tree size the page was read against. No entry at or beyond it is returned.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"treeSize\",\n        \"entries\"\n      ],\n      \"title\": \"Voting — Board Read — response payload\",\n      \"type\": \"object\"\n    },\n    \"SealedPayload\": {\n      \"additionalProperties\": false,\n      \"description\": \"Bytes sealed to a key: a random group element encrypted as `kem`, and the bytes under ChaCha20-Poly1305 with a key derived from it, multibase base58btc (CONVENTIONS §9.4).\",\n      \"properties\": {\n        \"body\": {\n          \"maxLength\": 131072,\n          \"minLength\": 2,\n          \"pattern\": \"^z[1-9A-HJ-NP-Za-km-z]+$\",\n          \"type\": \"string\"\n        },\n        \"kem\": {\n          \"$ref\": \"#/$defs/ElGamalCiphertext\"\n        }\n      },\n      \"required\": [\n        \"kem\",\n        \"body\"\n      ],\n      \"title\": \"SealedPayload\",\n      \"type\": \"object\"\n    },\n    \"SealedShare\": {\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"recipient\": {\n          \"$ref\": \"#/$defs/TrusteeIndex\"\n        },\n        \"share\": {\n          \"$ref\": \"#/$defs/SealedPayload\"\n        }\n      },\n      \"required\": [\n        \"recipient\",\n        \"share\"\n      ],\n      \"title\": \"SealedShare\",\n      \"type\": \"object\"\n    },\n    \"SigmaProof\": {\n      \"additionalProperties\": false,\n      \"description\": \"A non-interactive sigma proof as its challenge and response `(c, z)` (Schnorr or Chaum–Pedersen; CONVENTIONS §9.3).\",\n      \"properties\": {\n        \"c\": {\n          \"$ref\": \"#/$defs/GroupScalar\"\n        },\n        \"z\": {\n          \"$ref\": \"#/$defs/GroupScalar\"\n        }\n      },\n      \"required\": [\n        \"c\",\n        \"z\"\n      ],\n      \"title\": \"SigmaProof\",\n      \"type\": \"object\"\n    },\n    \"SignedRequest\": {\n      \"description\": \"A whole Trust Task request document — `id`, `type`, `issuer`, `payload` and every other member, `proof` included — exactly as the ballot box received it, never re-serialised: its proof is taken over its members, and a re-serialised copy does not reliably reproduce them. Typed as an open object so every member survives; CONVENTIONS §9.6 gives the checks that make it a trustee's step.\",\n      \"minProperties\": 1,\n      \"title\": \"SignedRequest\",\n      \"type\": \"object\"\n    },\n    \"TransportKey\": {\n      \"additionalProperties\": false,\n      \"description\": \"The group element a trustee's shares are sealed to, with a Schnorr proof of knowledge of its discrete log (CONVENTIONS §9.6).\",\n      \"properties\": {\n        \"key\": {\n          \"$ref\": \"#/$defs/GroupElement\"\n        },\n        \"pok\": {\n          \"$ref\": \"#/$defs/SigmaProof\"\n        },\n        \"trustee\": {\n          \"$ref\": \"#/$defs/TrusteeIndex\"\n        }\n      },\n      \"required\": [\n        \"trustee\",\n        \"key\",\n        \"pok\"\n      ],\n      \"title\": \"TransportKey\",\n      \"type\": \"object\"\n    },\n    \"TrusteeIndex\": {\n      \"description\": \"A trustee's index: its position in the manifest's `trustees.dids`, counting from 1.\",\n      \"maximum\": 64,\n      \"minimum\": 1,\n      \"title\": \"TrusteeIndex\",\n      \"type\": \"integer\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Answer\":{\"additionalProperties\":false,\"description\":\"The answer to one question. Exactly one member besides `question` is present, matching the question's type, or `abstain` for an optional question left unanswered.\",\"maxProperties\":2,\"minProperties\":2,\"properties\":{\"abstain\":{\"const\":true},\"choice\":{\"items\":{\"$ref\":\"#/$defs/Key\"},\"type\":\"array\",\"uniqueItems\":true},\"question\":{\"$ref\":\"#/$defs/Key\"},\"ranking\":{\"items\":{\"$ref\":\"#/$defs/Key\"},\"type\":\"array\",\"uniqueItems\":true},\"scores\":{\"additionalProperties\":{\"type\":\"integer\"},\"propertyNames\":{\"$ref\":\"#/$defs/Key\"},\"type\":\"object\"},\"text\":{\"maxLength\":4096,\"type\":\"string\"}},\"required\":[\"question\"],\"title\":\"Answer\",\"type\":\"object\"},\"Ballot\":{\"additionalProperties\":false,\"description\":\"An open ballot: one answer per question of the manifest, in any order. The bytes a cast's proof binds are the RFC 8785 (JCS) canonicalization of this object as received.\",\"properties\":{\"answers\":{\"items\":{\"$ref\":\"#/$defs/Answer\"},\"maxItems\":128,\"minItems\":1,\"type\":\"array\"},\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"manifestDigest\":{\"$ref\":\"#/$defs/DigestMultibase\"}},\"required\":[\"electionId\",\"manifestDigest\",\"answers\"],\"title\":\"Ballot\",\"type\":\"object\"},\"BoardEntry\":{\"description\":\"One leaf of a board. A leaf's hash is the RFC 9162 leaf hash of the JCS canonicalization of this object. Entries carry no time of arrival: the order is the board's, and a timestamp would hand anyone who reads the board the timing the registrar's log would need to pair a ticket with its cast.\",\"oneOf\":[{\"additionalProperties\":false,\"properties\":{\"cast\":{\"$ref\":\"#/$defs/Cast\"},\"kind\":{\"const\":\"cast\"}},\"required\":[\"kind\",\"cast\"],\"title\":\"CastEntry\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"The cast at `replaces` is no longer counted: a later cast under the same tag is.\",\"properties\":{\"by\":{\"minimum\":0,\"type\":\"integer\"},\"kind\":{\"const\":\"replaced\"},\"replaces\":{\"minimum\":0,\"type\":\"integer\"},\"tag\":{\"$ref\":\"#/$defs/Multibase\"}},\"required\":[\"kind\",\"tag\",\"replaces\",\"by\"],\"title\":\"ReplacementEntry\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"at\":{\"format\":\"date-time\",\"type\":\"string\"},\"kind\":{\"enum\":[\"opened\",\"closed\",\"closedEarly\",\"cancelled\"]}},\"required\":[\"kind\",\"at\"],\"title\":\"LifecycleEntry\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"result\"},\"result\":{\"$ref\":\"#/$defs/ElectionResult\"}},\"required\":[\"kind\",\"result\"],\"title\":\"ResultEntry\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"cast\":{\"$ref\":\"#/$defs/EncryptedCast\"},\"kind\":{\"const\":\"encryptedCast\"}},\"required\":[\"kind\",\"cast\"],\"title\":\"EncryptedCastEntry\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind.\",\"properties\":{\"kind\":{\"const\":\"transportKey\"},\"transportKey\":{\"$ref\":\"#/$defs/TransportKey\"}},\"required\":[\"kind\",\"transportKey\"],\"title\":\"TransportKeyEntry\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind.\",\"properties\":{\"dealing\":{\"$ref\":\"#/$defs/Dealing\"},\"kind\":{\"const\":\"dealing\"}},\"required\":[\"kind\",\"dealing\"],\"title\":\"DealingEntry\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind.\",\"properties\":{\"complaints\":{\"items\":{\"$ref\":\"#/$defs/TrusteeIndex\"},\"maxItems\":64,\"type\":\"array\"},\"kind\":{\"const\":\"confirmation\"},\"trustee\":{\"$ref\":\"#/$defs/TrusteeIndex\"}},\"required\":[\"kind\",\"trustee\",\"complaints\"],\"title\":\"ConfirmationEntry\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"Not appended: each enrolment, dealing, confirmation and justification is a `trusteeStep` entry carrying the trustee's signed request (CONVENTIONS §9.6). A consumer MUST refuse a board holding this kind.\",\"properties\":{\"dealer\":{\"$ref\":\"#/$defs/TrusteeIndex\"},\"kind\":{\"const\":\"justification\"},\"recipient\":{\"$ref\":\"#/$defs/TrusteeIndex\"},\"share\":{\"$ref\":\"#/$defs/GroupScalar\"}},\"required\":[\"kind\",\"dealer\",\"recipient\",\"share\"],\"title\":\"JustificationEntry\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"electionKey\":{\"$ref\":\"#/$defs/ElectionKey\"},\"kind\":{\"const\":\"electionKey\"}},\"required\":[\"kind\",\"electionKey\"],\"title\":\"ElectionKeyEntry\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"kind\":{\"const\":\"partials\"},\"partials\":{\"items\":{\"$ref\":\"#/$defs/PartialDecryption\"},\"maxItems\":100000,\"minItems\":1,\"type\":\"array\"},\"trustee\":{\"$ref\":\"#/$defs/TrusteeIndex\"}},\"required\":[\"kind\",\"trustee\",\"partials\"],\"title\":\"PartialDecryptionsEntry\",\"type\":\"object\"},{\"additionalProperties\":false,\"properties\":{\"ballot\":{\"$ref\":\"#/$defs/Ballot\"},\"kind\":{\"const\":\"unsealed\"},\"leafIndex\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"kind\",\"leafIndex\",\"ballot\"],\"title\":\"UnsealedEntry\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"A sealed cast that did not open, or opened to no valid ballot: not counted (CONVENTIONS §9.7).\",\"properties\":{\"kind\":{\"const\":\"spoiled\"},\"leafIndex\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"kind\",\"leafIndex\"],\"title\":\"SpoiledEntry\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"One step of the trustees' ceremony — an enrolment, a dealing, a confirmation or a justification — as the trustee's own signed request, so that anyone reading the board can tell who took it (CONVENTIONS §9.6).\",\"properties\":{\"kind\":{\"const\":\"trusteeStep\"},\"request\":{\"$ref\":\"#/$defs/SignedRequest\"}},\"required\":[\"kind\",\"request\"],\"title\":\"TrusteeStepEntry\",\"type\":\"object\"},{\"additionalProperties\":false,\"description\":\"The community's voting/trustees/authorize request, exactly as the ballot box received it: the decryption targets of a closed election, pinned by digest to a head of the board (CONVENTIONS §9.7).\",\"properties\":{\"kind\":{\"const\":\"decryptionAuthorized\"},\"request\":{\"$ref\":\"#/$defs/SignedRequest\"}},\"required\":[\"kind\",\"request\"],\"title\":\"DecryptionAuthorizedEntry\",\"type\":\"object\"}],\"title\":\"BoardEntry\"},\"BoardHead\":{\"additionalProperties\":false,\"description\":\"A board's tree head (RFC 9162 §2.1). A head is signed by being carried in a document the ballot box signs; whoever keeps a head keeps that whole document.\",\"properties\":{\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"issuedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"rootHash\":{\"$ref\":\"#/$defs/DigestMultibase\",\"description\":\"The RFC 9162 Merkle tree hash (SHA-256) of the first `treeSize` entries, as a multihash.\"},\"treeSize\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"electionId\",\"treeSize\",\"rootHash\",\"issuedAt\"],\"title\":\"BoardHead\",\"type\":\"object\"},\"Cast\":{\"additionalProperties\":false,\"description\":\"A ballot and the PCS attestation that admits it (VTI-VOT-030). `attestation` is the suite's canonical encoding of the attestation made for the election point with the ballot context bound in (CONVENTIONS §3); `tag` repeats its tag so a ballot box can refuse a duplicate before the pairing check.\",\"properties\":{\"attestation\":{\"$ref\":\"#/$defs/Multibase\"},\"ballot\":{\"$ref\":\"#/$defs/Ballot\"},\"tag\":{\"$ref\":\"#/$defs/Multibase\"}},\"required\":[\"ballot\",\"tag\",\"attestation\"],\"title\":\"Cast\",\"type\":\"object\"},\"Dealing\":{\"additionalProperties\":false,\"description\":\"A trustee's contribution to the election key: Feldman commitments to its polynomial, a proof of knowledge of the constant term, and one share per trustee sealed to that trustee's transport key (CONVENTIONS §9.6).\",\"properties\":{\"commitments\":{\"items\":{\"$ref\":\"#/$defs/GroupElement\"},\"maxItems\":64,\"minItems\":2,\"type\":\"array\"},\"dealer\":{\"$ref\":\"#/$defs/TrusteeIndex\"},\"pok\":{\"$ref\":\"#/$defs/SigmaProof\"},\"shares\":{\"items\":{\"$ref\":\"#/$defs/SealedShare\"},\"maxItems\":64,\"minItems\":2,\"type\":\"array\"}},\"required\":[\"dealer\",\"commitments\",\"pok\",\"shares\"],\"title\":\"Dealing\",\"type\":\"object\"},\"DecryptionTarget\":{\"additionalProperties\":false,\"description\":\"What a partial decryption decrypts: the sealed cast at a board leaf, or the total of one option of one question.\",\"oneOf\":[{\"required\":[\"leafIndex\"]},{\"required\":[\"question\",\"option\"]}],\"properties\":{\"ciphertext\":{\"$ref\":\"#/$defs/ElGamalCiphertext\"},\"leafIndex\":{\"description\":\"A sealed cast's board leaf.\",\"minimum\":0,\"type\":\"integer\"},\"option\":{\"$ref\":\"#/$defs/Key\"},\"question\":{\"$ref\":\"#/$defs/Key\"}},\"required\":[\"ciphertext\"],\"title\":\"DecryptionTarget\",\"type\":\"object\"},\"DigestMultibase\":{\"description\":\"A cryptographic digest as a multibase-encoded multihash — the encoding the W3C Verifiable Credentials Data Model 2.0 defines for `digestMultibase`, and the one `did:webvh` uses for its SCID and entry hashes.\\n\\nMultihash carries the hash algorithm in-band, so the value is self-describing and the wire format survives an algorithm change without a schema revision; multibase does the same for the base encoding, so a verifier never infers base58 from base64url by context. A bare hex string or a `sha-256:`-style prefix hard-codes one algorithm into the wire contract and is non-conforming here.\\n\\nThis definition constrains the *encoding only*. What the digest is computed over is stated by each referencing field, because it differs legitimately: a digest over a JSON document is taken over its RFC 8785 (JCS) canonicalization, while a digest over an opaque artifact is taken over its bytes. A field whose input is a JSON document and which does not name a canonicalization is not reproducible.\\n\\nRestricted to the two multibase headers W3C Controlled Identifiers 1.0 §2.4 normatively requires — `z` (base58btc) and `u` (base64url-no-pad). CID permits others but states that \\\"interoperability is not guaranteed between implementations using such values\\\", and a registry whose purpose is interoperability should not mint digests a conforming verifier may be unable to read. The alphabets are enforced rather than assumed: base58btc excludes 0, O, I and l, and an earlier permissive pattern let three published examples carry digests that were not valid base58 at all. base58btc is RECOMMENDED, for consistency with `did:key` and `did:webvh`.\",\"examples\":[\"zQmbWqxBEKC3P8tqsKc98xmWNzrzDtRLMiMPL8wBuTGsMnR\"],\"minLength\":16,\"pattern\":\"^(z[1-9A-HJ-NP-Za-km-z]+|u[A-Za-z0-9_-]+)$\",\"title\":\"DigestMultibase\",\"type\":\"string\"},\"DisjunctiveProof\":{\"description\":\"A disjunctive proof that a ciphertext encrypts one value of a public list: one `(c, z)` per value, in the list's order (CONVENTIONS §9.3).\",\"items\":{\"$ref\":\"#/$defs/SigmaProof\"},\"maxItems\":65,\"minItems\":1,\"title\":\"DisjunctiveProof\",\"type\":\"array\"},\"ElGamalCiphertext\":{\"additionalProperties\":false,\"description\":\"`(a, b) = (r·G, M + r·Y)` under the election key `Y` (CONVENTIONS §9.2).\",\"properties\":{\"a\":{\"$ref\":\"#/$defs/GroupElement\"},\"b\":{\"$ref\":\"#/$defs/GroupElement\"}},\"required\":[\"a\",\"b\"],\"title\":\"ElGamalCiphertext\",\"type\":\"object\"},\"ElectionId\":{\"description\":\"An election's identifier, unique within its community. A closed alphabet: it appears in the ticket class label `voter/<electionId>` and is framed into every hash a cast is bound to.\",\"pattern\":\"^[A-Za-z0-9._-]{1,128}$\",\"title\":\"ElectionId\",\"type\":\"string\"},\"ElectionKey\":{\"additionalProperties\":false,\"description\":\"The election key and each trustee's public verification key, computed from the qualified dealings (CONVENTIONS §9.6). Anyone can recompute it from the board.\",\"properties\":{\"key\":{\"$ref\":\"#/$defs/GroupElement\"},\"qualified\":{\"description\":\"The dealers whose dealings the key is formed from.\",\"items\":{\"$ref\":\"#/$defs/TrusteeIndex\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\"},\"verification\":{\"items\":{\"additionalProperties\":false,\"properties\":{\"key\":{\"$ref\":\"#/$defs/GroupElement\"},\"trustee\":{\"$ref\":\"#/$defs/TrusteeIndex\"}},\"required\":[\"trustee\",\"key\"],\"type\":\"object\"},\"maxItems\":64,\"minItems\":2,\"type\":\"array\"}},\"required\":[\"key\",\"qualified\",\"verification\"],\"title\":\"ElectionKey\",\"type\":\"object\"},\"ElectionResult\":{\"additionalProperties\":false,\"description\":\"An election's result, computable by anyone who can read its board from the board and the registration alone (VTI-VOT-070).\",\"properties\":{\"ballotsCounted\":{\"minimum\":0,\"type\":\"integer\"},\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"head\":{\"$ref\":\"#/$defs/BoardHead\",\"description\":\"The head of the board as it stood at close: the result counts exactly its entries.\"},\"manifestDigest\":{\"$ref\":\"#/$defs/DigestMultibase\"},\"questions\":{\"items\":{\"$ref\":\"#/$defs/QuestionResult\"},\"type\":\"array\"}},\"required\":[\"electionId\",\"manifestDigest\",\"ballotsCounted\",\"questions\",\"head\"],\"title\":\"ElectionResult\",\"type\":\"object\"},\"EncryptedBallot\":{\"additionalProperties\":false,\"description\":\"A tallied-encrypted ballot: one EncryptedQuestion per manifest question, in the manifest's order. Never decrypted (VTI-VOT-064).\",\"properties\":{\"electionId\":{\"$ref\":\"#/$defs/ElectionId\"},\"manifestDigest\":{\"$ref\":\"#/$defs/DigestMultibase\"},\"questions\":{\"items\":{\"$ref\":\"#/$defs/EncryptedQuestion\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\"}},\"required\":[\"electionId\",\"manifestDigest\",\"questions\"],\"title\":\"EncryptedBallot\",\"type\":\"object\"},\"EncryptedCast\":{\"additionalProperties\":false,\"description\":\"A cast of a sealed or tallied-encrypted election: exactly one of `sealed` (the Ballot's JCS bytes sealed to the election key) or `encrypted`, with the tag and the attestation over the JCS bytes of whichever is present (CONVENTIONS §3.6, §9.5).\",\"oneOf\":[{\"required\":[\"sealed\"]},{\"required\":[\"encrypted\"]}],\"properties\":{\"attestation\":{\"$ref\":\"#/$defs/Multibase\"},\"encrypted\":{\"$ref\":\"#/$defs/EncryptedBallot\"},\"sealed\":{\"$ref\":\"#/$defs/SealedPayload\"},\"tag\":{\"$ref\":\"#/$defs/Multibase\"}},\"required\":[\"tag\",\"attestation\"],\"title\":\"EncryptedCast\",\"type\":\"object\"},\"EncryptedOption\":{\"additionalProperties\":false,\"properties\":{\"ciphertext\":{\"$ref\":\"#/$defs/ElGamalCiphertext\"},\"proof\":{\"$ref\":\"#/$defs/DisjunctiveProof\"}},\"required\":[\"ciphertext\",\"proof\"],\"title\":\"EncryptedOption\",\"type\":\"object\"},\"EncryptedQuestion\":{\"additionalProperties\":false,\"description\":\"One choice question of a tallied-encrypted ballot: per option, in the manifest's order, an encryption of 0 or 1 with its proof; and a proof that the selections sum to a count the question admits (CONVENTIONS §9.5).\",\"properties\":{\"options\":{\"items\":{\"$ref\":\"#/$defs/EncryptedOption\"},\"maxItems\":64,\"minItems\":1,\"type\":\"array\"},\"question\":{\"$ref\":\"#/$defs/Key\"},\"sumProof\":{\"$ref\":\"#/$defs/DisjunctiveProof\"}},\"required\":[\"question\",\"options\",\"sumProof\"],\"title\":\"EncryptedQuestion\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"GroupElement\":{\"description\":\"A Ristretto group element: its 32-byte compression, multibase base58btc. Never the identity (CONVENTIONS §9.1).\",\"maxLength\":64,\"minLength\":2,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"GroupElement\",\"type\":\"string\"},\"GroupScalar\":{\"description\":\"A scalar mod the Ristretto group order: 32 canonical little-endian bytes, multibase base58btc (CONVENTIONS §9.1).\",\"maxLength\":64,\"minLength\":2,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"GroupScalar\",\"type\":\"string\"},\"Key\":{\"description\":\"A question or option key, unique within its manifest or question.\",\"pattern\":\"^[A-Za-z0-9._-]{1,64}$\",\"title\":\"Key\",\"type\":\"string\"},\"Multibase\":{\"description\":\"A binary value, multibase base58btc over the suite's canonical (compressed) encoding.\",\"maxLength\":16384,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"title\":\"Multibase\",\"type\":\"string\"},\"PartialDecryption\":{\"additionalProperties\":false,\"description\":\"Trustee `trustee`'s share of one decryption, `d = x_j·a`, with a Chaum–Pedersen proof against its verification key (CONVENTIONS §9.7).\",\"properties\":{\"d\":{\"$ref\":\"#/$defs/GroupElement\"},\"proof\":{\"$ref\":\"#/$defs/SigmaProof\"},\"target\":{\"$ref\":\"#/$defs/DecryptionTarget\"}},\"required\":[\"target\",\"d\",\"proof\"],\"title\":\"PartialDecryption\",\"type\":\"object\"},\"QuestionResult\":{\"additionalProperties\":false,\"description\":\"One question's totals. `choice`: selections per option. `ranking`: per option, how many ballots placed it at each position (index 0 = first). `score`: per option, the sum and the number of ballots that scored it. `text`: the answers, in board order, withheld (`withheld: true`) below the manifest's `textReleaseThreshold`. `abstained` counts ballots that left the question unanswered.\",\"properties\":{\"abstained\":{\"minimum\":0,\"type\":\"integer\"},\"choice\":{\"additionalProperties\":{\"minimum\":0,\"type\":\"integer\"},\"propertyNames\":{\"$ref\":\"#/$defs/Key\"},\"type\":\"object\"},\"question\":{\"$ref\":\"#/$defs/Key\"},\"ranking\":{\"additionalProperties\":{\"items\":{\"minimum\":0,\"type\":\"integer\"},\"type\":\"array\"},\"propertyNames\":{\"$ref\":\"#/$defs/Key\"},\"type\":\"object\"},\"score\":{\"additionalProperties\":{\"additionalProperties\":false,\"properties\":{\"count\":{\"minimum\":0,\"type\":\"integer\"},\"sum\":{\"type\":\"integer\"}},\"required\":[\"sum\",\"count\"],\"type\":\"object\"},\"propertyNames\":{\"$ref\":\"#/$defs/Key\"},\"type\":\"object\"},\"text\":{\"items\":{\"maxLength\":4096,\"type\":\"string\"},\"type\":\"array\"},\"withheld\":{\"type\":\"boolean\"}},\"required\":[\"question\",\"abstained\"],\"title\":\"QuestionResult\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"entries\":{\"description\":\"Consecutive entries from `from`, in board order.\",\"items\":{\"additionalProperties\":false,\"properties\":{\"entry\":{\"$ref\":\"#/$defs/BoardEntry\"},\"index\":{\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"index\",\"entry\"],\"type\":\"object\"},\"maxItems\":1000,\"type\":\"array\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"next\":{\"description\":\"The `from` of the next page. Absent when the page reaches `treeSize`.\",\"minimum\":1,\"type\":\"integer\"},\"treeSize\":{\"description\":\"The tree size the page was read against. No entry at or beyond it is returned.\",\"minimum\":0,\"type\":\"integer\"}},\"required\":[\"treeSize\",\"entries\"],\"title\":\"Voting — Board Read — response payload\",\"type\":\"object\"},\"SealedPayload\":{\"additionalProperties\":false,\"description\":\"Bytes sealed to a key: a random group element encrypted as `kem`, and the bytes under ChaCha20-Poly1305 with a key derived from it, multibase base58btc (CONVENTIONS §9.4).\",\"properties\":{\"body\":{\"maxLength\":131072,\"minLength\":2,\"pattern\":\"^z[1-9A-HJ-NP-Za-km-z]+$\",\"type\":\"string\"},\"kem\":{\"$ref\":\"#/$defs/ElGamalCiphertext\"}},\"required\":[\"kem\",\"body\"],\"title\":\"SealedPayload\",\"type\":\"object\"},\"SealedShare\":{\"additionalProperties\":false,\"properties\":{\"recipient\":{\"$ref\":\"#/$defs/TrusteeIndex\"},\"share\":{\"$ref\":\"#/$defs/SealedPayload\"}},\"required\":[\"recipient\",\"share\"],\"title\":\"SealedShare\",\"type\":\"object\"},\"SigmaProof\":{\"additionalProperties\":false,\"description\":\"A non-interactive sigma proof as its challenge and response `(c, z)` (Schnorr or Chaum–Pedersen; CONVENTIONS §9.3).\",\"properties\":{\"c\":{\"$ref\":\"#/$defs/GroupScalar\"},\"z\":{\"$ref\":\"#/$defs/GroupScalar\"}},\"required\":[\"c\",\"z\"],\"title\":\"SigmaProof\",\"type\":\"object\"},\"SignedRequest\":{\"description\":\"A whole Trust Task request document — `id`, `type`, `issuer`, `payload` and every other member, `proof` included — exactly as the ballot box received it, never re-serialised: its proof is taken over its members, and a re-serialised copy does not reliably reproduce them. Typed as an open object so every member survives; CONVENTIONS §9.6 gives the checks that make it a trustee's step.\",\"minProperties\":1,\"title\":\"SignedRequest\",\"type\":\"object\"},\"TransportKey\":{\"additionalProperties\":false,\"description\":\"The group element a trustee's shares are sealed to, with a Schnorr proof of knowledge of its discrete log (CONVENTIONS §9.6).\",\"properties\":{\"key\":{\"$ref\":\"#/$defs/GroupElement\"},\"pok\":{\"$ref\":\"#/$defs/SigmaProof\"},\"trustee\":{\"$ref\":\"#/$defs/TrusteeIndex\"}},\"required\":[\"trustee\",\"key\",\"pok\"],\"title\":\"TransportKey\",\"type\":\"object\"},\"TrusteeIndex\":{\"description\":\"A trustee's index: its position in the manifest's `trustees.dids`, counting from 1.\",\"maximum\":64,\"minimum\":1,\"title\":\"TrusteeIndex\",\"type\":\"integer\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

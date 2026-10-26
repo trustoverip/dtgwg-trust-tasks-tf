@@ -34,19 +34,6 @@ pub mod error {
 }
 ///Opaque identifier of one administrative power in the maintainer's capability registry — lowercase dot-separated segments (e.g. `keys.sign`, `vtc.roles.assign`, `git.repo.manage`). A consumer MUST NOT treat a capability it does not recognise as granted.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Capability",
-///  "description": "Opaque identifier of one administrative power in the maintainer's capability registry — lowercase dot-separated segments (e.g. `keys.sign`, `vtc.roles.assign`, `git.repo.manage`). A consumer MUST NOT treat a capability it does not recognise as granted.",
-///  "type": "string",
-///  "maxLength": 128,
-///  "minLength": 1,
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)*$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct Capability(::std::string::String);
@@ -116,29 +103,6 @@ impl<'de> ::serde::Deserialize<'de> for Capability {
 }
 ///A capability, optionally qualified by a resource. Used where a capability is named but not granted — a role's ceiling, a role's approve ceiling, an entry's approvable capabilities. An unqualified reference covers every resource of the capability's kind.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "CapabilityRef",
-///  "description": "A capability, optionally qualified by a resource. Used where a capability is named but not granted — a role's ceiling, a role's approve ceiling, an entry's approvable capabilities. An unqualified reference covers every resource of the capability's kind.",
-///  "type": "object",
-///  "required": [
-///    "capability"
-///  ],
-///  "properties": {
-///    "capability": {
-///      "$ref": "#/definitions/Capability"
-///    },
-///    "resource": {
-///      "description": "Optional qualifier. Absent covers every resource of the capability's kind.",
-///      "$ref": "#/definitions/ResourceQualifier"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -155,21 +119,6 @@ impl CapabilityRef {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -191,15 +140,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -263,31 +203,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Fetch one administrative role of a VTC by name. The outer document members are owned by the framework — SPEC §6.3.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/roles/show/0.1",
-///  "title": "Payload",
-///  "description": "Fetch one administrative role of a VTC by name. The outer document members are owned by the framework — SPEC §6.3.",
-///  "type": "object",
-///  "required": [
-///    "name"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "name": {
-///      "description": "Name of the role, built-in or custom.",
-///      "$ref": "#/definitions/RoleName"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -305,18 +220,6 @@ impl Payload {
 }
 ///Opaque qualifier naming the part of the maintainer's resources a capability applies to (e.g. `git-ns:github.com/acme`, `git-repo:github.com/acme/r#4211`, `policy:join`). Its grammar and containment rule are the maintainer's: a qualified capability covers the named resource and the resources inside it. A qualifier MUST NOT be read as widening the entry's act scope.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "ResourceQualifier",
-///  "description": "Opaque qualifier naming the part of the maintainer's resources a capability applies to (e.g. `git-ns:github.com/acme`, `git-repo:github.com/acme/r#4211`, `policy:join`). Its grammar and containment rule are the maintainer's: a qualified capability covers the named resource and the resources inside it. A qualifier MUST NOT be read as widening the entry's act scope.",
-///  "type": "string",
-///  "maxLength": 512,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResourceQualifier(::std::string::String);
@@ -379,36 +282,6 @@ impl<'de> ::serde::Deserialize<'de> for ResourceQualifier {
 }
 ///The success response to a vtc/roles/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/roles/show/0.1#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The success response to a vtc/roles/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/roles/show/0.1#response.",
-///  "type": "object",
-///  "required": [
-///    "role"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "holders": {
-///      "description": "Optional: the number of ACL entries currently holding this role. A count, never a list of subjects. A VTC MAY omit it where the querying party may not learn it.",
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "role": {
-///      "description": "The role record.",
-///      "$ref": "#/definitions/RoleDefinition"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -445,75 +318,6 @@ BUILT-IN ROLES (`builtIn: true`) are fixed by the VTC implementation and MUST NO
 
 CUSTOM ROLES (`builtIn: false`) are created, changed and deleted by a community through vtc/roles/define and vtc/roles/delete. A VTC implementing this family takes those changes only through an N-of-M approval among its administrators, never through policy (Rego or otherwise) — authority-defining records are host-enforced, and policy may only refuse. That is a description of the VTC's model, not a requirement this schema can carry. An entry holds at most one administrative role; a combination (repo manager AND vetting lead) is expressed as a custom role.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RoleDefinition",
-///  "description": "One administrative role of a VTC: a name, the CEILING of capabilities an entry holding the role may hold, and the approve ceiling of capabilities it may approve.\n\nA ROLE IS A CEILING, NOT A GRANT. It states the most an entry with this role could be allowed; the entry's own `capabilities` say what it does hold, and may be narrower. An entry's effective capabilities are this whole `ceiling` where the entry states `capabilities: {scope: ceiling}`, nothing where it states `none`, and this `ceiling` ∩ its listed grants (plus any additive grant) where it states `listed`. Holding the role confers nothing an entry has not been granted. Likewise `approveScope` bounds what an entry may approve: the entry's `approveCapabilities` select from it (`ceiling` = all of it, `listed` = an intersection, absent or `none` = nothing), and the entry's `approve` scope must not be none for any of it to apply.\n\nNO WILDCARDS. A ceiling lists its capabilities explicitly, even where it is meant to be \"everything\"; a role whose ceiling is empty holds no capability, and one whose approve ceiling is empty approves none. Built-in roles whose intent is the whole registry enumerate it, and their records grow when the registry grows — by release, never by policy.\n\nBUILT-IN ROLES (`builtIn: true`) are fixed by the VTC implementation and MUST NOT be changed or deleted through vtc/roles/define or vtc/roles/delete. The built-in set, with the ceilings a VTC is expected to ship (descriptive; the authoritative ceiling is the record the VTC returns):\n- `community-admin` — ceiling: every `vtc.*` capability and `git.ns.admin` unqualified; approve ceiling: every capability. With its full ceiling it is the community's unrestricted administrator.\n- `moderator` — ceiling: `vtc.members.manage`, `vtc.join.decide`, `vtc.invitations.manage`; approve ceiling: the same.\n- `vetting-lead` — ceiling: `vtc.vetting.manage` (an entry may qualify it by criterion); approve ceiling: `vtc.vetting.manage`, so vetting leads approve vetter grants and other vetting leads at their qualifier.\n- `repo-manager` — ceiling: `git.repo.manage` and `git.ns.admin` (held qualified by namespace or repository); approve ceiling: the same, at the same qualifier.\n- `credential-officer` — ceiling: `vtc.credentials.issue`, `vtc.credentials.revoke`; approve ceiling: the same.\n- `auditor` — ceiling: `vtc.audit.read`; approve ceiling: none.\n- `approver` — ceiling: none (an entry holding it states `act: {scope: none}`); approve ceiling: every capability, narrowed by the entry's `approveCapabilities` — the least-privilege approver.\n\nCUSTOM ROLES (`builtIn: false`) are created, changed and deleted by a community through vtc/roles/define and vtc/roles/delete. A VTC implementing this family takes those changes only through an N-of-M approval among its administrators, never through policy (Rego or otherwise) — authority-defining records are host-enforced, and policy may only refuse. That is a description of the VTC's model, not a requirement this schema can carry. An entry holds at most one administrative role; a combination (repo manager AND vetting lead) is expressed as a custom role.",
-///  "type": "object",
-///  "required": [
-///    "approveScope",
-///    "builtIn",
-///    "ceiling",
-///    "name"
-///  ],
-///  "properties": {
-///    "approveScope": {
-///      "description": "The capabilities an entry holding this role MAY approve an action needing — the role's approve ceiling, independent of `ceiling`. An entry approves all of it with `approveCapabilities: {scope: ceiling}`, an intersection with `listed`, and nothing when `approveCapabilities` is absent or `none`; the entry's `approve` scope must be other than none for any of it to apply. EMPTY means the role approves nothing.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/CapabilityRef"
-///      }
-///    },
-///    "builtIn": {
-///      "description": "`true` for a role fixed by the VTC implementation, which cannot be changed or deleted; `false` for a community-defined custom role.",
-///      "type": "boolean"
-///    },
-///    "ceiling": {
-///      "description": "The capabilities an entry holding this role MAY hold, each optionally qualified by a resource. An entry may hold a capability at a qualifier inside the ceiling's (a ceiling of `git.repo.manage` unqualified admits `git.repo.manage @ git-ns:github.com/acme`), never outside it. EMPTY means the role admits no capability. A capability the VTC classes as additive never appears in a ceiling — an additive capability is by definition one no role implies.",
-///      "type": "array",
-///      "items": {
-///        "$ref": "#/definitions/CapabilityRef"
-///      }
-///    },
-///    "createdAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "createdBy": {
-///      "description": "VID of the administrator whose request created the role (for a custom role created by approval, the requester). Absent on a built-in role.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1
-///    },
-///    "description": {
-///      "description": "Optional human-readable description. Confers nothing.",
-///      "type": "string",
-///      "maxLength": 512
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT be interpreted as widening a ceiling.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "name": {
-///      "$ref": "#/definitions/RoleName"
-///    },
-///    "updatedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "updatedBy": {
-///      "description": "VID of the administrator whose request last replaced the role. Absent on a built-in role and on a custom role never replaced.",
-///      "type": "string",
-///      "maxLength": 2048,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -567,17 +371,6 @@ impl RoleDefinition {
 }
 ///VID of the administrator whose request created the role (for a custom role created by approval, the requester). Absent on a built-in role.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "VID of the administrator whose request created the role (for a custom role created by approval, the requester). Absent on a built-in role.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RoleDefinitionCreatedBy(::std::string::String);
@@ -640,16 +433,6 @@ impl<'de> ::serde::Deserialize<'de> for RoleDefinitionCreatedBy {
 }
 ///Optional human-readable description. Confers nothing.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Optional human-readable description. Confers nothing.",
-///  "type": "string",
-///  "maxLength": 512
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RoleDefinitionDescription(::std::string::String);
@@ -709,17 +492,6 @@ impl<'de> ::serde::Deserialize<'de> for RoleDefinitionDescription {
 }
 ///VID of the administrator whose request last replaced the role. Absent on a built-in role and on a custom role never replaced.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "VID of the administrator whose request last replaced the role. Absent on a built-in role and on a custom role never replaced.",
-///  "type": "string",
-///  "maxLength": 2048,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RoleDefinitionUpdatedBy(::std::string::String);
@@ -782,17 +554,6 @@ impl<'de> ::serde::Deserialize<'de> for RoleDefinitionUpdatedBy {
 }
 ///A role identifier: lowercase, hyphen-separated, at most 64 characters. Compared by exact string equality. It is the value an AclEntry 0.2 carries in `role`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "RoleName",
-///  "description": "A role identifier: lowercase, hyphen-separated, at most 64 characters. Compared by exact string equality. It is the value an AclEntry 0.2 carries in `role`.",
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]{0,63}$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct RoleName(::std::string::String);
@@ -1221,14 +982,14 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/roles/show/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Capability\": {\n      \"description\": \"Opaque identifier of one administrative power in the maintainer's capability registry — lowercase dot-separated segments (e.g. `keys.sign`, `vtc.roles.assign`, `git.repo.manage`). A consumer MUST NOT treat a capability it does not recognise as granted.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)*$\",\n      \"title\": \"Capability\",\n      \"type\": \"string\"\n    },\n    \"CapabilityRef\": {\n      \"additionalProperties\": false,\n      \"description\": \"A capability, optionally qualified by a resource. Used where a capability is named but not granted — a role's ceiling, a role's approve ceiling, an entry's approvable capabilities. An unqualified reference covers every resource of the capability's kind.\",\n      \"properties\": {\n        \"capability\": {\n          \"$ref\": \"#/$defs/Capability\"\n        },\n        \"resource\": {\n          \"$ref\": \"#/$defs/ResourceQualifier\",\n          \"description\": \"Optional qualifier. Absent covers every resource of the capability's kind.\"\n        }\n      },\n      \"required\": [\n        \"capability\"\n      ],\n      \"title\": \"CapabilityRef\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ResourceQualifier\": {\n      \"description\": \"Opaque qualifier naming the part of the maintainer's resources a capability applies to (e.g. `git-ns:github.com/acme`, `git-repo:github.com/acme/r#4211`, `policy:join`). Its grammar and containment rule are the maintainer's: a qualified capability covers the named resource and the resources inside it. A qualifier MUST NOT be read as widening the entry's act scope.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"title\": \"ResourceQualifier\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a vtc/roles/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/roles/show/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"holders\": {\n          \"description\": \"Optional: the number of ACL entries currently holding this role. A count, never a list of subjects. A VTC MAY omit it where the querying party may not learn it.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"role\": {\n          \"$ref\": \"#/$defs/RoleDefinition\",\n          \"description\": \"The role record.\"\n        }\n      },\n      \"required\": [\n        \"role\"\n      ],\n      \"title\": \"VTC Roles — Show — response payload\",\n      \"type\": \"object\"\n    },\n    \"RoleDefinition\": {\n      \"additionalProperties\": false,\n      \"description\": \"One administrative role of a VTC: a name, the CEILING of capabilities an entry holding the role may hold, and the approve ceiling of capabilities it may approve.\\n\\nA ROLE IS A CEILING, NOT A GRANT. It states the most an entry with this role could be allowed; the entry's own `capabilities` say what it does hold, and may be narrower. An entry's effective capabilities are this whole `ceiling` where the entry states `capabilities: {scope: ceiling}`, nothing where it states `none`, and this `ceiling` ∩ its listed grants (plus any additive grant) where it states `listed`. Holding the role confers nothing an entry has not been granted. Likewise `approveScope` bounds what an entry may approve: the entry's `approveCapabilities` select from it (`ceiling` = all of it, `listed` = an intersection, absent or `none` = nothing), and the entry's `approve` scope must not be none for any of it to apply.\\n\\nNO WILDCARDS. A ceiling lists its capabilities explicitly, even where it is meant to be \\\"everything\\\"; a role whose ceiling is empty holds no capability, and one whose approve ceiling is empty approves none. Built-in roles whose intent is the whole registry enumerate it, and their records grow when the registry grows — by release, never by policy.\\n\\nBUILT-IN ROLES (`builtIn: true`) are fixed by the VTC implementation and MUST NOT be changed or deleted through vtc/roles/define or vtc/roles/delete. The built-in set, with the ceilings a VTC is expected to ship (descriptive; the authoritative ceiling is the record the VTC returns):\\n- `community-admin` — ceiling: every `vtc.*` capability and `git.ns.admin` unqualified; approve ceiling: every capability. With its full ceiling it is the community's unrestricted administrator.\\n- `moderator` — ceiling: `vtc.members.manage`, `vtc.join.decide`, `vtc.invitations.manage`; approve ceiling: the same.\\n- `vetting-lead` — ceiling: `vtc.vetting.manage` (an entry may qualify it by criterion); approve ceiling: `vtc.vetting.manage`, so vetting leads approve vetter grants and other vetting leads at their qualifier.\\n- `repo-manager` — ceiling: `git.repo.manage` and `git.ns.admin` (held qualified by namespace or repository); approve ceiling: the same, at the same qualifier.\\n- `credential-officer` — ceiling: `vtc.credentials.issue`, `vtc.credentials.revoke`; approve ceiling: the same.\\n- `auditor` — ceiling: `vtc.audit.read`; approve ceiling: none.\\n- `approver` — ceiling: none (an entry holding it states `act: {scope: none}`); approve ceiling: every capability, narrowed by the entry's `approveCapabilities` — the least-privilege approver.\\n\\nCUSTOM ROLES (`builtIn: false`) are created, changed and deleted by a community through vtc/roles/define and vtc/roles/delete. A VTC implementing this family takes those changes only through an N-of-M approval among its administrators, never through policy (Rego or otherwise) — authority-defining records are host-enforced, and policy may only refuse. That is a description of the VTC's model, not a requirement this schema can carry. An entry holds at most one administrative role; a combination (repo manager AND vetting lead) is expressed as a custom role.\",\n      \"properties\": {\n        \"approveScope\": {\n          \"description\": \"The capabilities an entry holding this role MAY approve an action needing — the role's approve ceiling, independent of `ceiling`. An entry approves all of it with `approveCapabilities: {scope: ceiling}`, an intersection with `listed`, and nothing when `approveCapabilities` is absent or `none`; the entry's `approve` scope must be other than none for any of it to apply. EMPTY means the role approves nothing.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/CapabilityRef\"\n          },\n          \"type\": \"array\"\n        },\n        \"builtIn\": {\n          \"description\": \"`true` for a role fixed by the VTC implementation, which cannot be changed or deleted; `false` for a community-defined custom role.\",\n          \"type\": \"boolean\"\n        },\n        \"ceiling\": {\n          \"description\": \"The capabilities an entry holding this role MAY hold, each optionally qualified by a resource. An entry may hold a capability at a qualifier inside the ceiling's (a ceiling of `git.repo.manage` unqualified admits `git.repo.manage @ git-ns:github.com/acme`), never outside it. EMPTY means the role admits no capability. A capability the VTC classes as additive never appears in a ceiling — an additive capability is by definition one no role implies.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/CapabilityRef\"\n          },\n          \"type\": \"array\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"createdBy\": {\n          \"description\": \"VID of the administrator whose request created the role (for a custom role created by approval, the requester). Absent on a built-in role.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"description\": \"Optional human-readable description. Confers nothing.\",\n          \"maxLength\": 512,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT be interpreted as widening a ceiling.\"\n        },\n        \"name\": {\n          \"$ref\": \"#/$defs/RoleName\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"updatedBy\": {\n          \"description\": \"VID of the administrator whose request last replaced the role. Absent on a built-in role and on a custom role never replaced.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"name\",\n        \"builtIn\",\n        \"ceiling\",\n        \"approveScope\"\n      ],\n      \"title\": \"RoleDefinition\",\n      \"type\": \"object\"\n    },\n    \"RoleName\": {\n      \"description\": \"A role identifier: lowercase, hyphen-separated, at most 64 characters. Compared by exact string equality. It is the value an AclEntry 0.2 carries in `role`.\",\n      \"pattern\": \"^[a-z][a-z0-9-]{0,63}$\",\n      \"title\": \"RoleName\",\n      \"type\": \"string\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/roles/show/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Fetch one administrative role of a VTC by name. The outer document members are owned by the framework — SPEC §6.3.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"name\": {\n      \"$ref\": \"#/$defs/RoleName\",\n      \"description\": \"Name of the role, built-in or custom.\"\n    }\n  },\n  \"required\": [\n    \"name\"\n  ],\n  \"title\": \"VTC Roles — Show — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Capability\":{\"description\":\"Opaque identifier of one administrative power in the maintainer's capability registry — lowercase dot-separated segments (e.g. `keys.sign`, `vtc.roles.assign`, `git.repo.manage`). A consumer MUST NOT treat a capability it does not recognise as granted.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)*$\",\"title\":\"Capability\",\"type\":\"string\"},\"CapabilityRef\":{\"additionalProperties\":false,\"description\":\"A capability, optionally qualified by a resource. Used where a capability is named but not granted — a role's ceiling, a role's approve ceiling, an entry's approvable capabilities. An unqualified reference covers every resource of the capability's kind.\",\"properties\":{\"capability\":{\"$ref\":\"#/$defs/Capability\"},\"resource\":{\"$ref\":\"#/$defs/ResourceQualifier\",\"description\":\"Optional qualifier. Absent covers every resource of the capability's kind.\"}},\"required\":[\"capability\"],\"title\":\"CapabilityRef\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ResourceQualifier\":{\"description\":\"Opaque qualifier naming the part of the maintainer's resources a capability applies to (e.g. `git-ns:github.com/acme`, `git-repo:github.com/acme/r#4211`, `policy:join`). Its grammar and containment rule are the maintainer's: a qualified capability covers the named resource and the resources inside it. A qualifier MUST NOT be read as widening the entry's act scope.\",\"maxLength\":512,\"minLength\":1,\"title\":\"ResourceQualifier\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/roles/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/roles/show/0.1#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"holders\":{\"description\":\"Optional: the number of ACL entries currently holding this role. A count, never a list of subjects. A VTC MAY omit it where the querying party may not learn it.\",\"minimum\":0,\"type\":\"integer\"},\"role\":{\"$ref\":\"#/$defs/RoleDefinition\",\"description\":\"The role record.\"}},\"required\":[\"role\"],\"title\":\"VTC Roles — Show — response payload\",\"type\":\"object\"},\"RoleDefinition\":{\"additionalProperties\":false,\"description\":\"One administrative role of a VTC: a name, the CEILING of capabilities an entry holding the role may hold, and the approve ceiling of capabilities it may approve.\\n\\nA ROLE IS A CEILING, NOT A GRANT. It states the most an entry with this role could be allowed; the entry's own `capabilities` say what it does hold, and may be narrower. An entry's effective capabilities are this whole `ceiling` where the entry states `capabilities: {scope: ceiling}`, nothing where it states `none`, and this `ceiling` ∩ its listed grants (plus any additive grant) where it states `listed`. Holding the role confers nothing an entry has not been granted. Likewise `approveScope` bounds what an entry may approve: the entry's `approveCapabilities` select from it (`ceiling` = all of it, `listed` = an intersection, absent or `none` = nothing), and the entry's `approve` scope must not be none for any of it to apply.\\n\\nNO WILDCARDS. A ceiling lists its capabilities explicitly, even where it is meant to be \\\"everything\\\"; a role whose ceiling is empty holds no capability, and one whose approve ceiling is empty approves none. Built-in roles whose intent is the whole registry enumerate it, and their records grow when the registry grows — by release, never by policy.\\n\\nBUILT-IN ROLES (`builtIn: true`) are fixed by the VTC implementation and MUST NOT be changed or deleted through vtc/roles/define or vtc/roles/delete. The built-in set, with the ceilings a VTC is expected to ship (descriptive; the authoritative ceiling is the record the VTC returns):\\n- `community-admin` — ceiling: every `vtc.*` capability and `git.ns.admin` unqualified; approve ceiling: every capability. With its full ceiling it is the community's unrestricted administrator.\\n- `moderator` — ceiling: `vtc.members.manage`, `vtc.join.decide`, `vtc.invitations.manage`; approve ceiling: the same.\\n- `vetting-lead` — ceiling: `vtc.vetting.manage` (an entry may qualify it by criterion); approve ceiling: `vtc.vetting.manage`, so vetting leads approve vetter grants and other vetting leads at their qualifier.\\n- `repo-manager` — ceiling: `git.repo.manage` and `git.ns.admin` (held qualified by namespace or repository); approve ceiling: the same, at the same qualifier.\\n- `credential-officer` — ceiling: `vtc.credentials.issue`, `vtc.credentials.revoke`; approve ceiling: the same.\\n- `auditor` — ceiling: `vtc.audit.read`; approve ceiling: none.\\n- `approver` — ceiling: none (an entry holding it states `act: {scope: none}`); approve ceiling: every capability, narrowed by the entry's `approveCapabilities` — the least-privilege approver.\\n\\nCUSTOM ROLES (`builtIn: false`) are created, changed and deleted by a community through vtc/roles/define and vtc/roles/delete. A VTC implementing this family takes those changes only through an N-of-M approval among its administrators, never through policy (Rego or otherwise) — authority-defining records are host-enforced, and policy may only refuse. That is a description of the VTC's model, not a requirement this schema can carry. An entry holds at most one administrative role; a combination (repo manager AND vetting lead) is expressed as a custom role.\",\"properties\":{\"approveScope\":{\"description\":\"The capabilities an entry holding this role MAY approve an action needing — the role's approve ceiling, independent of `ceiling`. An entry approves all of it with `approveCapabilities: {scope: ceiling}`, an intersection with `listed`, and nothing when `approveCapabilities` is absent or `none`; the entry's `approve` scope must be other than none for any of it to apply. EMPTY means the role approves nothing.\",\"items\":{\"$ref\":\"#/$defs/CapabilityRef\"},\"type\":\"array\"},\"builtIn\":{\"description\":\"`true` for a role fixed by the VTC implementation, which cannot be changed or deleted; `false` for a community-defined custom role.\",\"type\":\"boolean\"},\"ceiling\":{\"description\":\"The capabilities an entry holding this role MAY hold, each optionally qualified by a resource. An entry may hold a capability at a qualifier inside the ceiling's (a ceiling of `git.repo.manage` unqualified admits `git.repo.manage @ git-ns:github.com/acme`), never outside it. EMPTY means the role admits no capability. A capability the VTC classes as additive never appears in a ceiling — an additive capability is by definition one no role implies.\",\"items\":{\"$ref\":\"#/$defs/CapabilityRef\"},\"type\":\"array\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"createdBy\":{\"description\":\"VID of the administrator whose request created the role (for a custom role created by approval, the requester). Absent on a built-in role.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"description\":{\"description\":\"Optional human-readable description. Confers nothing.\",\"maxLength\":512,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT be interpreted as widening a ceiling.\"},\"name\":{\"$ref\":\"#/$defs/RoleName\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"updatedBy\":{\"description\":\"VID of the administrator whose request last replaced the role. Absent on a built-in role and on a custom role never replaced.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"name\",\"builtIn\",\"ceiling\",\"approveScope\"],\"title\":\"RoleDefinition\",\"type\":\"object\"},\"RoleName\":{\"description\":\"A role identifier: lowercase, hyphen-separated, at most 64 characters. Compared by exact string equality. It is the value an AclEntry 0.2 carries in `role`.\",\"pattern\":\"^[a-z][a-z0-9-]{0,63}$\",\"title\":\"RoleName\",\"type\":\"string\"}},\"$id\":\"https://trusttasks.org/spec/vtc/roles/show/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Fetch one administrative role of a VTC by name. The outer document members are owned by the framework — SPEC §6.3.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"name\":{\"$ref\":\"#/$defs/RoleName\",\"description\":\"Name of the role, built-in or custom.\"}},\"required\":[\"name\"],\"title\":\"VTC Roles — Show — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vtc/roles/show/0.1#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Capability\": {\n      \"description\": \"Opaque identifier of one administrative power in the maintainer's capability registry — lowercase dot-separated segments (e.g. `keys.sign`, `vtc.roles.assign`, `git.repo.manage`). A consumer MUST NOT treat a capability it does not recognise as granted.\",\n      \"maxLength\": 128,\n      \"minLength\": 1,\n      \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)*$\",\n      \"title\": \"Capability\",\n      \"type\": \"string\"\n    },\n    \"CapabilityRef\": {\n      \"additionalProperties\": false,\n      \"description\": \"A capability, optionally qualified by a resource. Used where a capability is named but not granted — a role's ceiling, a role's approve ceiling, an entry's approvable capabilities. An unqualified reference covers every resource of the capability's kind.\",\n      \"properties\": {\n        \"capability\": {\n          \"$ref\": \"#/$defs/Capability\"\n        },\n        \"resource\": {\n          \"$ref\": \"#/$defs/ResourceQualifier\",\n          \"description\": \"Optional qualifier. Absent covers every resource of the capability's kind.\"\n        }\n      },\n      \"required\": [\n        \"capability\"\n      ],\n      \"title\": \"CapabilityRef\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"ResourceQualifier\": {\n      \"description\": \"Opaque qualifier naming the part of the maintainer's resources a capability applies to (e.g. `git-ns:github.com/acme`, `git-repo:github.com/acme/r#4211`, `policy:join`). Its grammar and containment rule are the maintainer's: a qualified capability covers the named resource and the resources inside it. A qualifier MUST NOT be read as widening the entry's act scope.\",\n      \"maxLength\": 512,\n      \"minLength\": 1,\n      \"title\": \"ResourceQualifier\",\n      \"type\": \"string\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The success response to a vtc/roles/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/roles/show/0.1#response.\",\n      \"properties\": {\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"holders\": {\n          \"description\": \"Optional: the number of ACL entries currently holding this role. A count, never a list of subjects. A VTC MAY omit it where the querying party may not learn it.\",\n          \"minimum\": 0,\n          \"type\": \"integer\"\n        },\n        \"role\": {\n          \"$ref\": \"#/$defs/RoleDefinition\",\n          \"description\": \"The role record.\"\n        }\n      },\n      \"required\": [\n        \"role\"\n      ],\n      \"title\": \"VTC Roles — Show — response payload\",\n      \"type\": \"object\"\n    },\n    \"RoleDefinition\": {\n      \"additionalProperties\": false,\n      \"description\": \"One administrative role of a VTC: a name, the CEILING of capabilities an entry holding the role may hold, and the approve ceiling of capabilities it may approve.\\n\\nA ROLE IS A CEILING, NOT A GRANT. It states the most an entry with this role could be allowed; the entry's own `capabilities` say what it does hold, and may be narrower. An entry's effective capabilities are this whole `ceiling` where the entry states `capabilities: {scope: ceiling}`, nothing where it states `none`, and this `ceiling` ∩ its listed grants (plus any additive grant) where it states `listed`. Holding the role confers nothing an entry has not been granted. Likewise `approveScope` bounds what an entry may approve: the entry's `approveCapabilities` select from it (`ceiling` = all of it, `listed` = an intersection, absent or `none` = nothing), and the entry's `approve` scope must not be none for any of it to apply.\\n\\nNO WILDCARDS. A ceiling lists its capabilities explicitly, even where it is meant to be \\\"everything\\\"; a role whose ceiling is empty holds no capability, and one whose approve ceiling is empty approves none. Built-in roles whose intent is the whole registry enumerate it, and their records grow when the registry grows — by release, never by policy.\\n\\nBUILT-IN ROLES (`builtIn: true`) are fixed by the VTC implementation and MUST NOT be changed or deleted through vtc/roles/define or vtc/roles/delete. The built-in set, with the ceilings a VTC is expected to ship (descriptive; the authoritative ceiling is the record the VTC returns):\\n- `community-admin` — ceiling: every `vtc.*` capability and `git.ns.admin` unqualified; approve ceiling: every capability. With its full ceiling it is the community's unrestricted administrator.\\n- `moderator` — ceiling: `vtc.members.manage`, `vtc.join.decide`, `vtc.invitations.manage`; approve ceiling: the same.\\n- `vetting-lead` — ceiling: `vtc.vetting.manage` (an entry may qualify it by criterion); approve ceiling: `vtc.vetting.manage`, so vetting leads approve vetter grants and other vetting leads at their qualifier.\\n- `repo-manager` — ceiling: `git.repo.manage` and `git.ns.admin` (held qualified by namespace or repository); approve ceiling: the same, at the same qualifier.\\n- `credential-officer` — ceiling: `vtc.credentials.issue`, `vtc.credentials.revoke`; approve ceiling: the same.\\n- `auditor` — ceiling: `vtc.audit.read`; approve ceiling: none.\\n- `approver` — ceiling: none (an entry holding it states `act: {scope: none}`); approve ceiling: every capability, narrowed by the entry's `approveCapabilities` — the least-privilege approver.\\n\\nCUSTOM ROLES (`builtIn: false`) are created, changed and deleted by a community through vtc/roles/define and vtc/roles/delete. A VTC implementing this family takes those changes only through an N-of-M approval among its administrators, never through policy (Rego or otherwise) — authority-defining records are host-enforced, and policy may only refuse. That is a description of the VTC's model, not a requirement this schema can carry. An entry holds at most one administrative role; a combination (repo manager AND vetting lead) is expressed as a custom role.\",\n      \"properties\": {\n        \"approveScope\": {\n          \"description\": \"The capabilities an entry holding this role MAY approve an action needing — the role's approve ceiling, independent of `ceiling`. An entry approves all of it with `approveCapabilities: {scope: ceiling}`, an intersection with `listed`, and nothing when `approveCapabilities` is absent or `none`; the entry's `approve` scope must be other than none for any of it to apply. EMPTY means the role approves nothing.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/CapabilityRef\"\n          },\n          \"type\": \"array\"\n        },\n        \"builtIn\": {\n          \"description\": \"`true` for a role fixed by the VTC implementation, which cannot be changed or deleted; `false` for a community-defined custom role.\",\n          \"type\": \"boolean\"\n        },\n        \"ceiling\": {\n          \"description\": \"The capabilities an entry holding this role MAY hold, each optionally qualified by a resource. An entry may hold a capability at a qualifier inside the ceiling's (a ceiling of `git.repo.manage` unqualified admits `git.repo.manage @ git-ns:github.com/acme`), never outside it. EMPTY means the role admits no capability. A capability the VTC classes as additive never appears in a ceiling — an additive capability is by definition one no role implies.\",\n          \"items\": {\n            \"$ref\": \"#/$defs/CapabilityRef\"\n          },\n          \"type\": \"array\"\n        },\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"createdBy\": {\n          \"description\": \"VID of the administrator whose request created the role (for a custom role created by approval, the requester). Absent on a built-in role.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        },\n        \"description\": {\n          \"description\": \"Optional human-readable description. Confers nothing.\",\n          \"maxLength\": 512,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT be interpreted as widening a ceiling.\"\n        },\n        \"name\": {\n          \"$ref\": \"#/$defs/RoleName\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"updatedBy\": {\n          \"description\": \"VID of the administrator whose request last replaced the role. Absent on a built-in role and on a custom role never replaced.\",\n          \"maxLength\": 2048,\n          \"minLength\": 1,\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"name\",\n        \"builtIn\",\n        \"ceiling\",\n        \"approveScope\"\n      ],\n      \"title\": \"RoleDefinition\",\n      \"type\": \"object\"\n    },\n    \"RoleName\": {\n      \"description\": \"A role identifier: lowercase, hyphen-separated, at most 64 characters. Compared by exact string equality. It is the value an AclEntry 0.2 carries in `role`.\",\n      \"pattern\": \"^[a-z][a-z0-9-]{0,63}$\",\n      \"title\": \"RoleName\",\n      \"type\": \"string\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Capability\":{\"description\":\"Opaque identifier of one administrative power in the maintainer's capability registry — lowercase dot-separated segments (e.g. `keys.sign`, `vtc.roles.assign`, `git.repo.manage`). A consumer MUST NOT treat a capability it does not recognise as granted.\",\"maxLength\":128,\"minLength\":1,\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)*$\",\"title\":\"Capability\",\"type\":\"string\"},\"CapabilityRef\":{\"additionalProperties\":false,\"description\":\"A capability, optionally qualified by a resource. Used where a capability is named but not granted — a role's ceiling, a role's approve ceiling, an entry's approvable capabilities. An unqualified reference covers every resource of the capability's kind.\",\"properties\":{\"capability\":{\"$ref\":\"#/$defs/Capability\"},\"resource\":{\"$ref\":\"#/$defs/ResourceQualifier\",\"description\":\"Optional qualifier. Absent covers every resource of the capability's kind.\"}},\"required\":[\"capability\"],\"title\":\"CapabilityRef\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"ResourceQualifier\":{\"description\":\"Opaque qualifier naming the part of the maintainer's resources a capability applies to (e.g. `git-ns:github.com/acme`, `git-repo:github.com/acme/r#4211`, `policy:join`). Its grammar and containment rule are the maintainer's: a qualified capability covers the named resource and the resources inside it. A qualifier MUST NOT be read as widening the entry's act scope.\",\"maxLength\":512,\"minLength\":1,\"title\":\"ResourceQualifier\",\"type\":\"string\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The success response to a vtc/roles/show/0.1 request. Carried in a Trust Task document whose type is https://trusttasks.org/spec/vtc/roles/show/0.1#response.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"holders\":{\"description\":\"Optional: the number of ACL entries currently holding this role. A count, never a list of subjects. A VTC MAY omit it where the querying party may not learn it.\",\"minimum\":0,\"type\":\"integer\"},\"role\":{\"$ref\":\"#/$defs/RoleDefinition\",\"description\":\"The role record.\"}},\"required\":[\"role\"],\"title\":\"VTC Roles — Show — response payload\",\"type\":\"object\"},\"RoleDefinition\":{\"additionalProperties\":false,\"description\":\"One administrative role of a VTC: a name, the CEILING of capabilities an entry holding the role may hold, and the approve ceiling of capabilities it may approve.\\n\\nA ROLE IS A CEILING, NOT A GRANT. It states the most an entry with this role could be allowed; the entry's own `capabilities` say what it does hold, and may be narrower. An entry's effective capabilities are this whole `ceiling` where the entry states `capabilities: {scope: ceiling}`, nothing where it states `none`, and this `ceiling` ∩ its listed grants (plus any additive grant) where it states `listed`. Holding the role confers nothing an entry has not been granted. Likewise `approveScope` bounds what an entry may approve: the entry's `approveCapabilities` select from it (`ceiling` = all of it, `listed` = an intersection, absent or `none` = nothing), and the entry's `approve` scope must not be none for any of it to apply.\\n\\nNO WILDCARDS. A ceiling lists its capabilities explicitly, even where it is meant to be \\\"everything\\\"; a role whose ceiling is empty holds no capability, and one whose approve ceiling is empty approves none. Built-in roles whose intent is the whole registry enumerate it, and their records grow when the registry grows — by release, never by policy.\\n\\nBUILT-IN ROLES (`builtIn: true`) are fixed by the VTC implementation and MUST NOT be changed or deleted through vtc/roles/define or vtc/roles/delete. The built-in set, with the ceilings a VTC is expected to ship (descriptive; the authoritative ceiling is the record the VTC returns):\\n- `community-admin` — ceiling: every `vtc.*` capability and `git.ns.admin` unqualified; approve ceiling: every capability. With its full ceiling it is the community's unrestricted administrator.\\n- `moderator` — ceiling: `vtc.members.manage`, `vtc.join.decide`, `vtc.invitations.manage`; approve ceiling: the same.\\n- `vetting-lead` — ceiling: `vtc.vetting.manage` (an entry may qualify it by criterion); approve ceiling: `vtc.vetting.manage`, so vetting leads approve vetter grants and other vetting leads at their qualifier.\\n- `repo-manager` — ceiling: `git.repo.manage` and `git.ns.admin` (held qualified by namespace or repository); approve ceiling: the same, at the same qualifier.\\n- `credential-officer` — ceiling: `vtc.credentials.issue`, `vtc.credentials.revoke`; approve ceiling: the same.\\n- `auditor` — ceiling: `vtc.audit.read`; approve ceiling: none.\\n- `approver` — ceiling: none (an entry holding it states `act: {scope: none}`); approve ceiling: every capability, narrowed by the entry's `approveCapabilities` — the least-privilege approver.\\n\\nCUSTOM ROLES (`builtIn: false`) are created, changed and deleted by a community through vtc/roles/define and vtc/roles/delete. A VTC implementing this family takes those changes only through an N-of-M approval among its administrators, never through policy (Rego or otherwise) — authority-defining records are host-enforced, and policy may only refuse. That is a description of the VTC's model, not a requirement this schema can carry. An entry holds at most one administrative role; a combination (repo manager AND vetting lead) is expressed as a custom role.\",\"properties\":{\"approveScope\":{\"description\":\"The capabilities an entry holding this role MAY approve an action needing — the role's approve ceiling, independent of `ceiling`. An entry approves all of it with `approveCapabilities: {scope: ceiling}`, an intersection with `listed`, and nothing when `approveCapabilities` is absent or `none`; the entry's `approve` scope must be other than none for any of it to apply. EMPTY means the role approves nothing.\",\"items\":{\"$ref\":\"#/$defs/CapabilityRef\"},\"type\":\"array\"},\"builtIn\":{\"description\":\"`true` for a role fixed by the VTC implementation, which cannot be changed or deleted; `false` for a community-defined custom role.\",\"type\":\"boolean\"},\"ceiling\":{\"description\":\"The capabilities an entry holding this role MAY hold, each optionally qualified by a resource. An entry may hold a capability at a qualifier inside the ceiling's (a ceiling of `git.repo.manage` unqualified admits `git.repo.manage @ git-ns:github.com/acme`), never outside it. EMPTY means the role admits no capability. A capability the VTC classes as additive never appears in a ceiling — an additive capability is by definition one no role implies.\",\"items\":{\"$ref\":\"#/$defs/CapabilityRef\"},\"type\":\"array\"},\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"createdBy\":{\"description\":\"VID of the administrator whose request created the role (for a custom role created by approval, the requester). Absent on a built-in role.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"},\"description\":{\"description\":\"Optional human-readable description. Confers nothing.\",\"maxLength\":512,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1. An extension member MUST NOT be interpreted as widening a ceiling.\"},\"name\":{\"$ref\":\"#/$defs/RoleName\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"updatedBy\":{\"description\":\"VID of the administrator whose request last replaced the role. Absent on a built-in role and on a custom role never replaced.\",\"maxLength\":2048,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"name\",\"builtIn\",\"ceiling\",\"approveScope\"],\"title\":\"RoleDefinition\",\"type\":\"object\"},\"RoleName\":{\"description\":\"A role identifier: lowercase, hyphen-separated, at most 64 characters. Compared by exact string equality. It is the value an AclEntry 0.2 carries in `role`.\",\"pattern\":\"^[a-z][a-z0-9-]{0,63}$\",\"title\":\"RoleName\",\"type\":\"string\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

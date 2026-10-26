@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,38 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vta/webvh/servers/register/1.0",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "id"
-///  ],
-///  "properties": {
-///    "did": {
-///      "description": "The server's DID, used to authenticate it. Absent where the VTA resolves it during registration.",
-///      "type": "string"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "id": {
-///      "description": "Local id for the server. Referenced by every DID published through it.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "label": {
-///      "type": "string",
-///      "maxLength": 256
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -195,16 +139,6 @@ impl Payload {
 }
 ///Local id for the server. Referenced by every DID published through it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Local id for the server. Referenced by every DID published through it.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadId(::std::string::String);
@@ -264,15 +198,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadId {
 }
 ///`PayloadLabel`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 256
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadLabel(::std::string::String);
@@ -332,17 +257,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadLabel {
 }
 ///Success response to vta/webvh/servers/register: the registration the VTA now holds. Type https://trusttasks.org/spec/vta/webvh/servers/register/1.0#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Success response to vta/webvh/servers/register: the registration the VTA now holds. Type https://trusttasks.org/spec/vta/webvh/servers/register/1.0#response.",
-///  "$ref": "#/definitions/WebvhServerRecord",
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Response(pub WebvhServerRecord);
@@ -364,48 +278,6 @@ impl ::std::convert::From<WebvhServerRecord> for Response {
 }
 ///A hosting server the VTA is registered with. Carries no credential: what the VTA holds to authenticate against the server is never part of this record and never leaves it.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "WebvhServerRecord",
-///  "description": "A hosting server the VTA is registered with. Carries no credential: what the VTA holds to authenticate against the server is never part of this record and never leaves it.",
-///  "type": "object",
-///  "required": [
-///    "createdAt",
-///    "did",
-///    "id",
-///    "updatedAt"
-///  ],
-///  "properties": {
-///    "createdAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "did": {
-///      "description": "The server's own DID, used to authenticate it.",
-///      "type": "string"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "id": {
-///      "description": "Local id for the server, chosen by the operator.",
-///      "type": "string"
-///    },
-///    "label": {
-///      "type": "string",
-///      "maxLength": 256
-///    },
-///    "updatedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -430,15 +302,6 @@ impl WebvhServerRecord {
 }
 ///`WebvhServerRecordLabel`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "maxLength": 256
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct WebvhServerRecordLabel(::std::string::String);
@@ -706,7 +569,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"$ref\": \"#/$defs/WebvhServerRecord\",\n      \"description\": \"Success response to vta/webvh/servers/register: the registration the VTA now holds. Type https://trusttasks.org/spec/vta/webvh/servers/register/1.0#response.\",\n      \"title\": \"VTA WebVH Servers Register — response payload\"\n    },\n    \"WebvhServerRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"A hosting server the VTA is registered with. Carries no credential: what the VTA holds to authenticate against the server is never part of this record and never leaves it.\",\n      \"properties\": {\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"did\": {\n          \"description\": \"The server's own DID, used to authenticate it.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"description\": \"Local id for the server, chosen by the operator.\",\n          \"type\": \"string\"\n        },\n        \"label\": {\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"did\",\n        \"createdAt\",\n        \"updatedAt\"\n      ],\n      \"title\": \"WebvhServerRecord\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vta/webvh/servers/register/1.0\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"did\": {\n      \"description\": \"The server's DID, used to authenticate it. Absent where the VTA resolves it during registration.\",\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"id\": {\n      \"description\": \"Local id for the server. Referenced by every DID published through it.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"label\": {\n      \"maxLength\": 256,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"id\"\n  ],\n  \"title\": \"VTA WebVH Servers Register — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"$ref\":\"#/$defs/WebvhServerRecord\",\"description\":\"Success response to vta/webvh/servers/register: the registration the VTA now holds. Type https://trusttasks.org/spec/vta/webvh/servers/register/1.0#response.\",\"title\":\"VTA WebVH Servers Register — response payload\"},\"WebvhServerRecord\":{\"additionalProperties\":false,\"description\":\"A hosting server the VTA is registered with. Carries no credential: what the VTA holds to authenticate against the server is never part of this record and never leaves it.\",\"properties\":{\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"did\":{\"description\":\"The server's own DID, used to authenticate it.\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"description\":\"Local id for the server, chosen by the operator.\",\"type\":\"string\"},\"label\":{\"maxLength\":256,\"type\":\"string\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"id\",\"did\",\"createdAt\",\"updatedAt\"],\"title\":\"WebvhServerRecord\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vta/webvh/servers/register/1.0\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"did\":{\"description\":\"The server's DID, used to authenticate it. Absent where the VTA resolves it during registration.\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"description\":\"Local id for the server. Referenced by every DID published through it.\",\"minLength\":1,\"type\":\"string\"},\"label\":{\"maxLength\":256,\"type\":\"string\"}},\"required\":[\"id\"],\"title\":\"VTA WebVH Servers Register — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -716,7 +579,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"$ref\": \"#/$defs/WebvhServerRecord\",\n      \"description\": \"Success response to vta/webvh/servers/register: the registration the VTA now holds. Type https://trusttasks.org/spec/vta/webvh/servers/register/1.0#response.\",\n      \"title\": \"VTA WebVH Servers Register — response payload\"\n    },\n    \"WebvhServerRecord\": {\n      \"additionalProperties\": false,\n      \"description\": \"A hosting server the VTA is registered with. Carries no credential: what the VTA holds to authenticate against the server is never part of this record and never leaves it.\",\n      \"properties\": {\n        \"createdAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"did\": {\n          \"description\": \"The server's own DID, used to authenticate it.\",\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"id\": {\n          \"description\": \"Local id for the server, chosen by the operator.\",\n          \"type\": \"string\"\n        },\n        \"label\": {\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"updatedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"did\",\n        \"createdAt\",\n        \"updatedAt\"\n      ],\n      \"title\": \"WebvhServerRecord\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"$ref\":\"#/$defs/WebvhServerRecord\",\"description\":\"Success response to vta/webvh/servers/register: the registration the VTA now holds. Type https://trusttasks.org/spec/vta/webvh/servers/register/1.0#response.\",\"title\":\"VTA WebVH Servers Register — response payload\"},\"WebvhServerRecord\":{\"additionalProperties\":false,\"description\":\"A hosting server the VTA is registered with. Carries no credential: what the VTA holds to authenticate against the server is never part of this record and never leaves it.\",\"properties\":{\"createdAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"did\":{\"description\":\"The server's own DID, used to authenticate it.\",\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"id\":{\"description\":\"Local id for the server, chosen by the operator.\",\"type\":\"string\"},\"label\":{\"maxLength\":256,\"type\":\"string\"},\"updatedAt\":{\"format\":\"date-time\",\"type\":\"string\"}},\"required\":[\"id\",\"did\",\"createdAt\",\"updatedAt\"],\"title\":\"WebvhServerRecord\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

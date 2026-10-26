@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,29 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///`Payload`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vtc/auth/recognise/0.3",
-///  "title": "Payload",
-///  "type": "object",
-///  "required": [
-///    "presentation"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "presentation": {
-///      "description": "A holder-signed W3C Verifiable Presentation embedding the foreign membership credential (`MembershipCredential`) and role credential (a Verifiable Authority Credential, `AuthorityCredential`, conferring `role:<name>` at the foreign community's DID) in `verifiableCredential`.\n\nThe holder proof MUST use `proofPurpose: authentication`, MUST commit to the single-use `nonce` issued by `vtc/auth/recognise/challenge`, and MUST name the recognising community's DID as `domain`. A consumer MUST verify the holder proof, verify each embedded credential's issuer proof, and refuse unless the presentation's holder is the credentials' subject.",
-///      "type": "object"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -184,58 +137,6 @@ impl Payload {
 }
 ///`Response`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "type": "object",
-///  "required": [
-///    "data",
-///    "sessionId"
-///  ],
-///  "properties": {
-///    "data": {
-///      "type": "object",
-///      "required": [
-///        "accessExpiresAt",
-///        "accessToken",
-///        "foreignIssuerDid",
-///        "mappedRole"
-///      ],
-///      "properties": {
-///        "accessExpiresAt": {
-///          "description": "The access token's expiry, as an RFC 3339 date-time, clamped to min(local default, earliest of the vec/vmc validUntil).",
-///          "type": "string",
-///          "format": "date-time"
-///        },
-///        "accessToken": {
-///          "type": "string"
-///        },
-///        "foreignIssuerDid": {
-///          "type": "string"
-///        },
-///        "mappedRole": {
-///          "description": "The LOCAL role from cross_community_roles policy — not the foreign role.",
-///          "type": "string"
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "sessionId": {
-///      "description": "A cross-community session id (xc-<uuid>), distinguishing it from local-member sessions.",
-///      "type": "string",
-///      "pattern": "^xc-"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -254,38 +155,6 @@ impl Response {
 }
 ///`ResponseData`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "accessExpiresAt",
-///    "accessToken",
-///    "foreignIssuerDid",
-///    "mappedRole"
-///  ],
-///  "properties": {
-///    "accessExpiresAt": {
-///      "description": "The access token's expiry, as an RFC 3339 date-time, clamped to min(local default, earliest of the vec/vmc validUntil).",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "accessToken": {
-///      "type": "string"
-///    },
-///    "foreignIssuerDid": {
-///      "type": "string"
-///    },
-///    "mappedRole": {
-///      "description": "The LOCAL role from cross_community_roles policy — not the foreign role.",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -308,16 +177,6 @@ impl ResponseData {
 }
 ///A cross-community session id (xc-<uuid>), distinguishing it from local-member sessions.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "A cross-community session id (xc-<uuid>), distinguishing it from local-member sessions.",
-///  "type": "string",
-///  "pattern": "^xc-"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseSessionId(::std::string::String);
@@ -591,7 +450,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"data\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"accessExpiresAt\": {\n              \"description\": \"The access token's expiry, as an RFC 3339 date-time, clamped to min(local default, earliest of the vec/vmc validUntil).\",\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"accessToken\": {\n              \"type\": \"string\"\n            },\n            \"foreignIssuerDid\": {\n              \"type\": \"string\"\n            },\n            \"mappedRole\": {\n              \"description\": \"The LOCAL role from cross_community_roles policy — not the foreign role.\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"accessToken\",\n            \"accessExpiresAt\",\n            \"foreignIssuerDid\",\n            \"mappedRole\"\n          ],\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"sessionId\": {\n          \"description\": \"A cross-community session id (xc-<uuid>), distinguishing it from local-member sessions.\",\n          \"pattern\": \"^xc-\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"sessionId\",\n        \"data\"\n      ],\n      \"title\": \"VTC Auth Recognise — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vtc/auth/recognise/0.3\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"presentation\": {\n      \"description\": \"A holder-signed W3C Verifiable Presentation embedding the foreign membership credential (`MembershipCredential`) and role credential (a Verifiable Authority Credential, `AuthorityCredential`, conferring `role:<name>` at the foreign community's DID) in `verifiableCredential`.\\n\\nThe holder proof MUST use `proofPurpose: authentication`, MUST commit to the single-use `nonce` issued by `vtc/auth/recognise/challenge`, and MUST name the recognising community's DID as `domain`. A consumer MUST verify the holder proof, verify each embedded credential's issuer proof, and refuse unless the presentation's holder is the credentials' subject.\",\n      \"type\": \"object\"\n    }\n  },\n  \"required\": [\n    \"presentation\"\n  ],\n  \"title\": \"VTC Auth Recognise — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"data\":{\"additionalProperties\":false,\"properties\":{\"accessExpiresAt\":{\"description\":\"The access token's expiry, as an RFC 3339 date-time, clamped to min(local default, earliest of the vec/vmc validUntil).\",\"format\":\"date-time\",\"type\":\"string\"},\"accessToken\":{\"type\":\"string\"},\"foreignIssuerDid\":{\"type\":\"string\"},\"mappedRole\":{\"description\":\"The LOCAL role from cross_community_roles policy — not the foreign role.\",\"type\":\"string\"}},\"required\":[\"accessToken\",\"accessExpiresAt\",\"foreignIssuerDid\",\"mappedRole\"],\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"sessionId\":{\"description\":\"A cross-community session id (xc-<uuid>), distinguishing it from local-member sessions.\",\"pattern\":\"^xc-\",\"type\":\"string\"}},\"required\":[\"sessionId\",\"data\"],\"title\":\"VTC Auth Recognise — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vtc/auth/recognise/0.3\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"presentation\":{\"description\":\"A holder-signed W3C Verifiable Presentation embedding the foreign membership credential (`MembershipCredential`) and role credential (a Verifiable Authority Credential, `AuthorityCredential`, conferring `role:<name>` at the foreign community's DID) in `verifiableCredential`.\\n\\nThe holder proof MUST use `proofPurpose: authentication`, MUST commit to the single-use `nonce` issued by `vtc/auth/recognise/challenge`, and MUST name the recognising community's DID as `domain`. A consumer MUST verify the holder proof, verify each embedded credential's issuer proof, and refuse unless the presentation's holder is the credentials' subject.\",\"type\":\"object\"}},\"required\":[\"presentation\"],\"title\":\"VTC Auth Recognise — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -599,7 +458,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"data\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"accessExpiresAt\": {\n              \"description\": \"The access token's expiry, as an RFC 3339 date-time, clamped to min(local default, earliest of the vec/vmc validUntil).\",\n              \"format\": \"date-time\",\n              \"type\": \"string\"\n            },\n            \"accessToken\": {\n              \"type\": \"string\"\n            },\n            \"foreignIssuerDid\": {\n              \"type\": \"string\"\n            },\n            \"mappedRole\": {\n              \"description\": \"The LOCAL role from cross_community_roles policy — not the foreign role.\",\n              \"type\": \"string\"\n            }\n          },\n          \"required\": [\n            \"accessToken\",\n            \"accessExpiresAt\",\n            \"foreignIssuerDid\",\n            \"mappedRole\"\n          ],\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"sessionId\": {\n          \"description\": \"A cross-community session id (xc-<uuid>), distinguishing it from local-member sessions.\",\n          \"pattern\": \"^xc-\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"sessionId\",\n        \"data\"\n      ],\n      \"title\": \"VTC Auth Recognise — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"properties\":{\"data\":{\"additionalProperties\":false,\"properties\":{\"accessExpiresAt\":{\"description\":\"The access token's expiry, as an RFC 3339 date-time, clamped to min(local default, earliest of the vec/vmc validUntil).\",\"format\":\"date-time\",\"type\":\"string\"},\"accessToken\":{\"type\":\"string\"},\"foreignIssuerDid\":{\"type\":\"string\"},\"mappedRole\":{\"description\":\"The LOCAL role from cross_community_roles policy — not the foreign role.\",\"type\":\"string\"}},\"required\":[\"accessToken\",\"accessExpiresAt\",\"foreignIssuerDid\",\"mappedRole\"],\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"sessionId\":{\"description\":\"A cross-community session id (xc-<uuid>), distinguishing it from local-member sessions.\",\"pattern\":\"^xc-\",\"type\":\"string\"}},\"required\":[\"sessionId\",\"data\"],\"title\":\"VTC Auth Recognise — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

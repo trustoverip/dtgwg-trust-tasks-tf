@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,41 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///One person proposes a peer-to-peer relationship to another, naming the pairwise DID they will use for it. The counterparty accepts or declines; a decline is a trust-task-error carrying `vrc/relationships/propose:declined`.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/vrc/relationships/propose/0.1",
-///  "title": "Payload",
-///  "description": "One person proposes a peer-to-peer relationship to another, naming the pairwise DID they will use for it. The counterparty accepts or declines; a decline is a trust-task-error carrying `vrc/relationships/propose:declined`.",
-///  "type": "object",
-///  "required": [
-///    "relationshipDid"
-///  ],
-///  "properties": {
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "reason": {
-///      "description": "Why the proposing party is asking, in their own words. A hint reaching a human; the counterparty is under no obligation to honour it and MUST NOT treat its absence as a defect.",
-///      "type": "string",
-///      "maxLength": 500,
-///      "minLength": 1
-///    },
-///    "relationshipDid": {
-///      "description": "The pairwise DID the proposing party will use for this relationship. Minted for this relationship — a producer MUST NOT carry a long-term identifier here, which would make every later presentation of the resulting credentials linkable.",
-///      "type": "string",
-///      "pattern": "^did:"
-///    },
-///    "witnessed": {
-///      "description": "Whether the proposing party asks that the exchange be witnessed. A request, not a fact: it is answered by the same member on the response, and which witness and on what terms is settled under the witness/* specifications, as a separate exchange nested via parentThreadId. Absent means unwitnessed.",
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -200,17 +141,6 @@ impl Payload {
 }
 ///Why the proposing party is asking, in their own words. A hint reaching a human; the counterparty is under no obligation to honour it and MUST NOT treat its absence as a defect.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Why the proposing party is asking, in their own words. A hint reaching a human; the counterparty is under no obligation to honour it and MUST NOT treat its absence as a defect.",
-///  "type": "string",
-///  "maxLength": 500,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadReason(::std::string::String);
@@ -273,16 +203,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 }
 ///The pairwise DID the proposing party will use for this relationship. Minted for this relationship — a producer MUST NOT carry a long-term identifier here, which would make every later presentation of the resulting credentials linkable.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The pairwise DID the proposing party will use for this relationship. Minted for this relationship — a producer MUST NOT carry a long-term identifier here, which would make every later presentation of the resulting credentials linkable.",
-///  "type": "string",
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadRelationshipDid(::std::string::String);
@@ -344,40 +264,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadRelationshipDid {
 }
 ///The counterparty's acceptance, and its answer on witnessing. A decline is a trust-task-error, never a response with accept: false.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "The counterparty's acceptance, and its answer on witnessing. A decline is a trust-task-error, never a response with accept: false.",
-///  "type": "object",
-///  "required": [
-///    "accept",
-///    "relationshipDid"
-///  ],
-///  "properties": {
-///    "accept": {
-///      "description": "Always true: a decline travels as a trust-task-error so that refusals share one path and one set of routing rules (SPEC.md §8.1). Present so the acceptance is explicit rather than inferred from the response's existence.",
-///      "const": true
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "relationshipDid": {
-///      "description": "The pairwise DID the counterparty will use for this relationship, under the same non-linkability obligation as the request's.",
-///      "type": "string",
-///      "pattern": "^did:"
-///    },
-///    "witnessed": {
-///      "description": "The counterparty's answer to the request's `witnessed`: true where it agrees the exchange will be witnessed. Absent or false accepts an UNWITNESSED exchange, whatever the request asked for — a counterparty unwilling to proceed unwitnessed declines instead, since this specification defines no renegotiation.",
-///      "type": "boolean"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -400,16 +286,6 @@ impl Response {
 }
 ///The pairwise DID the counterparty will use for this relationship, under the same non-linkability obligation as the request's.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The pairwise DID the counterparty will use for this relationship, under the same non-linkability obligation as the request's.",
-///  "type": "string",
-///  "pattern": "^did:"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseRelationshipDid(::std::string::String);
@@ -641,7 +517,7 @@ impl crate::Payload for Payload {
     const TYPE_URI: &'static str = "https://trusttasks.org/spec/vrc/relationships/propose/0.1";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The counterparty's acceptance, and its answer on witnessing. A decline is a trust-task-error, never a response with accept: false.\",\n      \"properties\": {\n        \"accept\": {\n          \"const\": true,\n          \"description\": \"Always true: a decline travels as a trust-task-error so that refusals share one path and one set of routing rules (SPEC.md §8.1). Present so the acceptance is explicit rather than inferred from the response's existence.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"relationshipDid\": {\n          \"description\": \"The pairwise DID the counterparty will use for this relationship, under the same non-linkability obligation as the request's.\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"witnessed\": {\n          \"description\": \"The counterparty's answer to the request's `witnessed`: true where it agrees the exchange will be witnessed. Absent or false accepts an UNWITNESSED exchange, whatever the request asked for — a counterparty unwilling to proceed unwitnessed declines instead, since this specification defines no renegotiation.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"accept\",\n        \"relationshipDid\"\n      ],\n      \"title\": \"VRC Relationships Propose — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/vrc/relationships/propose/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"One person proposes a peer-to-peer relationship to another, naming the pairwise DID they will use for it. The counterparty accepts or declines; a decline is a trust-task-error carrying `vrc/relationships/propose:declined`.\",\n  \"properties\": {\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"reason\": {\n      \"description\": \"Why the proposing party is asking, in their own words. A hint reaching a human; the counterparty is under no obligation to honour it and MUST NOT treat its absence as a defect.\",\n      \"maxLength\": 500,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"relationshipDid\": {\n      \"description\": \"The pairwise DID the proposing party will use for this relationship. Minted for this relationship — a producer MUST NOT carry a long-term identifier here, which would make every later presentation of the resulting credentials linkable.\",\n      \"pattern\": \"^did:\",\n      \"type\": \"string\"\n    },\n    \"witnessed\": {\n      \"description\": \"Whether the proposing party asks that the exchange be witnessed. A request, not a fact: it is answered by the same member on the response, and which witness and on what terms is settled under the witness/* specifications, as a separate exchange nested via parentThreadId. Absent means unwitnessed.\",\n      \"type\": \"boolean\"\n    }\n  },\n  \"required\": [\n    \"relationshipDid\"\n  ],\n  \"title\": \"VRC Relationships Propose — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The counterparty's acceptance, and its answer on witnessing. A decline is a trust-task-error, never a response with accept: false.\",\"properties\":{\"accept\":{\"const\":true,\"description\":\"Always true: a decline travels as a trust-task-error so that refusals share one path and one set of routing rules (SPEC.md §8.1). Present so the acceptance is explicit rather than inferred from the response's existence.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"relationshipDid\":{\"description\":\"The pairwise DID the counterparty will use for this relationship, under the same non-linkability obligation as the request's.\",\"pattern\":\"^did:\",\"type\":\"string\"},\"witnessed\":{\"description\":\"The counterparty's answer to the request's `witnessed`: true where it agrees the exchange will be witnessed. Absent or false accepts an UNWITNESSED exchange, whatever the request asked for — a counterparty unwilling to proceed unwitnessed declines instead, since this specification defines no renegotiation.\",\"type\":\"boolean\"}},\"required\":[\"accept\",\"relationshipDid\"],\"title\":\"VRC Relationships Propose — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/vrc/relationships/propose/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"One person proposes a peer-to-peer relationship to another, naming the pairwise DID they will use for it. The counterparty accepts or declines; a decline is a trust-task-error carrying `vrc/relationships/propose:declined`.\",\"properties\":{\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"reason\":{\"description\":\"Why the proposing party is asking, in their own words. A hint reaching a human; the counterparty is under no obligation to honour it and MUST NOT treat its absence as a defect.\",\"maxLength\":500,\"minLength\":1,\"type\":\"string\"},\"relationshipDid\":{\"description\":\"The pairwise DID the proposing party will use for this relationship. Minted for this relationship — a producer MUST NOT carry a long-term identifier here, which would make every later presentation of the resulting credentials linkable.\",\"pattern\":\"^did:\",\"type\":\"string\"},\"witnessed\":{\"description\":\"Whether the proposing party asks that the exchange be witnessed. A request, not a fact: it is answered by the same member on the response, and which witness and on what terms is settled under the witness/* specifications, as a separate exchange nested via parentThreadId. Absent means unwitnessed.\",\"type\":\"boolean\"}},\"required\":[\"relationshipDid\"],\"title\":\"VRC Relationships Propose — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -649,7 +525,7 @@ impl crate::Payload for Response {
         "https://trusttasks.org/spec/vrc/relationships/propose/0.1#response";
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"The counterparty's acceptance, and its answer on witnessing. A decline is a trust-task-error, never a response with accept: false.\",\n      \"properties\": {\n        \"accept\": {\n          \"const\": true,\n          \"description\": \"Always true: a decline travels as a trust-task-error so that refusals share one path and one set of routing rules (SPEC.md §8.1). Present so the acceptance is explicit rather than inferred from the response's existence.\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"relationshipDid\": {\n          \"description\": \"The pairwise DID the counterparty will use for this relationship, under the same non-linkability obligation as the request's.\",\n          \"pattern\": \"^did:\",\n          \"type\": \"string\"\n        },\n        \"witnessed\": {\n          \"description\": \"The counterparty's answer to the request's `witnessed`: true where it agrees the exchange will be witnessed. Absent or false accepts an UNWITNESSED exchange, whatever the request asked for — a counterparty unwilling to proceed unwitnessed declines instead, since this specification defines no renegotiation.\",\n          \"type\": \"boolean\"\n        }\n      },\n      \"required\": [\n        \"accept\",\n        \"relationshipDid\"\n      ],\n      \"title\": \"VRC Relationships Propose — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"The counterparty's acceptance, and its answer on witnessing. A decline is a trust-task-error, never a response with accept: false.\",\"properties\":{\"accept\":{\"const\":true,\"description\":\"Always true: a decline travels as a trust-task-error so that refusals share one path and one set of routing rules (SPEC.md §8.1). Present so the acceptance is explicit rather than inferred from the response's existence.\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"relationshipDid\":{\"description\":\"The pairwise DID the counterparty will use for this relationship, under the same non-linkability obligation as the request's.\",\"pattern\":\"^did:\",\"type\":\"string\"},\"witnessed\":{\"description\":\"The counterparty's answer to the request's `witnessed`: true where it agrees the exchange will be witnessed. Absent or false accepts an UNWITNESSED exchange, whatever the request asked for — a counterparty unwilling to proceed unwitnessed declines instead, since this specification defines no renegotiation.\",\"type\":\"boolean\"}},\"required\":[\"accept\",\"relationshipDid\"],\"title\":\"VRC Relationships Propose — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

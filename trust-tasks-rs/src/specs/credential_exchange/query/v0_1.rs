@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,43 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Verifier to holder: an OID4VP DCQL query, a freshness nonce, and a mandatory stated purpose. The holder answers with credential-exchange/present, or defers for consent.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/credential-exchange/query/0.1",
-///  "title": "Payload",
-///  "description": "Verifier to holder: an OID4VP DCQL query, a freshness nonce, and a mandatory stated purpose. The holder answers with credential-exchange/present, or defers for consent.",
-///  "type": "object",
-///  "required": [
-///    "dcql_query",
-///    "nonce",
-///    "purpose"
-///  ],
-///  "properties": {
-///    "dcql_query": {
-///      "description": "An OID4VP DCQL query object, carried verbatim: per-credential `format` selector, `meta` type discriminator (`vct_values` for SD-JWT-VC, `type_values` for W3C), and requested `claims`. Defined by OpenID for Verifiable Presentations and not re-specified here. snake_case member names are DCQL's own.",
-///      "type": "object"
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "nonce": {
-///      "description": "Verifier freshness value, bound into the resulting presentation so it cannot be replayed to another verifier or at another time.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "purpose": {
-///      "description": "The verifier's stated reason for asking, shown to the holder. REQUIRED and never empty: purpose binding means a verifier cannot ask for a credential without saying why, and a holder cannot be asked to consent to an unstated use.",
-///      "type": "string",
-///      "maxLength": 500,
-///      "minLength": 1
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -199,16 +138,6 @@ impl Payload {
 }
 ///Verifier freshness value, bound into the resulting presentation so it cannot be replayed to another verifier or at another time.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Verifier freshness value, bound into the resulting presentation so it cannot be replayed to another verifier or at another time.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadNonce(::std::string::String);
@@ -268,17 +197,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadNonce {
 }
 ///The verifier's stated reason for asking, shown to the holder. REQUIRED and never empty: purpose binding means a verifier cannot ask for a credential without saying why, and a holder cannot be asked to consent to an unstated use.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The verifier's stated reason for asking, shown to the holder. REQUIRED and never empty: purpose binding means a verifier cannot ask for a credential without saying why, and a holder cannot be asked to consent to an unstated use.",
-///  "type": "string",
-///  "maxLength": 500,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadPurpose(::std::string::String);
@@ -432,7 +350,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/credential-exchange/query/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Verifier to holder: an OID4VP DCQL query, a freshness nonce, and a mandatory stated purpose. The holder answers with credential-exchange/present, or defers for consent.\",\n  \"properties\": {\n    \"dcql_query\": {\n      \"description\": \"An OID4VP DCQL query object, carried verbatim: per-credential `format` selector, `meta` type discriminator (`vct_values` for SD-JWT-VC, `type_values` for W3C), and requested `claims`. Defined by OpenID for Verifiable Presentations and not re-specified here. snake_case member names are DCQL's own.\",\n      \"type\": \"object\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"nonce\": {\n      \"description\": \"Verifier freshness value, bound into the resulting presentation so it cannot be replayed to another verifier or at another time.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"purpose\": {\n      \"description\": \"The verifier's stated reason for asking, shown to the holder. REQUIRED and never empty: purpose binding means a verifier cannot ask for a credential without saying why, and a holder cannot be asked to consent to an unstated use.\",\n      \"maxLength\": 500,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"dcql_query\",\n    \"nonce\",\n    \"purpose\"\n  ],\n  \"title\": \"Credential Exchange Query — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/credential-exchange/query/0.1\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Verifier to holder: an OID4VP DCQL query, a freshness nonce, and a mandatory stated purpose. The holder answers with credential-exchange/present, or defers for consent.\",\"properties\":{\"dcql_query\":{\"description\":\"An OID4VP DCQL query object, carried verbatim: per-credential `format` selector, `meta` type discriminator (`vct_values` for SD-JWT-VC, `type_values` for W3C), and requested `claims`. Defined by OpenID for Verifiable Presentations and not re-specified here. snake_case member names are DCQL's own.\",\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"nonce\":{\"description\":\"Verifier freshness value, bound into the resulting presentation so it cannot be replayed to another verifier or at another time.\",\"minLength\":1,\"type\":\"string\"},\"purpose\":{\"description\":\"The verifier's stated reason for asking, shown to the holder. REQUIRED and never empty: purpose binding means a verifier cannot ask for a credential without saying why, and a holder cannot be asked to consent to an unstated use.\",\"maxLength\":500,\"minLength\":1,\"type\":\"string\"}},\"required\":[\"dcql_query\",\"nonce\",\"purpose\"],\"title\":\"Credential Exchange Query — payload\",\"type\":\"object\"}\n",
     );
 }
 /// The earlier `MAJOR.MINOR` of this slug that this version declares it

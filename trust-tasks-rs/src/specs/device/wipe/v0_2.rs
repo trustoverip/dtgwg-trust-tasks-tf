@@ -34,21 +34,6 @@ pub mod error {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -70,15 +55,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -142,52 +118,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///The maintainer issues a wipe to a Companion or Service. The target is expected to destroy its local cache and (depending on scope) its device-local key material. The action is best-effort — a compromised device may silently drop the wipe — so the maintainer additionally revokes ACL access and rotates the device's cache-key derivation root, so that defence in depth means a non-compliant device is still neutralised.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/device/wipe/0.2",
-///  "title": "Payload",
-///  "description": "The maintainer issues a wipe to a Companion or Service. The target is expected to destroy its local cache and (depending on scope) its device-local key material. The action is best-effort — a compromised device may silently drop the wipe — so the maintainer additionally revokes ACL access and rotates the device's cache-key derivation root, so that defence in depth means a non-compliant device is still neutralised.",
-///  "type": "object",
-///  "required": [
-///    "deviceId",
-///    "reason",
-///    "scope"
-///  ],
-///  "properties": {
-///    "deviceId": {
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "issuedAt": {
-///      "description": "Wipe-issuance timestamp; identical to the document's `issuedAt`, repeated here so the body is self-contained for offline-queued delivery.",
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "reason": {
-///      "description": "Human-readable reason. Required (not optional) because every wipe is consequential and the audit log must capture intent.",
-///      "type": "string",
-///      "maxLength": 256,
-///      "minLength": 1
-///    },
-///    "scope": {
-///      "description": "How aggressively the target should wipe:\n- `cache` — discard the encrypted vault cache; consumer can re-sync with valid creds.\n- `cacheAndKeys` — discard cache + device-local key material; consumer must re-onboard.\n- `full` — `cacheAndKeys` + clear all extension/app storage + revoke OS credential-provider registration where APIs permit.",
-///      "type": "string",
-///      "enum": [
-///        "cache",
-///        "cacheAndKeys",
-///        "full"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -218,15 +148,6 @@ impl Payload {
 }
 ///`PayloadDeviceId`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadDeviceId(::std::string::String);
@@ -286,17 +207,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDeviceId {
 }
 ///Human-readable reason. Required (not optional) because every wipe is consequential and the audit log must capture intent.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Human-readable reason. Required (not optional) because every wipe is consequential and the audit log must capture intent.",
-///  "type": "string",
-///  "maxLength": 256,
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadReason(::std::string::String);
@@ -362,20 +272,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadReason {
 - `cacheAndKeys` — discard cache + device-local key material; consumer must re-onboard.
 - `full` — `cacheAndKeys` + clear all extension/app storage + revoke OS credential-provider registration where APIs permit.*/
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "How aggressively the target should wipe:\n- `cache` — discard the encrypted vault cache; consumer can re-sync with valid creds.\n- `cacheAndKeys` — discard cache + device-local key material; consumer must re-onboard.\n- `full` — `cacheAndKeys` + clear all extension/app storage + revoke OS credential-provider registration where APIs permit.",
-///  "type": "string",
-///  "enum": [
-///    "cache",
-///    "cacheAndKeys",
-///    "full"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -441,71 +337,6 @@ impl ::std::convert::TryFrom<::std::string::String> for PayloadScope {
 }
 ///Acknowledgement from the target device. Sent only when the target executes the wipe; absent if the target was offline or compromised. The maintainer treats the absence of a response as 'not confirmed' but considers the device neutralised because of the server-side defence-in-depth.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Acknowledgement from the target device. Sent only when the target executes the wipe; absent if the target was offline or compromised. The maintainer treats the absence of a response as 'not confirmed' but considers the device neutralised because of the server-side defence-in-depth.",
-///  "type": "object",
-///  "required": [
-///    "completedAt",
-///    "deviceId",
-///    "scope"
-///  ],
-///  "properties": {
-///    "completedAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "deviceId": {
-///      "type": "string"
-///    },
-///    "diagnostics": {
-///      "type": "object",
-///      "properties": {
-///        "cacheBytesWiped": {
-///          "type": "integer",
-///          "minimum": 0.0
-///        },
-///        "keysWiped": {
-///          "type": "integer",
-///          "minimum": 0.0
-///        },
-///        "osHooksInvoked": {
-///          "description": "OS-level revocation hooks the target managed to invoke (e.g. \"navigator.credentials.preventSilentAccess\", \"ASCredentialIdentityStore.removeAllCredentialIdentities\").",
-///          "type": "array",
-///          "items": {
-///            "type": "string"
-///          }
-///        },
-///        "partialReasons": {
-///          "description": "Free-form reasons why the wipe was partial (e.g. \"os-keychain-unavailable\", \"extension-storage-quota-exceeded\").",
-///          "type": "array",
-///          "items": {
-///            "type": "string"
-///          }
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "ext": {
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "scope": {
-///      "type": "string",
-///      "enum": [
-///        "cache",
-///        "cacheAndKeys",
-///        "full"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -527,39 +358,6 @@ impl Response {
 }
 ///`ResponseDiagnostics`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "properties": {
-///    "cacheBytesWiped": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "keysWiped": {
-///      "type": "integer",
-///      "minimum": 0.0
-///    },
-///    "osHooksInvoked": {
-///      "description": "OS-level revocation hooks the target managed to invoke (e.g. \"navigator.credentials.preventSilentAccess\", \"ASCredentialIdentityStore.removeAllCredentialIdentities\").",
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      }
-///    },
-///    "partialReasons": {
-///      "description": "Free-form reasons why the wipe was partial (e.g. \"os-keychain-unavailable\", \"extension-storage-quota-exceeded\").",
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      }
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -608,19 +406,6 @@ impl ResponseDiagnostics {
 }
 ///`ResponseScope`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "enum": [
-///    "cache",
-///    "cacheAndKeys",
-///    "full"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -974,7 +759,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Acknowledgement from the target device. Sent only when the target executes the wipe; absent if the target was offline or compromised. The maintainer treats the absence of a response as 'not confirmed' but considers the device neutralised because of the server-side defence-in-depth.\",\n      \"properties\": {\n        \"completedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"deviceId\": {\n          \"type\": \"string\"\n        },\n        \"diagnostics\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"cacheBytesWiped\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"keysWiped\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"osHooksInvoked\": {\n              \"description\": \"OS-level revocation hooks the target managed to invoke (e.g. \\\"navigator.credentials.preventSilentAccess\\\", \\\"ASCredentialIdentityStore.removeAllCredentialIdentities\\\").\",\n              \"items\": {\n                \"type\": \"string\"\n              },\n              \"type\": \"array\"\n            },\n            \"partialReasons\": {\n              \"description\": \"Free-form reasons why the wipe was partial (e.g. \\\"os-keychain-unavailable\\\", \\\"extension-storage-quota-exceeded\\\").\",\n              \"items\": {\n                \"type\": \"string\"\n              },\n              \"type\": \"array\"\n            }\n          },\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"scope\": {\n          \"enum\": [\n            \"cache\",\n            \"cacheAndKeys\",\n            \"full\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"deviceId\",\n        \"scope\",\n        \"completedAt\"\n      ],\n      \"title\": \"Device Wipe — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/device/wipe/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"The maintainer issues a wipe to a Companion or Service. The target is expected to destroy its local cache and (depending on scope) its device-local key material. The action is best-effort — a compromised device may silently drop the wipe — so the maintainer additionally revokes ACL access and rotates the device's cache-key derivation root, so that defence in depth means a non-compliant device is still neutralised.\",\n  \"properties\": {\n    \"deviceId\": {\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    },\n    \"issuedAt\": {\n      \"description\": \"Wipe-issuance timestamp; identical to the document's `issuedAt`, repeated here so the body is self-contained for offline-queued delivery.\",\n      \"format\": \"date-time\",\n      \"type\": \"string\"\n    },\n    \"reason\": {\n      \"description\": \"Human-readable reason. Required (not optional) because every wipe is consequential and the audit log must capture intent.\",\n      \"maxLength\": 256,\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"scope\": {\n      \"description\": \"How aggressively the target should wipe:\\n- `cache` — discard the encrypted vault cache; consumer can re-sync with valid creds.\\n- `cacheAndKeys` — discard cache + device-local key material; consumer must re-onboard.\\n- `full` — `cacheAndKeys` + clear all extension/app storage + revoke OS credential-provider registration where APIs permit.\",\n      \"enum\": [\n        \"cache\",\n        \"cacheAndKeys\",\n        \"full\"\n      ],\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"deviceId\",\n    \"scope\",\n    \"reason\"\n  ],\n  \"title\": \"Device Wipe — payload\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Acknowledgement from the target device. Sent only when the target executes the wipe; absent if the target was offline or compromised. The maintainer treats the absence of a response as 'not confirmed' but considers the device neutralised because of the server-side defence-in-depth.\",\"properties\":{\"completedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"deviceId\":{\"type\":\"string\"},\"diagnostics\":{\"additionalProperties\":false,\"properties\":{\"cacheBytesWiped\":{\"minimum\":0,\"type\":\"integer\"},\"keysWiped\":{\"minimum\":0,\"type\":\"integer\"},\"osHooksInvoked\":{\"description\":\"OS-level revocation hooks the target managed to invoke (e.g. \\\"navigator.credentials.preventSilentAccess\\\", \\\"ASCredentialIdentityStore.removeAllCredentialIdentities\\\").\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"partialReasons\":{\"description\":\"Free-form reasons why the wipe was partial (e.g. \\\"os-keychain-unavailable\\\", \\\"extension-storage-quota-exceeded\\\").\",\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"scope\":{\"enum\":[\"cache\",\"cacheAndKeys\",\"full\"],\"type\":\"string\"}},\"required\":[\"deviceId\",\"scope\",\"completedAt\"],\"title\":\"Device Wipe — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/device/wipe/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"The maintainer issues a wipe to a Companion or Service. The target is expected to destroy its local cache and (depending on scope) its device-local key material. The action is best-effort — a compromised device may silently drop the wipe — so the maintainer additionally revokes ACL access and rotates the device's cache-key derivation root, so that defence in depth means a non-compliant device is still neutralised.\",\"properties\":{\"deviceId\":{\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"issuedAt\":{\"description\":\"Wipe-issuance timestamp; identical to the document's `issuedAt`, repeated here so the body is self-contained for offline-queued delivery.\",\"format\":\"date-time\",\"type\":\"string\"},\"reason\":{\"description\":\"Human-readable reason. Required (not optional) because every wipe is consequential and the audit log must capture intent.\",\"maxLength\":256,\"minLength\":1,\"type\":\"string\"},\"scope\":{\"description\":\"How aggressively the target should wipe:\\n- `cache` — discard the encrypted vault cache; consumer can re-sync with valid creds.\\n- `cacheAndKeys` — discard cache + device-local key material; consumer must re-onboard.\\n- `full` — `cacheAndKeys` + clear all extension/app storage + revoke OS credential-provider registration where APIs permit.\",\"enum\":[\"cache\",\"cacheAndKeys\",\"full\"],\"type\":\"string\"}},\"required\":[\"deviceId\",\"scope\",\"reason\"],\"title\":\"Device Wipe — payload\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -983,7 +768,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Acknowledgement from the target device. Sent only when the target executes the wipe; absent if the target was offline or compromised. The maintainer treats the absence of a response as 'not confirmed' but considers the device neutralised because of the server-side defence-in-depth.\",\n      \"properties\": {\n        \"completedAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"deviceId\": {\n          \"type\": \"string\"\n        },\n        \"diagnostics\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"cacheBytesWiped\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"keysWiped\": {\n              \"minimum\": 0,\n              \"type\": \"integer\"\n            },\n            \"osHooksInvoked\": {\n              \"description\": \"OS-level revocation hooks the target managed to invoke (e.g. \\\"navigator.credentials.preventSilentAccess\\\", \\\"ASCredentialIdentityStore.removeAllCredentialIdentities\\\").\",\n              \"items\": {\n                \"type\": \"string\"\n              },\n              \"type\": \"array\"\n            },\n            \"partialReasons\": {\n              \"description\": \"Free-form reasons why the wipe was partial (e.g. \\\"os-keychain-unavailable\\\", \\\"extension-storage-quota-exceeded\\\").\",\n              \"items\": {\n                \"type\": \"string\"\n              },\n              \"type\": \"array\"\n            }\n          },\n          \"type\": \"object\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\"\n        },\n        \"scope\": {\n          \"enum\": [\n            \"cache\",\n            \"cacheAndKeys\",\n            \"full\"\n          ],\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"deviceId\",\n        \"scope\",\n        \"completedAt\"\n      ],\n      \"title\": \"Device Wipe — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Acknowledgement from the target device. Sent only when the target executes the wipe; absent if the target was offline or compromised. The maintainer treats the absence of a response as 'not confirmed' but considers the device neutralised because of the server-side defence-in-depth.\",\"properties\":{\"completedAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"deviceId\":{\"type\":\"string\"},\"diagnostics\":{\"additionalProperties\":false,\"properties\":{\"cacheBytesWiped\":{\"minimum\":0,\"type\":\"integer\"},\"keysWiped\":{\"minimum\":0,\"type\":\"integer\"},\"osHooksInvoked\":{\"description\":\"OS-level revocation hooks the target managed to invoke (e.g. \\\"navigator.credentials.preventSilentAccess\\\", \\\"ASCredentialIdentityStore.removeAllCredentialIdentities\\\").\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"partialReasons\":{\"description\":\"Free-form reasons why the wipe was partial (e.g. \\\"os-keychain-unavailable\\\", \\\"extension-storage-quota-exceeded\\\").\",\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"type\":\"object\"},\"ext\":{\"$ref\":\"#/$defs/Ext\"},\"scope\":{\"enum\":[\"cache\",\"cacheAndKeys\",\"full\"],\"type\":\"string\"}},\"required\":[\"deviceId\",\"scope\",\"completedAt\"],\"title\":\"Device Wipe — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {

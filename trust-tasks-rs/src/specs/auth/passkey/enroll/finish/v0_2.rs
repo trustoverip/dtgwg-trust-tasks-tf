@@ -34,70 +34,6 @@ pub mod error {
 }
 ///The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "AuthenticatorAssertionResponse (login)",
-///  "description": "The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.",
-///  "type": "object",
-///  "required": [
-///    "id",
-///    "rawId",
-///    "response",
-///    "type"
-///  ],
-///  "properties": {
-///    "authenticatorAttachment": {
-///      "enum": [
-///        "platform",
-///        "cross-platform"
-///      ]
-///    },
-///    "clientExtensionResults": {
-///      "type": "object"
-///    },
-///    "id": {
-///      "type": "string"
-///    },
-///    "rawId": {
-///      "type": "string"
-///    },
-///    "response": {
-///      "type": "object",
-///      "required": [
-///        "authenticatorData",
-///        "clientDataJSON",
-///        "signature"
-///      ],
-///      "properties": {
-///        "authenticatorData": {
-///          "type": "string"
-///        },
-///        "clientDataJSON": {
-///          "type": "string"
-///        },
-///        "signature": {
-///          "type": "string"
-///        },
-///        "userHandle": {
-///          "type": [
-///            "string",
-///            "null"
-///          ]
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "type": {
-///      "const": "public-key"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "assertionResponse"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -128,17 +64,6 @@ impl AssertionResponse {
 }
 ///`AssertionResponseAuthenticatorAttachment`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "enum": [
-///    "platform",
-///    "cross-platform"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -200,37 +125,6 @@ impl ::std::convert::TryFrom<::std::string::String> for AssertionResponseAuthent
 }
 ///`AssertionResponseResponse`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "authenticatorData",
-///    "clientDataJSON",
-///    "signature"
-///  ],
-///  "properties": {
-///    "authenticatorData": {
-///      "type": "string"
-///    },
-///    "clientDataJSON": {
-///      "type": "string"
-///    },
-///    "signature": {
-///      "type": "string"
-///    },
-///    "userHandle": {
-///      "type": [
-///        "string",
-///        "null"
-///      ]
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -254,66 +148,6 @@ impl AssertionResponseResponse {
 }
 ///The credential the client returns from `navigator.credentials.create`. Binary fields are base64url-encoded.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "AuthenticatorAttestationResponse (registration)",
-///  "description": "The credential the client returns from `navigator.credentials.create`. Binary fields are base64url-encoded.",
-///  "type": "object",
-///  "required": [
-///    "id",
-///    "rawId",
-///    "response",
-///    "type"
-///  ],
-///  "properties": {
-///    "authenticatorAttachment": {
-///      "enum": [
-///        "platform",
-///        "cross-platform"
-///      ]
-///    },
-///    "clientExtensionResults": {
-///      "type": "object"
-///    },
-///    "id": {
-///      "type": "string"
-///    },
-///    "rawId": {
-///      "type": "string"
-///    },
-///    "response": {
-///      "type": "object",
-///      "required": [
-///        "attestationObject",
-///        "clientDataJSON"
-///      ],
-///      "properties": {
-///        "attestationObject": {
-///          "type": "string"
-///        },
-///        "clientDataJSON": {
-///          "type": "string"
-///        },
-///        "transports": {
-///          "type": "array",
-///          "items": {
-///            "type": "string"
-///          }
-///        }
-///      },
-///      "additionalProperties": false
-///    },
-///    "type": {
-///      "const": "public-key"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "attestationResponse"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -344,17 +178,6 @@ impl AttestationResponse {
 }
 ///`AttestationResponseAuthenticatorAttachment`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "enum": [
-///    "platform",
-///    "cross-platform"
-///  ]
-///}
-/// ```
-/// </details>
 #[derive(
     ::serde::Deserialize,
     ::serde::Serialize,
@@ -418,33 +241,6 @@ impl ::std::convert::TryFrom<::std::string::String> for AttestationResponseAuthe
 }
 ///`AttestationResponseResponse`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "object",
-///  "required": [
-///    "attestationObject",
-///    "clientDataJSON"
-///  ],
-///  "properties": {
-///    "attestationObject": {
-///      "type": "string"
-///    },
-///    "clientDataJSON": {
-///      "type": "string"
-///    },
-///    "transports": {
-///      "type": "array",
-///      "items": {
-///        "type": "string"
-///      }
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -463,21 +259,6 @@ impl AttestationResponseResponse {
 }
 ///Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Ext",
-///  "description": "Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.",
-///  "type": "object",
-///  "minProperties": 1,
-///  "additionalProperties": true,
-///  "propertyNames": {
-///    "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///  }
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(transparent)]
 pub struct Ext(pub ::std::collections::HashMap<ExtKey, ::serde_json::Value>);
@@ -499,15 +280,6 @@ impl ::std::convert::From<::std::collections::HashMap<ExtKey, ::serde_json::Valu
 }
 ///`ExtKey`
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "type": "string",
-///  "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ExtKey(::std::string::String);
@@ -571,46 +343,6 @@ impl<'de> ::serde::Deserialize<'de> for ExtKey {
 }
 ///Submit the WebAuthn attestation that completes a passkey-enrollment ceremony. On success the auth service binds the credential to the subject's VID.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "$id": "https://trusttasks.org/spec/auth/passkey/enroll/finish/0.2",
-///  "title": "Payload",
-///  "description": "Submit the WebAuthn attestation that completes a passkey-enrollment ceremony. On success the auth service binds the credential to the subject's VID.",
-///  "type": "object",
-///  "required": [
-///    "credential",
-///    "enrollmentId"
-///  ],
-///  "properties": {
-///    "credential": {
-///      "description": "AuthenticatorAttestationResponse as returned by `navigator.credentials.create`. Binary fields base64url-encoded.",
-///      "$ref": "#/definitions/AttestationResponse"
-///    },
-///    "deviceLabel": {
-///      "description": "Final operator-facing label for the credential. Overrides any label passed at start.",
-///      "type": "string",
-///      "maxLength": 256
-///    },
-///    "enrollmentId": {
-///      "description": "The enrollmentId issued by the matching `auth/passkey/enroll/start` response. Echoed verbatim.",
-///      "type": "string",
-///      "minLength": 1
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "uvCredential": {
-///      "description": "New in 0.2. AuthenticatorAssertionResponse over the uvOptions returned by start, proving a human with an already-enrolled authenticator authorized adding this one. REQUIRED whenever start returned uvOptions; omitted otherwise. A consumer that issued uvOptions MUST reject a finish that lacks this member — the re-authentication requirement is the consumer's, so treating a missing assertion as consent would let a producer decline it unilaterally.",
-///      "$ref": "#/definitions/AssertionResponse"
-///    }
-///  },
-///  "additionalProperties": false
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -645,16 +377,6 @@ impl Payload {
 }
 ///Final operator-facing label for the credential. Overrides any label passed at start.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "Final operator-facing label for the credential. Overrides any label passed at start.",
-///  "type": "string",
-///  "maxLength": 256
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadDeviceLabel(::std::string::String);
@@ -714,16 +436,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadDeviceLabel {
 }
 ///The enrollmentId issued by the matching `auth/passkey/enroll/start` response. Echoed verbatim.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The enrollmentId issued by the matching `auth/passkey/enroll/start` response. Echoed verbatim.",
-///  "type": "string",
-///  "minLength": 1
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PayloadEnrollmentId(::std::string::String);
@@ -783,46 +495,6 @@ impl<'de> ::serde::Deserialize<'de> for PayloadEnrollmentId {
 }
 ///Acknowledgement of the registered credential. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/finish/0.2#response.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "title": "Response",
-///  "description": "Acknowledgement of the registered credential. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/finish/0.2#response.",
-///  "type": "object",
-///  "required": [
-///    "credentialId",
-///    "registeredAt",
-///    "subject"
-///  ],
-///  "properties": {
-///    "credentialId": {
-///      "description": "base64url-encoded WebAuthn credential id, durable identifier for later management.",
-///      "type": "string"
-///    },
-///    "deviceLabel": {
-///      "description": "The label persisted with the credential.",
-///      "type": "string",
-///      "maxLength": 256
-///    },
-///    "ext": {
-///      "description": "Ecosystem-defined extension members per SPEC.md §4.5.1.",
-///      "$ref": "#/definitions/Ext"
-///    },
-///    "registeredAt": {
-///      "type": "string",
-///      "format": "date-time"
-///    },
-///    "subject": {
-///      "description": "The VID the credential is now bound to. Echoed for symmetry with finish-time error responses.",
-///      "type": "string"
-///    }
-///  },
-///  "additionalProperties": false,
-///  "$anchor": "response"
-///}
-/// ```
-/// </details>
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[serde(deny_unknown_fields)]
 #[non_exhaustive]
@@ -852,16 +524,6 @@ impl Response {
 }
 ///The label persisted with the credential.
 ///
-/// <details><summary>JSON schema</summary>
-///
-/// ```json
-///{
-///  "description": "The label persisted with the credential.",
-///  "type": "string",
-///  "maxLength": 256
-///}
-/// ```
-/// </details>
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct ResponseDeviceLabel(::std::string::String);
@@ -1520,7 +1182,7 @@ impl crate::Payload for Payload {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AssertionResponse\": {\n      \"$anchor\": \"assertionResponse\",\n      \"additionalProperties\": false,\n      \"description\": \"The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.\",\n      \"properties\": {\n        \"authenticatorAttachment\": {\n          \"enum\": [\n            \"platform\",\n            \"cross-platform\"\n          ]\n        },\n        \"clientExtensionResults\": {\n          \"type\": \"object\"\n        },\n        \"id\": {\n          \"type\": \"string\"\n        },\n        \"rawId\": {\n          \"type\": \"string\"\n        },\n        \"response\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"authenticatorData\": {\n              \"type\": \"string\"\n            },\n            \"clientDataJSON\": {\n              \"type\": \"string\"\n            },\n            \"signature\": {\n              \"type\": \"string\"\n            },\n            \"userHandle\": {\n              \"type\": [\n                \"string\",\n                \"null\"\n              ]\n            }\n          },\n          \"required\": [\n            \"clientDataJSON\",\n            \"authenticatorData\",\n            \"signature\"\n          ],\n          \"type\": \"object\"\n        },\n        \"type\": {\n          \"const\": \"public-key\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"rawId\",\n        \"type\",\n        \"response\"\n      ],\n      \"title\": \"AuthenticatorAssertionResponse (login)\",\n      \"type\": \"object\"\n    },\n    \"AttestationResponse\": {\n      \"$anchor\": \"attestationResponse\",\n      \"additionalProperties\": false,\n      \"description\": \"The credential the client returns from `navigator.credentials.create`. Binary fields are base64url-encoded.\",\n      \"properties\": {\n        \"authenticatorAttachment\": {\n          \"enum\": [\n            \"platform\",\n            \"cross-platform\"\n          ]\n        },\n        \"clientExtensionResults\": {\n          \"type\": \"object\"\n        },\n        \"id\": {\n          \"type\": \"string\"\n        },\n        \"rawId\": {\n          \"type\": \"string\"\n        },\n        \"response\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"attestationObject\": {\n              \"type\": \"string\"\n            },\n            \"clientDataJSON\": {\n              \"type\": \"string\"\n            },\n            \"transports\": {\n              \"items\": {\n                \"type\": \"string\"\n              },\n              \"type\": \"array\"\n            }\n          },\n          \"required\": [\n            \"clientDataJSON\",\n            \"attestationObject\"\n          ],\n          \"type\": \"object\"\n        },\n        \"type\": {\n          \"const\": \"public-key\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"rawId\",\n        \"type\",\n        \"response\"\n      ],\n      \"title\": \"AuthenticatorAttestationResponse (registration)\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Acknowledgement of the registered credential. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/finish/0.2#response.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"description\": \"base64url-encoded WebAuthn credential id, durable identifier for later management.\",\n          \"type\": \"string\"\n        },\n        \"deviceLabel\": {\n          \"description\": \"The label persisted with the credential.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"registeredAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"subject\": {\n          \"description\": \"The VID the credential is now bound to. Echoed for symmetry with finish-time error responses.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"subject\",\n        \"registeredAt\"\n      ],\n      \"title\": \"Auth Passkey Enroll Finish — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/auth/passkey/enroll/finish/0.2\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Submit the WebAuthn attestation that completes a passkey-enrollment ceremony. On success the auth service binds the credential to the subject's VID.\",\n  \"properties\": {\n    \"credential\": {\n      \"$ref\": \"#/$defs/AttestationResponse\",\n      \"description\": \"AuthenticatorAttestationResponse as returned by `navigator.credentials.create`. Binary fields base64url-encoded.\"\n    },\n    \"deviceLabel\": {\n      \"description\": \"Final operator-facing label for the credential. Overrides any label passed at start.\",\n      \"maxLength\": 256,\n      \"type\": \"string\"\n    },\n    \"enrollmentId\": {\n      \"description\": \"The enrollmentId issued by the matching `auth/passkey/enroll/start` response. Echoed verbatim.\",\n      \"minLength\": 1,\n      \"type\": \"string\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\",\n      \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n    },\n    \"uvCredential\": {\n      \"$ref\": \"#/$defs/AssertionResponse\",\n      \"description\": \"New in 0.2. AuthenticatorAssertionResponse over the uvOptions returned by start, proving a human with an already-enrolled authenticator authorized adding this one. REQUIRED whenever start returned uvOptions; omitted otherwise. A consumer that issued uvOptions MUST reject a finish that lacks this member — the re-authentication requirement is the consumer's, so treating a missing assertion as consent would let a producer decline it unilaterally.\"\n    }\n  },\n  \"required\": [\n    \"enrollmentId\",\n    \"credential\"\n  ],\n  \"title\": \"Auth — Passkey Enroll (finish)\",\n  \"type\": \"object\"\n}\n",
+        "{\"$defs\":{\"AssertionResponse\":{\"$anchor\":\"assertionResponse\",\"additionalProperties\":false,\"description\":\"The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.\",\"properties\":{\"authenticatorAttachment\":{\"enum\":[\"platform\",\"cross-platform\"]},\"clientExtensionResults\":{\"type\":\"object\"},\"id\":{\"type\":\"string\"},\"rawId\":{\"type\":\"string\"},\"response\":{\"additionalProperties\":false,\"properties\":{\"authenticatorData\":{\"type\":\"string\"},\"clientDataJSON\":{\"type\":\"string\"},\"signature\":{\"type\":\"string\"},\"userHandle\":{\"type\":[\"string\",\"null\"]}},\"required\":[\"clientDataJSON\",\"authenticatorData\",\"signature\"],\"type\":\"object\"},\"type\":{\"const\":\"public-key\"}},\"required\":[\"id\",\"rawId\",\"type\",\"response\"],\"title\":\"AuthenticatorAssertionResponse (login)\",\"type\":\"object\"},\"AttestationResponse\":{\"$anchor\":\"attestationResponse\",\"additionalProperties\":false,\"description\":\"The credential the client returns from `navigator.credentials.create`. Binary fields are base64url-encoded.\",\"properties\":{\"authenticatorAttachment\":{\"enum\":[\"platform\",\"cross-platform\"]},\"clientExtensionResults\":{\"type\":\"object\"},\"id\":{\"type\":\"string\"},\"rawId\":{\"type\":\"string\"},\"response\":{\"additionalProperties\":false,\"properties\":{\"attestationObject\":{\"type\":\"string\"},\"clientDataJSON\":{\"type\":\"string\"},\"transports\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"clientDataJSON\",\"attestationObject\"],\"type\":\"object\"},\"type\":{\"const\":\"public-key\"}},\"required\":[\"id\",\"rawId\",\"type\",\"response\"],\"title\":\"AuthenticatorAttestationResponse (registration)\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Acknowledgement of the registered credential. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/finish/0.2#response.\",\"properties\":{\"credentialId\":{\"description\":\"base64url-encoded WebAuthn credential id, durable identifier for later management.\",\"type\":\"string\"},\"deviceLabel\":{\"description\":\"The label persisted with the credential.\",\"maxLength\":256,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"registeredAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"subject\":{\"description\":\"The VID the credential is now bound to. Echoed for symmetry with finish-time error responses.\",\"type\":\"string\"}},\"required\":[\"credentialId\",\"subject\",\"registeredAt\"],\"title\":\"Auth Passkey Enroll Finish — response payload\",\"type\":\"object\"}},\"$id\":\"https://trusttasks.org/spec/auth/passkey/enroll/finish/0.2\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"additionalProperties\":false,\"description\":\"Submit the WebAuthn attestation that completes a passkey-enrollment ceremony. On success the auth service binds the credential to the subject's VID.\",\"properties\":{\"credential\":{\"$ref\":\"#/$defs/AttestationResponse\",\"description\":\"AuthenticatorAttestationResponse as returned by `navigator.credentials.create`. Binary fields base64url-encoded.\"},\"deviceLabel\":{\"description\":\"Final operator-facing label for the credential. Overrides any label passed at start.\",\"maxLength\":256,\"type\":\"string\"},\"enrollmentId\":{\"description\":\"The enrollmentId issued by the matching `auth/passkey/enroll/start` response. Echoed verbatim.\",\"minLength\":1,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"uvCredential\":{\"$ref\":\"#/$defs/AssertionResponse\",\"description\":\"New in 0.2. AuthenticatorAssertionResponse over the uvOptions returned by start, proving a human with an already-enrolled authenticator authorized adding this one. REQUIRED whenever start returned uvOptions; omitted otherwise. A consumer that issued uvOptions MUST reject a finish that lacks this member — the re-authentication requirement is the consumer's, so treating a missing assertion as consent would let a producer decline it unilaterally.\"}},\"required\":[\"enrollmentId\",\"credential\"],\"title\":\"Auth — Passkey Enroll (finish)\",\"type\":\"object\"}\n",
     );
 }
 impl crate::Payload for Response {
@@ -1530,7 +1192,7 @@ impl crate::Payload for Response {
     const IS_ISSUED_AT_REQUIRED: bool = true;
     const IS_RECIPIENT_REQUIRED: bool = true;
     const PAYLOAD_SCHEMA: Option<&'static str> = Some(
-        "{\n  \"$defs\": {\n    \"AssertionResponse\": {\n      \"$anchor\": \"assertionResponse\",\n      \"additionalProperties\": false,\n      \"description\": \"The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.\",\n      \"properties\": {\n        \"authenticatorAttachment\": {\n          \"enum\": [\n            \"platform\",\n            \"cross-platform\"\n          ]\n        },\n        \"clientExtensionResults\": {\n          \"type\": \"object\"\n        },\n        \"id\": {\n          \"type\": \"string\"\n        },\n        \"rawId\": {\n          \"type\": \"string\"\n        },\n        \"response\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"authenticatorData\": {\n              \"type\": \"string\"\n            },\n            \"clientDataJSON\": {\n              \"type\": \"string\"\n            },\n            \"signature\": {\n              \"type\": \"string\"\n            },\n            \"userHandle\": {\n              \"type\": [\n                \"string\",\n                \"null\"\n              ]\n            }\n          },\n          \"required\": [\n            \"clientDataJSON\",\n            \"authenticatorData\",\n            \"signature\"\n          ],\n          \"type\": \"object\"\n        },\n        \"type\": {\n          \"const\": \"public-key\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"rawId\",\n        \"type\",\n        \"response\"\n      ],\n      \"title\": \"AuthenticatorAssertionResponse (login)\",\n      \"type\": \"object\"\n    },\n    \"AttestationResponse\": {\n      \"$anchor\": \"attestationResponse\",\n      \"additionalProperties\": false,\n      \"description\": \"The credential the client returns from `navigator.credentials.create`. Binary fields are base64url-encoded.\",\n      \"properties\": {\n        \"authenticatorAttachment\": {\n          \"enum\": [\n            \"platform\",\n            \"cross-platform\"\n          ]\n        },\n        \"clientExtensionResults\": {\n          \"type\": \"object\"\n        },\n        \"id\": {\n          \"type\": \"string\"\n        },\n        \"rawId\": {\n          \"type\": \"string\"\n        },\n        \"response\": {\n          \"additionalProperties\": false,\n          \"properties\": {\n            \"attestationObject\": {\n              \"type\": \"string\"\n            },\n            \"clientDataJSON\": {\n              \"type\": \"string\"\n            },\n            \"transports\": {\n              \"items\": {\n                \"type\": \"string\"\n              },\n              \"type\": \"array\"\n            }\n          },\n          \"required\": [\n            \"clientDataJSON\",\n            \"attestationObject\"\n          ],\n          \"type\": \"object\"\n        },\n        \"type\": {\n          \"const\": \"public-key\"\n        }\n      },\n      \"required\": [\n        \"id\",\n        \"rawId\",\n        \"type\",\n        \"response\"\n      ],\n      \"title\": \"AuthenticatorAttestationResponse (registration)\",\n      \"type\": \"object\"\n    },\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    },\n    \"Response\": {\n      \"$anchor\": \"response\",\n      \"additionalProperties\": false,\n      \"description\": \"Acknowledgement of the registered credential. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/finish/0.2#response.\",\n      \"properties\": {\n        \"credentialId\": {\n          \"description\": \"base64url-encoded WebAuthn credential id, durable identifier for later management.\",\n          \"type\": \"string\"\n        },\n        \"deviceLabel\": {\n          \"description\": \"The label persisted with the credential.\",\n          \"maxLength\": 256,\n          \"type\": \"string\"\n        },\n        \"ext\": {\n          \"$ref\": \"#/$defs/Ext\",\n          \"description\": \"Ecosystem-defined extension members per SPEC.md §4.5.1.\"\n        },\n        \"registeredAt\": {\n          \"format\": \"date-time\",\n          \"type\": \"string\"\n        },\n        \"subject\": {\n          \"description\": \"The VID the credential is now bound to. Echoed for symmetry with finish-time error responses.\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"credentialId\",\n        \"subject\",\n        \"registeredAt\"\n      ],\n      \"title\": \"Auth Passkey Enroll Finish — response payload\",\n      \"type\": \"object\"\n    }\n  },\n  \"$ref\": \"#/$defs/Response\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\"\n}\n",
+        "{\"$defs\":{\"AssertionResponse\":{\"$anchor\":\"assertionResponse\",\"additionalProperties\":false,\"description\":\"The credential the client returns from `navigator.credentials.get`. Binary fields are base64url-encoded.\",\"properties\":{\"authenticatorAttachment\":{\"enum\":[\"platform\",\"cross-platform\"]},\"clientExtensionResults\":{\"type\":\"object\"},\"id\":{\"type\":\"string\"},\"rawId\":{\"type\":\"string\"},\"response\":{\"additionalProperties\":false,\"properties\":{\"authenticatorData\":{\"type\":\"string\"},\"clientDataJSON\":{\"type\":\"string\"},\"signature\":{\"type\":\"string\"},\"userHandle\":{\"type\":[\"string\",\"null\"]}},\"required\":[\"clientDataJSON\",\"authenticatorData\",\"signature\"],\"type\":\"object\"},\"type\":{\"const\":\"public-key\"}},\"required\":[\"id\",\"rawId\",\"type\",\"response\"],\"title\":\"AuthenticatorAssertionResponse (login)\",\"type\":\"object\"},\"AttestationResponse\":{\"$anchor\":\"attestationResponse\",\"additionalProperties\":false,\"description\":\"The credential the client returns from `navigator.credentials.create`. Binary fields are base64url-encoded.\",\"properties\":{\"authenticatorAttachment\":{\"enum\":[\"platform\",\"cross-platform\"]},\"clientExtensionResults\":{\"type\":\"object\"},\"id\":{\"type\":\"string\"},\"rawId\":{\"type\":\"string\"},\"response\":{\"additionalProperties\":false,\"properties\":{\"attestationObject\":{\"type\":\"string\"},\"clientDataJSON\":{\"type\":\"string\"},\"transports\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"clientDataJSON\",\"attestationObject\"],\"type\":\"object\"},\"type\":{\"const\":\"public-key\"}},\"required\":[\"id\",\"rawId\",\"type\",\"response\"],\"title\":\"AuthenticatorAttestationResponse (registration)\",\"type\":\"object\"},\"Ext\":{\"additionalProperties\":true,\"description\":\"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\"minProperties\":1,\"propertyNames\":{\"pattern\":\"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"},\"title\":\"Ext\",\"type\":\"object\"},\"Response\":{\"$anchor\":\"response\",\"additionalProperties\":false,\"description\":\"Acknowledgement of the registered credential. Carried in a Trust Task document whose type is https://trusttasks.org/spec/auth/passkey/enroll/finish/0.2#response.\",\"properties\":{\"credentialId\":{\"description\":\"base64url-encoded WebAuthn credential id, durable identifier for later management.\",\"type\":\"string\"},\"deviceLabel\":{\"description\":\"The label persisted with the credential.\",\"maxLength\":256,\"type\":\"string\"},\"ext\":{\"$ref\":\"#/$defs/Ext\",\"description\":\"Ecosystem-defined extension members per SPEC.md §4.5.1.\"},\"registeredAt\":{\"format\":\"date-time\",\"type\":\"string\"},\"subject\":{\"description\":\"The VID the credential is now bound to. Echoed for symmetry with finish-time error responses.\",\"type\":\"string\"}},\"required\":[\"credentialId\",\"subject\",\"registeredAt\"],\"title\":\"Auth Passkey Enroll Finish — response payload\",\"type\":\"object\"}},\"$ref\":\"#/$defs/Response\",\"$schema\":\"https://json-schema.org/draft/2020-12/schema\"}\n",
     );
 }
 impl crate::RequestPayload for Payload {
