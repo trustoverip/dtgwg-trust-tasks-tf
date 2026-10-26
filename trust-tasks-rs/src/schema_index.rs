@@ -18838,3 +18838,9 @@ pub fn max_document_bytes_for(type_uri: &str) -> Option<usize> {
         _ => None,
     }
 }
+
+/// The version the specification behind `type_uri` declares it extends (SPEC
+/// §5.2 "Declared extension"), or `None`. Re-exported from
+/// [`crate::extension`], which also walks the chain; it is here so every
+/// per-Type-URI lookup has one home.
+pub use crate::extension::extends_for;

@@ -246,6 +246,11 @@ impl crate::Payload for Payload {
         "{\n  \"$defs\": {\n    \"Ext\": {\n      \"additionalProperties\": true,\n      \"description\": \"Vendor-namespaced extension object per SPEC.md §4.5.1. Each immediate key MUST be a reverse-DNS namespace; structure under each namespace is opaque to the framework.\",\n      \"minProperties\": 1,\n      \"propertyNames\": {\n        \"pattern\": \"^[a-z][a-z0-9-]*(\\\\.[a-z0-9-]+)+$\"\n      },\n      \"title\": \"Ext\",\n      \"type\": \"object\"\n    }\n  },\n  \"$id\": \"https://trusttasks.org/spec/credential-exchange/request/0.1\",\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"additionalProperties\": false,\n  \"description\": \"Holder to issuer: an OID4VCI Credential Request carrying the holder's key-binding proof. Replies on the offer thread.\",\n  \"properties\": {\n    \"credential_request\": {\n      \"description\": \"An OID4VCI Credential Request object, carried verbatim, including the embedded key-binding proof (`openid4vci-proof+jwt`). Its members are defined by OpenID for Verifiable Credential Issuance and are not re-specified here. snake_case member names are OID4VCI's own.\",\n      \"type\": \"object\"\n    },\n    \"ext\": {\n      \"$ref\": \"#/$defs/Ext\"\n    }\n  },\n  \"required\": [\n    \"credential_request\"\n  ],\n  \"title\": \"Credential Exchange Request — payload\",\n  \"type\": \"object\"\n}\n",
     );
 }
+/// The earlier `MAJOR.MINOR` of this slug that this version declares it
+/// extends (front matter `extends`, SPEC §5.2 "Declared extension"), or
+/// `None`. Only the direct declaration; walk a chain with
+/// [`crate::extension::extends_for`].
+pub const EXTENDS: Option<&str> = None;
 /// The extended error codes this specification declares (SPEC §7.3 item 9,
 /// §8.5), in declaration order. Empty when it declares none.
 pub const ERROR_CODES: &[crate::DeclaredErrorCode] =

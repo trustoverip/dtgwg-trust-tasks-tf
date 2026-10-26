@@ -177,6 +177,17 @@ impl TypeUri {
             ..self.clone()
         }
     }
+
+    /// A copy of this URI at `major.minor` — same authority, slug and variant.
+    /// Used to walk a declared-extension chain (SPEC §5.2), whose links name
+    /// only a version.
+    pub(crate) fn with_version(&self, major: u32, minor: u32) -> Self {
+        Self {
+            major,
+            minor,
+            ..self.clone()
+        }
+    }
 }
 
 impl fmt::Display for TypeUri {
