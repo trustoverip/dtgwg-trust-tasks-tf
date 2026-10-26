@@ -11,6 +11,33 @@ A Go module is published by tagging, so the released version of this module is
 the `trust-tasks-go/vX.Y.Z` tag rather than anything in the tree; the `Version`
 constant in `trusttasks/version.go` mirrors it. See `RELEASING.md`.
 
+## 0.9.8 — 2026-10-26
+
+
+### Added
+
+- **go**: Trust-tasks-gen generates an application's pinned tasks from its vendored bundles (#941)
+
+* feat(go): trust-tasks-gen generates an application's locked tasks from vendored bundles
+
+  trust-tasks-go/cmd/trust-tasks-gen (standard library only, go 1.22 floor) is an
+  independent port of scripts/build-go-bindings.mjs whose input is a
+  trust-tasks.lock and the bundles vendored beside it. It verifies every bundle
+  against its locked digest, refuses an unknown lock version or bundleVersion,
+  skips framework specs and withdrawn versions with a note, owns its out
+  directory (marker file; refuses to clear a non-empty directory without it),
+  and writes one package per version plus a root package whose ExtendsOf is a
+  trusttasks.ExtendsLookup. Third-party sources ([sources.<name>], vendored
+  under trust-tasks/@<name>/) generate under <out>/<name>/, with identity taken
+  from the bundle's typeUri.
+
+  The equivalence test runs it over every registry bundle and compares with the
+  prebuilt trust-tasks-go/specs tree: every declaration byte-identical, embedded
+  schemas JSON-equal, and only the order of $defs declarations differing (a
+  bundle does not record it). examples/consumer-app-go pins the same three tasks
+  as examples/consumer-app and round-trips documents through the runtime. Both
+  run in go.yml.
+
 ## 0.9.7 — 2026-10-26
 
 ## 0.9.6 — 2026-10-26

@@ -3,6 +3,29 @@
 Notable changes to the published packages. Generated from conventional commits
 by [git-cliff](https://git-cliff.org) when a release is cut — do not edit by
 hand.
+## [0.1.2](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-cli-v0.1.1...trust-tasks-cli-v0.1.2) — 2026-10-26
+
+
+### Added
+
+- **cli**: Trust-tasks generate --lang runs a language's generator over a verified lock ([#944](https://github.com/trustoverip/dtgwg-trust-tasks-tf/pull/944))
+
+`trust-tasks generate --lang <rs|ts|go|dart> --out <dir> [-- <args>]` runs
+  `check` and, only if the lock verifies, that language's generator from the
+  project directory: `npx --no-install trust-tasks-gen-ts`, `go run
+  …/trust-tasks-go/cmd/trust-tasks-gen` or `dart run trust_tasks:generate`, with
+  absolute --lock and --out and anything after `--` passed on. It installs
+  nothing; a missing tool is an error that says what to add. `--lang rs` checks
+  and points at build.rs, where Rust generates.
+
+  The TypeScript example had a hand-written lock and no trust-tasks.toml, and the
+  Dart example's manifest did not name the third-party task its lock pins, so
+  neither verified; both manifests now match their locks. Run through the new
+  command, the Go and TypeScript examples regenerate byte-identically and the
+  Dart one generates and runs.
+
+
+
 ## [0.1.1](https://github.com/trustoverip/dtgwg-trust-tasks-tf/compare/trust-tasks-cli-v0.1.0...trust-tasks-cli-v0.1.1) — 2026-10-26
 
 

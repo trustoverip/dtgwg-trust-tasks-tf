@@ -11,6 +11,45 @@ The package versions over **its own API** — what a consumer compiles against �
 not over `SPEC.md`. Below 1.0 a breaking change bumps the leading non-zero
 component.
 
+## 0.27.8 — 2026-10-26
+
+
+### Added
+
+- **ts-gen**: An application generates only the TypeScript tasks it pins, byte-identical to the prebuilt modules (#940)
+
+* feat(ts-gen, ts): an application generates only the TypeScript tasks it pins
+
+  Milestone 3 (TypeScript) of consumer-side generation. New package
+  @openvtc/trust-tasks-gen (trust-tasks-ts-gen/, bin trust-tasks-gen-ts): an
+  independent port of scripts/build-ts-bindings.mjs whose input is
+  trust-tasks.lock + the vendored bundles. Verifies every bundle's digest
+  first, owns its --out directory (marker file, refuses a foreign one), skips
+  withdrawn and framework specs with a note, and accepts third-party sources
+  (trust-tasks/@<source>/..., generated under <out>/<source>/, a source-named
+  namespace, identity from the bundle's typeUri).
+
+  A bundle does not say which $defs came from a shared file, so the
+  registry-wide hoisting into _shared/components.ts cannot be reproduced; each
+  module declares its definitions once itself, under the names the prebuilt
+  module exports them by.
+
+  scripts/equivalence.mjs generates all 1,127 bundles and compares with
+  trust-tasks-ts/src: every tail byte-identical, every schema JSON-equal with
+  authored property order, 942 root declarations byte-identical (the other 185
+  all have $defs of their own), 10,750 of 10,756 exported types identical under
+  tsc and the remaining 6 mutually assignable.
+
+  @openvtc/trust-tasks gains, additively, a `./runtime` export (the runtime
+  without the prebuilt modules) and `declareExtends`, which generated code
+  calls to register the locked versions' `extends` declarations.
+
+  examples/consumer-app-ts pins the Rust example's three tasks plus one
+  third-party fixture; it type-checks in 0.5 s / 0.2 GB against 1.8 s / 1.1 GB
+  when importing the package root. CI: ts.yml gen-equivalence and
+  consumer-app-ts. The package's first npm publish is manual, so it is not yet
+  in TS_PACKAGES or the publish-npm matrix (RELEASING.md).
+
 ## 0.27.7 — 2026-10-26
 
 ## 0.27.6 — 2026-10-26

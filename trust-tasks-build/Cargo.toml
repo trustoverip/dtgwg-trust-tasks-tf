@@ -1,7 +1,7 @@
 [package]
 name = "trust-tasks-build"
 # A new crate's first version. From here on it is assigned by the Release PR.
-version = "0.1.1"
+version = "0.1.2"
 edition.workspace = true
 rust-version = "1.95"
 license.workspace = true
