@@ -1,8 +1,11 @@
 // An application that speaks three Trust Tasks and generates only those.
 //
-// `trust-tasks.lock` pins acl/grant/0.2, keys/list/0.2 and vault/get/0.3; their
-// registry bundles are vendored under `trust-tasks/`. The libraries for exactly
-// those three are generated into lib/trust_tasks/ (git-ignored):
+// `trust-tasks.lock` pins acl/grant/0.2, keys/list/0.2 and vault/get/0.3 from
+// the registry, and payments/settle/1.0 from a third-party source named
+// `example` (a fixture under https://tasks.example.com). The bundles are
+// vendored under `trust-tasks/` (the sourced one under `trust-tasks/@example/`).
+// The libraries for exactly those four are generated into lib/trust_tasks/
+// (git-ignored), the sourced one under lib/trust_tasks/example/:
 //
 //   dart pub get
 //   dart run trust_tasks:generate --lock trust-tasks.lock --out lib/trust_tasks
@@ -21,6 +24,8 @@ import 'dart:convert';
 import 'package:trust_tasks/trust_tasks.dart';
 import 'package:trust_tasks_example_consumer_app/trust_tasks/acl/grant/v0_2/payload.dart'
     as grant;
+import 'package:trust_tasks_example_consumer_app/trust_tasks/example/payments/settle/v1_0/payload.dart'
+    as settle;
 import 'package:trust_tasks_example_consumer_app/trust_tasks/extends_index.dart'
     as locked;
 import 'package:trust_tasks_example_consumer_app/trust_tasks/keys/list/v0_2/payload.dart'
@@ -147,7 +152,24 @@ Future<void> main() async {
   check(back.id == 'entry-42', 'vault/get payload round-trips');
   print('vault/get  -> payload round-trips');
 
-  // 4. A version this application did not lock is refused, not guessed at.
+  // 4. payments/settle — a third-party task (SPEC §6.5) from the lock's
+  //    `example` source, generated under lib/trust_tasks/example/. Its
+  //    identity is the bundle's own Type URI, under its own authority.
+  check(settle.typeUri == 'https://tasks.example.com/spec/payments/settle/1.0',
+      'third-party Type URI');
+  check(settle.spec.isProofRequired, 'third-party policy');
+  const order = settle.Payload(
+    invoiceId: 'inv-7',
+    amount: settle.Money(currency: 'EUR', minorUnits: 1250),
+    method: settle.PayloadMethod.bankTransfer,
+  );
+  final order2 = settle.Payload.fromJson(
+      jsonDecode(jsonEncode(order.toJson())) as Map<String, dynamic>);
+  check(order2.amount.minorUnits == 1250, 'third-party payload round-trips');
+  check(order2.method == settle.PayloadMethod.bankTransfer, 'closed value');
+  print('payments/settle (example source) -> ${settle.typeUri}');
+
+  // 5. A version this application did not lock is refused, not guessed at.
   final other = readForVersion<keys_list.Payload>(
     {
       'id': 'urn:uuid:00000000-0000-4000-8000-000000000004',

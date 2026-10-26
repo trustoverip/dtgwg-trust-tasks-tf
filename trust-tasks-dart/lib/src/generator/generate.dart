@@ -28,6 +28,9 @@ const String defaultLanguageVersion = '3.3';
 /// (SPEC §6.1's reserved `trust-task-*` / `trust-ceremony-*` namespace).
 final RegExp frameworkSlug = RegExp(r'^trust-(task|ceremony)($|-|/)');
 
+/// Every official task's Type URI is this followed by `<slug>/<M.N>`.
+const String registryTypeUriPrefix = 'https://trusttasks.org/spec/';
+
 /// Why generation stopped.
 class GenerateError implements Exception {
   GenerateError(this.message);
@@ -70,12 +73,35 @@ Future<GenerateResult> generate({
   final notes = <String>[];
   final extendsEntries = <(String, String)>[];
   final sources = <String, String>{};
+
+  // A third-party task's libraries sit under a directory named for its source,
+  // so a source may not share a name with an official task's first segment.
+  for (final task in lock.tasks.where((t) => t.source != null)) {
+    final namespace = dartFileName(task.source!);
+    for (final official in lock.tasks.where((t) => t.source == null)) {
+      final first = official.slug.split('/').first;
+      if (first == task.source || dartFileName(first) == namespace) {
+        throw GenerateError(
+          'source `${task.source}` (${task.label}) has the name of the official '
+          'task ${official.label}\'s first segment `$first`, so their libraries '
+          'would share $namespace/ — rename the source in trust-tasks.toml',
+        );
+      }
+    }
+  }
+
   for (final task in lock.tasks) {
     final rel = task.bundlePath;
+    if (task.source != null && frameworkSlug.hasMatch(task.slug)) {
+      throw GenerateError(
+        '${task.label}: a framework specification (trust-task-*, '
+        'trust-ceremony-*) cannot come from a third-party source (SPEC §6.5)',
+      );
+    }
     final file = File('$lockDir/$rel');
     if (!file.existsSync()) {
       throw GenerateError(
-        'no vendored bundle for ${task.slug}/${task.version} at $rel — '
+        'no vendored bundle for ${task.label} at $rel — '
         'run `trust-tasks check`',
       );
     }
@@ -101,20 +127,37 @@ Future<GenerateResult> generate({
         'as ${task.typeUri}',
       );
     }
+    // The Type URI is the identity the generated library carries, so its
+    // authority must match where the lock says the task came from.
+    if (task.source == null) {
+      final expected = '$registryTypeUriPrefix${bundle.slug}/${bundle.version}';
+      if (bundle.typeUri != expected) {
+        throw GenerateError(
+          '$rel: an official task\'s Type URI must be $expected, not '
+          '${bundle.typeUri} — a task from another authority needs a source',
+        );
+      }
+    } else if (bundle.typeUri.startsWith('https://trusttasks.org/')) {
+      throw GenerateError(
+        '$rel: ${bundle.typeUri} is a registry Type URI, but the lock takes it '
+        'from source `${task.source}` — pin it without a source',
+      );
+    }
 
     if (bundle.isWithdrawn) {
-      notes.add('${task.slug}/${task.version}: withdrawn — nothing generated '
+      notes.add('${task.label}: withdrawn — nothing generated '
           '(move the pin with `trust-tasks update`)');
       continue;
     }
     if (frameworkSlug.hasMatch(task.slug)) {
-      notes.add('${task.slug}/${task.version}: a framework specification — '
+      notes.add('${task.label}: a framework specification — '
           'import package:trust_tasks/specs/'
           '${libraryPathFor(task.slug, task.version)} instead');
       continue;
     }
 
-    final path = libraryPathFor(bundle.slug, bundle.version);
+    final path =
+        libraryPathFor(bundle.slug, bundle.version, source: task.source);
     final previous = sources[path];
     if (previous != null) {
       throw GenerateError('$rel and $previous both generate $path — two slugs '

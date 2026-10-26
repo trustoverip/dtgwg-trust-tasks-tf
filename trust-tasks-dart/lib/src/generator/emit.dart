@@ -732,7 +732,10 @@ const _nullableLint =
     '// ignore: unnecessary_nullable_for_final_variable_declarations';
 
 List<String> _emitTail(Bundle b, bool hasResponse) {
-  final uri = 'https://trusttasks.org/spec/${b.slug}/${b.version}';
+  // The identity is the bundle's own Type URI, never rebuilt from the slug: a
+  // third-party task (SPEC §6.5) lives under another authority, in any §6.1
+  // form. For a registry bundle the two agree (the driver checks).
+  final uri = b.typeUri;
   final out = <String>[
     [
       '/// Why this specification version is deprecated, or null when it is current.',
@@ -828,9 +831,11 @@ List<String> _emitTail(Bundle b, bool hasResponse) {
 /// The library path for [slug] at [version], relative to the output directory:
 /// every segment snake_cased (`change-role` → `change_role`), the version as
 /// `v0_1`, the file `payload.dart` — the layout of the prebuilt `lib/specs/`.
-String libraryPathFor(String slug, String version) {
-  final dirs = slug
-      .split('/')
+///
+/// A task from a third-party [source] sits under a top-level directory named
+/// for the source, snake_cased like a slug segment: `acme/payments/settle/v1_0`.
+String libraryPathFor(String slug, String version, {String? source}) {
+  final dirs = [if (source != null) source, ...slug.split('/')]
       .map((p) => dartFileName(p.startsWith('_') ? p.substring(1) : p));
   return [...dirs, 'v${version.replaceAll('.', '_')}', 'payload.dart']
       .join('/');

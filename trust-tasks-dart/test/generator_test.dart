@@ -16,9 +16,10 @@ import 'package:trust_tasks/src/generator/generate.dart';
 import 'package:trust_tasks/src/generator/lock.dart';
 import 'package:trust_tasks/src/generator/sha256.dart';
 
-/// The example application's lock and vendored bundles (acl/grant 0.2,
-/// keys/list 0.2, vault/get 0.3).
-final exampleDir = Directory('../examples/consumer-app');
+/// The Dart example application's lock and vendored bundles: acl/grant 0.2,
+/// keys/list 0.2 and vault/get 0.3 from the registry, and payments/settle 1.0
+/// from the third-party source `example` (https://tasks.example.com).
+final exampleDir = Directory('../examples/consumer-app-dart');
 
 String hex(List<int> bytes) =>
     bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
@@ -41,18 +42,33 @@ Directory workspace() {
 
 /// Add a lock entry for [bundle] (written canonically enough for the
 /// generator, which hashes bytes and does not re-canonicalize).
-void pin(Directory dir, Map<String, dynamic> bundle) {
+void pin(Directory dir, Map<String, dynamic> bundle, {String? source}) {
   final slug = bundle['slug'] as String, version = bundle['version'] as String;
   final bytes = utf8.encode(jsonEncode(bundle));
-  File('${dir.path}/trust-tasks/$slug/$version.bundle.json')
+  final at = source == null ? '' : '@$source/';
+  File('${dir.path}/trust-tasks/$at$slug/$version.bundle.json')
     ..parent.createSync(recursive: true)
     ..writeAsBytesSync(bytes);
-  File('${dir.path}/trust-tasks.lock').writeAsStringSync(
-    '\n[[task]]\nslug = "$slug"\nversion = "$version"\n'
+  final lock = File('${dir.path}/trust-tasks.lock');
+  final declare =
+      source != null && !lock.readAsStringSync().contains('[sources.$source]');
+  lock.writeAsStringSync(
+    '${declare ? '\n[sources.$source]\nurl = "https://$source.example"\n' : ''}'
+    '\n[[task]]\n${source == null ? '' : 'source = "$source"\n'}'
+    'slug = "$slug"\nversion = "$version"\n'
     'type_uri = "${bundle['typeUri']}"\ndigest = "${sha256Digest(bytes)}"\n',
     mode: FileMode.append,
   );
 }
+
+/// The example's third-party fixture: payments/settle 1.0 from
+/// https://tasks.example.com, vendored under `trust-tasks/@example/`.
+Map<String, dynamic> settle() => jsonDecode(File(
+        '${exampleDir.path}/trust-tasks/@example/payments/settle/1.0.bundle.json')
+    .readAsStringSync()) as Map<String, dynamic>;
+
+Matcher refusal(String text) => throwsA(
+    isA<GenerateError>().having((e) => e.message, 'message', contains(text)));
 
 Map<String, dynamic> vaultGet() =>
     jsonDecode(File('${exampleDir.path}/trust-tasks/vault/get/0.3.bundle.json')
@@ -85,7 +101,7 @@ void main() {
     test('reproduces the digests the example lock pins', () {
       final lock = Lockfile.parse(
           File('${exampleDir.path}/trust-tasks.lock').readAsStringSync());
-      expect(lock.tasks, hasLength(3));
+      expect(lock.tasks, hasLength(4));
       for (final t in lock.tasks) {
         final bytes =
             File('${exampleDir.path}/${t.bundlePath}').readAsBytesSync();
@@ -123,6 +139,39 @@ void main() {
       expect(() => Lockfile.parse(ok.replaceFirst('sha256:', 'sha1:')),
           throwsA(isA<LockError>()));
     });
+
+    test('reads third-party sources', () {
+      final sourced = ok.replaceFirst('\n[[task]]\n',
+              '\n[sources.acme]\nurl = "https://tasks.acme.example"\n\n[[task]]\n') +
+          ok
+              .substring(ok.indexOf('\n[[task]]'))
+              .replaceFirst('[[task]]\n', '[[task]]\nsource = "acme"\n');
+      final lock = Lockfile.parse(sourced);
+      expect(lock.sources, {'acme': 'https://tasks.acme.example'});
+      expect(lock.tasks.map((t) => t.bundlePath), [
+        'trust-tasks/acl/grant/0.2.bundle.json',
+        'trust-tasks/@acme/acl/grant/0.2.bundle.json',
+      ]);
+
+      // A source must be declared, named properly, and have one location.
+      expect(() => Lockfile.parse(sourced.replaceFirst('[sources.acme]', '')),
+          throwsA(isA<LockError>()));
+      expect(
+          () => Lockfile.parse(
+              sourced.replaceFirst('url = "https://tasks.acme.example"', '')),
+          throwsA(isA<LockError>()));
+      expect(
+          () => Lockfile.parse(sourced.replaceFirst(
+              'url = "https://tasks.acme.example"',
+              'url = "https://x.example"\npath = "../x"')),
+          throwsA(isA<LockError>()));
+      expect(() => Lockfile.parse(sourced.replaceAll('acme', 'Acme')),
+          throwsA(isA<LockError>()));
+      expect(
+          () => Lockfile.parse(sourced.replaceFirst(
+              'url = "https://tasks.acme.example"', 'token = "x"')),
+          throwsA(isA<LockError>()));
+    });
   });
 
   group('generate', () {
@@ -133,6 +182,7 @@ void main() {
           lockPath: '${dir.path}/trust-tasks.lock', outDir: out.path);
       expect(result.generated, [
         'acl/grant/v0_2/payload.dart',
+        'example/payments/settle/v1_0/payload.dart',
         'keys/list/v0_2/payload.dart',
         'vault/get/v0_3/payload.dart',
       ]);
@@ -149,6 +199,94 @@ void main() {
       await generate(
           lockPath: '${dir.path}/trust-tasks.lock', outDir: out.path);
       expect(snapshot(out), first);
+    });
+
+    test('a third-party task: its own namespace and its own Type URI',
+        () async {
+      final dir = workspace();
+      // A second, URN-form task from another source (SPEC §6.1).
+      pin(
+          dir,
+          settle()
+            ..['slug'] = 'ledger/post'
+            ..['typeUri'] = 'urn:example:acme:spec:ledger:post:1.0',
+          source: 'acme-pay');
+      final out = Directory('${dir.path}/out');
+      final result = await generate(
+          lockPath: '${dir.path}/trust-tasks.lock', outDir: out.path);
+      expect(
+          result.generated, contains('acme_pay/ledger/post/v1_0/payload.dart'));
+
+      final files = snapshot(out);
+      final settleLib = files['example/payments/settle/v1_0/payload.dart']!;
+      expect(settleLib,
+          contains("'https://tasks.example.com/spec/payments/settle/1.0'"));
+      expect(settleLib, contains('#response'));
+      expect(settleLib, isNot(contains('trusttasks.org/spec/payments')));
+      expect(settleLib,
+          contains('trust-tasks/@example/payments/settle/1.0.bundle.json'));
+      expect(files['acme_pay/ledger/post/v1_0/payload.dart']!,
+          contains("'urn:example:acme:spec:ledger:post:1.0'"));
+    });
+
+    test('refuses a source named for an official task\'s first segment',
+        () async {
+      final dir = workspace();
+      pin(
+          dir,
+          settle()
+            ..['slug'] = 'payments/refund'
+            ..['typeUri'] =
+                'https://tasks.example.com/spec/payments/refund/1.0',
+          source: 'vault');
+      expect(
+          generate(
+              lockPath: '${dir.path}/trust-tasks.lock',
+              outDir: '${dir.path}/out'),
+          refusal('source `vault`'));
+    });
+
+    test('refuses a Type URI under the wrong authority', () async {
+      final sourcedRegistry = workspace();
+      pin(
+          sourcedRegistry,
+          settle()
+            ..['slug'] = 'payments/refund'
+            ..['typeUri'] = 'https://trusttasks.org/spec/payments/refund/1.0',
+          source: 'example');
+      expect(
+          generate(
+              lockPath: '${sourcedRegistry.path}/trust-tasks.lock',
+              outDir: '${sourcedRegistry.path}/out'),
+          refusal('is a registry Type URI'));
+
+      final officialForeign = workspace();
+      pin(
+          officialForeign,
+          settle()
+            ..['slug'] = 'payments/refund'
+            ..['typeUri'] =
+                'https://tasks.example.com/spec/payments/refund/1.0');
+      expect(
+          generate(
+              lockPath: '${officialForeign.path}/trust-tasks.lock',
+              outDir: '${officialForeign.path}/out'),
+          refusal('an official task\'s Type URI must be'));
+    });
+
+    test('refuses a framework specification from a source', () async {
+      final dir = workspace();
+      pin(
+          dir,
+          settle()
+            ..['slug'] = 'trust-task-ok'
+            ..['typeUri'] = 'https://tasks.example.com/spec/trust-task-ok/1.0',
+          source: 'example');
+      expect(
+          generate(
+              lockPath: '${dir.path}/trust-tasks.lock',
+              outDir: '${dir.path}/out'),
+          refusal('cannot come from a third-party source'));
     });
 
     test('refuses a bundle that does not match its digest', () async {
@@ -200,7 +338,7 @@ void main() {
             ..['typeUri'] = 'https://trusttasks.org/spec/trust-task-ok/0.1');
       final result = await generate(
           lockPath: '${dir.path}/trust-tasks.lock', outDir: '${dir.path}/out');
-      expect(result.generated, hasLength(3));
+      expect(result.generated, hasLength(4));
       expect(result.notes, [
         contains('vault/get/0.1: withdrawn'),
         contains('trust-task-ok/0.1: a framework specification'),

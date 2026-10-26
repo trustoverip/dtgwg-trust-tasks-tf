@@ -1,6 +1,9 @@
 version = 1
 registry = "https://trusttasks.org"
 
+[sources.example]
+path = "../third-party-registry"
+
 [[task]]
 slug = "acl/grant"
 version = "0.2"
@@ -18,3 +21,10 @@ slug = "vault/get"
 version = "0.3"
 type_uri = "https://trusttasks.org/spec/vault/get/0.3"
 digest = "sha256:c2fb4081a761d2479a51d194e5d54081b5dffe3d06da3ad4791432d8c22419d7"
+
+[[task]]
+source = "example"
+slug = "payments/settle"
+version = "1.0"
+type_uri = "https://tasks.example.com/spec/payments/settle/1.0"
+digest = "sha256:f17f4223045e37b6375fff8c482c0be4b90cd1d280f635637a5be5882d9e0811"
