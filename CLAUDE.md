@@ -130,7 +130,7 @@ defects three times.
 | `published schemas change only additively` (`scripts/check-published-schemas.mjs`, `scripts/lib/schema-compat.mjs`) | a spec file this PR changed that was in the last `trust-tasks-rs-v*` release changed only additively — no removed, renamed or newly required/optional member, no type, `title`, pattern or format change, no enum value inserted before another, no narrowed or dropped bound, no `proofRequirement` change or dropped error code | a semantic change carried only in prose, and anything already merged to main before the last release that was never compared |
 | the API compatibility jobs — `rs API compatibility`, `ts API compatibility`, `go API compatibility`, `Dart API compatibility` | the published crates' (`trust-tasks-rs` over the runtime and the `acl` family only; a binding crate only when the PR changes it) and the core npm, Go and Dart packages' public API is compatible with their last published release, or the PR title declares the break with a `!` scoped to that package (or one merged since the release already did); an appended string-union value is compatible by policy | a behavioural break that changes no signature (a spec that starts requiring a proof), and the hand-written sibling packages, which are not checked yet |
 | commit-lint's `!` rule | a `!` title scopes it only to packages (`rs`, `ts`, `go`, `dart`, `codegen`, the binding crates, `ts-…`/`go-…`/`dart-…`) | whether the package API really broke |
-| `check-bundles` (in `deploy.yml`, after `build-bundles`) | every registry bundle's digest, canonical form and index entry, and that its schemas equal the TypeScript module's | whether a consumer's generator reads the bundle the way the in-repo generators read the specs |
+| `check-bundles` (in `deploy.yml`, after `build-bundles`) | every registry bundle's digest, canonical form and index entry; that its schemas, and their `$defs` order, equal the TypeScript module's; and that each `defOrigins` entry names a shared schema in `specs/` defining it | whether a consumer's generator reads the bundle the way the in-repo generators read the specs |
 | the error-URI check in `check-bindings-conformance.mjs` | `trust_task_error_type_uri()`, `TRUST_TASK_ERROR_TYPE_URI`, `TrustTaskErrorTypeURI` and `trustTaskErrorTypeUri` all name the same version | whether that version is the right one to have adopted |
 
 The fourth instance of the hand-maintained-list failure mode was binding *prose*:
@@ -369,6 +369,14 @@ and `/specs/index.json`; the bundles are not committed.
   `responseSchema` are, as parsed JSON, the module's `PAYLOAD_SCHEMA`s. Change
   the inlining or a policy reader there and both move together; do not give
   `bundle.rs` a reader of its own.
+- **`propertyOrder`, `defsOrder` and `defOrigins` restore what canonical form
+  loses** — the authored member order, the `$defs` order the TS/Go/Dart
+  inliners produce (a last-in-first-out `$ref` frontier, replayed in
+  `trust-tasks-build/src/publish/order.rs`), and which shared component each
+  spliced definition is. The builder refuses a bundle whose replayed order does
+  not name exactly its `$defs`, and `check-bundles` compares `defsOrder` with
+  the TypeScript module's `$defs` order. Change an inliner's walk and both
+  must move.
 - **The bytes are canonical (RFC 8785) and the digest is over them.** Any change
   to what a bundle contains changes every digest a consumer has pinned, so a
   shape change bumps `bundleVersion`.

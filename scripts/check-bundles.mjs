@@ -20,7 +20,15 @@
 //      parsed JSON, the TypeScript generated module's `PAYLOAD_SCHEMA` /
 //      `RESPONSE_PAYLOAD_SCHEMA` — an independent generator's inlining of the
 //      same `$ref`s (scripts/build-ts-bindings.mjs). A withdrawn version has no
-//      TypeScript module, so only 1–3 apply to it.
+//      TypeScript module, so only 1–3 and 6 apply to it;
+//   5. every non-withdrawn bundle's `defsOrder` is the order of the `$defs` in
+//      that TypeScript module's schemas, which its inliner leaves in the order
+//      the Go and Dart generators declare them;
+//   6. `defOrigins` names an origin for exactly the `$defs` the specification's
+//      own `payload.schema.json` does not declare, and each origin is
+//      `<$id>#/$defs/<name>` of a shared schema in `specs/` that defines that
+//      name (or, for a shared file with no `$id`, its path under
+//      `https://trusttasks.org/spec/`).
 //
 // Run after the bundles are built: `npm run build-bundles && npm run check-bundles`.
 
@@ -32,6 +40,29 @@ import { fileURLToPath } from "node:url";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const DIR = path.resolve(process.argv[2] ?? path.join(ROOT, "website", "specs"));
 const TS_SRC = path.join(ROOT, "trust-tasks-ts", "src");
+
+const SPECS = path.join(ROOT, "specs");
+
+/** `$id` → the `$defs` names it declares, over every shared schema in `specs/`. */
+function sharedDefinitions() {
+  const out = new Map();
+  const walk = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(p);
+      else if (entry.name.endsWith(".json") && path.relative(SPECS, p).split(path.sep).some((s) => s.startsWith("_"))) {
+        const doc = JSON.parse(fs.readFileSync(p, "utf8"));
+        const id =
+          doc.$id ??
+          `https://trusttasks.org/spec/${path.relative(SPECS, p).split(path.sep).join("/").replace(/(\.schema)?\.json$/, "")}`;
+        out.set(id, new Set(Object.keys(doc.$defs ?? {})));
+      }
+    }
+  };
+  walk(SPECS);
+  return out;
+}
+const SHARED = sharedDefinitions();
 
 const failures = [];
 const fail = (msg) => failures.push(msg);
@@ -123,6 +154,27 @@ for (const [rel, entry] of listed) {
     }
   }
 
+  const own = JSON.parse(
+    fs.readFileSync(path.join(SPECS, bundle.slug, bundle.version, "payload.schema.json"), "utf8"),
+  ).$defs ?? {};
+  const origins = bundle.defOrigins ?? {};
+  for (const name of Object.keys(bundle.schema.$defs ?? {})) {
+    const origin = origins[name];
+    if (name in own) {
+      if (origin !== undefined) fail(`${rel}: defOrigins names ${name}, which the payload schema declares itself`);
+      continue;
+    }
+    const hash = origin?.lastIndexOf("#/$defs/") ?? -1;
+    if (hash < 0 || origin.slice(hash + 8) !== name) {
+      fail(`${rel}: defOrigins.${name} is ${JSON.stringify(origin)}, not <$id>#/$defs/${name}`);
+    } else if (!SHARED.get(origin.slice(0, hash))?.has(name)) {
+      fail(`${rel}: defOrigins.${name} names ${origin}, which no shared schema in specs/ defines`);
+    }
+  }
+  for (const name of Object.keys(origins)) {
+    if (!(name in (bundle.schema.$defs ?? {}))) fail(`${rel}: defOrigins names ${name}, which is not in $defs`);
+  }
+
   if (bundle.status === "withdrawn") continue;
   const tsPath = path.join(TS_SRC, bundle.slug, bundle.version, "payload.ts");
   if (!fs.existsSync(tsPath)) {
@@ -138,6 +190,13 @@ for (const [rel, entry] of listed) {
   if (canonical(tsResponse) !== canonical(bundle.responseSchema)) {
     fail(`${rel}: responseSchema differs from the TypeScript RESPONSE_PAYLOAD_SCHEMA`);
   }
+  for (const [pointer, ts] of [["/schema", tsRequest], ["/responseSchema", tsResponse]]) {
+    const expected = ts?.$defs ? Object.keys(ts.$defs) : undefined;
+    const recorded = bundle.defsOrder?.[pointer];
+    if (JSON.stringify(recorded) !== JSON.stringify(expected)) {
+      fail(`${rel}: defsOrder${pointer} is ${JSON.stringify(recorded)}, the TypeScript module's $defs are ${JSON.stringify(expected)}`);
+    }
+  }
   compared++;
 }
 
@@ -149,5 +208,5 @@ if (failures.length) {
 }
 console.log(
   `check-bundles: ${listed.size} bundles verified (digest, canonical form, index); ` +
-    `${compared} schema pairs agree with the TypeScript generator.`,
+    `${compared} schema pairs and their $defs order agree with the TypeScript generator.`,
 );

@@ -436,6 +436,8 @@ pub fn build_bundle(
 
     let property_order = order::property_order(spec, &schemas, refs)
         .with_context(|| format!("propertyOrder for {}/{}", spec.slug, spec.version))?;
+    let (defs_order, def_origins) = order::defs_order(spec, &schemas, type_uri, refs)
+        .with_context(|| format!("defsOrder for {}/{}", spec.slug, spec.version))?;
 
     let error_codes: Vec<Value> = policy
         .error_codes
@@ -485,6 +487,8 @@ pub fn build_bundle(
         },
         "errorCodes": error_codes,
         "propertyOrder": property_order,
+        "defsOrder": defs_order,
+        "defOrigins": def_origins,
         "schema": schemas.schema,
         "responseSchema": schemas.response,
     });
