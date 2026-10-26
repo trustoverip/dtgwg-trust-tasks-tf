@@ -46,10 +46,13 @@ type BoxedHandler<R> = Box<dyn Fn(TrustTask<Value>) -> Result<R, RejectReason> +
 /// and deserialization-time failures.
 pub struct Dispatcher<R> {
     handlers: HashMap<String, BoxedHandler<R>>,
-    /// Slugs (version-independent) of every registered handler, so an inbound
-    /// document whose slug is known but whose `MAJOR.MINOR` is not registered
-    /// can be distinguished as `unsupportedVersion` rather than
-    /// `unsupportedType` (SPEC §5.2 / §8.3).
+    /// The specifications (authority and slug, version-independent) of every
+    /// registered handler, so an inbound document of a known specification
+    /// whose `MAJOR.MINOR` is not registered can be distinguished as
+    /// `unsupportedVersion` rather than `unsupportedType` (SPEC §5.2 / §8.3).
+    /// Keyed by authority as well as slug: the same slug under another
+    /// authority is another specification (SPEC §6.1), so it is
+    /// `unsupportedType`.
     slugs: HashSet<String>,
     /// The payload schema of each registered handler's `P`, under the same
     /// key, for pruning a forward-routed document (SPEC §5.2).
@@ -97,7 +100,7 @@ impl<R> Dispatcher<R> {
             let typed = downcast_payload::<P>(doc)?;
             Ok(handler(typed))
         };
-        self.slugs.insert(P::type_uri().slug().to_string());
+        self.slugs.insert(P::type_uri().specification_key());
         self.schemas
             .insert(canonical_key(&P::type_uri()), P::PAYLOAD_SCHEMA);
         self.handlers
@@ -144,7 +147,7 @@ impl<R> Dispatcher<R> {
         // `MAJOR.MINOR` is `unsupportedVersion` — unless the version declares
         // an extension of one that is registered; an unrecognized slug is
         // `unsupportedType`.
-        if !self.slugs.contains(doc.type_uri.slug()) {
+        if !self.slugs.contains(&doc.type_uri.specification_key()) {
             return Err(RejectReason::UnsupportedType { type_uri: key });
         }
         match forward_target(&doc.type_uri, &self.handlers) {
@@ -594,5 +597,128 @@ mod tests {
             matches!(err, RejectReason::UnsupportedVersion { .. }),
             "{err:?}"
         );
+    }
+
+    // ── Authorities (SPEC §6.1, §6.5) ───────────────────────────────────
+    //
+    // A slug is unique only within its authority: `acl/show` 0.2 under
+    // another https authority, or in the URN form, is another specification,
+    // and must never reach the registry's handler — exactly, forward, or by
+    // error classification.
+
+    const ELSEWHERE: &str = "https://tasks.example.com/spec/acl/show";
+    const URN: &str = "urn:example:tasks:spec:acl:show";
+
+    #[derive(serde::Serialize, serde::Deserialize)]
+    #[serde(deny_unknown_fields)]
+    struct ElsewhereShow {
+        subject: String,
+    }
+
+    impl Payload for ElsewhereShow {
+        const TYPE_URI: &'static str = "https://tasks.example.com/spec/acl/show/0.2";
+        const PAYLOAD_SCHEMA: Option<&'static str> = Some(
+            r#"{"type":"object","additionalProperties":false,"properties":{"subject":{"type":"string"}}}"#,
+        );
+    }
+
+    #[derive(serde::Serialize, serde::Deserialize)]
+    #[serde(deny_unknown_fields)]
+    struct UrnShow {
+        subject: String,
+    }
+
+    impl Payload for UrnShow {
+        const TYPE_URI: &'static str = "urn:example:tasks:spec:acl:show:0.2";
+        const PAYLOAD_SCHEMA: Option<&'static str> = Some(
+            r#"{"type":"object","additionalProperties":false,"properties":{"subject":{"type":"string"}}}"#,
+        );
+    }
+
+    fn doc_of(type_uri: &str) -> TrustTask<Value> {
+        serde_json::from_value(serde_json::json!({
+            "id": "req-authority",
+            "type": type_uri,
+            "issuer": "did:web:org.example",
+            "recipient": "did:web:maintainer.example",
+            "payload": { "subject": "did:web:a" },
+        }))
+        .unwrap()
+    }
+
+    fn three_authorities() -> Dispatcher<(&'static str, String)> {
+        Dispatcher::new()
+            .on::<show_v0_2::Payload, _>(|req| {
+                ("registry", req.respond_with("r", ()).type_uri.to_string())
+            })
+            .on::<ElsewhereShow, _>(|req| ("https", req.respond_with("r", ()).type_uri.to_string()))
+            .on::<UrnShow, _>(|req| ("urn", req.respond_with("r", ()).type_uri.to_string()))
+    }
+
+    #[test]
+    fn one_slug_under_three_authorities_routes_three_ways() {
+        let d = three_authorities();
+        for (uri, want) in [
+            (format!("{SHOW}/0.2"), "registry"),
+            (format!("{ELSEWHERE}/0.2"), "https"),
+            (format!("{ELSEWHERE}/0.2#request"), "https"),
+            (format!("{URN}:0.2"), "urn"),
+            (format!("{URN}:0.2#request"), "urn"),
+        ] {
+            let (seen, response) = d.dispatch(doc_of(&uri)).unwrap();
+            assert_eq!(seen, want, "{uri}");
+            assert_eq!(
+                response,
+                format!("{}#response", uri.trim_end_matches("#request"))
+            );
+        }
+        assert_eq!(d.registered_uris().len(), 3);
+    }
+
+    #[test]
+    fn an_extension_chain_stays_within_its_authority() {
+        // Each authority's 0.9 declares it extends 0.2 — of its own spec.
+        test_index::declare(&format!("{URN}:0.9"), Some("0.2"));
+        test_index::declare(&format!("{ELSEWHERE}/0.9"), Some("0.2"));
+        let d = three_authorities();
+        assert_eq!(d.dispatch(doc_of(&format!("{URN}:0.9"))).unwrap().0, "urn");
+        assert_eq!(
+            d.dispatch(doc_of(&format!("{ELSEWHERE}/0.9"))).unwrap().0,
+            "https"
+        );
+        // The registry's 0.9 declares nothing, so it reaches nothing — not the
+        // other authorities' 0.2 either.
+        assert!(matches!(
+            d.dispatch(doc_of(&format!("{SHOW}/0.9"))).unwrap_err(),
+            RejectReason::UnsupportedVersion { .. }
+        ));
+        assert!(crate::extension::read_as::<UrnShow>(doc_of(&format!("{URN}:0.9"))).is_ok());
+        assert!(matches!(
+            crate::extension::read_as::<show_v0_2::Payload>(doc_of(&format!("{URN}:0.9")))
+                .unwrap_err(),
+            RejectReason::UnsupportedType { .. }
+        ));
+    }
+
+    #[test]
+    fn the_same_slug_under_an_unknown_authority_is_an_unsupported_type() {
+        // Only the registry's acl/show is implemented: another authority's
+        // acl/show is not a version of it.
+        let d = Dispatcher::<&'static str>::new().on::<show_v0_2::Payload, _>(|_| "registry");
+        for uri in [
+            "https://other.example/spec/acl/show/0.2".to_string(),
+            format!("{URN}:0.2"),
+        ] {
+            let err = d.dispatch(doc_of(&uri)).unwrap_err();
+            assert!(
+                matches!(err, RejectReason::UnsupportedType { .. }),
+                "{uri}: {err:?}"
+            );
+        }
+        // While the registry's own other versions remain unsupported versions.
+        assert!(matches!(
+            d.dispatch(doc_of(&format!("{SHOW}/0.7"))).unwrap_err(),
+            RejectReason::UnsupportedVersion { .. }
+        ));
     }
 }

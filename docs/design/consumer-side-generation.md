@@ -337,3 +337,177 @@ headers), then syncs the rest of the site with `--delete --exclude
 Until the store has every digest a lockfile can name, the CLI falls back to
 `specs/<slug>/<M.N>/bundle.json` when the store lacks one, verifies it against
 the same digest, and says so.
+
+## Third-party sources
+
+SPEC §6.1 and §6.5 already allow specifications outside the official registry:
+their Type URIs sit under another authority, and a slug is unique only within
+its authority. Third-party sources let an application pin tasks from another
+ecosystem's registry beside official ones, and generate them together.
+
+### The format
+
+The manifest declares each source and names its tasks `<source>:<slug>`:
+
+```toml
+# trust-tasks.toml
+[sources.acme]                      # name: [a-z][a-z0-9]*(-[a-z0-9]+)*
+url = "https://tasks.acme.example"  # https only — or: path = "../acme-registry"
+
+[tasks]
+"vault/get" = "0.3"
+"acme:payments/settle" = "1.0"
+"acme:vault/get" = "0.3"            # acme's own vault/get: another specification
+```
+
+The lock stays `version = 1`. It gains `[sources.<name>]` tables (the sources
+at least one entry comes from, as the manifest declares them) and an optional
+`source` key on each `[[task]]`. Entries are sorted official first, then by
+source name, then slug, then version:
+
+```toml
+version = 1
+registry = "https://trusttasks.org"
+
+[sources.acme]
+url = "https://tasks.acme.example"
+
+[[task]]
+slug = "vault/get"
+version = "0.3"
+type_uri = "https://trusttasks.org/spec/vault/get/0.3"
+digest = "sha256:…"
+
+[[task]]
+source = "acme"
+slug = "payments/settle"
+version = "1.0"
+type_uri = "https://tasks.acme.example/spec/payments/settle/1.0"
+digest = "sha256:…"
+```
+
+- **Vendored path:** `trust-tasks/@<source>/<slug>/<M.N>.bundle.json`. `@` cannot
+  begin a slug, so a source's directory never collides with an official family.
+- **Generated namespace:** a source's tasks sit under a top-level module,
+  directory or path segment named for the source, cased as a slug segment would
+  be — Rust `tasks::acme::payments::settle::v1_0`, Go
+  `<out>/acme/payments/settle/v1_0`, TypeScript `<out>/acme/payments/settle/1.0/…`,
+  Dart `<out>/acme/payments/settle/v1_0/payload.dart`.
+- **Identity comes from the bundle's `typeUri`,** never rebuilt from a slug with
+  a hard-coded prefix. A sourced Type URI may be any SPEC §6.1 form:
+  `<prefix>/spec/<slug>/<M.N>` for an https authority or a DID URL, or
+  `urn:<nid>:<prefix>:spec:<slug-segments>:<M.N>`.
+- A source serves the layout trusttasks.org does: `specs/index.json`,
+  `specs/<slug>/<M.N>/bundle.json`, `specs/by-digest/sha256-<hex>.json`. A `path`
+  source is the same tree on disk, relative to the project.
+
+Generators ignore a source's `url` / `path`; they read only the vendored files.
+
+### The trust model
+
+- **Digests pin content.** As for official tasks, the lock pins each sourced
+  bundle by `sha256`, and the build refuses a vendored file that does not match.
+  A source can change what it serves; it cannot change what an application
+  builds without a reviewed change to the lock. `fetch` restores by digest from
+  the source's by-digest store and never moves a pin.
+- **The authority rule (SPEC §6.5 item 1).** A sourced bundle whose Type URI is
+  under `https://trusttasks.org/` is refused — compared as RFC 3986 compares
+  scheme and host, so `HTTPS://TrustTasks.org/…` is caught too — and so is an
+  official bundle whose Type URI is not exactly
+  `https://trusttasks.org/spec/<slug>/<M.N>`. A source therefore cannot pass its
+  specification off as the registry's, and the registry cannot be mirrored into
+  serving someone else's.
+- **The reservation (SPEC §6.5 item 2).** No source may serve a framework slug
+  (`^trust-(task|ceremony)($|-|/)`).
+- **One Type URI, one pin.** Two lock entries with the same Type URI — two
+  source names for one site, say — are refused.
+- **Namespaces cannot collide.** A source named like the first segment of an
+  official task in the same lock (`[sources.vault]` beside `vault/get`) is
+  refused: the two would share a generated namespace in every language.
+- **Consistency.** A bundle whose Type URI, slug and version disagree with each
+  other, or with the lock entry it is vendored as, is refused by the CLI and by
+  every generator.
+- **No network at build.** Generation reads the lock and the vendored bundles
+  only. A source's `url` is https-only — over plain http anyone on the path could
+  choose the specifications an application generates code for, and SPEC §6.1
+  forbids http Type URIs for the same reason. `TRUST_TASKS_CA_FILE` names a PEM
+  bundle the CLI trusts instead of the Mozilla roots, for a source behind an
+  internal CA.
+- **Runtime routing keys by the whole Type URI.** Rust's `Dispatcher` and
+  `AsyncDispatcher` key handlers by `TypeUri::for_routing`; the generated
+  `EXTENDS` table and `declare_extends()` key by the bundle's full Type URI; and
+  the dispatchers' unsupported-*version*-or-*type* decision is keyed by authority
+  and slug, so a document of acme's `vault/get` never reaches the registry's
+  `vault/get` handler, by exact match, by a forward `extends` route, or as an
+  "unsupported version" of it. `examples/consumer-app` dispatches both.
+
+What the rules do not do: a source is trusted to mean what its specifications
+say. Pinning `acme:payments/settle` is a decision to trust acme for that
+specification, made once and reviewed in the lock; nothing here vets acme's
+schemas or prose beyond what building a bundle requires.
+
+### The commands
+
+Consumer side — the existing commands, with `<source>:<slug>` wherever a slug
+goes:
+
+```sh
+trust-tasks add acme:payments/settle/1.0    # or acme:payments/settle, …@latest
+trust-tasks update acme:payments/settle     # says when 1.1 extends 1.0
+trust-tasks check                           # offline; also: lock sources = manifest sources
+trust-tasks fetch                           # restores trust-tasks/@acme/… by digest
+trust-tasks list --remote                   # asks each source for newer versions
+trust-tasks remove acme:payments/settle     # drops [sources.acme] when nothing uses it
+```
+
+Each command opens a source only when a task it touches comes from it; a
+command that touches only sourced tasks never contacts trusttasks.org.
+`--registry` / `TRUST_TASKS_REGISTRY` still select only the official registry.
+
+Publisher side — `trust-tasks registry build` turns a third party's
+`specs/<slug>/<M.N>/{spec.md,payload.schema.json}` tree into the served layout:
+
+```sh
+trust-tasks registry build --specs specs \
+  --type-uri-prefix https://tasks.acme.example \
+  --out site [--official-specs <checkout>/specs]
+```
+
+It writes `site/specs/index.json`, every `bundle.json`, and the by-digest store
+(append-only: an existing entry is never rewritten, and one whose bytes are not
+its digest stops the build). The builder is `trust_tasks_build::publish` (the
+`publish` feature), the one `trust-tasks-codegen --bundles` now builds the
+official registry with — moved out of the codegen, which still writes the
+official bundles byte for byte as before. A third-party schema may `$ref` the
+registry's shared components by absolute URL — the served file
+(`https://trusttasks.org/specs/_framework/0.4/framework.schema.json#/$defs/Ext`)
+or the component's `$id`. They are read from `--official-specs`, or fetched by
+the publisher; the bundle carries them inlined, so no consumer dereferences
+anything. `--type-uri-prefix` may be an https site, a DID (`did:web:acme.example`)
+or a URN namespace (`urn:acme:tasks`), and never `https://trusttasks.org`.
+
+What the builder checks of a third party's tree: front matter with a known
+`status`, and everything needed to compute the bundle's policy (parties,
+`proofRequirement`, `issuedAtRequirement`, `maxDocumentBytes`, `bearer`,
+`errorCodes`, `extends`); the SPEC §6.1 slug grammar and §5.1 version grammar;
+no reserved slug; the authority rule on the prefix; front matter `slug` /
+`version` matching the directories; `supersededBy` only on a retired or
+withdrawn version; the payload schema's `$id` equal to the Type URI and its
+`$schema` 2020-12 (SPEC §6.3); every `$ref` resolvable; and an `extends` naming
+an existing version. **Not ported from `scripts/build-registry.mjs`:**
+validation against `spec.meta.schema.json` (required prose fields, the category
+taxonomy, party shapes), compiling the schema with a JSON Schema validator, the
+proof that an `extends` declaration is additive (`schema-compat`), the member
+casing, wire-conventions and stale-references lints, validation of examples
+against the payload and envelope schemas, `outcomeEvidence`, `methodExtensions`,
+`wireCompatibleWith`, `related`, `targetFrameworkVersion` existence, and link
+checks. A third-party registry gets the structural guarantees a consumer relies
+on, and none of the registry's editorial ones.
+
+### Runtimes
+
+A sourced task's Type URI may be in the URN or DID form, which a runtime that
+parses Type URIs must accept. The Rust runtime's `TypeUri` parses every §6.1
+form and prints each back exactly; it already refused `http` (its error message
+said otherwise; it is corrected). The TypeScript, Go and Dart runtimes are
+handled separately.

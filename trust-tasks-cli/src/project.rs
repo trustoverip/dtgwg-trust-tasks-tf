@@ -4,7 +4,11 @@
 //! trust-tasks.toml                          intent (the author's)
 //! trust-tasks.lock                          resolution (this CLI's)
 //! trust-tasks/<slug>/<M.N>.bundle.json      vendored bundles, byte-identical to the registry's
+//! trust-tasks/@<source>/<slug>/<M.N>.bundle.json   … and to a third-party source's
 //! ```
+//!
+//! `@` cannot begin a slug, so a source's directory never collides with an
+//! official family's.
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -13,7 +17,7 @@ use anyhow::{bail, Context, Result};
 
 use crate::lock::{Lock, LockEntry};
 use crate::manifest::Manifest;
-use crate::names::{digest_of, Version};
+use crate::names::{digest_of, TaskId, Version};
 use crate::registry::{normalize, DEFAULT_REGISTRY};
 
 pub const MANIFEST: &str = "trust-tasks.toml";
@@ -74,18 +78,22 @@ impl Project {
         self.root.join(VENDOR_DIR)
     }
 
-    /// `trust-tasks/<slug>/<M.N>.bundle.json`, relative to the root.
-    pub fn vendored_rel(slug: &str, v: Version) -> String {
-        format!("{VENDOR_DIR}/{slug}/{v}{BUNDLE_SUFFIX}")
+    /// `trust-tasks/<slug>/<M.N>.bundle.json`, or
+    /// `trust-tasks/@<source>/<slug>/<M.N>.bundle.json`, relative to the root.
+    pub fn vendored_rel(id: &TaskId, v: Version) -> String {
+        match &id.source {
+            Some(source) => format!("{VENDOR_DIR}/@{source}/{}/{v}{BUNDLE_SUFFIX}", id.slug),
+            None => format!("{VENDOR_DIR}/{}/{v}{BUNDLE_SUFFIX}", id.slug),
+        }
     }
 
-    pub fn vendored(&self, slug: &str, v: Version) -> PathBuf {
-        self.root.join(Project::vendored_rel(slug, v))
+    pub fn vendored(&self, id: &TaskId, v: Version) -> PathBuf {
+        self.root.join(Project::vendored_rel(id, v))
     }
 
     /// The vendored bundle for `e` is present and is the locked bytes.
     pub fn vendored_ok(&self, e: &LockEntry) -> bool {
-        std::fs::read(self.vendored(&e.slug, e.version)).is_ok_and(|b| digest_of(&b) == e.digest)
+        std::fs::read(self.vendored(&e.id(), e.version)).is_ok_and(|b| digest_of(&b) == e.digest)
     }
 
     /// The manifest, or a new empty one when `create`.
@@ -104,15 +112,22 @@ impl Project {
     /// manifest — so an interrupted run leaves a lock that names files already
     /// on disk. Vendored bundles of entries `old` had and `lock` does not are
     /// removed. Unchanged files are not rewritten.
+    ///
+    /// The lock records the manifest's declaration of every source an entry
+    /// comes from, and is checked as generation will read it before anything
+    /// is written.
     pub fn commit(
         &self,
         manifest: &Manifest,
         old: Option<&Lock>,
         lock: &Lock,
-        bundles: &BTreeMap<(String, Version), Vec<u8>>,
+        bundles: &BTreeMap<(TaskId, Version), Vec<u8>>,
     ) -> Result<()> {
-        for ((slug, v), bytes) in bundles {
-            write_if_changed(&self.vendored(slug, *v), bytes.as_slice())?;
+        let mut lock = lock.clone();
+        lock.set_sources(&manifest.sources)?;
+        lock.validate()?;
+        for ((id, v), bytes) in bundles {
+            write_if_changed(&self.vendored(id, *v), bytes.as_slice())?;
         }
         write_if_changed(&self.lock_path(), lock.render().as_bytes())?;
         write_if_changed(&self.manifest_path(), manifest.render().as_bytes())?;
@@ -128,8 +143,8 @@ impl Project {
 
     /// Deletes a vendored bundle and any directories it leaves empty, up to
     /// `trust-tasks/` itself.
-    pub fn remove_vendored(&self, slug: &str, v: Version) -> Result<()> {
-        let path = self.vendored(slug, v);
+    pub fn remove_vendored(&self, id: &TaskId, v: Version) -> Result<()> {
+        let path = self.vendored(id, v);
         match std::fs::remove_file(&path) {
             Ok(()) => {}
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}

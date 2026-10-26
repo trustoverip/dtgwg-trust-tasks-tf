@@ -13,6 +13,13 @@ keywords = ["trust-tasks", "trustoverip", "codegen", "build", "json-schema"]
 categories = ["development-tools::build-utils"]
 publish = true
 
+[features]
+# The publisher's side: build registry bundles from a `specs/` tree (front
+# matter, `$ref` inlining, lifecycles, the served layout). Used by the
+# repository's trust-tasks-codegen and by `trust-tasks registry build`; an
+# application's build script never needs it.
+publish = ["dep:serde-saphyr"]
+
 [dependencies]
 anyhow = "1"
 serde = { version = "1", features = ["derive"] }
@@ -28,6 +35,12 @@ syn = { version = "2", features = ["full", "visit-mut"] }
 proc-macro2 = "1"
 quote = "1"
 heck = "0.5"
+# Front matter (`publish` only). Safe-Rust YAML; serde_yaml pulls the
+# unmaintained unsafe-libyaml (RUSTSEC-2024-0449).
+serde-saphyr = { version = "1", optional = true }
 
 [dev-dependencies]
 serde-saphyr = "1"
+
+[package.metadata.docs.rs]
+all-features = true

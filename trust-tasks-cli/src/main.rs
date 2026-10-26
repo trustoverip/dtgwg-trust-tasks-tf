@@ -5,6 +5,9 @@
 //! `trust-tasks.toml`, this command resolves it against the registry into
 //! `trust-tasks.lock`, and vendors each pinned version's bundle beside it,
 //! verified by digest. Builds read only the vendored files.
+//!
+//! Tasks may also come from third-party sources (`[sources.<name>]`, SPEC
+//! §6.5), and `trust-tasks registry build` is the publisher's side of one.
 
 use std::path::PathBuf;
 use std::process::ExitCode;
@@ -16,6 +19,7 @@ mod manifest;
 mod names;
 mod ops;
 mod project;
+mod publish;
 mod registry;
 
 #[derive(Parser)]
@@ -24,7 +28,10 @@ mod registry;
     version,
     about = "Pin the Trust Task specifications an application uses, vendor their bundles by digest, and verify them.",
     after_help = "Files: trust-tasks.toml (intent, yours), trust-tasks.lock (resolution, written by this command), \
-trust-tasks/<slug>/<M.N>.bundle.json (vendored bundles). Commit all three."
+trust-tasks/<slug>/<M.N>.bundle.json (vendored bundles; trust-tasks/@<source>/… for a third-party source). Commit all three.\n\n\
+A task from a third-party source is named <source>:<slug> (e.g. acme:payments/settle/1.0), with the source declared in \
+trust-tasks.toml as [sources.<source>] url = \"https://…\" (or path = \"<dir>\"). TRUST_TASKS_CA_FILE names a PEM bundle \
+to trust instead of the Mozilla roots."
 )]
 struct Cli {
     /// The registry: an https:// site root, a file:// URL or a directory with
@@ -46,22 +53,23 @@ struct Cli {
 enum Command {
     /// Pin tasks: `vault/upsert` (latest live version, pinned exactly),
     /// `vault/upsert/0.4` (that version), `vault/upsert@latest` (follow the
-    /// latest live version on every update).
+    /// latest live version on every update). `acme:payments/settle/1.0` pins
+    /// from the source `acme` declared in trust-tasks.toml.
     Add {
-        #[arg(required = true, value_name = "SLUG[/M.N|@latest]")]
+        #[arg(required = true, value_name = "[SOURCE:]SLUG[/M.N|@latest]")]
         tasks: Vec<String>,
     },
     /// Unpin tasks (`vault/upsert`) or one version of one (`vault/upsert/0.3`),
     /// deleting their vendored bundles.
     Remove {
-        #[arg(required = true, value_name = "SLUG[/M.N]")]
+        #[arg(required = true, value_name = "[SOURCE:]SLUG[/M.N]")]
         tasks: Vec<String>,
     },
     /// Re-resolve against the registry: `latest` intents move to the latest
     /// live version, and an exact pin whose draft changed in place takes the
     /// new bytes. Refuses withdrawn versions. No slugs means every task.
     Update {
-        #[arg(value_name = "SLUG")]
+        #[arg(value_name = "[SOURCE:]SLUG")]
         slugs: Vec<String>,
         /// Also move exact pins to the latest live version (rewriting
         /// trust-tasks.toml).
@@ -76,9 +84,41 @@ enum Command {
     Fetch,
     /// List the pinned tasks with their status and deprecation notes.
     List {
-        /// Also ask the registry for newer versions.
+        /// Also ask the registry (and each source) for newer versions.
         #[arg(long)]
         remote: bool,
+    },
+    /// Publish a registry of your own: the served layout a `[sources.<name>]`
+    /// reads.
+    Registry {
+        #[command(subcommand)]
+        command: RegistryCommand,
+    },
+}
+
+#[derive(Subcommand)]
+enum RegistryCommand {
+    /// Build bundles, specs/index.json and the by-digest store from a
+    /// `specs/<slug>/<M.N>/{spec.md,payload.schema.json}` tree whose Type URIs
+    /// sit under your own authority (SPEC §6.5).
+    Build {
+        /// The specifications: the directory holding `<slug>/<M.N>/`.
+        #[arg(long, value_name = "DIR")]
+        specs: PathBuf,
+        /// Everything before `/spec/<slug>/<M.N>` in your Type URIs —
+        /// `https://tasks.example.com`, `did:web:example.com` — or before
+        /// `:spec:` in the URN form, `urn:example:tasks`. Never under
+        /// https://trusttasks.org.
+        #[arg(long, value_name = "PREFIX")]
+        type_uri_prefix: String,
+        /// The site root to write: `<out>/specs/…`.
+        #[arg(long, value_name = "DIR")]
+        out: PathBuf,
+        /// A checkout of the official registry's `specs/`, for `$ref`s to its
+        /// shared components (`https://trusttasks.org/specs/…`). Without it,
+        /// they are fetched from trusttasks.org.
+        #[arg(long, value_name = "DIR")]
+        official_specs: Option<PathBuf>,
     },
 }
 
@@ -95,6 +135,16 @@ fn main() -> ExitCode {
         Command::Check => ops::check(&ctx),
         Command::Fetch => ops::fetch_locked(&ctx).map(|()| true),
         Command::List { remote } => ops::list(&ctx, *remote).map(|()| true),
+        Command::Registry {
+            command:
+                RegistryCommand::Build {
+                    specs,
+                    type_uri_prefix,
+                    out,
+                    official_specs,
+                },
+        } => publish::registry_build(specs, type_uri_prefix, out, official_specs.as_deref())
+            .map(|()| true),
     };
     match result {
         Ok(true) => ExitCode::SUCCESS,

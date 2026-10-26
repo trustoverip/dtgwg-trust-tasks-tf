@@ -161,10 +161,11 @@ jobs:
             echo "::endgroup::"
           done
 
-  # An application that generates its tasks at build time: three versions
-  # pinned in examples/consumer-app/trust-tasks.lock, their bundles vendored
-  # beside it, `trust-tasks-rs` with `default-features = false`. Building it
-  # runs trust-tasks-build (digest check + generation) in a real build.rs, and
+  # An application that generates its tasks at build time: three registry
+  # versions and one from a third-party source pinned in
+  # examples/consumer-app/trust-tasks.lock, their bundles vendored beside it,
+  # `trust-tasks-rs` with `default-features = false`. Building it runs
+  # trust-tasks-build (digest check + generation) in a real build.rs, and
   # running it is a round trip through the generated types. The whole job is
   # seconds where a build of the prebuilt modules is minutes — which is the
   # point of milestone 2 (docs/design/consumer-side-generation.md).
@@ -176,8 +177,21 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: cargo run -p trust-tasks-example-consumer-app
         run: cargo run -p trust-tasks-example-consumer-app
-      - name: cargo test -p trust-tasks-build
-        run: cargo test -p trust-tasks-build
+      - name: cargo test -p trust-tasks-build --all-features
+        run: cargo test -p trust-tasks-build --all-features
+      # The example's third-party fixture registry is what its specs build to
+      # (`trust-tasks registry build`, the publisher's side), and the vendored
+      # bundles are what the lock pins — offline, as an application's CI runs it.
+      - name: fixture registry is up to date, and the lock verifies
+        run: |
+          cargo run -q -p trust-tasks-cli -- registry build \
+            --specs examples/consumer-app/fixture-registry/specs \
+            --type-uri-prefix https://tasks.example.com \
+            --out examples/consumer-app/fixture-registry/site \
+            --official-specs specs
+          git diff --exit-code -- examples/consumer-app/fixture-registry
+          test -z "$(git status --porcelain -- examples/consumer-app/fixture-registry)"
+          cargo run -q -p trust-tasks-cli -- -C examples/consumer-app check
 
   doc:
     name: cargo doc

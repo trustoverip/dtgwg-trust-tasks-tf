@@ -10,6 +10,7 @@ use proc_macro2::{Group, Literal, Punct, Spacing, TokenStream, TokenTree};
 
 use crate::bundle::Bundle;
 use crate::lock::Lockfile;
+use crate::names::is_reserved_slug;
 use crate::passes::{
     desugar_oneof_with_compound_not, drop_anyof_of_required_members,
     flatten_unevaluated_compositions, migrate_defs_to_definitions, normalize_titles,
@@ -391,23 +392,38 @@ fn generate_locked_inner(lock: &Lockfile, bundle_dir: &Path, target: &Target) ->
     let mut inputs = Vec::new();
     let mut extends: Vec<(String, String)> = Vec::new();
     for task in &lock.tasks {
-        if is_reserved_slug(&task.slug) {
+        let id = task.display_id();
+        if task.source.is_none() && is_reserved_slug(&task.slug) {
             return Err(anyhow!(
-                "{}/{}: a framework specification is part of the runtime — use \
+                "{id}/{}: a framework specification is part of the runtime — use \
                  `trust_tasks_rs::specs::…` rather than locking it",
-                task.slug,
                 task.version
             ));
         }
+        // Parsing the lock checked these already; a lock is only ever built by
+        // parsing, but the rules are what keep two authorities apart, so they
+        // are asserted where the namespace is laid out too.
+        task.check_identity()?;
         inputs.push(task.bundle_path(bundle_dir));
         let bundle = task.read_bundle_inner(bundle_dir)?;
         let module = generate_module_inner(&bundle, target)
-            .with_context(|| format!("generate {}/{}", task.slug, task.version))?;
+            .with_context(|| format!("generate {id}/{}", task.version))?;
         if let Some(target_version) = &bundle.extends {
+            // Keyed by the bundle's own Type URI — the whole string, authority
+            // included — so a sourced `vault/get` and the registry's never
+            // share a chain.
             extends.push((bundle.type_uri.clone(), target_version.clone()));
         }
 
+        // A sourced task sits under a top-level module named for its source:
+        // `acme::payments::settle::v1_0`.
         let mut node = &mut root;
+        if let Some(source) = &task.source {
+            let ident = source.replace('-', "_");
+            syn::parse_str::<syn::Ident>(&ident)
+                .map_err(|_| anyhow!("{id}: source name {source:?} is not a Rust module name"))?;
+            node = node.children.entry(ident).or_default();
+        }
         for segment in bundle.slug.split('/') {
             let ident = segment.replace('-', "_");
             syn::parse_str::<syn::Ident>(&ident).map_err(|_| {
@@ -470,15 +486,6 @@ fn write_node(out: &mut String, name: &str, node: &ModNode) {
         write_node(out, child, child_node);
     }
     out.push_str("}\n");
-}
-
-/// SPEC §6.1's reserved namespace, `^trust-(task|ceremony)($|-|/)`: the
-/// framework's own specifications, which every runtime carries.
-fn is_reserved_slug(slug: &str) -> bool {
-    ["trust-task", "trust-ceremony"].iter().any(|prefix| {
-        slug.strip_prefix(prefix)
-            .is_some_and(|rest| rest.is_empty() || rest.starts_with(['-', '/']))
-    })
 }
 
 /// Remove the `<details><summary>JSON schema</summary> … </details>` block

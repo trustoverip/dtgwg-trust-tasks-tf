@@ -1,0 +1,1 @@
+{"bundleVersion":1,"excluded":[],"generatedFrom":null,"indexVersion":1,"specs":[{"deprecation":null,"digest":"sha256:f04c678436ea876a70607b7420715c7111e12d292df9dcf1f1f1ffca2388e153","extends":null,"path":"vault/get/0.3/bundle.json","slug":"vault/get","status":"draft","typeUri":"https://tasks.example.com/spec/vault/get/0.3","version":"0.3"}]}

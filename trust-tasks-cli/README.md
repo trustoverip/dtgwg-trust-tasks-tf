@@ -19,7 +19,7 @@ model.
 |---|---|---|
 | `trust-tasks.toml` | you, or `add`/`remove`/`update` | **intent**: `"vault/upsert" = "0.4"` (exact) or `"acl/grant" = "latest"`; an array of versions pins several |
 | `trust-tasks.lock` | this command only | **resolution**: slug, version, Type URI and `sha256:` digest of each pinned version, sorted |
-| `trust-tasks/<slug>/<M.N>.bundle.json` | this command only | the bundles, byte-identical to the registry's, so `sha256(file) == digest` |
+| `trust-tasks/<slug>/<M.N>.bundle.json` | this command only | the bundles, byte-identical to the registry's, so `sha256(file) == digest`; a third-party source's under `trust-tasks/@<source>/` |
 
 Commit all three. Edits to `trust-tasks.toml` keep your comments.
 
@@ -54,6 +54,61 @@ specs/<slug>/<M.N>/bundle.json            a version's current bytes
 Bundles are fetched **by digest**. While the by-digest store is new, a digest it
 does not have yet is fetched from the version's path instead — the command says
 so in a `note:` — and verified against the same digest either way.
+
+### Third-party sources
+
+An ecosystem can publish its own specifications under its own authority (SPEC
+§6.5) — `https://tasks.acme.example/spec/payments/settle/1.0`, a DID URL, or a
+URN — and an application pins them beside the registry's. Declare the source in
+`trust-tasks.toml` and name its tasks `<source>:<slug>`:
+
+```toml
+[sources.acme]
+url = "https://tasks.acme.example"   # https only; or: path = "../acme-registry"
+
+[tasks]
+"vault/get" = "0.3"
+"acme:payments/settle" = "1.0"
+```
+
+```sh
+trust-tasks add acme:payments/settle/1.0
+```
+
+A source serves the same layout as the registry. `add`, `update`, `check`,
+`fetch`, `list` and `remove` work for its tasks as for official ones; the lock
+records the source (`[sources.acme]`, and `source = "acme"` on each of its
+entries) and the bundles are vendored under `trust-tasks/@acme/`. A slug is
+unique only within its authority, so `acme:vault/get` and `vault/get` are two
+different specifications and can be pinned together. Refused:
+
+- a source's bundle under `https://trusttasks.org/`, or an official bundle
+  outside it;
+- a framework slug (`trust-task*`, `trust-ceremony*`) from a source;
+- two pins with one Type URI;
+- a source named like the first segment of a pinned official slug (`vault`
+  beside `vault/get`) — they would share a generated namespace;
+- a source name outside `[a-z][a-z0-9]*(-[a-z0-9]+)*`, or an `http://` url;
+- a bundle whose Type URI, slug and version disagree with each other or the lock.
+
+`TRUST_TASKS_CA_FILE` names a PEM bundle trusted *instead of* the Mozilla roots,
+for a source behind an internal CA.
+
+### Publishing a source: `trust-tasks registry build`
+
+```sh
+trust-tasks registry build --specs specs --type-uri-prefix https://tasks.acme.example --out site
+```
+
+turns a `specs/<slug>/<M.N>/{spec.md,payload.schema.json}` tree into the served
+layout under `site/specs/` — bundles, `index.json` and the append-only
+by-digest store — with the same builder the official registry uses. A schema may
+`$ref` the registry's shared components by absolute URL
+(`https://trusttasks.org/specs/_framework/0.4/framework.schema.json#/$defs/Ext`);
+they are inlined from `--official-specs <checkout of specs/>` or fetched once,
+here. The prefix may be an https site (`https://tasks.acme.example`), a DID
+(`did:web:acme.example`) or a URN namespace (`urn:acme:tasks`), never
+`https://trusttasks.org`.
 
 ## Example
 

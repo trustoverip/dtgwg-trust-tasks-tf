@@ -1,5 +1,9 @@
+# Written by `trust-tasks`. Do not edit by hand.
 version = 1
 registry = "https://trusttasks.org"
+
+[sources.acme]
+path = "fixture-registry/site"
 
 [[task]]
 slug = "acl/grant"
@@ -18,3 +22,10 @@ slug = "vault/get"
 version = "0.3"
 type_uri = "https://trusttasks.org/spec/vault/get/0.3"
 digest = "sha256:c2fb4081a761d2479a51d194e5d54081b5dffe3d06da3ad4791432d8c22419d7"
+
+[[task]]
+source = "acme"
+slug = "vault/get"
+version = "0.3"
+type_uri = "https://tasks.example.com/spec/vault/get/0.3"
+digest = "sha256:f04c678436ea876a70607b7420715c7111e12d292df9dcf1f1f1ffca2388e153"

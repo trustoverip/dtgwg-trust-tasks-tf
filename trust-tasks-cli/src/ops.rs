@@ -6,10 +6,10 @@ use std::path::Path;
 use anyhow::{anyhow, bail, Result};
 
 use crate::lock::{Lock, LockEntry};
-use crate::manifest::Intent;
-use crate::names::{parse_task_arg, short, Requested, Version};
+use crate::manifest::{Intent, Manifest, SourceLoc};
+use crate::names::{parse_task_arg, short, Requested, TaskId, Version};
 use crate::project::{effective_registry, Project, LOCKFILE, MANIFEST};
-use crate::registry::{read_bundle_head, Index, IndexEntry, Registry, Via};
+use crate::registry::{check_identity, read_bundle_head, Index, IndexEntry, Registry, Via};
 
 /// Global options.
 pub struct Ctx<'a> {
@@ -30,6 +30,61 @@ fn warn(msg: impl std::fmt::Display) {
     eprintln!("warning: {msg}");
 }
 
+/// The registries a command reads — the official one and each source a task
+/// names — each opened, and its index read, at most once and only when a
+/// task needs it. A command that touches only sourced tasks never contacts
+/// the official registry, and the reverse.
+struct Origins<'a> {
+    root: &'a Path,
+    official: String,
+    sources: &'a BTreeMap<String, SourceLoc>,
+    open: BTreeMap<Option<String>, (Registry, Option<Index>)>,
+}
+
+impl<'a> Origins<'a> {
+    fn new(root: &'a Path, official: String, sources: &'a BTreeMap<String, SourceLoc>) -> Self {
+        Origins {
+            root,
+            official,
+            sources,
+            open: BTreeMap::new(),
+        }
+    }
+
+    fn entry(&mut self, source: Option<&str>) -> Result<&mut (Registry, Option<Index>)> {
+        let key = source.map(str::to_string);
+        if !self.open.contains_key(&key) {
+            let registry = match source {
+                None => Registry::open(&self.official)?,
+                Some(name) => {
+                    let loc = self.sources.get(name).ok_or_else(|| {
+                        anyhow!(
+                            "source `{name}` is not declared in {MANIFEST} — add [sources.{name}] with `url = \"https://…\"` or `path = \"<dir>\"`"
+                        )
+                    })?;
+                    Registry::open_source(name, loc, self.root)?
+                }
+            };
+            self.open.insert(key.clone(), (registry, None));
+        }
+        Ok(self.open.get_mut(&key).expect("just inserted"))
+    }
+
+    fn registry(&mut self, source: Option<&str>) -> Result<&Registry> {
+        Ok(&self.entry(source)?.0)
+    }
+
+    /// The registry and its index.
+    fn both(&mut self, source: Option<&str>) -> Result<(&Registry, &Index)> {
+        let entry = self.entry(source)?;
+        if entry.1.is_none() {
+            entry.1 = Some(entry.0.index()?);
+        }
+        let entry = &*entry;
+        Ok((&entry.0, entry.1.as_ref().expect("just loaded")))
+    }
+}
+
 /// What moving a pin from `from` to `to` means for the code using it.
 fn describe_move(index: &Index, slug: &str, from: Version, to: Version) -> String {
     if to > from && index.extends_reaches(slug, to, from) {
@@ -40,32 +95,33 @@ fn describe_move(index: &Index, slug: &str, from: Version, to: Version) -> Strin
 }
 
 /// Lifecycle notes for a version being pinned.
-fn lifecycle_notes(slug: &str, v: Version, e: &IndexEntry) {
+fn lifecycle_notes(id: &TaskId, v: Version, e: &IndexEntry) {
     if e.status == "retired" {
         warn(format_args!(
-            "{slug} {v} is retired{}",
+            "{id} {v} is retired{}",
             e.deprecation
                 .as_deref()
                 .map(|d| format!(" ({d})"))
                 .unwrap_or_default()
         ));
     } else if let Some(d) = &e.deprecation {
-        warn(format_args!("{slug} {v} is deprecated: {d}"));
+        warn(format_args!("{id} {v} is deprecated: {d}"));
     }
 }
 
 fn fetch(
     registry: &Registry,
-    slug: &str,
+    id: &TaskId,
     v: Version,
     digest: &str,
     entry: Option<&IndexEntry>,
 ) -> Result<Vec<u8>> {
-    let got = registry.fetch_bundle(slug, v, digest, entry)?;
+    let got = registry.fetch_bundle(id, v, digest, entry)?;
     if got.via == Via::Path {
         note(format_args!(
-            "{slug} {v}: not in the registry's by-digest store yet, so fetched specs/{}/{v}/bundle.json and verified it against {} (the by-digest store is new)",
-            slug,
+            "{id} {v}: not in {}'s by-digest store yet, so fetched specs/{}/{v}/bundle.json and verified it against {} (the by-digest store is new)",
+            registry.label,
+            id.slug,
             short(digest)
         ));
     }
@@ -73,7 +129,7 @@ fn fetch(
         let head = read_bundle_head(&got.bytes)?;
         if head.type_uri != e.type_uri && e.digest == digest {
             bail!(
-                "{slug} {v}: the bundle's typeUri {} disagrees with the index's {}",
+                "{id} {v}: the bundle's typeUri {} disagrees with the index's {}",
                 head.type_uri,
                 e.type_uri
             );
@@ -82,51 +138,83 @@ fn fetch(
     Ok(got.bytes)
 }
 
-fn entry_for(slug: &str, v: Version, e: &IndexEntry) -> LockEntry {
-    LockEntry {
-        slug: slug.to_string(),
+/// The lock entry for `id` at `v` as `e` lists it, once its Type URI has
+/// passed the identity rules for where it came from.
+fn entry_for(id: &TaskId, v: Version, e: &IndexEntry) -> Result<LockEntry> {
+    check_identity(id, v, &e.type_uri)?;
+    Ok(LockEntry {
+        source: id.source.clone(),
+        slug: id.slug.clone(),
         version: v,
         type_uri: e.type_uri.clone(),
         digest: e.digest.clone(),
-    }
+    })
 }
 
 fn no_such_version(
-    slug: &str,
+    index: &Index,
+    id: &TaskId,
     v: Version,
     versions: &BTreeMap<Version, IndexEntry>,
 ) -> anyhow::Error {
     let have: Vec<String> = versions.keys().map(Version::to_string).collect();
     anyhow!(
-        "{slug} has no version {v} in the registry (it has {})",
+        "{id} has no version {v} in {} (it has {})",
+        index.label,
         have.join(", ")
     )
 }
 
-fn latest_live(index: &Index, slug: &str) -> Result<(Version, IndexEntry)> {
-    index.versions(slug)?;
+fn latest_live(index: &Index, id: &TaskId) -> Result<(Version, IndexEntry)> {
+    index.versions(&id.slug)?;
     index
-        .latest_live(slug)
+        .latest_live(&id.slug)
         .map(|(v, e)| (v, e.clone()))
-        .ok_or_else(|| anyhow!("{slug} has no live version (every version is retired or withdrawn); pin one explicitly as {slug}/<M.N>"))
+        .ok_or_else(|| anyhow!("{id} has no live version (every version is retired or withdrawn); pin one explicitly as {id}/<M.N>"))
 }
 
 fn open_lock(project: &Project, registry_url: &str) -> Result<Lock> {
     Ok(Lock::load(&project.lock_path())?.unwrap_or_else(|| Lock::new(registry_url.to_string())))
 }
 
+/// Refuses a source named for the first segment of an official task the
+/// manifest pins: the two would share a top-level namespace in every
+/// language's generated code. Checked against the manifest so the error
+/// arrives before anything is fetched; the lock is checked again on commit.
+fn check_namespaces(manifest: &Manifest) -> Result<()> {
+    let used: BTreeSet<&str> = manifest
+        .tasks
+        .keys()
+        .filter_map(|id| id.source.as_deref())
+        .collect();
+    for id in manifest.tasks.keys().filter(|id| id.source.is_none()) {
+        let family = id.slug.split('/').next().unwrap_or(&id.slug);
+        if used.contains(family) {
+            bail!(
+                "source `{family}` has the name of the official family of {id} — their generated code would share the namespace `{family}`; rename the source in {MANIFEST} (its tasks are named `<source>:<slug>`)"
+            );
+        }
+    }
+    Ok(())
+}
+
 // ─── add ────────────────────────────────────────────────────────────────────
 
 pub fn add(ctx: &Ctx, args: &[String]) -> Result<()> {
-    let mut requests: BTreeMap<String, Requested> = BTreeMap::new();
+    let mut requests: BTreeMap<TaskId, Requested> = BTreeMap::new();
     for a in args {
-        let (slug, req) = parse_task_arg(a)?;
-        if requests.insert(slug.clone(), req).is_some() {
-            bail!("{slug} is named twice");
+        let (id, req) = parse_task_arg(a)?;
+        if requests.insert(id.clone(), req).is_some() {
+            bail!("{id} is named twice");
         }
     }
     let project = Project::locate(ctx.dir, true)?;
     let mut manifest = project.manifest(true)?;
+    for id in requests.keys() {
+        if let Some(source) = &id.source {
+            manifest.source(source)?;
+        }
+    }
     let registry_url = effective_registry(&manifest, ctx.registry)?;
     let old = Lock::load(&project.lock_path())?;
     let mut lock = old
@@ -139,69 +227,79 @@ pub fn add(ctx: &Ctx, args: &[String]) -> Result<()> {
         ));
         lock.registry = registry_url.clone();
     }
-    let registry = Registry::open(&registry_url)?;
-    let index = registry.index()?;
+    {
+        // The namespaces as they will be once these tasks are added.
+        let mut after = Manifest::new(project.manifest_path());
+        after.sources = manifest.sources.clone();
+        for id in manifest.tasks.keys().chain(requests.keys()) {
+            after.tasks.insert(id.clone(), Vec::new());
+        }
+        check_namespaces(&after)?;
+    }
+    let sources = manifest.sources.clone();
+    let mut origins = Origins::new(&project.root, registry_url.clone(), &sources);
 
     let mut bundles = BTreeMap::new();
-    for (slug, req) in &requests {
-        let versions = index.versions(slug)?;
+    for (id, req) in &requests {
+        let (registry, index) = origins.both(id.source.as_deref())?;
+        let versions = index.versions(&id.slug)?;
         let (v, entry, intent) = match req {
             Requested::Exact(v) => {
                 let e = versions
                     .get(v)
-                    .ok_or_else(|| no_such_version(slug, *v, versions))?;
+                    .ok_or_else(|| no_such_version(index, id, *v, versions))?;
                 (*v, e.clone(), Intent::Exact(*v))
             }
             Requested::Bare => {
-                let (v, e) = latest_live(&index, slug)?;
+                let (v, e) = latest_live(index, id)?;
                 (v, e, Intent::Exact(v))
             }
             Requested::Latest => {
-                let (v, e) = latest_live(&index, slug)?;
+                let (v, e) = latest_live(index, id)?;
                 (v, e, Intent::Latest)
             }
         };
         if entry.is_withdrawn() {
             let live = index
-                .latest_live(slug)
-                .map(|(l, _)| format!("; the latest live version is {slug}/{l}"))
+                .latest_live(&id.slug)
+                .map(|(l, _)| format!("; the latest live version is {id}/{l}"))
                 .unwrap_or_default();
-            bail!("{slug} {v} is withdrawn: it is no longer offered for new pins{live}");
+            bail!("{id} {v} is withdrawn: it is no longer offered for new pins{live}");
         }
-        lifecycle_notes(slug, v, &entry);
+        lifecycle_notes(id, v, &entry);
 
-        let previous = lock.remove_slug(slug);
-        let new = entry_for(slug, v, &entry);
+        let new = entry_for(id, v, &entry)?;
+        let previous = lock.remove_task(id);
         let unchanged = previous.len() == 1 && previous[0] == new && project.vendored_ok(&new);
         if unchanged {
             say(
                 "Unchanged",
-                format_args!("{slug} {v} ({})", short(&new.digest)),
+                format_args!("{id} {v} ({})", short(&new.digest)),
             );
         } else {
             bundles.insert(
-                (slug.clone(), v),
-                fetch(&registry, slug, v, &new.digest, Some(&entry))?,
+                (id.clone(), v),
+                fetch(registry, id, v, &new.digest, Some(&entry))?,
             );
             match previous.as_slice() {
-                [] => say("Added", format_args!("{slug} {v} ({})", short(&new.digest))),
+                [] => say("Added", format_args!("{id} {v} ({})", short(&new.digest))),
                 [p] if p.version == v => say(
                     "Updated",
-                    format_args!("{slug} {v} ({} → {})", short(&p.digest), short(&new.digest)),
+                    format_args!("{id} {v} ({} → {})", short(&p.digest), short(&new.digest)),
                 ),
                 [p] => say(
                     "Moved",
                     format_args!(
-                        "{slug} {} → {v} ({}) — {}",
+                        "{id} {} → {v} ({}) — {}",
                         p.version,
                         short(&new.digest),
-                        describe_move(&index, slug, p.version, v)
+                        describe_move(index, &id.slug, p.version, v)
                     ),
                 ),
                 many => say(
                     "Replaced",
                     format_args!(
-                        "{slug} {} → {v} ({})",
+                        "{id} {} → {v} ({})",
                         many.iter()
                             .map(|p| p.version.to_string())
                             .collect::<Vec<_>>()
@@ -212,7 +310,7 @@ pub fn add(ctx: &Ctx, args: &[String]) -> Result<()> {
             }
         }
         lock.insert(new);
-        manifest.set(slug, vec![intent]);
+        manifest.set(id, vec![intent]);
     }
     project.commit(&manifest, old.as_ref(), &lock, &bundles)
 }
@@ -226,23 +324,23 @@ pub fn remove(ctx: &Ctx, args: &[String]) -> Result<()> {
     let old = Lock::load(&project.lock_path())?;
     let mut lock = old.clone().unwrap_or_else(|| Lock::new(registry_url));
     for a in args {
-        let (slug, req) = parse_task_arg(a)?;
+        let (id, req) = parse_task_arg(a)?;
         let intents = manifest
             .tasks
-            .get(&slug)
+            .get(&id)
             .cloned()
-            .ok_or_else(|| anyhow!("{slug} is not in {MANIFEST}"))?;
+            .ok_or_else(|| anyhow!("{id} is not in {MANIFEST}"))?;
         match req {
             Requested::Bare => {
-                manifest.remove(&slug);
-                for e in lock.remove_slug(&slug) {
-                    say("Removed", format_args!("{slug} {}", e.version));
+                manifest.remove(&id);
+                for e in lock.remove_task(&id) {
+                    say("Removed", format_args!("{id} {}", e.version));
                 }
             }
             Requested::Exact(v) => {
                 if !intents.contains(&Intent::Exact(v)) {
                     bail!(
-                        "{slug} {v} is not pinned in {MANIFEST} ({slug} = {})",
+                        "{id} {v} is not pinned in {MANIFEST} ({id} = {})",
                         intents
                             .iter()
                             .map(|i| format!("\"{i}\""))
@@ -255,14 +353,14 @@ pub fn remove(ctx: &Ctx, args: &[String]) -> Result<()> {
                     .filter(|i| *i != Intent::Exact(v))
                     .collect();
                 if rest.is_empty() {
-                    manifest.remove(&slug);
+                    manifest.remove(&id);
                 } else {
-                    manifest.set(&slug, rest);
+                    manifest.set(&id, rest);
                 }
-                lock.entries.remove(&(slug.clone(), v));
-                say("Removed", format_args!("{slug} {v}"));
+                lock.entries.remove(&(id.clone(), v));
+                say("Removed", format_args!("{id} {v}"));
             }
-            Requested::Latest => bail!("`remove` takes a slug or slug/<M.N>, not @latest"),
+            Requested::Latest => bail!("`remove` takes a task or task/<M.N>, not @latest"),
         }
     }
     project.commit(&manifest, old.as_ref(), &lock, &BTreeMap::new())
@@ -273,6 +371,7 @@ pub fn remove(ctx: &Ctx, args: &[String]) -> Result<()> {
 pub fn update(ctx: &Ctx, slugs: &[String], to_latest: bool) -> Result<bool> {
     let project = Project::locate(ctx.dir, false)?;
     let mut manifest = project.manifest(false)?;
+    check_namespaces(&manifest)?;
     let registry_url = effective_registry(&manifest, ctx.registry)?;
     let old = Lock::load(&project.lock_path())?;
     let mut lock = open_lock(&project, &registry_url)?;
@@ -284,59 +383,61 @@ pub fn update(ctx: &Ctx, slugs: &[String], to_latest: bool) -> Result<bool> {
         lock.registry = registry_url.clone();
     }
 
-    let targets: BTreeSet<String> = if slugs.is_empty() {
+    let targets: BTreeSet<TaskId> = if slugs.is_empty() {
         manifest.tasks.keys().cloned().collect()
     } else {
         let mut t = BTreeSet::new();
         for s in slugs {
-            let (slug, req) = parse_task_arg(s)?;
+            let (id, req) = parse_task_arg(s)?;
             if req != Requested::Bare {
-                bail!("`update` takes slugs; to pin a version, `trust-tasks add {s}`");
+                bail!("`update` takes tasks; to pin a version, `trust-tasks add {s}`");
             }
-            if !manifest.tasks.contains_key(&slug) {
-                bail!("{slug} is not in {MANIFEST} — `trust-tasks add {slug}` adds it");
+            if !manifest.tasks.contains_key(&id) {
+                bail!("{id} is not in {MANIFEST} — `trust-tasks add {id}` adds it");
             }
-            t.insert(slug);
+            t.insert(id);
         }
         t
     };
 
-    let registry = Registry::open(&registry_url)?;
-    let index = registry.index()?;
+    let sources = manifest.sources.clone();
+    let mut origins = Origins::new(&project.root, registry_url.clone(), &sources);
     let mut bundles = BTreeMap::new();
     let mut refused = 0usize;
 
     // A full update also drops lock entries the manifest no longer names.
     if slugs.is_empty() {
-        let stale: BTreeSet<String> = lock
+        let stale: BTreeSet<TaskId> = lock
             .entries
             .keys()
-            .map(|(s, _)| s.clone())
-            .filter(|s| !manifest.tasks.contains_key(s))
+            .map(|(id, _)| id.clone())
+            .filter(|id| !manifest.tasks.contains_key(id))
             .collect();
-        for s in stale {
-            for e in lock.remove_slug(&s) {
+        for id in stale {
+            for e in lock.remove_task(&id) {
                 say(
                     "Removed",
-                    format_args!("{s} {} (no longer in {MANIFEST})", e.version),
+                    format_args!("{id} {} (no longer in {MANIFEST})", e.version),
                 );
             }
         }
     }
 
-    for slug in &targets {
-        let intents = manifest.tasks[slug].clone();
+    for id in &targets {
+        let intents = manifest.tasks[id].clone();
+        let (registry, index) = origins.both(id.source.as_deref())?;
+        let slug = &id.slug;
         let versions = index.versions(slug)?;
-        let previous: Vec<LockEntry> = lock.for_slug(slug).cloned().collect();
+        let previous: Vec<LockEntry> = lock.for_task(id).cloned().collect();
         let mut keep: Vec<LockEntry> = Vec::new();
         let mut new_intents = Vec::new();
 
         for intent in &intents {
             // The version this intent should now be pinned at.
             let (target, moved_intent) = match intent {
-                Intent::Latest => (latest_live(&index, slug)?.0, Intent::Latest),
+                Intent::Latest => (latest_live(index, id)?.0, Intent::Latest),
                 Intent::Exact(v) if to_latest => {
-                    let (l, _) = latest_live(&index, slug)?;
+                    let (l, _) = latest_live(index, id)?;
                     let l = l.max(*v);
                     (l, Intent::Exact(l))
                 }
@@ -344,7 +445,7 @@ pub fn update(ctx: &Ctx, slugs: &[String], to_latest: bool) -> Result<bool> {
             };
             new_intents.push(moved_intent);
             // What it was pinned at: the same version, or for `latest` the one
-            // lock entry the slug had.
+            // lock entry the task had.
             let current = previous
                 .iter()
                 .find(|p| p.version == target)
@@ -360,7 +461,7 @@ pub fn update(ctx: &Ctx, slugs: &[String], to_latest: bool) -> Result<bool> {
             let entry = match versions.get(&target) {
                 Some(e) => e,
                 None => {
-                    eprintln!("error: {}", no_such_version(slug, target, versions));
+                    eprintln!("error: {}", no_such_version(index, id, target, versions));
                     refused += 1;
                     keep.extend(current);
                     continue;
@@ -369,56 +470,57 @@ pub fn update(ctx: &Ctx, slugs: &[String], to_latest: bool) -> Result<bool> {
             if entry.is_withdrawn() {
                 let live = index
                     .latest_live(slug)
-                    .map(|(l, _)| format!(" — move the pin with `trust-tasks add {slug}/{l}`"))
+                    .map(|(l, _)| format!(" — move the pin with `trust-tasks add {id}/{l}`"))
                     .unwrap_or_default();
-                eprintln!("error: {slug} {target} is withdrawn; update refuses it{live}");
+                eprintln!("error: {id} {target} is withdrawn; update refuses it{live}");
                 refused += 1;
                 keep.extend(current);
                 continue;
             }
-            lifecycle_notes(slug, target, entry);
-            let new = entry_for(slug, target, entry);
+            lifecycle_notes(id, target, entry);
+            let new = entry_for(id, target, entry)?;
             match current {
                 None => {
                     bundles.insert(
-                        (slug.clone(), target),
-                        fetch(&registry, slug, target, &new.digest, Some(entry))?,
+                        (id.clone(), target),
+                        fetch(registry, id, target, &new.digest, Some(entry))?,
                     );
                     say(
                         "Added",
-                        format_args!("{slug} {target} ({})", short(&new.digest)),
+                        format_args!("{id} {target} ({})", short(&new.digest)),
                     );
                     keep.push(new);
                 }
                 Some(cur) if cur.version == target && cur.digest == new.digest => {
                     if !project.vendored_ok(&cur) {
                         bundles.insert(
-                            (slug.clone(), target),
-                            fetch(&registry, slug, target, &cur.digest, Some(entry))?,
+                            (id.clone(), target),
+                            fetch(registry, id, target, &cur.digest, Some(entry))?,
                         );
                         say(
                             "Restored",
-                            format_args!("{slug} {target} ({})", short(&cur.digest)),
+                            format_args!("{id} {target} ({})", short(&cur.digest)),
                         );
                     } else {
                         say(
                             "Unchanged",
-                            format_args!("{slug} {target} ({})", short(&cur.digest)),
+                            format_args!("{id} {target} ({})", short(&cur.digest)),
                         );
                     }
                     keep.push(cur);
                 }
                 Some(cur) if cur.version == target => {
                     bundles.insert(
-                        (slug.clone(), target),
-                        fetch(&registry, slug, target, &new.digest, Some(entry))?,
+                        (id.clone(), target),
+                        fetch(registry, id, target, &new.digest, Some(entry))?,
                     );
                     say(
                         "Updated",
                         format_args!(
-                            "{slug} {target} ({} → {}) — the registry changed it in place ({})",
+                            "{id} {target} ({} → {}) — {} changed it in place ({})",
                             short(&cur.digest),
                             short(&new.digest),
+                            registry.label,
                             entry.status
                         ),
                     );
@@ -426,16 +528,16 @@ pub fn update(ctx: &Ctx, slugs: &[String], to_latest: bool) -> Result<bool> {
                 }
                 Some(cur) => {
                     bundles.insert(
-                        (slug.clone(), target),
-                        fetch(&registry, slug, target, &new.digest, Some(entry))?,
+                        (id.clone(), target),
+                        fetch(registry, id, target, &new.digest, Some(entry))?,
                     );
                     say(
                         "Moved",
                         format_args!(
-                            "{slug} {} → {target} ({}) — {}",
+                            "{id} {} → {target} ({}) — {}",
                             cur.version,
                             short(&new.digest),
-                            describe_move(&index, slug, cur.version, target)
+                            describe_move(index, slug, cur.version, target)
                         ),
                     );
                     keep.push(new);
@@ -454,19 +556,19 @@ pub fn update(ctx: &Ctx, slugs: &[String], to_latest: bool) -> Result<bool> {
                                 format!("breaking: {l} does not extend {v}")
                             };
                             note(format_args!(
-                                "{slug} {l} is available ({how}); `trust-tasks add {slug}/{l}` or `update --to-latest` moves the pin"
+                                "{id} {l} is available ({how}); `trust-tasks add {id}/{l}` or `update --to-latest` moves the pin"
                             ));
                         }
                     }
                 }
             }
         }
-        lock.remove_slug(slug);
+        lock.remove_task(id);
         for e in keep {
             lock.insert(e);
         }
         if new_intents != intents {
-            manifest.set(slug, new_intents);
+            manifest.set(id, new_intents);
         }
     }
     project.commit(&manifest, old.as_ref(), &lock, &bundles)?;
@@ -492,23 +594,39 @@ pub fn check(ctx: &Ctx) -> Result<bool> {
         return Ok(false);
     };
 
-    if lock.registry != registry_url {
+    let official_used = lock.entries.keys().any(|(id, _)| id.source.is_none());
+    if official_used && lock.registry != registry_url {
         problems.push(format!(
             "{LOCKFILE} was resolved against {} but the registry is {registry_url} — run `trust-tasks update`",
             lock.registry
         ));
     }
+    if let Err(e) = check_namespaces(&manifest) {
+        problems.push(format!("{e:#}"));
+    }
+    // Each source the lock resolved from is where the manifest says it is.
+    for (name, loc) in &lock.sources {
+        match manifest.sources.get(name) {
+            Some(declared) if declared == loc => {}
+            Some(declared) => problems.push(format!(
+                "{LOCKFILE} resolved source `{name}` from {loc}, but {MANIFEST} now declares {declared} — run `trust-tasks update`"
+            )),
+            None => problems.push(format!(
+                "{LOCKFILE} resolved source `{name}` from {loc}, but {MANIFEST} no longer declares it — run `trust-tasks update`"
+            )),
+        }
+    }
 
     // Manifest ↔ lock.
-    for (slug, intents) in &manifest.tasks {
-        let locked: Vec<Version> = lock.for_slug(slug).map(|e| e.version).collect();
+    for (id, intents) in &manifest.tasks {
+        let locked: Vec<Version> = lock.for_task(id).map(|e| e.version).collect();
         for i in intents {
             match i {
                 Intent::Exact(v) if !locked.contains(v) => {
-                    problems.push(format!("{MANIFEST} pins {slug} {v} but {LOCKFILE} does not — run `trust-tasks update`"))
+                    problems.push(format!("{MANIFEST} pins {id} {v} but {LOCKFILE} does not — run `trust-tasks update`"))
                 }
                 Intent::Latest if locked.len() != 1 => problems.push(format!(
-                    "{MANIFEST} has {slug} = \"latest\" but {LOCKFILE} locks {} versions of it — run `trust-tasks update`",
+                    "{MANIFEST} has {id} = \"latest\" but {LOCKFILE} locks {} versions of it — run `trust-tasks update`",
                     locked.len()
                 )),
                 _ => {}
@@ -518,16 +636,16 @@ pub fn check(ctx: &Ctx) -> Result<bool> {
             for v in &locked {
                 if !intents.contains(&Intent::Exact(*v)) {
                     problems.push(format!(
-                        "{LOCKFILE} locks {slug} {v} but {MANIFEST} does not pin it — run `trust-tasks update`"
+                        "{LOCKFILE} locks {id} {v} but {MANIFEST} does not pin it — run `trust-tasks update`"
                     ));
                 }
             }
         }
     }
-    for (slug, v) in lock.entries.keys() {
-        if !manifest.tasks.contains_key(slug) {
+    for (id, v) in lock.entries.keys() {
+        if !manifest.tasks.contains_key(id) {
             problems.push(format!(
-                "{LOCKFILE} locks {slug} {v} but {MANIFEST} does not name {slug} — run `trust-tasks update`"
+                "{LOCKFILE} locks {id} {v} but {MANIFEST} does not name {id} — run `trust-tasks update`"
             ));
         }
     }
@@ -535,7 +653,8 @@ pub fn check(ctx: &Ctx) -> Result<bool> {
     // Every entry's bundle, by digest.
     let mut expected = BTreeSet::new();
     for e in lock.entries.values() {
-        let rel = Project::vendored_rel(&e.slug, e.version);
+        let id = e.id();
+        let rel = Project::vendored_rel(&id, e.version);
         expected.insert(rel.clone());
         let bytes = match std::fs::read(project.root.join(&rel)) {
             Ok(b) => b,
@@ -561,9 +680,11 @@ pub fn check(ctx: &Ctx) -> Result<bool> {
                     || head.type_uri != e.type_uri
                 {
                     problems.push(format!(
-                        "{rel} is the bundle for {} ({}), not the locked {} {}",
-                        head.type_uri, head.version, e.slug, e.version
+                        "{rel} is the bundle for {} ({}), not the locked {id} {}",
+                        head.type_uri, head.version, e.version
                     ));
+                } else if let Err(err) = check_identity(&id, e.version, &head.type_uri) {
+                    problems.push(format!("{rel}: {err:#}"));
                 }
             }
             Err(err) => problems.push(format!("{rel}: {err:#}")),
@@ -604,34 +725,40 @@ pub fn fetch_locked(ctx: &Ctx) -> Result<()> {
     let registry_url = effective_registry(&manifest, ctx.registry)?;
     let lock = Lock::load(&project.lock_path())?
         .ok_or_else(|| anyhow!("no {LOCKFILE} — run `trust-tasks update` to resolve {MANIFEST}"))?;
-    let registry = Registry::open(&registry_url)?;
-    let mut index: Option<Index> = None;
+    // Restore from where the lock resolved each source, which is what its
+    // digests were taken from.
+    let mut origins = Origins::new(&project.root, registry_url, &lock.sources);
     let mut bundles = BTreeMap::new();
     for e in lock.entries.values() {
         if project.vendored_ok(e) {
             continue;
         }
-        let bytes = match registry.fetch_bundle(&e.slug, e.version, &e.digest, None) {
+        let id = e.id();
+        let by_digest = origins
+            .registry(id.source.as_deref())?
+            .fetch_bundle(&id, e.version, &e.digest, None);
+        let bytes = match by_digest {
             Ok(got) => got.bytes,
             Err(_) => {
-                if index.is_none() {
-                    index = Some(registry.index()?);
-                }
-                let entry = index.as_ref().and_then(|i| i.get(&e.slug, e.version));
-                fetch(&registry, &e.slug, e.version, &e.digest, entry)?
+                let (registry, index) = origins.both(id.source.as_deref())?;
+                let entry = index.get(&id.slug, e.version);
+                fetch(registry, &id, e.version, &e.digest, entry)?
             }
         };
         say(
             "Fetched",
-            format_args!("{} {} ({})", e.slug, e.version, short(&e.digest)),
+            format_args!("{id} {} ({})", e.version, short(&e.digest)),
         );
-        bundles.insert((e.slug.clone(), e.version), bytes);
+        bundles.insert((id, e.version), bytes);
     }
     if bundles.is_empty() {
         println!("ok: all {} vendored bundle(s) present", lock.entries.len());
         return Ok(());
     }
-    project.commit(&manifest, Some(&lock), &lock, &bundles)
+    // Keep the lock's sources: `fetch` never re-resolves.
+    let mut keep = manifest;
+    keep.sources = lock.sources.clone();
+    project.commit(&keep, Some(&lock), &lock, &bundles)
 }
 
 // ─── list ───────────────────────────────────────────────────────────────────
@@ -641,12 +768,8 @@ pub fn list(ctx: &Ctx, remote: bool) -> Result<()> {
     let manifest = project.manifest(false)?;
     let lock = Lock::load(&project.lock_path())?
         .ok_or_else(|| anyhow!("no {LOCKFILE} — run `trust-tasks update`"))?;
-    let index = if remote {
-        let url = effective_registry(&manifest, ctx.registry)?;
-        Some(Registry::open(&url)?.index()?)
-    } else {
-        None
-    };
+    let registry_url = effective_registry(&manifest, ctx.registry)?;
+    let mut origins = Origins::new(&project.root, registry_url, &manifest.sources);
 
     let mut header = vec!["TASK", "VERSION", "INTENT", "STATUS", "NOTE"];
     if remote {
@@ -654,12 +777,13 @@ pub fn list(ctx: &Ctx, remote: bool) -> Result<()> {
     }
     let mut rows: Vec<Vec<String>> = Vec::new();
     for e in lock.entries.values() {
-        let intent = match manifest.tasks.get(&e.slug) {
+        let id = e.id();
+        let intent = match manifest.tasks.get(&id) {
             Some(i) if i.contains(&Intent::Latest) => "latest".to_string(),
             Some(_) => "exact".to_string(),
             None => "(not in manifest)".to_string(),
         };
-        let (status, mut note) = match std::fs::read(project.vendored(&e.slug, e.version))
+        let (status, mut note) = match std::fs::read(project.vendored(&id, e.version))
             .ok()
             .filter(|b| crate::names::digest_of(b) == e.digest)
             .and_then(|b| read_bundle_head(&b).ok())
@@ -679,8 +803,9 @@ pub fn list(ctx: &Ctx, remote: bool) -> Result<()> {
                 vec!["vendored bundle missing or altered — run `trust-tasks check`".to_string()],
             ),
         };
-        let mut row = vec![e.slug.clone(), e.version.to_string(), intent, status];
-        if let Some(index) = &index {
+        let mut row = vec![id.to_string(), e.version.to_string(), intent, status];
+        if remote {
+            let (_, index) = origins.both(id.source.as_deref())?;
             let latest = match index.latest_live(&e.slug) {
                 Some((l, _)) if l > e.version => {
                     let how = if index.extends_reaches(&e.slug, l, e.version) {
@@ -698,7 +823,7 @@ pub fn list(ctx: &Ctx, remote: bool) -> Result<()> {
                 Some(ie) if ie.digest != e.digest => {
                     note.push("changed upstream — `trust-tasks update`".to_string())
                 }
-                None => note.push("not in the registry index".to_string()),
+                None => note.push(format!("not in {}'s index", index.label)),
                 _ => {}
             }
             row.push(latest);

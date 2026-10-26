@@ -14,6 +14,7 @@ use serde::Deserialize;
 use serde_json::{json, Value};
 
 use crate::error_codes::{error_code_decls, ErrorCodeDecl};
+use crate::names::type_uri_parts;
 
 /// The bundle shape this crate reads.
 pub const BUNDLE_VERSION: u64 = 1;
@@ -132,14 +133,17 @@ impl Bundle {
             ));
         }
         let ctx = format!("{}/{}", raw.slug, raw.version);
-        if !raw
-            .type_uri
-            .ends_with(&format!("/spec/{}/{}", raw.slug, raw.version))
-        {
-            return Err(anyhow!(
-                "{ctx}: typeUri {:?} does not name this slug and version",
-                raw.type_uri
-            ));
+        // Read the slug and version out of the Type URI (SPEC §6.1, any form)
+        // and hold the bundle's own `slug` / `version` to them: identity is the
+        // Type URI, and a bundle whose three disagree names no one thing.
+        match type_uri_parts(&raw.type_uri) {
+            Some((slug, version)) if slug == raw.slug && version == raw.version => {}
+            _ => {
+                return Err(anyhow!(
+                    "{ctx}: typeUri {:?} does not name this slug and version",
+                    raw.type_uri
+                ))
+            }
         }
         if !raw.schema.is_object() {
             return Err(anyhow!("{ctx}: schema is not an object"));
